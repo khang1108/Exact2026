@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+.venv/
+venv/
+# Legacy local venv folder name at repo root (do not ignore ``src/exact`` package)
+/exact/
+
+.env
+.env.local
+
+.idea/
+.vscode/
+.claude/
+.pytest_cache/
+docs/
+exact/
