@@ -21,6 +21,7 @@ dependencies = [
     "pandas>=2.0",
     "pytest>=8.0",
     "pytest-cov>=4.0",
+    "pydantic-settings>=2.10.6",
 ]
 
 [project.optional-dependencies]
