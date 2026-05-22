@@ -20,4 +20,3 @@ venv/
 .claude/
 .pytest_cache/
 docs/
-exact/
