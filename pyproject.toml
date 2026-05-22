@@ -23,6 +23,7 @@ dependencies = [
     "pytest-cov>=4.0",
     "pydantic-settings>=2.10.6",
     "httpx>=0.27",
+    "openai",
 ]
 
 [project.optional-dependencies]

@@ -11,7 +11,7 @@ from exact.datasets.schemas import (
 )
 from exact.logger import get_request_logger
 from exact.router.task_router import TaskRouter
-from exact.type1.pipeline import run_type1_pipeline
+from exact.logic.pipeline import run_type1_pipeline
 from exact.type2.pipeline import run_type2_pipeline
 
 api_router = APIRouter()
