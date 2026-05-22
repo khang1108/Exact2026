@@ -161,23 +161,24 @@ class Type2Evidence(AppBaseModel):
 
 
 class PredictionResponse(AppBaseModel):
-    """
-    Internal response object.
+    """Competition response plus local metadata used during development."""
 
-    For official submission/API, we can later export only:
-        answer, explanation, unit
-    if the organizer requires a minimal schema.
-    """
-
-    id: str | None = None
-    task_type: TaskType
-    question_type: QuestionType = QuestionType.UNKNOWN
+    # EXACT mandatory
     answer: str
     explanation: str
-    unit: str | None = None
+
+    # EXACT optional but encouraged
+    fol: str | None = None
+    cot: list[str] | None = None
+    premises: list[str] | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
-    evidence: Type1Evidence | Type2Evidence | None = None
-    error: ErrorInfo | None = None
+
+    # local/internal fields
+    id: str | None = None
+    task_type: TaskType | None = None
+    question_type: QuestionType = QuestionType.UNKNOWN
+    unit: str | None = None
+    error: str | None = None
 
 
 class BatchPredictionResponse(AppBaseModel):
@@ -185,17 +186,12 @@ class BatchPredictionResponse(AppBaseModel):
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
-    """
-    Convert internal rich response into minimal official response.
-
-    Use this if the competition API only accepts answer/explanation/unit.
-    """
-    data: dict[str, Any] = {
+    """Convert an internal response into the stable EXACT response shape."""
+    return {
         "answer": response.answer,
         "explanation": response.explanation,
+        "fol": response.fol,
+        "cot": response.cot,
+        "premises": response.premises,
+        "confidence": response.confidence,
     }
-
-    if response.unit is not None:
-        data["unit"] = response.unit
-
-    return data
