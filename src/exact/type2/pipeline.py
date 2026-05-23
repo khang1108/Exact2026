@@ -1,16 +1,20 @@
 from __future__ import annotations
 
+from exact.config import Settings
 from exact.datasets.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
-from exact.type2.llm_structured import parse_with_llm
+from exact.type2.extraction.llm_structured import parse_with_llm
 from exact.logger import get_request_logger
-from exact.type2.extractor import extract_type2
-from exact.type2.pot import run_pot_fallback
+from exact.type2.extraction.extractor import extract_type2
+from exact.type2.fallback.pot import run_pot_fallback
 from exact.type2.schemas import Extraction, Quantity, Type2QuestionKind, Type2SolveResult
-from exact.type2.solver import answer_conceptual, solve_extraction
-from exact.type2.units import parse_quantity
+from exact.type2.solving.solver import answer_conceptual, solve_extraction
+from exact.type2.solving.units import parse_quantity
 
 
-def run_type2_pipeline(request: PredictionRequest) -> PredictionResponse:
+def run_type2_pipeline(
+    request: PredictionRequest,
+    settings: Settings | None = None,
+) -> PredictionResponse:
     """Run a formula-grounded Type 2 physics pipeline."""
     logger = get_request_logger(
         __name__,
@@ -32,7 +36,7 @@ def run_type2_pipeline(request: PredictionRequest) -> PredictionResponse:
     else:
         result = solve_extraction(extraction)
         if result.error is not None:
-            llm_extraction = _try_llm_extraction(request.question)
+            llm_extraction = _try_llm_extraction(request.question, settings=settings)
             if llm_extraction is not None:
                 logger.info(
                     "LLM extraction complete: kind=%s target=%s quantities=%s",
@@ -51,7 +55,7 @@ def run_type2_pipeline(request: PredictionRequest) -> PredictionResponse:
                     result = conceptual_result
 
     if result.error is not None:
-        result = run_pot_fallback(extraction, result.verification.message)
+        result = run_pot_fallback(extraction, result.verification.message, settings=settings)
 
     return _to_prediction_response(request, result)
 
@@ -97,8 +101,11 @@ def _build_explanation(result: Type2SolveResult) -> str:
     )
 
 
-def _try_llm_extraction(question: str) -> Extraction | None:
-    spec = parse_with_llm(question)
+def _try_llm_extraction(
+    question: str,
+    settings: Settings | None = None,
+) -> Extraction | None:
+    spec = parse_with_llm(question, settings=settings)
     if spec is None:
         return None
 

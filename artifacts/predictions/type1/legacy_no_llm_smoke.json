@@ -1,0 +1,33 @@
+{
+  "source": "src/exact/datasets/exact/Logic_Based_Educational_Queries_inference.json",
+  "count": 1,
+  "format": "exact_predictions",
+  "predictions": [
+    {
+      "answer": "Unknown",
+      "explanation": "The provided premises do not prove the claim or its negation, so the answer is Unknown.",
+      "fol": "P3: all python projects are easy to maintain\nP4: all python code is well-tested\nP10: all python projects are well-structured\nP11: all python projects have clean and readable code\nP12: there exists at least one python project that follows best practices\nP13: there exists at least one python project that is optimized\nP1: a python code is well-tested -> the project is optimized\nP2: a python code does not follow pep 8 standards -> it is not well-tested\nP5: a python code follows pep 8 standards -> it is easy to maintain\nP6: a python code is well-tested -> it follows pep 8 standards\nP7: a python project is well-structured -> it is optimized\nP8: a python project is easy to maintain -> it is well-tested\nP9: a python project is optimized -> it has clean and readable code\nP14: a python project is not well-structured -> it does not follow pep 8 standards",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation."
+      ],
+      "premises": [],
+      "confidence": 0.35,
+      "id": "logic_0000_00",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "unit": null,
+      "error": "No LLM client configured; heuristic parser used.",
+      "route_reason": "premises_nl present",
+      "official": {
+        "answer": "Unknown",
+        "explanation": "The provided premises do not prove the claim or its negation, so the answer is Unknown.",
+        "fol": "P3: all python projects are easy to maintain\nP4: all python code is well-tested\nP10: all python projects are well-structured\nP11: all python projects have clean and readable code\nP12: there exists at least one python project that follows best practices\nP13: there exists at least one python project that is optimized\nP1: a python code is well-tested -> the project is optimized\nP2: a python code does not follow pep 8 standards -> it is not well-tested\nP5: a python code follows pep 8 standards -> it is easy to maintain\nP6: a python code is well-tested -> it follows pep 8 standards\nP7: a python project is well-structured -> it is optimized\nP8: a python project is easy to maintain -> it is well-tested\nP9: a python project is optimized -> it has clean and readable code\nP14: a python project is not well-structured -> it does not follow pep 8 standards",
+        "cot": [
+          "No symbolic proof was found for the claim or for its negation."
+        ],
+        "premises": [],
+        "confidence": 0.35
+      }
+    }
+  ]
+}

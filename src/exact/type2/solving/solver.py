@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import pint
 
-from exact.type2.formula_bank import retrieve_formulas
+from exact.type2.formulas.bank import retrieve_formulas
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification, Formula
 
 

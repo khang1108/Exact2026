@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from exact.config import Settings, get_settings
 from exact.llm_client import LLMClient, build_json_client_from_settings
-from exact.type2.extractor import normalize_question
+from exact.type2.extraction.extractor import normalize_question
 
 
 class JsonClient(Protocol):

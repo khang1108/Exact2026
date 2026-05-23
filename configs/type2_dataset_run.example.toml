@@ -1,0 +1,82 @@
+# Type 2 only dataset run config.
+# Copy to configs/type2_local.toml and edit backend/model values for each run.
+
+[dataset]
+input = "src/exact/datasets/exact/Physics_Problems_Text_Only.csv"
+limit = 10
+skip_invalid = true
+task_filter = "type2"
+
+[output]
+path = "artifacts/predictions/type2/type2_config_smoke.json"
+include_gold = true
+include_raw = false
+progress_every = 1
+
+[llm]
+# none | transformers | ollama | openai_compatible | huggingface
+#
+# Type 2 first uses deterministic extraction + formula solving.
+# The LLM is used only if pipeline.use_type2_llm_fallback = true and
+# deterministic solving fails.
+backend = "none"
+enabled = false
+model = "Qwen/Qwen2.5-0.5B-Instruct"
+
+max_tokens = 512
+temperature = 0.0
+top_p = 1.0
+timeout_seconds = 60.0
+max_retries = 2
+
+# For ollama:
+# backend = "ollama"
+# enabled = true
+# model = "qwen2.5:0.5b"
+# base_url = "http://127.0.0.1:11434/v1"
+base_url = ""
+api_key = ""
+api_key_env = ""
+
+# For transformers CPU:
+# backend = "transformers"
+# enabled = true
+# model = "Qwen/Qwen2.5-0.5B-Instruct"
+# device_map = "cpu"
+# torch_dtype = "float32"
+device_map = "cpu"
+torch_dtype = "float32"
+local_files_only = false
+trust_remote_code = false
+
+[pipeline]
+# false = deterministic Type 2 only.
+# true = after deterministic failure, try LLM structured extraction and PoT fallback.
+use_type2_llm_fallback = false
+
+fail_fast = false
+
+[type2_pipeline]
+# Documented knobs for Type 2 experiments.
+# Current code uses deterministic formula solving first; unsupported cases can
+# fall back to LLM extraction/PoT through pipeline.use_type2_llm_fallback.
+deterministic_first = true
+use_formula_bank = true
+use_unit_verifier = true
+use_concept_bank = true
+
+[evaluation]
+# Numerical answers are compared after unit conversion when possible.
+relative_tolerance = 0.02
+absolute_tolerance = 1e-9
+case_sensitive_text = false
+report_path = "artifacts/reports/type2_eval_report.json"
+errors_path = "artifacts/reports/type2_eval_errors.csv"
+
+[model_pull]
+enabled = true
+revision = "main"
+cache_dir = ""
+local_dir = ""
+allow_patterns = []
+ignore_patterns = []

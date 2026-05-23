@@ -22,11 +22,12 @@ from exact.llm_client import build_json_client_from_settings
 from exact.logic.llm_translator import JsonLLMClient
 from exact.logic.pipeline import run_type1_pipeline
 from exact.router.task_router import TaskRouter
+from exact.scripts.config_utils import settings_for_disabled_llm
 from exact.type2.pipeline import run_type2_pipeline
 
 
 DEFAULT_INPUT = Path("src/exact/datasets/exact/Logic_Based_Educational_Queries_inference.json")
-DEFAULT_OUTPUT = Path("artifacts/predictions/predictions.json")
+DEFAULT_OUTPUT = Path("artifacts/predictions/type1/predictions.json")
 
 
 def main() -> None:
@@ -36,7 +37,7 @@ def main() -> None:
         instances = instances[: args.limit]
 
     router = TaskRouter()
-    settings = get_settings()
+    settings = settings_for_disabled_llm() if args.no_llm else get_settings()
     translator_client: JsonLLMClient | None = (
         None if args.no_llm else build_json_client_from_settings(settings)
     )
@@ -53,7 +54,7 @@ def main() -> None:
                 settings=settings,
             )
         elif route.task_type == TaskType.TYPE2_PHYSICS:
-            response = run_type2_pipeline(request)
+            response = run_type2_pipeline(request, settings=settings)
         else:
             raise ValueError(f"Unsupported task type: {route.task_type}")
 

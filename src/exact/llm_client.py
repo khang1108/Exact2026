@@ -131,13 +131,32 @@ class LLMClient:
 
 
 class LocalClient:
-    def __init__(self, model_name: str):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        device_map: str | None = "auto",
+        torch_dtype: str = "float16",
+        local_files_only: bool = False,
+        trust_remote_code: bool = False,
+    ):
+        self.tokenizer = AutoTokenizer.from_pretrained(
             model_name,
-            torch_dtype=torch.float16,
-            device_map="auto",
+            local_files_only=local_files_only,
+            trust_remote_code=trust_remote_code,
         )
+
+        model_kwargs: dict[str, Any] = {
+            "torch_dtype": _torch_dtype(torch_dtype),
+            "local_files_only": local_files_only,
+            "trust_remote_code": trust_remote_code,
+        }
+        if device_map and device_map not in {"none", "cpu"}:
+            model_kwargs["device_map"] = device_map
+
+        self.model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
+        if device_map == "cpu":
+            self.model.to("cpu")
 
     def complete(self, messages: list[dict], max_new_tokens: int = 512) -> str:
         text = self.tokenizer.apply_chat_template(
@@ -169,8 +188,22 @@ class LocalClient:
 class LocalJsonClient:
     """JSON adapter over the direct transformers-based LocalClient."""
 
-    def __init__(self, model_name: str):
-        self.client = LocalClient(model_name)
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        device_map: str | None = "auto",
+        torch_dtype: str = "float16",
+        local_files_only: bool = False,
+        trust_remote_code: bool = False,
+    ):
+        self.client = LocalClient(
+            model_name,
+            device_map=device_map,
+            torch_dtype=torch_dtype,
+            local_files_only=local_files_only,
+            trust_remote_code=trust_remote_code,
+        )
 
     def complete_json_sync(
         self,
@@ -195,10 +228,26 @@ def build_json_client_from_settings(settings: Settings | None = None) -> Any | N
 
     settings = settings or get_settings()
     if settings.llm_provider == "local":
-        return LocalJsonClient(settings.llm_model)
+        return LocalJsonClient(
+            settings.llm_model,
+            device_map=settings.llm_device_map,
+            torch_dtype=settings.llm_torch_dtype,
+            local_files_only=settings.llm_local_files_only,
+            trust_remote_code=settings.llm_trust_remote_code,
+        )
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
     return None
+
+
+def _torch_dtype(name: str):
+    if name == "auto":
+        return "auto"
+    if name == "float32":
+        return torch.float32
+    if name == "bfloat16":
+        return torch.bfloat16
+    return torch.float16
 
 
 def _parse_json_object(text: str) -> dict[str, Any]:

@@ -1,0 +1,4 @@
+id,answer,unit,gold_answer,gold_unit,status,numeric_ok,unit_ok,relative_error,absolute_error,error
+physics_LD001,0.005055,N,0.05,N,wrong_numeric,False,True,0.8989,0.044945000000000006,
+physics_LD002,,,24.45 × 10^-3,N,pipeline_error,,,,,type2_pot_not_configured
+physics_LD003,14.979253,N,6.76,N,wrong_numeric,False,True,1.215865828402367,8.219253,

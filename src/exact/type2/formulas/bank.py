@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 
 from exact.type2.schemas import Formula
-from exact.type2.units import ureg
+from exact.type2.solving.units import ureg
 
 
 def _q(known: dict[str, object], name: str):

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from exact.config import Settings, get_settings
-from exact.type2.executor import ExecutionResult, execute_python
-from exact.type2.llm_structured import PotCodeSpec, generate_pot_code, repair_pot_code
+from exact.type2.fallback.executor import ExecutionResult, execute_python
+from exact.type2.extraction.llm_structured import PotCodeSpec, generate_pot_code, repair_pot_code
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 
 

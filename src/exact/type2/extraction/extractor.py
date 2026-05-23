@@ -4,7 +4,7 @@ import re
 import unicodedata
 
 from exact.type2.schemas import Extraction, Quantity, Type2QuestionKind
-from exact.type2.units import parse_quantity
+from exact.type2.solving.units import parse_quantity
 
 
 UNIT_REPLACEMENTS = {

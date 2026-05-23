@@ -79,3 +79,69 @@ curl -X POST http://127.0.0.1:8080/predict \
 ```bash
 pytest
 ```
+
+## Type 2 Dataset Runs
+
+```bash
+cp configs/type2_dataset_run.example.toml configs/type2_local.toml
+PYTHONPATH=src python -m exact.scripts.run_dataset_from_config --config configs/type2_local.toml
+```
+
+Evaluate a Type 2 prediction file with the tolerances configured in the same
+TOML file:
+
+```bash
+PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
+  artifacts/predictions/type2/type2_config_smoke.json \
+  --config configs/type2_local.toml
+```
+
+Useful settings in `configs/type2_local.toml`:
+
+- `llm.backend = "none"` runs deterministic/heuristic pipelines only.
+- `llm.backend = "transformers"` loads a Hugging Face model directly.
+- `llm.backend = "ollama"` calls an Ollama OpenAI-compatible endpoint.
+- `llm.backend = "openai_compatible"` calls a local/cloud GPU server such as vLLM.
+- `llm.backend = "huggingface"` calls Hugging Face's OpenAI-compatible router.
+
+For CPU smoke tests with transformers, start with a small model:
+
+```toml
+[llm]
+enabled = true
+backend = "transformers"
+model = "Qwen/Qwen2.5-0.5B-Instruct"
+device_map = "cpu"
+torch_dtype = "float32"
+
+[pipeline]
+use_type1_llm = true
+use_type2_llm_fallback = true
+```
+
+To download/cache the configured Hugging Face model first:
+
+```bash
+PYTHONPATH=src python -m exact.scripts.pull_model --config configs/type2_local.toml
+```
+
+For Ollama:
+
+```toml
+[llm]
+enabled = true
+backend = "ollama"
+model = "qwen2.5:0.5b"
+base_url = "http://127.0.0.1:11434/v1"
+```
+
+For a cloud or LAN GPU server exposing an OpenAI-compatible API:
+
+```toml
+[llm]
+enabled = true
+backend = "openai_compatible"
+model = "Qwen/Qwen2.5-7B-Instruct"
+base_url = "http://YOUR_SERVER:8000/v1"
+api_key = "EMPTY"
+```
