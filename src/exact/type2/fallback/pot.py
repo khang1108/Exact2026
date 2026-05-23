@@ -9,12 +9,14 @@ from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 def run_pot_fallback(
     extraction: Extraction,
     reason: str,
+    formula_context: str = "",
     settings: Settings | None = None,
 ) -> Type2SolveResult:
     settings = settings or get_settings()
     llm_code = generate_pot_code(
         extraction.normalized_question,
         reason,
+        formula_context=formula_context,
         settings=settings,
     )
     if llm_code is None:

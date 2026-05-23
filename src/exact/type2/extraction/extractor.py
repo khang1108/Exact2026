@@ -92,6 +92,9 @@ SYMBOL_TO_NAME = {
     "q": "charge",
     "e": "energy_or_field",
     "w": "energy",
+    "t": "time",
+    "s": "length",
+    "d": "length",
     "l": "inductance",
     "f": "frequency",
     "z": "impedance",
@@ -128,12 +131,15 @@ UNIT_TO_NAME = {
     "cm": "length",
     "mm": "length",
     "m": "length",
+    "s": "time",
+    "m^2": "area",
     "degree": "angle",
     "deg": "angle",
 }
 
 NAME_PATTERNS = (
     ("potential difference", "voltage"),
+    ("electric potential", "voltage"),
     ("voltage", "voltage"),
     ("current", "current"),
     ("resistance", "resistance"),
@@ -152,7 +158,11 @@ NAME_PATTERNS = (
     ("angular frequency", "angular_frequency"),
     ("magnetic field", "magnetic_field"),
     ("magnetic flux", "magnetic_flux"),
+    ("time", "time"),
+    ("area", "area"),
     ("distance", "length"),
+    ("length", "length"),
+    ("radius", "length"),
     ("separated", "length"),
     ("apart", "length"),
     ("angle", "angle"),
@@ -166,6 +176,7 @@ TARGET_PATTERNS = (
     ("current", "current"),
     ("voltage", "voltage"),
     ("potential difference", "voltage"),
+    ("electric potential", "voltage"),
     ("resistance", "resistance"),
     ("impedance", "impedance"),
     ("power", "power"),
@@ -180,13 +191,18 @@ TARGET_PATTERNS = (
     ("inductance", "inductance"),
     ("magnetic field", "magnetic_field"),
     ("magnetic flux", "magnetic_flux"),
+    ("time", "time"),
+    ("area", "area"),
+    ("distance", "length"),
+    ("length", "length"),
+    ("radius", "length"),
     ("absolute error", "absolute_error"),
     ("relative error", "relative_error"),
     ("percentage error", "relative_error"),
 )
 
 NUMBER = r"[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?"
-UNIT = r"(?:uF|nF|pF|mF|F|uC|nC|pC|mC|C|mA|A|mV|kV|V|kohm|ohm|mW|W|mJ|uJ|nJ|J|mH|H|Hz|rad/s|V/m|N/C|mN|N|T|mT|Wb|uWb|cm|mm|m|s|%|degree|degrees|deg|°)"
+UNIT = r"(?:uF|nF|pF|mF|F|uC|nC|pC|mC|C|mA|A|mV|kV|V|kohm|ohm|mW|W|mJ|uJ|nJ|J|mH|H|Hz|rad/s|V/m|N/C|mN|N|T|mT|Wb|uWb|cm|mm|m\^2|m|s|%|degree|degrees|deg|°)"
 
 SYMBOL_VALUE_RE = re.compile(
     rf"\b(?P<symbol>[A-Za-z][A-Za-z0-9_]*)\s*=\s*(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b",

@@ -18,6 +18,7 @@ class ExecutionResult:
     stdout: str
     stderr: str
     error: str | None = None
+    ans_unit: str | None = None
 
 
 class UnsafeCodeError(ValueError):
@@ -57,8 +58,8 @@ def execute_python(code: str, timeout_seconds: float = 5.0) -> ExecutionResult:
             error=(proc.stderr.strip() or proc.stdout.strip() or "execution failed"),
         )
 
-    ans = _parse_ans_marker(proc.stdout)
-    if ans is None:
+    marker = _parse_ans_marker(proc.stdout)
+    if marker is None:
         return ExecutionResult(
             ok=False,
             ans=None,
@@ -67,7 +68,13 @@ def execute_python(code: str, timeout_seconds: float = 5.0) -> ExecutionResult:
             error="ans not produced",
         )
 
-    return ExecutionResult(ok=True, ans=ans, stdout=proc.stdout, stderr=proc.stderr)
+    return ExecutionResult(
+        ok=True,
+        ans=marker.get("ans"),
+        ans_unit=marker.get("ans_unit"),
+        stdout=proc.stdout,
+        stderr=proc.stderr,
+    )
 
 
 def _validate_import(node: ast.Import | ast.ImportFrom) -> None:
@@ -117,6 +124,8 @@ SAFE_BUILTINS = {
     "print": print,
     "range": range,
     "round": round,
+    "set": set,
+    "str": str,
     "sum": sum,
     "tuple": tuple,
     "__import__": None,
@@ -150,16 +159,20 @@ elif hasattr(value, "item"):
     except Exception:
         pass
 
-print("__ANS__=" + json.dumps(value, default=str))
+ans_unit = glb.get("ans_unit")
+print("__ANS__=" + json.dumps({"ans": value, "ans_unit": ans_unit}, default=str))
 """
 
 
-def _parse_ans_marker(stdout: str) -> object | None:
+def _parse_ans_marker(stdout: str) -> dict[str, object] | None:
     marker = "__ANS__="
     for line in reversed(stdout.splitlines()):
         if line.startswith(marker):
             payload = line[len(marker) :]
-            return _json_load(payload)
+            value = _json_load(payload)
+            if isinstance(value, dict) and "ans" in value:
+                return value
+            return {"ans": value, "ans_unit": None}
     return None
 
 

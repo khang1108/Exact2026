@@ -24,6 +24,7 @@ from exact.scripts.config_utils import (
     settings_for_disabled_llm,
 )
 from exact.type2.pipeline import run_type2_pipeline
+from exact.type2.pipeline import set_generate_final_explanation
 
 
 DEFAULT_CONFIG = Path("configs/type2_dataset_run.example.toml")
@@ -35,6 +36,7 @@ def main() -> None:
     dataset_cfg = config.get("dataset", {})
     output_cfg = config.get("output", {})
     pipeline_cfg = config.get("pipeline", {})
+    type2_pipeline_cfg = config.get("type2_pipeline", {})
 
     input_path = args.input or dataset_cfg.get("input", "")
     dataset = ExactDataset.from_file(
@@ -54,6 +56,7 @@ def main() -> None:
     use_type1_llm = bool(pipeline_cfg.get("use_type1_llm", True))
     use_type2_llm_fallback = bool(pipeline_cfg.get("use_type2_llm_fallback", True))
     fail_fast = bool(pipeline_cfg.get("fail_fast", False))
+    set_generate_final_explanation(bool(type2_pipeline_cfg.get("generate_final_explanation", True)))
     include_gold = bool(output_cfg.get("include_gold", True))
     include_raw = bool(output_cfg.get("include_raw", False))
     progress_every = int(output_cfg.get("progress_every", 100) or 0)

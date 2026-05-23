@@ -25,6 +25,7 @@ class Quantity:
 class Formula:
     id: str
     domain: str
+    subfield: str
     target: str
     required: tuple[str, ...]
     output_unit: str
@@ -32,6 +33,9 @@ class Formula:
     explanation_template: str
     keywords: tuple[str, ...]
     solve: Callable[[dict[str, pint.Quantity]], pint.Quantity]
+    variables: dict[str, str] = field(default_factory=dict)
+    conditions: tuple[str, ...] = ()
+    common_mistakes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

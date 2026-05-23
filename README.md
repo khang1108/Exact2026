@@ -96,13 +96,25 @@ PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
   --config configs/type2_local.toml
 ```
 
+Monitor a Type 2 run with live correct/wrong/error counters:
+
+```bash
+PYTHONPATH=src python -m exact.scripts.run_type2_monitor \
+  --config configs/type2_local.toml
+```
+
 Useful settings in `configs/type2_local.toml`:
 
-- `llm.backend = "none"` runs deterministic/heuristic pipelines only.
 - `llm.backend = "transformers"` loads a Hugging Face model directly.
 - `llm.backend = "ollama"` calls an Ollama OpenAI-compatible endpoint.
+- `llm.backend = "groq"` calls Groq's OpenAI-compatible API.
 - `llm.backend = "openai_compatible"` calls a local/cloud GPU server such as vLLM.
 - `llm.backend = "huggingface"` calls Hugging Face's OpenAI-compatible router.
+- `pipeline.use_type2_llm_fallback = true` enables Type 2 PoT-first solving:
+  formula retrieval, LLM-generated Pint code, sandbox execution, PoT
+  verification, and final LLM evidence generation.
+- `type2_pipeline.generate_final_explanation = false` skips the final
+  explanation/evidence LLM call for faster smoke runs.
 
 For CPU smoke tests with transformers, start with a small model:
 
@@ -144,4 +156,14 @@ backend = "openai_compatible"
 model = "Qwen/Qwen2.5-7B-Instruct"
 base_url = "http://YOUR_SERVER:8000/v1"
 api_key = "EMPTY"
+```
+
+For Groq:
+
+```toml
+[llm]
+enabled = true
+backend = "groq"
+model = "llama-3.1-8b-instant"
+api_key_env = "GROQ_API_KEY"
 ```

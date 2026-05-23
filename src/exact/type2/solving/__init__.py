@@ -1,3 +1,7 @@
-from exact.type2.solving.solver import answer_conceptual, solve_extraction
+"""Type 2 solving package.
 
-__all__ = ["answer_conceptual", "solve_extraction"]
+Keep package import side-effect free to avoid circular imports when modules
+such as `exact.type2.formulas.bank` only need the unit registry.
+"""
+
+__all__: list[str] = []

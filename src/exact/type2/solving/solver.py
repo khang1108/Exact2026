@@ -77,9 +77,17 @@ def verify_value(value: pint.Quantity, formula: Formula) -> tuple[Verification, 
 
 
 
-def solve_extraction(extraction: Extraction) -> Type2SolveResult:
+def solve_extraction(
+    extraction: Extraction,
+    preferred_formula_ids: tuple[str, ...] = (),
+) -> Type2SolveResult:
     known = {name: quantity.value for name, quantity in extraction.quantities.items()}
-    formulas = retrieve_formulas(extraction.normalized_question, extraction.target, known)
+    formulas = retrieve_formulas(
+        extraction.normalized_question,
+        extraction.target,
+        known,
+        preferred_formula_ids=preferred_formula_ids,
+    )
 
     if not formulas:
         return Type2SolveResult(

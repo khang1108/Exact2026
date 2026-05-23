@@ -4,9 +4,11 @@ Một module cung cấp một lớp để có thể tạo một LLMClient dùng 
 from __future__ import annotations
 
 import asyncio
+import ast
+import inspect
 import json
 from typing import Any, Iterable
-from openai import AsyncOpenAI
+from openai import APIStatusError, AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, ValidationError
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -59,13 +61,19 @@ class LLMClient:
         Returns:
             Một dictionary chứa kết quả từ LLM.
         """
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            response_format={"type": "json_object"},
-        )
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+            )
+        except APIStatusError as exc:
+            recovered = _recover_failed_generation_json(exc)
+            if recovered is not None:
+                return recovered
+            raise
 
         text = response.choices[0].message.content or "{}"
 
@@ -108,13 +116,32 @@ class LLMClient:
             asyncio.get_running_loop()
         except RuntimeError:
             return asyncio.run(
-                self.complete_json(
+                self._complete_json_and_close(
                     messages=messages,
                     temperature=temperature,
                     max_tokens=max_tokens,
                 )
             )
         raise RuntimeError("complete_json_sync cannot run inside an active event loop")
+
+    async def _complete_json_and_close(
+        self,
+        messages: Iterable[ChatCompletionMessageParam],
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> dict[str, Any]:
+        try:
+            return await self.complete_json(
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        finally:
+            close = getattr(self.client, "close", None)
+            if close is not None:
+                result = close()
+                if inspect.isawaitable(result):
+                    await result
 
     @classmethod
     def from_settings(cls, settings: Settings | None = None) -> "LLMClient":
@@ -123,6 +150,24 @@ class LLMClient:
         return cls(
             api_key=api_key,
             base_url=settings.llm_base_url,
+            model=settings.llm_model,
+            timeout=settings.llm_timeout_seconds,
+            max_retries=settings.llm_max_retries,
+        )
+
+
+class GroqClient(LLMClient):
+    """OpenAI-compatible client configured for Groq's API."""
+
+    GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+
+    @classmethod
+    def from_settings(cls, settings: Settings | None = None) -> "GroqClient":
+        settings = settings or get_settings()
+        api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else "EMPTY"
+        return cls(
+            api_key=api_key,
+            base_url=settings.llm_base_url or cls.GROQ_BASE_URL,
             model=settings.llm_model,
             timeout=settings.llm_timeout_seconds,
             max_retries=settings.llm_max_retries,
@@ -235,6 +280,8 @@ def build_json_client_from_settings(settings: Settings | None = None) -> Any | N
             local_files_only=settings.llm_local_files_only,
             trust_remote_code=settings.llm_trust_remote_code,
         )
+    if settings.llm_provider == "groq":
+        return GroqClient.from_settings(settings)
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
     return None
@@ -260,3 +307,68 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise ValueError("LLM JSON output must be an object")
     return parsed
+
+
+def _recover_failed_generation_json(exc: APIStatusError) -> dict[str, Any] | None:
+    for payload in _error_payload_candidates(exc):
+        failed_generation = _failed_generation_from_payload(payload)
+        if failed_generation is None:
+            continue
+        recovered = _parse_jsonish_object(failed_generation)
+        if recovered is not None:
+            return recovered
+    return None
+
+
+def _error_payload_candidates(exc: APIStatusError) -> list[object]:
+    candidates: list[object] = []
+    body = getattr(exc, "body", None)
+    if body is not None:
+        candidates.append(body)
+
+    text = str(exc)
+    marker = " - "
+    if marker in text:
+        candidates.extend(_parse_payload_text(text.split(marker, 1)[1]))
+    candidates.extend(_parse_payload_text(text))
+    return candidates
+
+
+def _parse_payload_text(text: str) -> list[object]:
+    payloads: list[object] = []
+    stripped = text.strip()
+    for parser in (json.loads, ast.literal_eval):
+        try:
+            payloads.append(parser(stripped))
+        except Exception:
+            pass
+    return payloads
+
+
+def _failed_generation_from_payload(payload: object) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    direct = payload.get("failed_generation")
+    if isinstance(direct, str):
+        return direct
+    error = payload.get("error")
+    if not isinstance(error, dict):
+        return None
+    nested = error.get("failed_generation")
+    return nested if isinstance(nested, str) else None
+
+
+def _parse_jsonish_object(text: str) -> dict[str, Any] | None:
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        parsed = _parse_python_literal_object(text)
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _parse_python_literal_object(text: str) -> dict[str, Any] | None:
+    try:
+        parsed = ast.literal_eval(text)
+    except (SyntaxError, ValueError):
+        return None
+    return parsed if isinstance(parsed, dict) else None

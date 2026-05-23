@@ -10,6 +10,9 @@ from pydantic import SecretStr
 from exact.config import Settings, get_settings
 
 
+ROOT_DIR = Path(__file__).resolve().parents[3]
+
+
 def load_toml_config(path: str | Path) -> dict[str, Any]:
     config_path = Path(path)
     with config_path.open("rb") as file:
@@ -37,6 +40,10 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
     elif backend == "ollama":
         base_url = base_url or "http://127.0.0.1:11434/v1"
         api_key = api_key or "ollama"
+    elif backend == "groq":
+        provider = "groq"
+        base_url = base_url or "https://api.groq.com/openai/v1"
+        api_key = api_key or os.getenv("GROQ_API_KEY") or "EMPTY"
     elif backend == "huggingface":
         base_url = base_url or "https://router.huggingface.co/v1"
         api_key = api_key or os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
@@ -94,8 +101,27 @@ def _resolve_api_key(llm: dict[str, Any]) -> str | None:
 
     env_name = str(llm.get("api_key_env") or "").strip()
     if env_name:
-        return os.getenv(env_name)
+        return os.getenv(env_name) or _dotenv_value(env_name)
 
+    return None
+
+
+def _dotenv_value(name: str, path: Path | None = None) -> str | None:
+    env_path = path or ROOT_DIR / ".env"
+    if not env_path.exists():
+        return None
+
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        text = line.strip()
+        if not text or text.startswith("#") or "=" not in text:
+            continue
+        key, value = text.split("=", 1)
+        if key.strip() != name:
+            continue
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+        return value or None
     return None
 
 
