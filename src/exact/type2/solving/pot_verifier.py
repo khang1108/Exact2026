@@ -24,6 +24,7 @@ def verify_pot_execution(
     ans_unit: str | None,
     formula_ids_used: list[str],
     allowed_formula_ids: tuple[str, ...],
+    magnitude_target: bool = False,
 ) -> PotVerificationResult:
     if ans is None:
         return _reject("PoT execution did not produce ans.")
@@ -35,6 +36,9 @@ def verify_pot_execution(
 
     if not math.isfinite(magnitude):
         return _reject("PoT ans is not finite.")
+
+    if magnitude_target:
+        magnitude = abs(magnitude)
 
     unit = (ans_unit or "").strip() or None
     if unit is None:

@@ -22,6 +22,25 @@ class RetrievedFormulaContext:
     summaries: list[dict[str, Any]]
 
 
+def canonicalize_formula_ids(
+    formula_ids_used: list[str],
+    summaries: list[dict[str, Any]],
+) -> list[str]:
+    allowed = {str(summary.get("id")): summary for summary in summaries if summary.get("id")}
+    canonicalized: list[str] = []
+    for formula_id in formula_ids_used:
+        candidate = str(formula_id).strip()
+        if not candidate:
+            continue
+        if candidate in allowed:
+            canonicalized.append(candidate)
+            continue
+        mapped = _match_formula_id(candidate, summaries)
+        if mapped is not None and mapped not in canonicalized:
+            canonicalized.append(mapped)
+    return canonicalized
+
+
 def retrieve_formula_context(
     question: str,
     extraction: Extraction | None = None,
@@ -145,3 +164,56 @@ def _score_summary(
 
 def _tokens(text: str) -> list[str]:
     return re.findall(r"[a-zA-Z_][a-zA-Z0-9_]*", text.lower())
+
+
+def _match_formula_id(candidate: str, summaries: list[dict[str, Any]]) -> str | None:
+    candidate_tokens = set(_tokens(candidate))
+    candidate_lower = candidate.lower()
+    if not candidate_tokens:
+        return None
+
+    best_id: str | None = None
+    best_score = 0
+
+    for summary in summaries:
+        summary_id = str(summary.get("id") or "").strip()
+        if not summary_id:
+            continue
+        if summary_id.lower() in candidate.lower() or candidate.lower() in summary_id.lower():
+            return summary_id
+
+        summary_text = _summary_text(summary)
+        summary_lower = summary_text.lower()
+
+        if "coulomb" in candidate_lower and "coulomb" in summary_lower:
+            return summary_id
+        if any(token in candidate_lower for token in ("pythagorean", "vector addition", "resultant")) and (
+            "resultant" in summary_lower or "vector" in summary_lower or "sqrt" in summary_lower
+        ):
+            return summary_id
+        if "equilateral" in candidate_lower and (
+            "equilateral" in summary_lower or "sqrt(3)" in summary_lower or "60" in summary_lower
+        ):
+            return summary_id
+        if "midpoint" in candidate_lower and (
+            "midpoint" in summary_lower or "opposite" in summary_lower or "equal charges" in summary_lower
+        ):
+            return summary_id
+
+        summary_tokens = set(_tokens(summary_text))
+        score = len(candidate_tokens & summary_tokens)
+        if score > best_score:
+            best_score = score
+            best_id = summary_id
+
+    if best_score >= 1:
+        return best_id
+    return None
+
+
+def _summary_text(summary: dict[str, Any]) -> str:
+    return " ".join(
+        str(value)
+        for key, value in summary.items()
+        if key not in {"source"}
+    )

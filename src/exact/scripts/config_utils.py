@@ -38,6 +38,7 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
         base_url = None
         api_key = None
     elif backend == "ollama":
+        provider = "ollama"
         base_url = base_url or "http://127.0.0.1:11434/v1"
         api_key = api_key or "ollama"
     elif backend == "groq":

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -67,33 +68,42 @@ def main() -> None:
     output_path = args.output or Path(output_cfg.get("path", "artifacts/predictions/type2/type2_monitor.json"))
     predictions: list[dict[str, Any]] = []
     stats = MonitorStats()
+    run_started = time.perf_counter()
+    interrupted = False
 
-    for index, example in enumerate(examples, start=1):
-        prediction = _predict(example, settings)
-        predictions.append(prediction)
-        row = evaluate_prediction(
-            prediction,
-            relative_tolerance=relative_tolerance,
-            absolute_tolerance=absolute_tolerance,
-            case_sensitive_text=case_sensitive_text,
-        )
-        _update_stats(stats, row.status, row.numeric_ok)
-        _print_progress(index, len(examples), example, prediction, row.status, stats)
+    try:
+        for index, example in enumerate(examples, start=1):
+            item_started = time.perf_counter()
+            prediction = _predict(example, settings)
+            prediction["elapsed_seconds"] = round(time.perf_counter() - item_started, 6)
+            predictions.append(prediction)
+            row = evaluate_prediction(
+                prediction,
+                relative_tolerance=relative_tolerance,
+                absolute_tolerance=absolute_tolerance,
+                case_sensitive_text=case_sensitive_text,
+            )
+            _update_stats(stats, row.status, row.numeric_ok)
+            _print_progress(index, len(examples), example, prediction, row.status, stats)
+    except KeyboardInterrupt:
+        interrupted = True
+        print("\nreceived Ctrl+C; writing partial predictions before exit...", flush=True)
 
-    output = {
-        "config": str(args.config),
-        "source": str(dataset.source_path),
-        "count": len(predictions),
-        "format": "exact_type2_monitor_predictions",
-        "summary": asdict(stats) | {
-            "accuracy": stats.accuracy,
-            "numeric_accuracy": stats.numeric_accuracy,
-        },
-        "predictions": predictions,
-    }
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"wrote {len(predictions)} predictions to {output_path}")
+    _write_output(
+        output_path,
+        config_path=args.config,
+        source_path=dataset.source_path,
+        predictions=predictions,
+        stats=stats,
+        run_elapsed_seconds=round(time.perf_counter() - run_started, 6),
+        interrupted=interrupted,
+        requested_count=len(examples),
+        offset=offset,
+    )
+    suffix = "partial " if interrupted else ""
+    print(f"wrote {suffix}{len(predictions)} predictions to {output_path}")
+    if interrupted:
+        raise SystemExit(130)
 
 
 def _predict(example: LoadedExample, settings) -> dict[str, Any]:
@@ -146,7 +156,7 @@ def _print_progress(
     print(
         "processed {index}/{total} id={id} status={status} "
         "answer={answer} unit={unit} gold={gold_answer} {gold_unit} "
-        "correct={correct} wrong={wrong} errors={errors} acc={acc:.3f}".format(
+        "elapsed={elapsed:.2f}s correct={correct} wrong={wrong} errors={errors} acc={acc:.3f}".format(
             index=index,
             total=total,
             id=example.request.id,
@@ -155,6 +165,7 @@ def _print_progress(
             unit=prediction.get("unit"),
             gold_answer=example.gold_answer,
             gold_unit=example.gold_unit or "",
+            elapsed=float(prediction.get("elapsed_seconds") or 0.0),
             correct=stats.correct,
             wrong=stats.wrong,
             errors=stats.pipeline_errors,
@@ -189,6 +200,43 @@ def _slice_examples(
     if limit is not None:
         sliced = sliced[: int(limit)]
     return sliced
+
+
+def _write_output(
+    output_path: Path,
+    *,
+    config_path: Path,
+    source_path: Path,
+    predictions: list[dict[str, Any]],
+    stats: MonitorStats,
+    run_elapsed_seconds: float,
+    interrupted: bool,
+    requested_count: int,
+    offset: int,
+) -> None:
+    output = {
+        "config": str(config_path),
+        "source": str(source_path),
+        "count": len(predictions),
+        "requested_count": requested_count,
+        "offset": offset,
+        "interrupted": interrupted,
+        "run_elapsed_seconds": run_elapsed_seconds,
+        "format": "exact_type2_monitor_predictions",
+        "summary": asdict(stats) | {
+            "accuracy": stats.accuracy,
+            "numeric_accuracy": stats.numeric_accuracy,
+            "average_elapsed_seconds": _average_elapsed_seconds(predictions),
+        },
+        "predictions": predictions,
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _average_elapsed_seconds(predictions: list[dict[str, Any]]) -> float:
+    values = [float(prediction["elapsed_seconds"]) for prediction in predictions if "elapsed_seconds" in prediction]
+    return sum(values) / len(values) if values else 0.0
 
 
 if __name__ == "__main__":

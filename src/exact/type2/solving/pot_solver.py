@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import re
 
 from exact.config import Settings, get_settings
@@ -10,7 +11,7 @@ from exact.type2.extraction.llm_structured import (
     repair_pot_code,
 )
 from exact.type2.fallback.executor import ExecutionResult, execute_python
-from exact.type2.formulas.knowledge import RetrievedFormulaContext
+from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 from exact.type2.solving.pot_verifier import verify_pot_execution
 
@@ -39,6 +40,7 @@ def solve_with_pot(
     if code_spec is None:
         return _unconfigured_result(extraction)
 
+    code_spec = _canonicalize_formula_ids(code_spec, formula_context)
     execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
     if not execution.ok:
         try:
@@ -53,6 +55,7 @@ def solve_with_pot(
         if repaired is None:
             return _failed_result(extraction, execution.error or "execution failed")
         code_spec = repaired
+        code_spec = _canonicalize_formula_ids(code_spec, formula_context)
         execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
 
     if not execution.ok:
@@ -64,6 +67,7 @@ def solve_with_pot(
         unit,
         code_spec.formula_ids_used,
         formula_context.formula_ids,
+        magnitude_target=extraction.target in {"force", "electric_field"},
     )
     if verified.error is not None:
         return Type2SolveResult(
@@ -113,6 +117,13 @@ def _execute_code_spec(spec: PotCodeSpec, timeout_seconds: float) -> ExecutionRe
     return execute_python(code, timeout_seconds=timeout_seconds)
 
 
+def _canonicalize_formula_ids(spec: PotCodeSpec, formula_context: RetrievedFormulaContext) -> PotCodeSpec:
+    canonical_ids = canonicalize_formula_ids(spec.formula_ids_used, formula_context.summaries)
+    if canonical_ids == spec.formula_ids_used:
+        return spec
+    return spec.model_copy(update={"formula_ids_used": canonical_ids})
+
+
 def _strip_code_fence(code: str) -> str:
     text = code.strip()
     match = re.fullmatch(r"```(?:python)?\s*(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
@@ -122,7 +133,81 @@ def _strip_code_fence(code: str) -> str:
 
 
 def _prepare_generated_code(code: str) -> str:
-    return _remove_unused_optional_imports(_normalize_pint_prefixes(_strip_code_fence(code)))
+    stripped = _strip_code_fence(code)
+    normalized = _normalize_pint_prefixes(stripped)
+    normalized = _normalize_bare_pint_unit_aliases(normalized)
+    normalized = _normalize_pint_constants(normalized)
+    normalized = _rewrite_sqrt_calls_for_pint_quantities(normalized)
+    return _remove_unused_optional_imports(normalized)
+
+
+def _normalize_bare_pint_unit_aliases(code: str) -> str:
+    """Repair common LLM unit aliases inside Pint expressions."""
+
+    replacements = {
+        "m": "ureg.meter",
+        "s": "ureg.second",
+        "kg": "ureg.kilogram",
+        "C": "ureg.coulomb",
+        "N": "ureg.newton",
+        "J": "ureg.joule",
+        "V": "ureg.volt",
+        "A": "ureg.ampere",
+        "ohm": "ureg.ohm",
+    }
+    pattern = re.compile(
+        r"(?P<op>[*/])\s*(?P<unit>" + "|".join(map(re.escape, replacements)) + r")\b"
+        r"(?P<power>\s*\*\*\s*[-+]?\d+)?"
+    )
+
+    def replace(match: re.Match[str]) -> str:
+        unit = match.group("unit")
+        return f"{match.group('op')} {replacements[unit]}{match.group('power') or ''}"
+
+    return pattern.sub(replace, code)
+
+
+def _normalize_pint_constants(code: str) -> str:
+    coulomb_constant = "8.9875517923e9 * ureg.newton * ureg.meter ** 2 / ureg.coulomb ** 2"
+    code = code.replace("ureg.constants.Coulomb_constant", f"({coulomb_constant})")
+    code = code.replace("ureg.constants.coulomb_constant", f"({coulomb_constant})")
+    return code
+
+
+def _rewrite_sqrt_calls_for_pint_quantities(code: str) -> str:
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return code
+
+    rewritten = _SqrtToPower().visit(tree)
+    ast.fix_missing_locations(rewritten)
+    try:
+        return ast.unparse(rewritten)
+    except Exception:
+        return code
+
+
+class _SqrtToPower(ast.NodeTransformer):
+    def visit_Call(self, node: ast.Call):
+        self.generic_visit(node)
+        if len(node.args) != 1 or node.keywords:
+            return node
+        if _is_sqrt_call(node.func):
+            return ast.BinOp(
+                left=node.args[0],
+                op=ast.Pow(),
+                right=ast.Constant(value=0.5),
+            )
+        return node
+
+
+def _is_sqrt_call(func: ast.expr) -> bool:
+    if isinstance(func, ast.Attribute):
+        return func.attr == "sqrt" and isinstance(func.value, ast.Name) and func.value.id in {"sympy", "sp"}
+    if isinstance(func, ast.Name):
+        return func.id == "sqrt"
+    return False
 
 
 def _remove_unused_optional_imports(code: str) -> str:
@@ -172,11 +257,13 @@ def _build_solver_context(
         f"- {key}: {quantity.value} ({quantity.evidence})"
         for key, quantity in extraction.quantities.items()
     )
+    allowed_ids = "\n- ".join(formula_context.formula_ids) if formula_context.formula_ids else "None"
     return (
         f"Extraction:\n"
         f"- kind: {extraction.kind.value}\n"
         f"- target: {extraction.target}\n"
         f"- quantities:\n{quantities or '- none'}\n\n"
+        f"Allowed formula IDs:\n- {allowed_ids}\n\n"
         f"Retrieved formulas:\n{formula_context.context}"
     )
 

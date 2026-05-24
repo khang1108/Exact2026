@@ -7,6 +7,7 @@ import asyncio
 import ast
 import inspect
 import json
+import re
 from typing import Any, Iterable
 from openai import APIStatusError, AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
@@ -16,6 +17,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 from exact.config import Settings, get_settings
+from exact.json_utils import parse_json_object
 
 class LLMClient:
     """
@@ -35,8 +37,9 @@ class LLMClient:
         model: str = "gpt-4o-mini",
         timeout: float = 60.0,
         max_retries: int = 2,
-    ):
+        ):
         self.model = model
+        self.max_retries = max_retries
         self.client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
@@ -61,25 +64,29 @@ class LLMClient:
         Returns:
             Một dictionary chứa kết quả từ LLM.
         """
-        try:
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                response_format={"type": "json_object"},
-            )
-        except APIStatusError as exc:
-            recovered = _recover_failed_generation_json(exc)
-            if recovered is not None:
-                return recovered
-            raise
+        for attempt in range(self.max_retries + 1):
+            try:
+                response = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    response_format={"type": "json_object"},
+                )
+                break
+            except APIStatusError as exc:
+                recovered = _recover_failed_generation_json(exc)
+                if recovered is not None:
+                    return recovered
+                if not _should_retry_api_error(exc, attempt, self.max_retries):
+                    raise
+                await asyncio.sleep(_api_retry_delay_seconds(exc, attempt))
 
         text = response.choices[0].message.content or "{}"
 
         try:
-            return json.loads(text)
-        except json.JSONDecodeError as exc:
+            return parse_json_object(text)
+        except ValueError as exc:
             raise ValueError(f"LLM returned invalid JSON: {text}") from exc
 
     async def complete_as(
@@ -260,7 +267,7 @@ class LocalJsonClient:
             messages=list(messages),
             max_new_tokens=max_tokens,
         )
-        return _parse_json_object(text)
+        return parse_json_object(text)
 
 
 def build_json_client_from_settings(settings: Settings | None = None) -> Any | None:
@@ -298,15 +305,7 @@ def _torch_dtype(name: str):
 
 
 def _parse_json_object(text: str) -> dict[str, Any]:
-    text = text.strip()
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end == -1 or end < start:
-        raise ValueError(f"LLM output did not contain a JSON object: {text}")
-    parsed = json.loads(text[start : end + 1])
-    if not isinstance(parsed, dict):
-        raise ValueError("LLM JSON output must be an object")
-    return parsed
+    return parse_json_object(text)
 
 
 def _recover_failed_generation_json(exc: APIStatusError) -> dict[str, Any] | None:
@@ -318,6 +317,20 @@ def _recover_failed_generation_json(exc: APIStatusError) -> dict[str, Any] | Non
         if recovered is not None:
             return recovered
     return None
+
+
+def _should_retry_api_error(exc: APIStatusError, attempt: int, max_retries: int) -> bool:
+    if attempt >= max_retries:
+        return False
+    return getattr(exc, "status_code", None) == 429
+
+
+def _api_retry_delay_seconds(exc: APIStatusError, attempt: int) -> float:
+    text = str(exc)
+    match = re.search(r"try again in\s+([0-9.]+)s", text, flags=re.IGNORECASE)
+    if match:
+        return min(max(float(match.group(1)) + 0.25, 0.25), 10.0)
+    return min(0.5 * (2**attempt), 10.0)
 
 
 def _error_payload_candidates(exc: APIStatusError) -> list[object]:

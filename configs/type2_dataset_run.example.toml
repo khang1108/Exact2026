@@ -19,10 +19,10 @@ progress_every = 1
 # Type 2 is PoT-first: retrieve formulas, ask the LLM to generate Pint code,
 # execute in the sandbox, verify answer/unit/formula IDs, then generate final
 # evidence. A real LLM backend is required.
-backend = "groq"
+backend = "ollama"
 enabled = true
-model = "llama-3.1-8b-instant"
-api_key_env = "GROQ_API_KEY"
+model = "ministral-3:8b-cloud"
+api_key_env = ""
 
 max_tokens = 512
 temperature = 0.0
@@ -30,8 +30,9 @@ top_p = 1.0
 timeout_seconds = 60.0
 max_retries = 2
 
-# Groq uses https://api.groq.com/openai/v1 by default.
-base_url = ""
+# Ollama local daemon provides an OpenAI-compatible endpoint. Cloud models still
+# go through the local Ollama daemon after `ollama signin`.
+base_url = "http://127.0.0.1:11434/v1"
 api_key = ""
 
 # For ollama:
@@ -83,7 +84,7 @@ use_llm_formula_selection = false
 use_pot_solver = true
 # false skips the final LLM explanation/evidence call after verified code execution.
 # The output still includes answer, unit, confidence, and a compact code explanation.
-generate_final_explanation = false
+generate_final_explanation = true
 
 [evaluation]
 # Numerical answers are compared after unit conversion when possible.
@@ -94,7 +95,7 @@ report_path = "artifacts/reports/type2_eval_report.json"
 errors_path = "artifacts/reports/type2_eval_errors.csv"
 
 [model_pull]
-enabled = true
+enabled = false
 revision = "main"
 cache_dir = ""
 local_dir = ""

@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     )
     default_seed: int = 42
 
-    llm_provider: Literal["openai", "anthropic", "groq", "local"] = "local"
+    llm_provider: Literal["openai", "anthropic", "groq", "ollama", "local"] = "local"
     llm_model: str = Field(
         default="Qwen/Qwen2.5-7B-Instruct",
         validation_alias=AliasChoices("EXACT_LLM_MODEL", "EXACT_MODEL_ID"),
