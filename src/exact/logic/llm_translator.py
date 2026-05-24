@@ -16,6 +16,9 @@ from exact.config import Settings, get_settings
 from exact.logic.ir import Atom, Fact, ParsedPremise, Query, Rule
 from exact.logic.parser import atom_from_text, parse_premise_to_ir, parse_question_to_query
 from exact.llm_client import LLMClient
+from exact.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class JsonLLMClient(Protocol):
@@ -87,12 +90,21 @@ def translate_with_llm(
 
     settings = settings or get_settings()
     client = llm_client or LLMClient.from_settings(settings)
+    messages = _build_messages(premises, question)
+    logger.info(
+        "Starting LLM translation: premises=%s, question_chars=%s, max_tokens=%s",
+        len(premises),
+        len(question),
+        settings.llm_max_tokens,
+    )
     raw = client.complete_json_sync(
-        messages=_build_messages(premises, question),
+        messages=messages,
         temperature=settings.llm_temperature,
         max_tokens=settings.llm_max_tokens,
     )
+    logger.info("Validating LLM translation schema")
     spec = TranslationSpec.model_validate(raw)
+    logger.info("Converting LLM translation to IR")
     return _spec_to_ir(spec, premises, question)
 
 
@@ -101,6 +113,7 @@ def translate_with_fallback(
     question: str,
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    allow_heuristic_fallback: bool = True,
 ) -> tuple[tuple[ParsedPremise, ...], Query, tuple[str, ...]]:
     """Try LLM translation, then fall back to the local parser with warnings."""
 
@@ -110,8 +123,13 @@ def translate_with_fallback(
             parsed, query = translate_with_llm(premises, question, llm_client, settings)
             return parsed, query, ()
         except Exception as exc:
+            if not allow_heuristic_fallback:
+                raise RuntimeError(f"LLM translation failed and fallback is disabled: {exc}") from exc
             warnings = (f"LLM translation failed; heuristic parser used: {exc}",)
             return _heuristic_translation(premises, question, warnings)
+
+    if not allow_heuristic_fallback:
+        raise RuntimeError("No LLM client configured and fallback is disabled")
 
     return _heuristic_translation(
         premises,

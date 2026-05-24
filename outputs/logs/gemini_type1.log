@@ -1,0 +1,14 @@
+2026-05-23 13:30:45 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=openai, model=gemini-2.0-flash, llm_enabled=True, require_llm=True, instances=10
+2026-05-23 13:30:45 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 13:30:48 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.480022 seconds
+2026-05-23 13:30:49 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.883083 seconds
+2026-05-23 13:30:52 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.847625 seconds
+2026-05-23 13:32:57 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=openai, model=gemini-2.0-flash, llm_enabled=True, require_llm=True, instances=10
+2026-05-23 13:32:57 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 13:32:58 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.446254 seconds
+2026-05-23 13:32:59 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.863616 seconds
+2026-05-23 13:33:00 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.643167 seconds
+2026-05-23 13:36:12 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=openai, model=gemini-2.5-flash, llm_enabled=True, require_llm=True, instances=10
+2026-05-23 13:36:12 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 13:42:16 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=openai, model=gemini-2.5-flash, llm_enabled=True, require_llm=True, instances=10
+2026-05-23 13:42:16 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline

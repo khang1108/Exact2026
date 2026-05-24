@@ -37,7 +37,7 @@ def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
 
     try:
         if route.task_type == TaskType.TYPE1_LOGIC:
-            return run_type1_pipeline(payload)
+            return run_type1_pipeline(payload, question_type=route.question_type)
         return run_type2_pipeline(payload)
     except Exception as exc:
         logger.error("Prediction failed", exc_info=True)

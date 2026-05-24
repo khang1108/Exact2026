@@ -86,26 +86,104 @@ def derive_closure(kb: KnowledgeBase) -> tuple[set[Atom], dict[Atom, ProofStep]]
     while changed:
         changed = False
         for rule in kb.rules:
-            if rule.conclusion in known:
-                continue
-            if all(condition in known for condition in rule.conditions):
-                known.add(rule.conclusion)
+            for binding, parents in _match_conditions(rule.conditions, tuple(known)):
+                conclusion = apply_subst(rule.conclusion, binding)
+                if not _is_ground(conclusion) or conclusion in known:
+                    continue
+
+                known.add(conclusion)
                 parent_premises: list[int] = [rule.source_idx]
-                for condition in rule.conditions:
-                    parent_premises.extend(proofs[condition].used_premises)
-                proofs[rule.conclusion] = ProofStep(
-                    derived=rule.conclusion,
+                for parent in parents:
+                    parent_premises.extend(proofs[parent].used_premises)
+                proofs[conclusion] = ProofStep(
+                    derived=conclusion,
                     used_premises=tuple(sorted(set(parent_premises))),
                     rule_idx=rule.source_idx,
-                    parents=rule.conditions,
+                    parents=parents,
                     natural_language=(
-                        f"Premise {rule.source_idx + 1} derives {rule.conclusion.display()} "
-                        f"when {', '.join(parent.display() for parent in rule.conditions)} hold."
+                        f"Premise {rule.source_idx + 1} derives {conclusion.display()} "
+                        f"when {', '.join(parent.display() for parent in parents)} hold."
                     ),
                 )
                 changed = True
 
     return known, proofs
+
+
+def is_variable(term: str) -> bool:
+    return term.startswith("?")
+
+
+def unify(
+    pattern: Atom,
+    ground_fact: Atom,
+    subst: dict[str, str] | None = None,
+) -> dict[str, str] | None:
+    if (
+        pattern.pred != ground_fact.pred
+        or pattern.negated != ground_fact.negated
+        or len(pattern.args) != len(ground_fact.args)
+    ):
+        return None
+
+    bindings = dict(subst or {})
+    for pattern_term, fact_term in zip(pattern.args, ground_fact.args, strict=True):
+        if is_variable(pattern_term):
+            resolved = _resolve_term(pattern_term, bindings)
+            if resolved != pattern_term:
+                if resolved != fact_term:
+                    return None
+            else:
+                bindings[pattern_term] = fact_term
+        elif pattern_term != fact_term:
+            return None
+
+    return bindings
+
+
+def apply_subst(atom: Atom, subst: dict[str, str]) -> Atom:
+    return Atom(
+        pred=atom.pred,
+        args=tuple(_resolve_term(arg, subst) for arg in atom.args),
+        negated=atom.negated,
+        text=atom.text,
+    )
+
+
+def _match_conditions(
+    conditions: tuple[Atom, ...],
+    known: tuple[Atom, ...],
+    subst: dict[str, str] | None = None,
+    parents: tuple[Atom, ...] = (),
+):
+    if not conditions:
+        yield dict(subst or {}), parents
+        return
+
+    current, *remaining = conditions
+    for candidate in known:
+        next_subst = unify(current, candidate, subst)
+        if next_subst is None:
+            continue
+        grounded_parent = apply_subst(current, next_subst)
+        if grounded_parent != candidate:
+            continue
+        yield from _match_conditions(tuple(remaining), known, next_subst, (*parents, candidate))
+
+
+def _is_ground(atom: Atom) -> bool:
+    return all(not is_variable(arg) for arg in atom.args)
+
+
+def _resolve_term(term: str, subst: dict[str, str]) -> str:
+    seen: set[str] = set()
+    while is_variable(term) and term in subst and term not in seen:
+        seen.add(term)
+        next_term = subst[term]
+        if next_term == term:
+            break
+        term = next_term
+    return term
 
 
 def _trace_proof(target: Atom, proofs: dict[Atom, ProofStep]) -> list[ProofStep]:

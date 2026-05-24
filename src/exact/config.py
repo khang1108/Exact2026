@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         default=False,
         validation_alias=AliasChoices("EXACT_MOCK_LLM", "MOCK_LLM"),
     )
-    llm_max_tokens: int = Field(default=512, ge=1, validation_alias="EXACT_MAX_NEW_TOKENS")
+    llm_max_tokens: int = Field(default=2048, ge=1, validation_alias="EXACT_MAX_NEW_TOKENS")
     llm_temperature: float = Field(
         default=0.0,
         ge=0.0,

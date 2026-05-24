@@ -1,0 +1,142 @@
+2026-05-23 13:47:57 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=openai, model=gemini-2.5-flash, llm_enabled=True, require_llm=True, instances=10
+2026-05-23 13:47:57 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 15:43:22 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=openai, model=qwen3-8b, llm_enabled=True, require_llm=True, max_tokens=409, instances=10
+2026-05-23 15:43:22 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 16:29:11 | WARNING  | huggingface_hub.utils._http | request_id=- | task_type=- | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-23 16:30:18 | WARNING  | huggingface_hub.utils._http | request_id=- | task_type=- | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-23 16:38:21 | WARNING  | accelerate.big_modeling | request_id=- | task_type=- | Some parameters are on the meta device because they were offloaded to the cpu and disk.
+2026-05-23 16:38:21 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-7B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=10
+2026-05-23 16:38:21 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 16:49:20 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local tokenizer for Qwen/Qwen2.5-7B-Instruct
+2026-05-23 16:49:23 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local model Qwen/Qwen2.5-7B-Instruct with {'dtype': torch.float32, 'device_map': 'auto'}
+2026-05-23 16:49:40 | WARNING  | accelerate.big_modeling | request_id=- | task_type=- | Some parameters are on the meta device because they were offloaded to the disk and cpu.
+2026-05-23 16:49:40 | INFO     | exact.llm_client | request_id=- | task_type=- | Loaded local model Qwen/Qwen2.5-7B-Instruct in 16.7s
+2026-05-23 16:49:40 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-7B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=10
+2026-05-23 16:49:40 | INFO     | __main__ | request_id=- | task_type=- | processing 1/10 id=logic_0000_00 route=type1_logic
+2026-05-23 16:49:40 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 16:49:40 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-23 16:49:40 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 16:49:40 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=515, max_new_tokens=8192
+2026-05-23 16:56:30 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local tokenizer for Qwen/Qwen2.5-7B-Instruct
+2026-05-23 16:56:33 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local model Qwen/Qwen2.5-7B-Instruct with {'dtype': torch.float32, 'device_map': 'auto'}
+2026-05-23 16:56:48 | WARNING  | accelerate.big_modeling | request_id=- | task_type=- | Some parameters are on the meta device because they were offloaded to the cpu and disk.
+2026-05-23 16:56:48 | INFO     | exact.llm_client | request_id=- | task_type=- | Loaded local model Qwen/Qwen2.5-7B-Instruct in 15.6s
+2026-05-23 16:56:48 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-7B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=1
+2026-05-23 16:56:48 | INFO     | __main__ | request_id=- | task_type=- | processing 1/1 id=logic_0000_00 route=type1_logic
+2026-05-23 16:56:48 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 16:56:48 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-23 16:56:48 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 16:56:48 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=515, max_new_tokens=8192
+2026-05-23 16:57:47 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local tokenizer for Qwen/Qwen2.5-7B-Instruct
+2026-05-23 16:57:49 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local model Qwen/Qwen2.5-7B-Instruct with {'dtype': torch.float32, 'device_map': 'auto'}
+2026-05-23 16:58:03 | WARNING  | accelerate.big_modeling | request_id=- | task_type=- | Some parameters are on the meta device because they were offloaded to the cpu and disk.
+2026-05-23 16:58:03 | INFO     | exact.llm_client | request_id=- | task_type=- | Loaded local model Qwen/Qwen2.5-7B-Instruct in 14.1s
+2026-05-23 16:58:03 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-7B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=1
+2026-05-23 16:58:03 | INFO     | __main__ | request_id=- | task_type=- | processing 1/1 id=logic_0000_00 route=type1_logic
+2026-05-23 16:58:03 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 16:58:03 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-23 16:58:03 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 16:58:03 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=515, max_new_tokens=8192
+2026-05-23 16:58:21 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local tokenizer for Qwen/Qwen2.5-7B-Instruct
+2026-05-23 16:58:24 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local model Qwen/Qwen2.5-7B-Instruct with {'dtype': torch.float32, 'device_map': 'auto'}
+2026-05-23 16:58:40 | WARNING  | accelerate.big_modeling | request_id=- | task_type=- | Some parameters are on the meta device because they were offloaded to the cpu and disk.
+2026-05-23 16:58:40 | INFO     | exact.llm_client | request_id=- | task_type=- | Loaded local model Qwen/Qwen2.5-7B-Instruct in 15.5s
+2026-05-23 16:58:40 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-7B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=1
+2026-05-23 16:58:40 | INFO     | __main__ | request_id=- | task_type=- | processing 1/1 id=logic_0000_00 route=type1_logic
+2026-05-23 16:58:40 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 16:58:40 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-23 16:58:40 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 16:58:40 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=515, max_new_tokens=8192
+2026-05-23 17:02:10 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local tokenizer for Qwen/Qwen2.5-1.5B-Instruct
+2026-05-23 17:02:19 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local model Qwen/Qwen2.5-1.5B-Instruct with {'dtype': torch.float32, 'device_map': 'auto'}
+2026-05-23 17:03:45 | INFO     | exact.llm_client | request_id=- | task_type=- | Loaded local model Qwen/Qwen2.5-1.5B-Instruct in 86.0s
+2026-05-23 17:03:45 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-1.5B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=1
+2026-05-23 17:03:45 | INFO     | __main__ | request_id=- | task_type=- | processing 1/1 id=logic_0000_00 route=type1_logic
+2026-05-23 17:03:45 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:03:45 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-23 17:03:45 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:03:45 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=515, max_new_tokens=8192
+2026-05-23 17:05:00 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=168, elapsed=75.5s
+2026-05-23 17:05:00 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:05:00 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:05:00 | INFO     | __main__ | request_id=- | task_type=- | wrote 1 predictions to outputs/logic/pred.json
+2026-05-23 17:06:20 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local tokenizer for Qwen/Qwen2.5-1.5B-Instruct
+2026-05-23 17:06:23 | INFO     | exact.llm_client | request_id=- | task_type=- | Loading local model Qwen/Qwen2.5-1.5B-Instruct with {'dtype': torch.float32, 'device_map': 'auto'}
+2026-05-23 17:06:25 | INFO     | exact.llm_client | request_id=- | task_type=- | Loaded local model Qwen/Qwen2.5-1.5B-Instruct in 2.2s
+2026-05-23 17:06:25 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-1.5B-Instruct, llm_enabled=True, require_llm=True, max_tokens=8192, instances=10
+2026-05-23 17:06:25 | INFO     | __main__ | request_id=- | task_type=- | processing 1/10 id=logic_0000_00 route=type1_logic
+2026-05-23 17:06:25 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:06:25 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-23 17:06:25 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:06:25 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=515, max_new_tokens=8192
+2026-05-23 17:07:42 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=168, elapsed=76.7s
+2026-05-23 17:07:42 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:07:42 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:07:42 | INFO     | __main__ | request_id=- | task_type=- | processing 2/10 id=logic_0000_01 route=type1_logic
+2026-05-23 17:07:42 | INFO     | exact.logic.pipeline | request_id=logic_0000_01 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:07:42 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=130, max_tokens=8192
+2026-05-23 17:07:42 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:07:42 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=458, max_new_tokens=8192
+2026-05-23 17:08:36 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=119, elapsed=54.3s
+2026-05-23 17:08:36 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:08:36 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:08:36 | INFO     | __main__ | request_id=- | task_type=- | processing 3/10 id=logic_0001_00 route=type1_logic
+2026-05-23 17:08:36 | INFO     | exact.logic.pipeline | request_id=logic_0001_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:08:36 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=317, max_tokens=8192
+2026-05-23 17:08:36 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:08:36 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=445, max_new_tokens=8192
+2026-05-23 17:10:55 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=329, elapsed=139.2s
+2026-05-23 17:10:55 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:10:55 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:10:55 | INFO     | __main__ | request_id=- | task_type=- | processing 4/10 id=logic_0001_01 route=type1_logic
+2026-05-23 17:10:55 | INFO     | exact.logic.pipeline | request_id=logic_0001_01 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:10:55 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=78, max_tokens=8192
+2026-05-23 17:10:55 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:10:55 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=399, max_new_tokens=8192
+2026-05-23 17:12:20 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=194, elapsed=84.8s
+2026-05-23 17:12:20 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:12:20 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:12:20 | INFO     | __main__ | request_id=- | task_type=- | processing 5/10 id=logic_0002_00 route=type1_logic
+2026-05-23 17:12:20 | INFO     | exact.logic.pipeline | request_id=logic_0002_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:12:20 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=311, max_tokens=8192
+2026-05-23 17:12:20 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:12:20 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=444, max_new_tokens=8192
+2026-05-23 17:14:48 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=339, elapsed=147.9s
+2026-05-23 17:14:48 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:14:48 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:14:48 | INFO     | __main__ | request_id=- | task_type=- | processing 6/10 id=logic_0002_01 route=type1_logic
+2026-05-23 17:14:48 | INFO     | exact.logic.pipeline | request_id=logic_0002_01 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:14:48 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=78, max_tokens=8192
+2026-05-23 17:14:48 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:14:48 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=399, max_new_tokens=8192
+2026-05-23 17:16:11 | INFO     | exact.llm_client | request_id=- | task_type=- | Finished local generation: output_tokens=194, elapsed=83.4s
+2026-05-23 17:16:11 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Validating LLM translation schema
+2026-05-23 17:16:11 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Converting LLM translation to IR
+2026-05-23 17:16:11 | INFO     | __main__ | request_id=- | task_type=- | processing 7/10 id=logic_0003_00 route=type1_logic
+2026-05-23 17:16:11 | INFO     | exact.logic.pipeline | request_id=logic_0003_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-23 17:16:11 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=7, question_chars=262, max_tokens=8192
+2026-05-23 17:16:11 | INFO     | exact.llm_client | request_id=- | task_type=- | Tokenizing local LLM prompt
+2026-05-23 17:16:11 | INFO     | exact.llm_client | request_id=- | task_type=- | Starting local generation: input_tokens=366, max_new_tokens=8192
+2026-05-24 14:24:43 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-1.5B-Instruct, llm_enabled=False, require_llm=False, max_tokens=8192, instances=3
+2026-05-24 14:24:43 | INFO     | __main__ | request_id=- | task_type=- | processing 1/3 id=logic_0000_00 route=type1_logic
+2026-05-24 14:24:43 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-24 14:24:43 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-24 14:24:43 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.460330 seconds
+2026-05-24 14:24:44 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.969440 seconds
+2026-05-24 14:24:45 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.869892 seconds
+2026-05-24 14:24:47 | INFO     | __main__ | request_id=- | task_type=- | processed 1/3 answer=A error=No MCQ option was symbolically entailed.
+2026-05-24 14:24:47 | INFO     | __main__ | request_id=- | task_type=- | processing 2/3 id=logic_0000_01 route=type1_logic
+2026-05-24 14:24:47 | INFO     | exact.logic.pipeline | request_id=logic_0000_01 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-24 14:24:47 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=130, max_tokens=8192
+2026-05-24 14:24:47 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.415177 seconds
+2026-05-24 14:24:47 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.966374 seconds
+2026-05-24 14:24:48 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.679208 seconds
+2026-05-24 14:24:50 | INFO     | __main__ | request_id=- | task_type=- | processed 2/3 answer=Unknown error=LLM translation failed; heuristic parser used: Connection error.
+2026-05-24 14:24:50 | INFO     | __main__ | request_id=- | task_type=- | processing 3/3 id=logic_0001_00 route=type1_logic
+2026-05-24 14:24:50 | INFO     | exact.logic.pipeline | request_id=logic_0001_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-24 14:24:50 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=317, max_tokens=8192
+2026-05-24 14:24:50 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.455927 seconds
+2026-05-24 14:24:50 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.842405 seconds
+2026-05-24 14:24:51 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.772109 seconds
+2026-05-24 14:24:53 | INFO     | __main__ | request_id=- | task_type=- | processed 3/3 answer=A error=No MCQ option was symbolically entailed.
+2026-05-24 14:24:53 | INFO     | __main__ | request_id=- | task_type=- | wrote 3 predictions to outputs/logic/mcq_smoke.json

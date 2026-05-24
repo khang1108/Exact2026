@@ -4,7 +4,9 @@ Một module cung cấp một lớp để có thể tạo một LLMClient dùng 
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 import json
+import time
 from typing import Any, Iterable
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
@@ -14,6 +16,9 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 from exact.config import Settings, get_settings
+from exact.logger import get_logger
+
+logger = get_logger(__name__)
 
 class LLMClient:
     """
@@ -67,12 +72,13 @@ class LLMClient:
             response_format={"type": "json_object"},
         )
 
-        text = response.choices[0].message.content or "{}"
+        choice = response.choices[0]
+        text = choice.message.content or ""
 
         try:
-            return json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"LLM returned invalid JSON: {text}") from exc
+            return _parse_json_object(text)
+        except ValueError as exc:
+            raise ValueError(f"LLM returned invalid JSON with finish_reason={choice.finish_reason}: {text}") from exc
 
     async def complete_as(
         self,
@@ -132,38 +138,47 @@ class LLMClient:
 
 class LocalClient:
     def __init__(self, model_name: str):
+        logger.info("Loading local tokenizer for %s", model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name,
-            torch_dtype=torch.float16,
-            device_map="auto",
-        )
+        model_kwargs: dict[str, Any] = {"dtype": _preferred_torch_dtype()}
+        if importlib.util.find_spec("accelerate") is not None:
+            model_kwargs["device_map"] = "auto"
 
-    def complete(self, messages: list[dict], max_new_tokens: int = 512) -> str:
+        logger.info("Loading local model %s with %s", model_name, model_kwargs)
+        started_at = time.monotonic()
+        self.model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
+        if "device_map" not in model_kwargs and torch.cuda.is_available():
+            self.model = self.model.to("cuda")
+        logger.info("Loaded local model %s in %.1fs", model_name, time.monotonic() - started_at)
+
+    def complete(self, messages: list[dict], max_new_tokens: int = 2048) -> str:
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
             add_generation_prompt=True,
         )
 
+        logger.info("Tokenizing local LLM prompt")
         inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
+        input_length = inputs["input_ids"].shape[1]
+        logger.info("Starting local generation: input_tokens=%s, max_new_tokens=%s", input_length, max_new_tokens)
+        started_at = time.monotonic()
 
-        # Truyền đích danh input_ids và attention_mask thay vì dùng **inputs
         outputs = self.model.generate(
             input_ids=inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            # Gán pad_token_id bằng eos_token_id để khắc phục lỗi thiếu padding token
-            pad_token_id=self.tokenizer.eos_token_id, 
+            pad_token_id=self.tokenizer.eos_token_id,
         )
 
-        # Decode tensor kết quả thành chuỗi văn bản (cắt bỏ phần prompt đầu vào)
-        input_length = inputs["input_ids"].shape[1]
         generated_tokens = outputs[0][input_length:]
-        
-        response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
-        return response
+        logger.info(
+            "Finished local generation: output_tokens=%s, elapsed=%.1fs",
+            len(generated_tokens),
+            time.monotonic() - started_at,
+        )
+        return self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
 
 
 class LocalJsonClient:
@@ -205,9 +220,20 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     text = text.strip()
     start = text.find("{")
     end = text.rfind("}")
-    if start == -1 or end == -1 or end < start:
+    if start == -1:
         raise ValueError(f"LLM output did not contain a JSON object: {text}")
-    parsed = json.loads(text[start : end + 1])
+    if end == -1 or end < start:
+        raise ValueError(f"LLM output contained incomplete JSON; increase EXACT_MAX_NEW_TOKENS: {text}")
+    try:
+        parsed = json.loads(text[start : end + 1])
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"LLM returned invalid JSON: {text}") from exc
     if not isinstance(parsed, dict):
         raise ValueError("LLM JSON output must be an object")
     return parsed
+
+
+def _preferred_torch_dtype() -> torch.dtype:
+    if torch.cuda.is_available():
+        return torch.float16
+    return torch.float32

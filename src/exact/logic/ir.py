@@ -18,7 +18,7 @@ class Atom:
     pred: str
     args: tuple[str, ...] = ()
     negated: bool = False
-    text: str | None = None
+    text: str | None = field(default=None, compare=False)
 
     def positive(self) -> "Atom":
         return Atom(pred=self.pred, args=self.args, negated=False, text=self.text)
