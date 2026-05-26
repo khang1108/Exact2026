@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import re
 
-from exact.datasets.schemas import PredictionRequest, QuestionType, TaskType
+from exact.common.schemas import PredictionRequest, QuestionType, TaskType
 
 _OPTION_LABEL_RE = re.compile(r"(?:^|\n)\s*([A-D])\.\s+", re.IGNORECASE)
 _YNU_STEM_RE = re.compile(
@@ -58,6 +58,15 @@ class TaskRouter:
 
 
 def detect_question_type(request: PredictionRequest) -> QuestionType:
+    """
+    Dùng để xác định loại câu hỏi.
+
+    Args:
+        request (PredictionRequest): Là một request được truyền tới.
+
+    Returns:
+        QuestionType: Là loại câu hỏi vừa xác định được (MCQ, YES_NO_UNCERTAIN, OPEN_ENDED)
+    """
     question = request.question or ""
 
     # Question shape belongs in routing so Type 1 can focus on proving the routed goal type.

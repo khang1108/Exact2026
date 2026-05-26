@@ -17,8 +17,8 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from exact.config import get_settings
-from exact.datasets.schemas import PredictionRequest, TaskType, to_official_response
+from exact.config import Settings, get_settings
+from exact.common.schemas import PredictionRequest, TaskType, to_official_response
 from exact.llm_client import build_json_client_from_settings
 from exact.logger import setup_logging
 from exact.logic.llm_translator import JsonLLMClient
@@ -32,6 +32,8 @@ DEFAULT_OUTPUT = Path("artifacts/predictions/predictions.json")
 
 
 def main() -> None:
+    """Run offline predictions from CLI arguments."""
+
     args = parse_args()
     if args.no_llm and args.require_llm:
         raise ValueError("--no-llm and --require-llm cannot be used together")
@@ -42,6 +44,7 @@ def main() -> None:
 
     router = TaskRouter()
     settings = get_settings()
+    pipeline_settings = build_pipeline_settings(settings, no_llm=args.no_llm)
     setup_logging(
         level=settings.log_level,
         log_file=args.log_file,
@@ -78,7 +81,7 @@ def main() -> None:
             response = run_type1_pipeline(
                 request,
                 translator_client=translator_client,
-                settings=settings,
+                settings=pipeline_settings,
                 allow_heuristic_fallback=not args.require_llm,
                 question_type=route.question_type,
             )
@@ -106,11 +109,36 @@ def main() -> None:
     }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    args.output.write_text(
+        json.dumps(output, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
     logger.info("wrote %s predictions to %s", len(predictions), args.output)
 
 
+def build_pipeline_settings(settings: Settings, *, no_llm: bool) -> Settings:
+    """Return pipeline settings that honor runner-level LLM controls.
+
+    The Type 1 translator can infer that an LLM is available from environment
+    settings such as `EXACT_LLM_PROVIDER=local` or `EXACT_LLM_BASE_URL`. When
+    the CLI user passes `--no-llm`, those inference paths must be disabled so
+    the pipeline uses the deterministic heuristic parser only.
+    """
+
+    if not no_llm:
+        return settings
+
+    return settings.model_copy(
+        update={
+            "llm_provider": "openai",
+            "llm_base_url": None,
+        }
+    )
+
+
 def load_instances(path: Path) -> list[dict[str, Any]]:
+    """Load a JSON prediction batch from a list or `instances` object."""
+
     payload = json.loads(path.read_text(encoding="utf-8"))
 
     if isinstance(payload, list):
@@ -127,6 +155,8 @@ def load_instances(path: Path) -> list[dict[str, Any]]:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the prediction runner."""
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -143,6 +173,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def _shorten(text: str, max_len: int = 180) -> str:
+    """Collapse long log snippets to a single bounded line."""
+
     text = " ".join(text.split())
     if len(text) <= max_len:
         return text

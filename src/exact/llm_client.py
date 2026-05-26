@@ -7,22 +7,76 @@ import asyncio
 import importlib.util
 import json
 import time
+from abc import ABC, abstractmethod
 from typing import Any, Iterable
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, ValidationError
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
-import torch
 
 from exact.config import Settings, get_settings
 from exact.logger import get_logger
 
 logger = get_logger(__name__)
 
-class LLMClient:
+
+class BaseJsonLLMClient(ABC):
+    """Common contract for clients that return JSON objects from chat messages."""
+
+    @abstractmethod
+    def complete_json_sync(
+        self,
+        messages: Iterable[ChatCompletionMessageParam],
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> dict[str, Any]:
+        """Synchronously return a JSON object for command-line scripts and sync routes."""
+
+    async def complete_json(
+        self,
+        messages: Iterable[ChatCompletionMessageParam],
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> dict[str, Any]:
+        """Async adapter for sync-first clients."""
+
+        return await asyncio.to_thread(
+            self.complete_json_sync,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+    async def complete_as(
+        self,
+        messages: Iterable[ChatCompletionMessageParam],
+        schema: type[BaseModel],
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> BaseModel:
+        """Return a JSON response validated as a Pydantic model."""
+
+        data = await self.complete_json(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        try:
+            return schema.model_validate(data)
+        except ValidationError as exc:
+            raise ValueError(f"LLM output does not match schema: {exc}") from exc
+
+
+class BaseTextLLMClient(ABC):
+    """Common contract for clients that return plain generated text."""
+
+    @abstractmethod
+    def complete(self, messages: list[dict], max_new_tokens: int = 2048) -> str:
+        """Return generated text for chat messages."""
+
+
+class OpenAICompatibleJsonClient(BaseJsonLLMClient):
     """
-    Một lớp duy nhất tạo LLMClient để gọi các API.
+    JSON client for OpenAI-compatible chat completion APIs.
 
     Args:
         api_key: Khóa API để xác thực với dịch vụ LLM.
@@ -80,27 +134,6 @@ class LLMClient:
         except ValueError as exc:
             raise ValueError(f"LLM returned invalid JSON with finish_reason={choice.finish_reason}: {text}") from exc
 
-    async def complete_as(
-        self,
-        messages: Iterable[ChatCompletionMessageParam],
-        schema: type[BaseModel],
-        temperature: float = 0.0,
-        max_tokens: int = 2048,
-    ) -> BaseModel:
-        """
-        Gọi API của LLM để sinh ra một câu trả lời và xác thực nó theo một schema Pydantic.
-        """
-        data = await self.complete_json(
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-        )
-
-        try:
-            return schema.model_validate(data)
-        except ValidationError as exc:
-            raise ValueError(f"LLM output does not match schema: {exc}") from exc
-
     def complete_json_sync(
         self,
         messages: Iterable[ChatCompletionMessageParam],
@@ -133,11 +166,17 @@ class LLMClient:
             timeout=settings.llm_timeout_seconds,
             max_retries=settings.llm_max_retries,
         )
-        
 
 
-class LocalClient:
+class LLMClient(OpenAICompatibleJsonClient):
+    """Backward-compatible name for the OpenAI-compatible JSON client."""
+
+
+class LocalClient(BaseTextLLMClient):
     def __init__(self, model_name: str):
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
         logger.info("Loading local tokenizer for %s", model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         model_kwargs: dict[str, Any] = {"dtype": _preferred_torch_dtype()}
@@ -181,7 +220,7 @@ class LocalClient:
         return self.tokenizer.decode(generated_tokens, skip_special_tokens=True)
 
 
-class LocalJsonClient:
+class LocalJsonClient(BaseJsonLLMClient):
     """JSON adapter over the direct transformers-based LocalClient."""
 
     def __init__(self, model_name: str):
@@ -200,7 +239,7 @@ class LocalJsonClient:
         return _parse_json_object(text)
 
 
-def build_json_client_from_settings(settings: Settings | None = None) -> Any | None:
+def build_json_client_from_settings(settings: Settings | None = None) -> BaseJsonLLMClient | None:
     """Build a JSON-producing LLM client from runtime settings.
 
     - `llm_provider=local`: load the model directly with transformers.
@@ -233,7 +272,9 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-def _preferred_torch_dtype() -> torch.dtype:
+def _preferred_torch_dtype() -> Any:
+    import torch
+
     if torch.cuda.is_available():
         return torch.float16
     return torch.float32

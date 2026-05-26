@@ -7,7 +7,7 @@ from typing import Any, Iterator
 from pydantic import ValidationError
 
 from exact.datasets.loader import load_logic_dataset, load_physics_dataset, load_records, normalize_record
-from exact.datasets.schemas import PredictionRequest
+from exact.common.schemas import PredictionRequest
 from exact.logger import get_logger
 
 logger = get_logger(__name__)

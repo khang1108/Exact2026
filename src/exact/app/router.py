@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
-from exact.datasets.schemas import (
+from exact.common.schemas import (
     BatchPredictionRequest,
     BatchPredictionResponse,
     PredictionRequest,

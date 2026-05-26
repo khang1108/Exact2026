@@ -12,7 +12,7 @@ import re
 from typing import Any, Protocol
 
 from exact.config import Settings, get_settings
-from exact.datasets.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
+from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
 from exact.logic.explain import explain_result, kb_to_fol_like_text
 from exact.logic.kb import build_kb_from_parsed_premises
 from exact.logic.ir import Atom, SolveResult

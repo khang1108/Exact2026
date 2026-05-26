@@ -140,3 +140,36 @@
 2026-05-24 14:24:51 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.772109 seconds
 2026-05-24 14:24:53 | INFO     | __main__ | request_id=- | task_type=- | processed 3/3 answer=A error=No MCQ option was symbolically entailed.
 2026-05-24 14:24:53 | INFO     | __main__ | request_id=- | task_type=- | wrote 3 predictions to outputs/logic/mcq_smoke.json
+2026-05-25 09:50:05 | INFO     | __main__ | request_id=- | task_type=- | prediction runner: provider=local, model=Qwen/Qwen2.5-1.5B-Instruct, llm_enabled=False, require_llm=False, max_tokens=8192, instances=5
+2026-05-25 09:50:05 | INFO     | __main__ | request_id=- | task_type=- | processing 1/5 id=logic_0000_00 route=type1_logic
+2026-05-25 09:50:05 | INFO     | exact.logic.pipeline | request_id=logic_0000_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-25 09:50:05 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=359, max_tokens=8192
+2026-05-25 09:50:06 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.489337 seconds
+2026-05-25 09:50:06 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.934050 seconds
+2026-05-25 09:50:07 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.747487 seconds
+2026-05-25 09:50:09 | INFO     | __main__ | request_id=- | task_type=- | processing 2/5 id=logic_0000_01 route=type1_logic
+2026-05-25 09:50:09 | INFO     | exact.logic.pipeline | request_id=logic_0000_01 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-25 09:50:09 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=14, question_chars=130, max_tokens=8192
+2026-05-25 09:50:09 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.385629 seconds
+2026-05-25 09:50:10 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.763318 seconds
+2026-05-25 09:50:10 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.672814 seconds
+2026-05-25 09:50:12 | INFO     | __main__ | request_id=- | task_type=- | processing 3/5 id=logic_0001_00 route=type1_logic
+2026-05-25 09:50:12 | INFO     | exact.logic.pipeline | request_id=logic_0001_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-25 09:50:12 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=317, max_tokens=8192
+2026-05-25 09:50:12 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.420484 seconds
+2026-05-25 09:50:12 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.803665 seconds
+2026-05-25 09:50:13 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.698251 seconds
+2026-05-25 09:50:15 | INFO     | __main__ | request_id=- | task_type=- | processing 4/5 id=logic_0001_01 route=type1_logic
+2026-05-25 09:50:15 | INFO     | exact.logic.pipeline | request_id=logic_0001_01 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-25 09:50:15 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=78, max_tokens=8192
+2026-05-25 09:50:15 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.392278 seconds
+2026-05-25 09:50:15 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.768381 seconds
+2026-05-25 09:50:16 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.938864 seconds
+2026-05-25 09:50:18 | INFO     | __main__ | request_id=- | task_type=- | processing 5/5 id=logic_0002_00 route=type1_logic
+2026-05-25 09:50:18 | INFO     | exact.logic.pipeline | request_id=logic_0002_00 | task_type=type1_logic | Start Type 1 pipeline
+2026-05-25 09:50:18 | INFO     | exact.logic.llm_translator | request_id=- | task_type=- | Starting LLM translation: premises=11, question_chars=311, max_tokens=8192
+2026-05-25 09:50:18 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.400256 seconds
+2026-05-25 09:50:19 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 0.905383 seconds
+2026-05-25 09:50:19 | INFO     | openai._base_client | request_id=- | task_type=- | Retrying request to /chat/completions in 1.824616 seconds
+2026-05-25 09:50:21 | INFO     | __main__ | request_id=- | task_type=- | processed 5/5 answer=A error=No MCQ option was symbolically entailed.
+2026-05-25 09:50:21 | INFO     | __main__ | request_id=- | task_type=- | wrote 5 predictions to outputs/logic/e2e_eval_smoke.json
