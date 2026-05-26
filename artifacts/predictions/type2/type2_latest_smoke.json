@@ -1,0 +1,214 @@
+{
+  "config": "configs/type2_dataset_run.example.toml",
+  "source": "src/exact/datasets/exact/Physics_Problems_Text_Only.csv",
+  "count": 5,
+  "format": "exact_predictions",
+  "predictions": [
+    {
+      "answer": "0.045",
+      "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2. Substituting the extracted values gives energy = 0.045 J.",
+      "fol": "W = 1/2 * C * U^2",
+      "cot": [
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
+        "Computed `energy` and converted the result to `J`."
+      ],
+      "premises": [
+        "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+        "C = 100 uF",
+        "U = 30 V"
+      ],
+      "confidence": 0.82,
+      "id": "physics_TD401",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "J",
+      "error": null,
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "0.045",
+        "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2. Substituting the extracted values gives energy = 0.045 J.",
+        "fol": "W = 1/2 * C * U^2",
+        "cot": [
+          "Normalized the physics question and extracted known quantities.",
+          "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
+          "Computed `energy` and converted the result to `J`."
+        ],
+        "premises": [
+          "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+          "C = 100 uF",
+          "U = 30 V"
+        ],
+        "confidence": 0.82
+      },
+      "gold_answer": "0.045",
+      "gold_unit": "J"
+    },
+    {
+      "answer": "0.0001",
+      "explanation": "Capacitance is charge divided by voltage: C = Q / U. Substituting the extracted values gives capacitance = 0.0001 F.",
+      "fol": "C = Q / U",
+      "cot": [
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `C = Q / U` from the capacitance formula bank.",
+        "Computed `capacitance` and converted the result to `F`."
+      ],
+      "premises": [
+        "Capacitance is charge divided by voltage: C = Q / U.",
+        "Q = 3 mC",
+        "U = 30 V"
+      ],
+      "confidence": 0.82,
+      "id": "physics_TD402",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "F",
+      "error": null,
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "0.0001",
+        "explanation": "Capacitance is charge divided by voltage: C = Q / U. Substituting the extracted values gives capacitance = 0.0001 F.",
+        "fol": "C = Q / U",
+        "cot": [
+          "Normalized the physics question and extracted known quantities.",
+          "Selected formula `C = Q / U` from the capacitance formula bank.",
+          "Computed `capacitance` and converted the result to `F`."
+        ],
+        "premises": [
+          "Capacitance is charge divided by voltage: C = Q / U.",
+          "Q = 3 mC",
+          "U = 30 V"
+        ],
+        "confidence": 0.82
+      },
+      "gold_answer": "100",
+      "gold_unit": "μF"
+    },
+    {
+      "answer": "0.005055",
+      "explanation": "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2. Substituting the extracted values gives force = 0.005055 N.",
+      "fol": "F = k * |q1*q2| / r^2",
+      "cot": [
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `F = k * |q1*q2| / r^2` from the electrostatics formula bank.",
+        "Computed `force` and converted the result to `N`."
+      ],
+      "premises": [
+        "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2.",
+        "q1 = 6e-8 C",
+        "q2 = -6e-8 C",
+        "q3 = 6e-8 C",
+        "CA = 5 cm",
+        "CB = 3 cm",
+        "8 cm"
+      ],
+      "confidence": 0.82,
+      "id": "physics_LD001",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "0.005055",
+        "explanation": "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2. Substituting the extracted values gives force = 0.005055 N.",
+        "fol": "F = k * |q1*q2| / r^2",
+        "cot": [
+          "Normalized the physics question and extracted known quantities.",
+          "Selected formula `F = k * |q1*q2| / r^2` from the electrostatics formula bank.",
+          "Computed `force` and converted the result to `N`."
+        ],
+        "premises": [
+          "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2.",
+          "q1 = 6e-8 C",
+          "q2 = -6e-8 C",
+          "q3 = 6e-8 C",
+          "CA = 5 cm",
+          "CB = 3 cm",
+          "8 cm"
+        ],
+        "confidence": 0.82
+      },
+      "gold_answer": "0.05",
+      "gold_unit": "N"
+    },
+    {
+      "answer": "",
+      "explanation": "PoT fallback not configured: No formula matched the extracted target and quantities.",
+      "fol": null,
+      "cot": [
+        "Deterministic solving did not produce a verified answer.",
+        "No LLM client is configured for PoT code generation."
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "physics_LD002",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": null,
+      "error": "type2_pot_not_configured",
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "",
+        "explanation": "PoT fallback not configured: No formula matched the extracted target and quantities.",
+        "fol": null,
+        "cot": [
+          "Deterministic solving did not produce a verified answer.",
+          "No LLM client is configured for PoT code generation."
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "gold_answer": "24.45 × 10^-3",
+      "gold_unit": "N"
+    },
+    {
+      "answer": "14.979253",
+      "explanation": "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2. Substituting the extracted values gives force = 14.979253 N.",
+      "fol": "F = k * |q1*q2| / r^2",
+      "cot": [
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `F = k * |q1*q2| / r^2` from the electrostatics formula bank.",
+        "Computed `force` and converted the result to `N`."
+      ],
+      "premises": [
+        "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2.",
+        "q1 = -3e-6 C",
+        "q2 = 8e-6 C",
+        "q3 = 2e-6 C",
+        "AC = 12 cm",
+        "BC = 16 cm",
+        "20 cm"
+      ],
+      "confidence": 0.82,
+      "id": "physics_LD003",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "14.979253",
+        "explanation": "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2. Substituting the extracted values gives force = 14.979253 N.",
+        "fol": "F = k * |q1*q2| / r^2",
+        "cot": [
+          "Normalized the physics question and extracted known quantities.",
+          "Selected formula `F = k * |q1*q2| / r^2` from the electrostatics formula bank.",
+          "Computed `force` and converted the result to `N`."
+        ],
+        "premises": [
+          "Coulomb's law gives the force magnitude as F = k * |q1*q2| / r^2.",
+          "q1 = -3e-6 C",
+          "q2 = 8e-6 C",
+          "q3 = 2e-6 C",
+          "AC = 12 cm",
+          "BC = 16 cm",
+          "20 cm"
+        ],
+        "confidence": 0.82
+      },
+      "gold_answer": "6.76",
+      "gold_unit": "N"
+    }
+  ]
+}

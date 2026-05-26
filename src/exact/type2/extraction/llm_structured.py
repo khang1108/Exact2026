@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from exact.config import Settings, get_settings
+from exact.llm_client import LLMClient, build_json_client_from_settings
+from exact.prompts.prompts import Type2JsonFewShotPoTPrompt
 from exact.type2.extraction.extractor import normalize_question
-from exact.type2.prompting import Type2JsonFewShotPoTPrompt
 
 
 class JsonClient(Protocol):
@@ -80,12 +82,6 @@ def build_llm_json_client(settings: Settings | None = None) -> JsonClient | None
     settings = settings or get_settings()
     if settings.mock_llm:
         return None
-    if settings.llm_provider == "local" and settings.llm_base_url is None and settings.llm_api_key is None:
-        return None
-    from exact.llm_client import LLMClient, build_json_client_from_settings
-
-    if settings.llm_provider == "local" and settings.llm_base_url is not None:
-        return LLMClient.from_settings(settings)
     try:
         client = build_json_client_from_settings(settings)
     except Exception:
@@ -200,7 +196,7 @@ def generate_final_explanation(
         temperature=settings.llm_temperature,
         max_tokens=settings.llm_max_tokens,
     )
-    return FinalExplanationSpec.model_validate(raw)
+    return _validate_final_explanation_spec(raw)
 
 
 def _build_extraction_messages(question: str):
@@ -373,6 +369,39 @@ def _validate_pot_code_spec(raw: dict[str, Any]) -> PotCodeSpec:
         if recovered is None:
             raise
         return PotCodeSpec.model_validate(recovered)
+
+def _validate_final_explanation_spec(raw: dict[str, Any]) -> FinalExplanationSpec:
+    normalized = _normalize_final_explanation_raw(raw)
+    return FinalExplanationSpec.model_validate(normalized)
+
+
+def _normalize_final_explanation_raw(raw: object) -> object:
+    if not isinstance(raw, dict):
+        return raw
+    normalized = dict(raw)
+    explanation = normalized.get("explanation")
+    if not isinstance(explanation, str):
+        normalized["explanation"] = _stringify_value(explanation) if explanation is not None else "Generated explanation."
+    normalized["premises"] = _string_list(normalized.get("premises"))
+    normalized["cot"] = _string_list(normalized.get("cot"))
+    return normalized
+
+
+def _string_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [_stringify_value(item) for item in value]
+    return [_stringify_value(value)]
+
+
+def _stringify_value(value: object) -> str:
+    if isinstance(value, str):
+        return value
+    try:
+        return json.dumps(value, ensure_ascii=False, sort_keys=True)
+    except TypeError:
+        return str(value)
 
 
 def _normalize_pot_code_raw(raw: object) -> object:

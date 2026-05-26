@@ -9,6 +9,11 @@ from exact.type2.schemas import Extraction, Type2SolveResult, Verification, Form
 
 CONCEPTS = (
     (
+        ("magnetic field", "inductor", "maximum"),
+        "maximum",
+        "In an ideal LC circuit, the magnetic-field energy in the inductor is maximum when the current is maximum.",
+    ),
+    (
         ("current is maximum", "lc circuit"),
         "all energy is stored in the magnetic field of the inductor",
         "In an ideal LC circuit, maximum current corresponds to maximum magnetic energy in the inductor.",
@@ -73,9 +78,6 @@ def verify_value(value: pint.Quantity, formula: Formula) -> tuple[Verification, 
         return Verification(False, "Result magnitude is not finite."), None
 
     return Verification(True, "Result passed unit and finite-value checks."), converted
-
-
-
 
 def solve_extraction(
     extraction: Extraction,

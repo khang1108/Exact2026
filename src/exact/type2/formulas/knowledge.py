@@ -7,11 +7,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from exact.config import PACKAGE_DIR
 from exact.type2.formulas.bank import FORMULAS, formula_summary
 from exact.type2.schemas import Extraction
 
 
-JSON_BANK_PATH = Path(__file__).with_name("circuits_and_electrostatics_bank.json")
+JSON_BANK_PATH = PACKAGE_DIR / "datasets" / "exact" / "circuits_and_electrostatics_bank.json"
 
 
 @dataclass(frozen=True)

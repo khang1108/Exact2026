@@ -9,7 +9,7 @@ import json
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
-from openai import AsyncOpenAI
+from openai import APIStatusError, AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, ValidationError
 
@@ -92,8 +92,9 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         model: str = "gpt-4o-mini",
         timeout: float = 60.0,
         max_retries: int = 2,
-    ):
+        ):
         self.model = model
+        self.max_retries = max_retries
         self.client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
@@ -147,13 +148,32 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
             asyncio.get_running_loop()
         except RuntimeError:
             return asyncio.run(
-                self.complete_json(
+                self._complete_json_and_close(
                     messages=messages,
                     temperature=temperature,
                     max_tokens=max_tokens,
                 )
             )
         raise RuntimeError("complete_json_sync cannot run inside an active event loop")
+
+    async def _complete_json_and_close(
+        self,
+        messages: Iterable[ChatCompletionMessageParam],
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> dict[str, Any]:
+        try:
+            return await self.complete_json(
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        finally:
+            close = getattr(self.client, "close", None)
+            if close is not None:
+                result = close()
+                if inspect.isawaitable(result):
+                    await result
 
     @classmethod
     def from_settings(cls, settings: Settings | None = None) -> "LLMClient":
@@ -223,8 +243,22 @@ class LocalClient(BaseTextLLMClient):
 class LocalJsonClient(BaseJsonLLMClient):
     """JSON adapter over the direct transformers-based LocalClient."""
 
-    def __init__(self, model_name: str):
-        self.client = LocalClient(model_name)
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        device_map: str | None = "auto",
+        torch_dtype: str = "float16",
+        local_files_only: bool = False,
+        trust_remote_code: bool = False,
+    ):
+        self.client = LocalClient(
+            model_name,
+            device_map=device_map,
+            torch_dtype=torch_dtype,
+            local_files_only=local_files_only,
+            trust_remote_code=trust_remote_code,
+        )
 
     def complete_json_sync(
         self,
@@ -236,7 +270,7 @@ class LocalJsonClient(BaseJsonLLMClient):
             messages=list(messages),
             max_new_tokens=max_tokens,
         )
-        return _parse_json_object(text)
+        return parse_json_object(text)
 
 
 def build_json_client_from_settings(settings: Settings | None = None) -> BaseJsonLLMClient | None:
@@ -255,6 +289,16 @@ def build_json_client_from_settings(settings: Settings | None = None) -> BaseJso
     if settings.llm_provider == "local":
         return LocalJsonClient(settings.llm_model)
     return None
+
+
+def _torch_dtype(name: str):
+    if name == "auto":
+        return "auto"
+    if name == "float32":
+        return torch.float32
+    if name == "bfloat16":
+        return torch.bfloat16
+    return torch.float16
 
 
 def _parse_json_object(text: str) -> dict[str, Any]:

@@ -13,6 +13,7 @@ from exact.type2.extraction.llm_structured import (
 from exact.type2.fallback.executor import ExecutionResult, execute_python
 from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
+from exact.type2.solving.solver import solve_extraction
 from exact.type2.solving.pot_verifier import verify_pot_execution
 
 
@@ -53,12 +54,18 @@ def solve_with_pot(
         except Exception as exc:
             return _failed_result(extraction, f"LLM code repair returned invalid output: {exc}")
         if repaired is None:
+            fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error)
+            if fallback is not None:
+                return fallback
             return _failed_result(extraction, execution.error or "execution failed")
         code_spec = repaired
         code_spec = _canonicalize_formula_ids(code_spec, formula_context)
         execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
 
     if not execution.ok:
+        fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error)
+        if fallback is not None:
+            return fallback
         return _failed_result(extraction, execution.error or "execution failed after repair")
 
     unit = execution.ans_unit or code_spec.answer_unit
@@ -70,6 +77,9 @@ def solve_with_pot(
         magnitude_target=extraction.target in {"force", "electric_field"},
     )
     if verified.error is not None:
+        fallback = _try_executable_formula_fallback(extraction, formula_context, verified.verification.message)
+        if fallback is not None:
+            return fallback
         return Type2SolveResult(
             answer="",
             unit=None,
@@ -123,7 +133,16 @@ def _canonicalize_formula_ids(spec: PotCodeSpec, formula_context: RetrievedFormu
         return spec
     return spec.model_copy(update={"formula_ids_used": canonical_ids})
 
-
+def _try_executable_formula_fallback(
+    extraction: Extraction,
+    formula_context: RetrievedFormulaContext,
+    reason: str | None,
+) -> Type2SolveResult | None:
+    result = solve_extraction(extraction, preferred_formula_ids=formula_context.formula_ids)
+    if result.error is not None:
+        return None
+    result.cot.insert(0, f"PoT solver failed; executable formula fallback was used. Reason: {reason or 'unknown'}")
+    return result
 def _strip_code_fence(code: str) -> str:
     text = code.strip()
     match = re.fullmatch(r"```(?:python)?\s*(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)

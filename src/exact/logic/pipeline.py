@@ -235,7 +235,7 @@ def _run_injected_llm_path(
 ) -> PredictionResponse | None:
     prompt = _build_fallback_prompt(request)
     try:
-        data = _parse_json_object(llm_client.generate(prompt))
+        data = parse_json_object(llm_client.generate(prompt))
     except (TypeError, ValueError, json.JSONDecodeError):
         return None
 
@@ -272,21 +272,6 @@ def _build_fallback_prompt(request: PredictionRequest) -> str:
         "answer, explanation, fol, cot, premises, confidence.\n\n"
         f"{premises}\n\nQuestion: {request.question}"
     )
-
-
-def _parse_json_object(text: str) -> dict[str, Any]:
-    text = text.strip()
-    if not text:
-        raise ValueError("empty LLM output")
-
-    start = text.find("{")
-    end = text.rfind("}")
-    if start == -1 or end == -1 or end < start:
-        raise ValueError("LLM output did not contain a JSON object")
-    parsed = json.loads(text[start : end + 1])
-    if not isinstance(parsed, dict):
-        raise ValueError("LLM JSON output must be an object")
-    return parsed
 
 
 def _normalize_answer(answer: str) -> str:

@@ -55,11 +55,25 @@ CONCEPTUAL_MARKERS = (
     "explain",
     "state ",
     "define",
+    "describe",
+    "which ",
+    "where ",
+    "when ",
+    "what happens",
     "what happens",
     "where is",
     "how does",
+    "how do",
+    "how would",
     "shape of the graph",
     "directly proportional",
+    "maximum",
+    "minimum",
+    "increase",
+    "decrease",
+    "larger",
+    "smaller",
+    "stored in",
 )
 
 NUMERICAL_MARKERS = (
@@ -71,14 +85,51 @@ NUMERICAL_MARKERS = (
     "round",
 )
 
+QUALITATIVE_TARGET_MARKERS = (
+    "maximum",
+    "minimum",
+    "increases",
+    "decreases",
+    "increase",
+    "decrease",
+    "larger",
+    "smaller",
+    "stored",
+    "where",
+    "which",
+    "when",
+)
+
+QUALITATIVE_QUESTION_MARKERS = (
+    "why ",
+    "explain",
+    "where",
+    "which",
+    "when",
+    "how does",
+    "how do",
+    "how would",
+    "what happens",
+    "maximum",
+    "minimum",
+)
 
 def classify_type2_question(question: str) -> Type2QuestionKind:
     lower = question.lower()
     has_concept = any(marker in lower for marker in CONCEPTUAL_MARKERS)
     has_number = any(char.isdigit() for char in question)
     has_numeric_intent = any(marker in lower for marker in NUMERICAL_MARKERS)
+    has_qualitative_target = any(marker in lower for marker in QUALITATIVE_TARGET_MARKERS)
+    has_qualitative_question = any(marker in lower for marker in QUALITATIVE_QUESTION_MARKERS)
 
-    if has_concept and (has_number or has_numeric_intent):
+    if not has_number and not has_numeric_intent:
+        return Type2QuestionKind.CONCEPTUAL
+    if has_numeric_intent and not has_number and has_qualitative_target:
+        return Type2QuestionKind.CONCEPTUAL
+    if has_concept and has_numeric_intent and has_qualitative_question:
+        return Type2QuestionKind.MIXED
+
+    if has_concept and (has_number or has_numeric_intent) and has_qualitative_question:
         return Type2QuestionKind.MIXED
     if has_concept and not has_numeric_intent:
         return Type2QuestionKind.CONCEPTUAL
@@ -341,12 +392,15 @@ def detect_target(question: str) -> str | None:
 
 
 def _name_from_symbol(symbol: str, unit: str, question: str) -> str:
+    unit_name = _name_from_unit(unit)
+    if unit_name == "length" and symbol.upper() in {"AB", "AC", "BC", "CA", "CB"}:
+        return "length"
     symbol_name = SYMBOL_TO_NAME.get(symbol[:1].lower())
     if symbol_name == "energy_or_field":
         return _disambiguate_energy_or_field_by_unit(unit)
     if symbol_name:
         return symbol_name
-    return _name_from_unit(unit) or _name_from_nearby_text(question) or symbol.lower()
+    return unit_name or _name_from_nearby_text(question) or symbol.lower()
 
 
 def _name_from_context(match: re.Match[str], question: str) -> str | None:

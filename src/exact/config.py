@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     )
     default_seed: int = 42
 
-    llm_provider: Literal["openai", "anthropic", "local"] = "local"
+    llm_provider: Literal["openai", "anthropic", "groq", "ollama", "local"] = "local"
     llm_model: str = Field(
         default="Qwen/Qwen2.5-7B-Instruct",
         validation_alias=AliasChoices("EXACT_LLM_MODEL", "EXACT_MODEL_ID"),
@@ -67,6 +67,13 @@ class Settings(BaseSettings):
     )
     llm_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_MAX_RETRIES")
+    llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")
+    llm_torch_dtype: Literal["auto", "float16", "bfloat16", "float32"] = Field(
+        default="float16",
+        validation_alias="EXACT_LLM_TORCH_DTYPE",
+    )
+    llm_local_files_only: bool = Field(default=False, validation_alias="EXACT_LLM_LOCAL_FILES_ONLY")
+    llm_trust_remote_code: bool = Field(default=False, validation_alias="EXACT_LLM_TRUST_REMOTE_CODE")
 
     api_host: str = "0.0.0.0"
     api_port: int = Field(default=8080, ge=1, le=65535)
