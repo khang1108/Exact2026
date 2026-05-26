@@ -40,8 +40,8 @@ export EXACT_LLM_BASE_URL=http://127.0.0.1:8001/v1
 export EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
 ```
 
-Without `EXACT_LLM_BASE_URL`, the pipelines return conservative fallback
-responses instead of fake model answers.
+Type 1 is LLM-only: if no JSON LLM client is configured, the request fails with
+a clear error instead of substituting a local parser.
 
 Type 2 is currently a clean extension point. The API routes physics questions
 there and returns a structured placeholder response until the team implements

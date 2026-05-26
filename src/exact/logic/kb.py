@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from typing import Any
 
-from exact.logic.ir import Fact, Rule, Theory
-from exact.logic.ir import ParsedPremise
-from exact.logic.parser import parse_premise_to_ir
+from exact.logic.ir import Fact, ParsedPremise, Rule, Theory
+from exact.logger import get_logger
 
-PARSER_VERSION = "heuristic_horn_v1"
+logger = get_logger(__name__)
+
+LLM_PARSER_VERSION = "llm_translator_v1"
 
 
 @dataclass(frozen=True)
@@ -20,54 +22,25 @@ class KnowledgeBase:
     facts: tuple[Fact, ...]
     rules: tuple[Rule, ...]
     premise_hash: str
-    parser_version: str = PARSER_VERSION
+    parser_version: str = LLM_PARSER_VERSION
+    predicate_names: tuple[str, ...] = ()
     theory: Theory | None = None
     warnings: tuple[str, ...] = ()
 
 
-_KB_CACHE: dict[str, KnowledgeBase] = {}
-
-
-def hash_premises(premises: list[str] | tuple[str, ...], parser_version: str = PARSER_VERSION) -> str:
+def hash_premises(premises: list[str] | tuple[str, ...], parser_version: str = LLM_PARSER_VERSION) -> str:
     """Hash premises plus parser version so stale KBs do not leak across parser changes."""
 
     text = parser_version + "\n" + "\n".join(premises)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def build_kb_from_premises(
-    premises: list[str] | tuple[str, ...],
-    premise_hash: str | None = None,
-    parser_version: str = PARSER_VERSION,
-) -> KnowledgeBase:
-    """Build a KB once per premise set, following VERUS-LM's separation idea."""
-
-    facts: list[Fact] = []
-    rules: list[Rule] = []
-    warnings: list[str] = []
-    raw_premises = tuple(premises)
-
-    for source_idx, premise in enumerate(raw_premises):
-        parsed = parse_premise_to_ir(premise=premise, source_idx=source_idx)
-        facts.extend(parsed.facts)
-        rules.extend(parsed.rules)
-        warnings.extend(parsed.warnings)
-
-    return KnowledgeBase(
-        raw_premises=raw_premises,
-        facts=tuple(facts),
-        rules=tuple(rules),
-        premise_hash=premise_hash or hash_premises(raw_premises, parser_version),
-        parser_version=parser_version,
-        warnings=tuple(warnings),
-    )
-
-
 def build_kb_from_parsed_premises(
     premises: list[str] | tuple[str, ...],
     parsed_premises: tuple[ParsedPremise, ...],
     premise_hash: str | None = None,
-    parser_version: str = PARSER_VERSION,
+    parser_version: str = LLM_PARSER_VERSION,
+    predicate_names: tuple[str, ...] = (),
     extra_warnings: tuple[str, ...] = (),
 ) -> KnowledgeBase:
     facts: list[Fact] = []
@@ -86,16 +59,166 @@ def build_kb_from_parsed_premises(
         rules=tuple(rules),
         premise_hash=premise_hash or hash_premises(raw_premises, parser_version),
         parser_version=parser_version,
+        predicate_names=predicate_names or _predicate_names_from_ir(tuple(facts), tuple(rules)),
         warnings=tuple(warnings),
     )
 
 
-def get_or_build_kb(premises: list[str] | tuple[str, ...]) -> KnowledgeBase:
-    key = hash_premises(premises)
-    if key not in _KB_CACHE:
-        _KB_CACHE[key] = build_kb_from_premises(premises, premise_hash=key)
-    return _KB_CACHE[key]
+_LLM_KB_CACHE: dict[str, KnowledgeBase] = {}
+_LLM_KB_CANDIDATE_CACHE: dict[str, tuple[tuple[KnowledgeBase, ...], tuple[str, ...]]] = {}
+
+
+def build_kb_from_premises(
+    premises: list[str] | tuple[str, ...],
+    llm_client: Any,
+    settings: Any,
+    premise_hash: str | None = None,
+    temperature: float | None = None,
+) -> tuple[KnowledgeBase, tuple[str, ...]]:
+    """Build a KB from LLM-translated premises.
+
+    This keeps KB construction as a first-class logic layer while preserving
+    the LLM-only contract. Translation failures are logged and raised.
+    """
+
+    from exact.logic.llm_translator import translate_premises_only_with_llm
+
+    try:
+        parsed_premises, warnings, predicate_names = translate_premises_only_with_llm(
+            list(premises), llm_client, settings, temperature=temperature
+        )
+    except Exception as exc:
+        logger.exception("LLM premise translation failed")
+        raise RuntimeError(f"LLM premise translation failed: {exc}") from exc
+
+    return (
+        build_kb_from_parsed_premises(
+            premises,
+            parsed_premises,
+            premise_hash=premise_hash,
+            parser_version=LLM_PARSER_VERSION,
+            predicate_names=predicate_names,
+            extra_warnings=warnings,
+        ),
+        warnings,
+    )
+
+
+def get_or_build_kb(
+    premises: list[str] | tuple[str, ...],
+    llm_client: Any,
+    settings: Any,
+) -> tuple[KnowledgeBase, tuple[str, ...]]:
+    """Return a cached KB built from LLM-translated premises.
+
+    Same premises hash → single LLM call regardless of how many questions share
+    that premise group. LLM translation failures are logged and raised.
+    """
+
+    key = hash_premises(premises, parser_version=LLM_PARSER_VERSION)
+    if key in _LLM_KB_CACHE:
+        logger.debug("LLM KB cache hit: %s", key[:8])
+        return _LLM_KB_CACHE[key], ()
+
+    kb, warnings = build_kb_from_premises(
+        premises,
+        llm_client,
+        settings,
+        premise_hash=key,
+    )
+    _LLM_KB_CACHE[key] = kb
+    logger.debug("LLM KB cache stored: %s premises, key=%s", len(premises), key[:8])
+    return kb, warnings
+
+
+def build_kb_candidates_from_premises(
+    premises: list[str] | tuple[str, ...],
+    llm_client: Any,
+    settings: Any,
+    samples: int,
+    sampling_temperature: float,
+) -> tuple[tuple[KnowledgeBase, ...], tuple[str, ...]]:
+    """Build k sampled KB candidates from the same premises."""
+
+    candidates: list[KnowledgeBase] = []
+    warnings: list[str] = []
+    for index in range(samples):
+        candidate_hash = hash_premises(
+            premises,
+            parser_version=f"{LLM_PARSER_VERSION}:sample={index}",
+        )
+        try:
+            kb, candidate_warnings = build_kb_from_premises(
+                premises,
+                llm_client,
+                settings,
+                premise_hash=candidate_hash,
+                temperature=sampling_temperature,
+            )
+        except Exception as exc:
+            message = f"candidate {index + 1}/{samples} failed: {exc}"
+            logger.exception("LLM KB candidate translation failed: %s", message)
+            warnings.append(message)
+            continue
+
+        candidates.append(kb)
+        warnings.extend(candidate_warnings)
+
+    if not candidates:
+        raise RuntimeError(
+            "All LLM premise translation candidates failed: " + "; ".join(warnings)
+        )
+
+    return tuple(candidates), tuple(warnings)
+
+
+def get_or_build_kb_candidates(
+    premises: list[str] | tuple[str, ...],
+    llm_client: Any,
+    settings: Any,
+    samples: int,
+    sampling_temperature: float,
+) -> tuple[tuple[KnowledgeBase, ...], tuple[str, ...]]:
+    """Return cached k-sampled KB candidates for symbolic-consistency voting."""
+
+    if samples <= 1:
+        kb, warnings = get_or_build_kb(premises, llm_client, settings)
+        return (kb,), warnings
+
+    parser_version = (
+        f"{LLM_PARSER_VERSION}:k={samples}:temp={sampling_temperature}:"
+        f"model={getattr(settings, 'llm_model', '')}"
+    )
+    key = hash_premises(premises, parser_version=parser_version)
+    cached = _LLM_KB_CANDIDATE_CACHE.get(key)
+    if cached is not None:
+        logger.debug("LLM KB candidate cache hit: %s", key[:8])
+        return cached
+
+    candidates, warnings = build_kb_candidates_from_premises(
+        premises,
+        llm_client,
+        settings,
+        samples=samples,
+        sampling_temperature=sampling_temperature,
+    )
+    _LLM_KB_CANDIDATE_CACHE[key] = (candidates, warnings)
+    logger.debug(
+        "LLM KB candidate cache stored: %s candidates, key=%s",
+        len(candidates),
+        key[:8],
+    )
+    return candidates, warnings
 
 
 def clear_kb_cache() -> None:
-    _KB_CACHE.clear()
+    _LLM_KB_CACHE.clear()
+    _LLM_KB_CANDIDATE_CACHE.clear()
+
+
+def _predicate_names_from_ir(facts: tuple[Fact, ...], rules: tuple[Rule, ...]) -> tuple[str, ...]:
+    names: set[str] = {fact.atom.pred for fact in facts}
+    for rule in rules:
+        names.add(rule.conclusion.pred)
+        names.update(condition.pred for condition in rule.conditions)
+    return tuple(sorted(names))

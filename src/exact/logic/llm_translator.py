@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from exact.config import Settings, get_settings
 from exact.logic.ir import Atom, Fact, ParsedPremise, Query, Rule
-from exact.logic.parser import atom_from_text, parse_premise_to_ir, parse_question_to_query
+from exact.logic.parser import atom_from_text
 from exact.llm_client import LLMClient
 from exact.logger import get_logger
 
@@ -185,6 +185,23 @@ class TranslationSpec(BaseModel):
     options: list[OptionSpec] = Field(default_factory=list)
 
 
+class PremisesOnlySpec(BaseModel):
+    """LLM output for premise-only translation — no query field required."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    predicates: list[PredicateSpec] = Field(default_factory=list)
+    premises: list[PremiseSpec]
+
+
+class QueryOnlySpec(BaseModel):
+    """LLM output for query-only translation."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    query: QuerySpec
+
+
 def translate_with_llm(
     premises: list[str],
     question: str,
@@ -213,44 +230,170 @@ def translate_with_llm(
     return _spec_to_ir(spec, premises, question)
 
 
-def translate_with_fallback(
+def translate_premises_only_with_llm(
     premises: list[str],
-    question: str,
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
-    allow_heuristic_fallback: bool = True,
-) -> tuple[tuple[ParsedPremise, ...], Query, tuple[str, ...]]:
-    """Try LLM translation, then fall back to the local parser with warnings."""
+    temperature: float | None = None,
+) -> tuple[tuple[ParsedPremise, ...], tuple[str, ...], tuple[str, ...]]:
+    """Translate premises to IR without a query for premise-level caching.
+
+    Returns parsed premises and any warnings. Query translation is left to the
+    caller so the same KB can serve multiple questions in the same premise group.
+    """
 
     settings = settings or get_settings()
-    if llm_client is not None or settings.llm_provider == "local" or settings.llm_base_url:
-        try:
-            parsed, query = translate_with_llm(premises, question, llm_client, settings)
-            return parsed, query, ()
-        except Exception as exc:
-            if not allow_heuristic_fallback:
-                raise RuntimeError(f"LLM translation failed and fallback is disabled: {exc}") from exc
-            warnings = (f"LLM translation failed; heuristic parser used: {exc}",)
-            return _heuristic_translation(premises, question, warnings)
-
-    if not allow_heuristic_fallback:
-        raise RuntimeError("No LLM client configured and fallback is disabled")
-
-    return _heuristic_translation(
-        premises,
-        question,
-        ("No LLM client configured; heuristic parser used.",),
+    client = llm_client or LLMClient.from_settings(settings)
+    messages = _build_premises_only_messages(premises)
+    logger.info("Starting premise-only LLM translation: premises=%s", len(premises))
+    raw = client.complete_json_sync(
+        messages=messages,
+        temperature=settings.llm_temperature if temperature is None else temperature,
+        max_tokens=settings.llm_max_tokens,
     )
+    spec = PremisesOnlySpec.model_validate(raw)
+    parsed = _premise_specs_to_parsed(spec.premises, premises)
+    predicate_names = tuple(predicate.name for predicate in spec.predicates)
+    return parsed, (), predicate_names
 
 
-def _heuristic_translation(
-    premises: list[str],
+def translate_query_only_with_llm(
     question: str,
-    warnings: tuple[str, ...] = (),
-) -> tuple[tuple[ParsedPremise, ...], Query, tuple[str, ...]]:
-    parsed = tuple(parse_premise_to_ir(premise, idx) for idx, premise in enumerate(premises))
-    query = parse_question_to_query(question)
-    return parsed, query, warnings
+    predicate_names: tuple[str, ...] = (),
+    llm_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
+) -> Query:
+    """Translate a Type 1 question into a solver query without retranslating premises."""
+
+    settings = settings or get_settings()
+    client = llm_client or LLMClient.from_settings(settings)
+    messages = _build_query_only_messages(question, predicate_names=predicate_names)
+    logger.info("Starting query-only LLM translation: question_chars=%s", len(question))
+    raw = client.complete_json_sync(
+        messages=messages,
+        temperature=settings.llm_temperature,
+        max_tokens=settings.llm_max_tokens,
+    )
+    spec = QueryOnlySpec.model_validate(raw)
+    if predicate_names and spec.query.claim.pred not in set(predicate_names):
+        raise ValueError(
+            "Query predicate must reuse premise predicate dictionary; "
+            f"got {spec.query.claim.pred!r}, allowed={list(predicate_names)!r}"
+        )
+    return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)
+
+
+def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMessageParam]:
+    """Compact premise-only prompt for KnowledgeBase caching."""
+
+    premise_text = "\n".join(f"{idx}: {premise}" for idx, premise in enumerate(premises))
+    schema_hint = (
+        '{"predicates":[{"name":"pred","arity":1,"gloss":"meaning","argument_roles":["entity"]}],'
+        '"premises":[{"source_idx":0,"facts":[{"text":"...","pred":"pred","args":["item"],"negated":false}],'
+        '"rules":[{"conditions":[{"text":"...","pred":"cond","args":["?x"],"negated":false}],'
+        '"conclusion":{"text":"...","pred":"pred","args":["?x"],"negated":false}}]}]}'
+    )
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are an autoformalizer for educational logic QA. "
+                "Return JSON only. No markdown fences. "
+                "Translate premises into Horn-style predicates for a symbolic solver."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Translate these premises into Horn-style IR. Output valid JSON matching: {schema_hint}\n"
+                "Rules:\n"
+                "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
+                "- Generic rules use variables (?x); named facts use constants (sofia)\n"
+                "- Standalone assertions go in facts; implications go in rules\n"
+                "- Every rule must have at least one condition; never output conditions:[]\n"
+                "- Split conjunctions into separate condition atoms\n"
+                "- Preserve source_idx exactly\n\n"
+                f"Premises:\n{premise_text}"
+            ),
+        },
+    ]
+
+
+def _build_query_only_messages(
+    question: str,
+    predicate_names: tuple[str, ...] = (),
+) -> list[ChatCompletionMessageParam]:
+    """Compact query-only prompt for YNU/open-ended questions."""
+
+    schema_hint = (
+        '{"query":{"claim":{"text":"...","pred":"predicate_name",'
+        '"args":["entity"],"negated":false}}}'
+    )
+    predicate_instruction = (
+        "Allowed predicate names from premise translation: "
+        f"{', '.join(predicate_names)}\n"
+        "You must choose query.claim.pred from this allowed list.\n"
+        if predicate_names
+        else ""
+    )
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are an autoformalizer for educational logic QA. "
+                "Return JSON only. No markdown fences. "
+                "Translate the question target into one Horn-style query atom."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Translate this question target into valid JSON matching: {schema_hint}\n"
+                "Rules:\n"
+                "- Do not answer the question\n"
+                f"{predicate_instruction}"
+                "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
+                "- Mark negated=true only for explicit negation\n\n"
+                f"Question:\n{question}"
+            ),
+        },
+    ]
+
+
+def _premise_specs_to_parsed(
+    premise_specs: list[PremiseSpec],
+    raw_premises: list[str],
+) -> tuple[ParsedPremise, ...]:
+    """Convert validated PremiseSpec list to IR, filling gaps with warnings."""
+
+    parsed_by_idx: dict[int, ParsedPremise] = {}
+    for premise_spec in premise_specs:
+        source_idx = premise_spec.source_idx
+        if source_idx < 0 or source_idx >= len(raw_premises):
+            continue
+        facts = tuple(
+            Fact(
+                atom=_atom_from_spec(atom_spec),
+                source_idx=source_idx,
+                text=raw_premises[source_idx],
+            )
+            for atom_spec in premise_spec.facts
+        )
+        rules = tuple(
+            Rule(
+                conditions=tuple(_atom_from_spec(c) for c in rule_spec.conditions),
+                conclusion=_atom_from_spec(rule_spec.conclusion),
+                source_idx=source_idx,
+                text=raw_premises[source_idx],
+            )
+            for rule_spec in premise_spec.rules
+        )
+        parsed_by_idx[source_idx] = ParsedPremise(facts=facts, rules=rules)
+
+    return tuple(
+        parsed_by_idx.get(i) or ParsedPremise(warnings=(f"No LLM IR for premise {i}",))
+        for i in range(len(raw_premises))
+    )
 
 
 def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMessageParam]:
@@ -322,37 +465,8 @@ def _spec_to_ir(
     raw_premises: list[str],
     raw_question: str,
 ) -> tuple[tuple[ParsedPremise, ...], Query]:
-    parsed_by_idx: dict[int, ParsedPremise] = {}
-
-    for premise_spec in spec.premises:
-        source_idx = premise_spec.source_idx
-        if source_idx < 0 or source_idx >= len(raw_premises):
-            continue
-
-        facts = tuple(
-            Fact(
-                atom=_atom_from_spec(atom_spec),
-                source_idx=source_idx,
-                text=raw_premises[source_idx],
-            )
-            for atom_spec in premise_spec.facts
-        )
-        rules = tuple(
-            Rule(
-                conditions=tuple(_atom_from_spec(atom_spec) for atom_spec in rule_spec.conditions),
-                conclusion=_atom_from_spec(rule_spec.conclusion),
-                source_idx=source_idx,
-                text=raw_premises[source_idx],
-            )
-            for rule_spec in premise_spec.rules
-        )
-        parsed_by_idx[source_idx] = ParsedPremise(facts=facts, rules=rules)
-
-    parsed = []
-    for source_idx, premise in enumerate(raw_premises):
-        parsed.append(parsed_by_idx.get(source_idx) or ParsedPremise(warnings=(f"No LLM IR for premise {source_idx}",)))
-
-    return tuple(parsed), Query(claim=_atom_from_spec(spec.query.claim), raw_question=raw_question)
+    parsed = _premise_specs_to_parsed(spec.premises, raw_premises)
+    return parsed, Query(claim=_atom_from_spec(spec.query.claim), raw_question=raw_question)
 
 
 def _atom_from_spec(spec: AtomSpec) -> Atom:

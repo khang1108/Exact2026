@@ -1,12 +1,10 @@
-"""Deterministic Horn parser for the Type 1 logic fallback path.
+"""Deterministic Horn parsing utilities for Type 1 logic tests and MCQ goals.
 
 The production architecture follows the Logic-LM/LINC pattern: translate natural
 language into symbolic form first, then let a deterministic solver reason over
-that form. This module is the local, zero-LLM translator for common educational
-Horn clauses found in the EXACT training pairs (`premises-NL`/`premises-FOL`).
-It intentionally targets a Datalog-like subset: facts and universal Horn rules
-with one entity variable `?x`, because that subset is fast, explainable, and
-compatible with the forward-chain proof DAG.
+that form. Runtime Type 1 premise translation is LLM-only; this module remains
+as a small utility boundary for tests and for converting already-isolated MCQ
+option text into solver atoms.
 """
 
 from __future__ import annotations

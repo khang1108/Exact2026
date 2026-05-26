@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import importlib.util
 import json
+import inspect
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
@@ -70,7 +71,13 @@ class BaseTextLLMClient(ABC):
     """Common contract for clients that return plain generated text."""
 
     @abstractmethod
-    def complete(self, messages: list[dict], max_new_tokens: int = 2048) -> str:
+    def complete(
+        self,
+        messages: list[dict],
+        max_new_tokens: int = 2048,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+    ) -> str:
         """Return generated text for chat messages."""
 
 
@@ -210,7 +217,13 @@ class LocalClient(BaseTextLLMClient):
             self.model = self.model.to("cuda")
         logger.info("Loaded local model %s in %.1fs", model_name, time.monotonic() - started_at)
 
-    def complete(self, messages: list[dict], max_new_tokens: int = 2048) -> str:
+    def complete(
+        self,
+        messages: list[dict],
+        max_new_tokens: int = 2048,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+    ) -> str:
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
@@ -220,16 +233,29 @@ class LocalClient(BaseTextLLMClient):
         logger.info("Tokenizing local LLM prompt")
         inputs = self.tokenizer(text, return_tensors="pt").to(self.model.device)
         input_length = inputs["input_ids"].shape[1]
-        logger.info("Starting local generation: input_tokens=%s, max_new_tokens=%s", input_length, max_new_tokens)
+        do_sample = temperature > 0.0
+        logger.info(
+            "Starting local generation: input_tokens=%s, max_new_tokens=%s, do_sample=%s, temperature=%s, top_p=%s",
+            input_length,
+            max_new_tokens,
+            do_sample,
+            temperature,
+            top_p,
+        )
         started_at = time.monotonic()
 
-        outputs = self.model.generate(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            max_new_tokens=max_new_tokens,
-            do_sample=False,
-            pad_token_id=self.tokenizer.eos_token_id,
-        )
+        generate_kwargs: dict[str, Any] = {
+            "input_ids": inputs["input_ids"],
+            "attention_mask": inputs["attention_mask"],
+            "max_new_tokens": max_new_tokens,
+            "do_sample": do_sample,
+            "pad_token_id": self.tokenizer.eos_token_id,
+        }
+        if do_sample:
+            generate_kwargs["temperature"] = temperature
+            generate_kwargs["top_p"] = top_p
+
+        outputs = self.model.generate(**generate_kwargs)
 
         generated_tokens = outputs[0][input_length:]
         logger.info(
@@ -243,22 +269,9 @@ class LocalClient(BaseTextLLMClient):
 class LocalJsonClient(BaseJsonLLMClient):
     """JSON adapter over the direct transformers-based LocalClient."""
 
-    def __init__(
-        self,
-        model_name: str,
-        *,
-        device_map: str | None = "auto",
-        torch_dtype: str = "float16",
-        local_files_only: bool = False,
-        trust_remote_code: bool = False,
-    ):
-        self.client = LocalClient(
-            model_name,
-            device_map=device_map,
-            torch_dtype=torch_dtype,
-            local_files_only=local_files_only,
-            trust_remote_code=trust_remote_code,
-        )
+    def __init__(self, model_name: str, top_p: float = 1.0):
+        self.client = LocalClient(model_name)
+        self.top_p = top_p
 
     def complete_json_sync(
         self,
@@ -269,8 +282,10 @@ class LocalJsonClient(BaseJsonLLMClient):
         text = self.client.complete(
             messages=list(messages),
             max_new_tokens=max_tokens,
+            temperature=temperature,
+            top_p=self.top_p,
         )
-        return parse_json_object(text)
+        return _parse_json_object(text)
 
 
 def build_json_client_from_settings(settings: Settings | None = None) -> BaseJsonLLMClient | None:
@@ -278,7 +293,7 @@ def build_json_client_from_settings(settings: Settings | None = None) -> BaseJso
 
     - `llm_base_url` set: call an OpenAI-compatible local/remote server.
     - `llm_provider=local`: load the model directly with transformers.
-    - otherwise: return None and let the pipeline use heuristic fallback.
+    - otherwise: return None so callers can fail clearly in LLM-only flows.
     """
 
     settings = settings or get_settings()
@@ -287,7 +302,7 @@ def build_json_client_from_settings(settings: Settings | None = None) -> BaseJso
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
     if settings.llm_provider == "local":
-        return LocalJsonClient(settings.llm_model)
+        return LocalJsonClient(settings.llm_model, top_p=settings.llm_top_p)
     return None
 
 

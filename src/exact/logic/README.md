@@ -1,6 +1,6 @@
 # Type 1 Logic Framework
 
-This package implements the Type 1 branch for educational yes/no/unknown questions that require explicit logical reasoning. The current design is a small neuro-symbolic framework: an LLM or heuristic parser translates natural language into a compact Horn-style intermediate representation, then deterministic symbolic solvers decide the answer and produce a traceable proof.
+This package implements the Type 1 branch for educational yes/no/unknown questions that require explicit logical reasoning. The current design is a small neuro-symbolic framework: an LLM translates natural language into a compact Horn-style intermediate representation, then deterministic symbolic solvers decide the answer and produce a traceable proof.
 
 ## Goal
 
@@ -16,8 +16,8 @@ For EXACT Type 1, the system should answer from the given premises only and expo
 ```text
 src/exact/logic/
 ├── ir.py              # Core data model: Atom, Fact, Rule, Query, ProofStep, SolveResult
-├── parser.py          # Local heuristic NL -> IR parser
-├── llm_translator.py  # LLM semantic parser with schema validation and heuristic fallback
+├── parser.py          # Local parsing utilities for tests and MCQ option atoms
+├── llm_translator.py  # LLM semantic parser with schema validation
 ├── kb.py              # KnowledgeBase construction, premise hashing, parser-version tracking
 ├── explain.py         # Proof trace -> user-facing explanation, cot, cited premises, FOL text
 ├── pipeline.py        # Type 1 orchestration from PredictionRequest to PredictionResponse
@@ -42,13 +42,9 @@ PredictionRequest
 collect premises_nl + question
       │
       ▼
-translate_with_fallback()
+translate_with_llm()
       │
-      ├── LLM translator if configured
-      │     └── validates JSON with Pydantic schemas
-      │
-      └── heuristic parser fallback
-            └── supports simple facts and if/then Horn rules
+      └── validates JSON with Pydantic schemas
       │
       ▼
 build_kb_from_parsed_premises()
@@ -145,9 +141,7 @@ The solver stores grounded parent atoms, not schematic rule conditions, so later
 
 ## Translation layer
 
-There are two translation paths.
-
-### LLM semantic parser
+There is one runtime translation path: the LLM semantic parser.
 
 `llm_translator.py` treats the LLM as a parser, not as the final judge. It asks the model to return structured JSON:
 
@@ -166,18 +160,18 @@ There are two translation paths.
 }
 ```
 
-The output is validated by Pydantic models before conversion into `ParsedPremise` and `Query`. If the LLM fails and fallback is allowed, the system records a warning and uses the heuristic parser.
+The output is validated by Pydantic models before conversion into `ParsedPremise` and `Query`. If the LLM is missing or returns invalid output, the pipeline logs the error and raises.
 
-### Heuristic parser
+### Parser utilities
 
-`parser.py` is intentionally conservative. It currently supports:
+`parser.py` is intentionally conservative and is not used as a runtime premise translator. It remains useful for unit tests and for converting already-isolated MCQ option text into solver atoms. It currently supports:
 
 - direct facts: `A.` -> `Fact(A)`;
 - simple conditionals: `If A then B.` -> `Rule(A -> B)`;
 - conjunctions: `If A and B, then C.` -> `Rule(A AND B -> C)`;
 - simple explicit negation markers like `not`, `does not`, `do not`, `did not`.
 
-This parser is mainly a safe fallback and test boundary. For competition accuracy, the LLM translator should handle richer educational wording.
+For competition accuracy, the LLM translator should handle richer educational wording.
 
 ## Knowledge base layer
 
@@ -189,7 +183,7 @@ KnowledgeBase(
     facts=(...),
     rules=(...),
     premise_hash="...",
-    parser_version="llm_translator_v1" | "heuristic_horn_v1",
+    parser_version="llm_translator_v1",
     warnings=(...),
 )
 ```
@@ -312,7 +306,7 @@ Because every derived atom has a `ProofStep` with parents and cited premises, an
 
 ## Current limitations
 
-- The heuristic parser is shallow and cannot fully understand complex educational wording.
+- MCQ option atom parsing is shallow; premise translation is handled by the LLM.
 - The IR supports simple predicate-like atoms, but not full first-order logic syntax.
 - Forward chaining handles Horn-style derivations; it does not handle disjunction, contradiction management beyond explicit negated atoms, arithmetic, or temporal constraints.
 - Z3 encoding is currently Boolean and does not yet exploit the richer `Theory` fields.

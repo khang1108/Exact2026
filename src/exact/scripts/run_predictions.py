@@ -17,7 +17,7 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from exact.config import Settings, get_settings
+from exact.config import get_settings
 from exact.common.schemas import PredictionRequest, TaskType, to_official_response
 from exact.llm_client import build_json_client_from_settings
 from exact.logger import setup_logging
@@ -36,16 +36,12 @@ def main() -> None:
     """Run offline predictions from CLI arguments."""
 
     args = parse_args()
-    if args.no_llm and args.require_llm:
-        raise ValueError("--no-llm and --require-llm cannot be used together")
-
     instances = load_instances(args.input)
     if args.limit is not None:
         instances = instances[: args.limit]
 
     router = TaskRouter()
     settings = get_settings()
-    pipeline_settings = build_pipeline_settings(settings, no_llm=args.no_llm)
     setup_logging(
         level=settings.log_level,
         log_file=args.log_file,
@@ -53,21 +49,12 @@ def main() -> None:
     )
     logger = logging.getLogger(__name__)
 
-    translator_client: JsonLLMClient | None = (
-        None if args.no_llm else build_json_client_from_settings(settings)
-    )
-    if args.require_llm and translator_client is None:
-        raise RuntimeError(
-            "LLM-only mode requires a configured JSON LLM client. "
-            "Set EXACT_LLM_BASE_URL for an OpenAI-compatible server or EXACT_LLM_PROVIDER=local "
-            "to load a local Transformers model."
-        )
+    translator_client: JsonLLMClient | None = build_json_client_from_settings(settings)
     logger.info(
         "prediction runner: "
         f"provider={settings.llm_provider}, "
         f"model={settings.llm_model}, "
         f"llm_enabled={translator_client is not None}, "
-        f"require_llm={args.require_llm}, "
         f"max_tokens={settings.llm_max_tokens}, "
         f"instances={len(instances)}"
     )
@@ -85,11 +72,16 @@ def main() -> None:
         )
 
         if route.task_type == TaskType.TYPE1_LOGIC:
+            if translator_client is None:
+                logger.error("Type 1 request %s cannot run without a JSON LLM client", request.id)
+                raise RuntimeError(
+                    "Type 1 prediction requires a JSON LLM client. Configure EXACT_LLM_BASE_URL "
+                    "or EXACT_LLM_PROVIDER=local."
+                )
             response = run_type1_pipeline(
                 request,
                 translator_client=translator_client,
-                settings=pipeline_settings,
-                allow_heuristic_fallback=not args.require_llm,
+                settings=settings,
                 question_type=route.question_type,
             )
         elif route.task_type == TaskType.TYPE2_PHYSICS:
@@ -123,26 +115,6 @@ def main() -> None:
     logger.info("wrote %s predictions to %s", len(predictions), args.output)
 
 
-def build_pipeline_settings(settings: Settings, *, no_llm: bool) -> Settings:
-    """Return pipeline settings that honor runner-level LLM controls.
-
-    The Type 1 translator can infer that an LLM is available from environment
-    settings such as `EXACT_LLM_PROVIDER=local` or `EXACT_LLM_BASE_URL`. When
-    the CLI user passes `--no-llm`, those inference paths must be disabled so
-    the pipeline uses the deterministic heuristic parser only.
-    """
-
-    if not no_llm:
-        return settings
-
-    return settings.model_copy(
-        update={
-            "llm_provider": "openai",
-            "llm_base_url": None,
-        }
-    )
-
-
 def load_instances(path: Path) -> list[dict[str, Any]]:
     """Load a JSON prediction batch from a list or `instances` object."""
 
@@ -170,12 +142,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--progress-every", type=int, default=100)
     parser.add_argument("--log-file", type=Path, default=Path("outputs/logs/run_predictions.log"))
-    parser.add_argument("--no-llm", action="store_true", help="Disable LLM translation fallback.")
-    parser.add_argument(
-        "--require-llm",
-        action="store_true",
-        help="Fail if LLM translation is unavailable or invalid; do not use heuristic parser.",
-    )
     return parser.parse_args()
 
 

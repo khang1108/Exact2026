@@ -65,6 +65,17 @@ class Settings(BaseSettings):
         le=1.0,
         validation_alias=AliasChoices("EXACT_LLM_TOP_P", "EXACT_TOP_P"),
     )
+    type1_translation_samples: int = Field(
+        default=3,
+        ge=1,
+        validation_alias="EXACT_TYPE1_TRANSLATION_SAMPLES",
+    )
+    type1_sampling_temperature: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=2.0,
+        validation_alias="EXACT_TYPE1_SAMPLING_TEMPERATURE",
+    )
     llm_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_MAX_RETRIES")
     llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")
