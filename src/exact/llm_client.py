@@ -242,16 +242,18 @@ class LocalJsonClient(BaseJsonLLMClient):
 def build_json_client_from_settings(settings: Settings | None = None) -> BaseJsonLLMClient | None:
     """Build a JSON-producing LLM client from runtime settings.
 
-    - `llm_provider=local`: load the model directly with transformers.
     - `llm_base_url` set: call an OpenAI-compatible local/remote server.
+    - `llm_provider=local`: load the model directly with transformers.
     - otherwise: return None and let the pipeline use heuristic fallback.
     """
 
     settings = settings or get_settings()
-    if settings.llm_provider == "local":
-        return LocalJsonClient(settings.llm_model)
+    if settings.mock_llm:
+        return None
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
+    if settings.llm_provider == "local":
+        return LocalJsonClient(settings.llm_model)
     return None
 
 

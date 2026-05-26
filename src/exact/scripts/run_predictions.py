@@ -55,6 +55,12 @@ def main() -> None:
     translator_client: JsonLLMClient | None = (
         None if args.no_llm else build_json_client_from_settings(settings)
     )
+    if args.require_llm and translator_client is None:
+        raise RuntimeError(
+            "LLM-only mode requires a configured JSON LLM client. "
+            "Set EXACT_LLM_BASE_URL for an OpenAI-compatible server or EXACT_LLM_PROVIDER=local "
+            "to load a local Transformers model."
+        )
     logger.info(
         "prediction runner: "
         f"provider={settings.llm_provider}, "
