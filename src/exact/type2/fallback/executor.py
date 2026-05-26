@@ -37,7 +37,17 @@ def validate_code(code: str) -> None:
 
 
 def execute_python(code: str, timeout_seconds: float = 5.0) -> ExecutionResult:
-    validate_code(code)
+    try:
+        validate_code(code)
+    except (SyntaxError, UnsafeCodeError) as exc:
+        return ExecutionResult(
+            ok=False,
+            ans=None,
+            stdout="",
+            stderr="",
+            error=str(exc),
+        )
+
     runner = _build_runner_script()
     with tempfile.TemporaryDirectory(prefix="exact_type2_") as tmpdir:
         code_path = Path(tmpdir) / "program.py"

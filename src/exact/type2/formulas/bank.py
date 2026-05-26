@@ -14,6 +14,48 @@ def _angle_radians(known: dict[str, object], name: str = "angle") -> float:
     return _q(known, name).to("radian").magnitude
 
 
+def _charge_sign(quantity) -> int:
+    return 1 if quantity.magnitude >= 0 else -1
+
+
+def _cos_from_sides(side_1, side_2, opposite_side) -> float:
+    a = side_1.to("meter").magnitude
+    b = side_2.to("meter").magnitude
+    c = opposite_side.to("meter").magnitude
+    denominator = 2 * a * b
+    if denominator == 0:
+        raise ValueError("Triangle side length must be non-zero.")
+    cosine = (a * a + b * b - c * c) / denominator
+    return max(-1.0, min(1.0, cosine))
+
+
+def _net_force_on_third_charge_by_triangle_sides(known: dict[str, object]):
+    q1 = _q(known, "charge")
+    q2 = _q(known, "charge_2")
+    q3 = _q(known, "charge_3")
+    r13 = _q(known, "length")
+    r23 = _q(known, "length_2")
+    r12 = _q(known, "length_3")
+
+    f13 = K_COULOMB * abs(q1 * q3) / (r13 ** 2)
+    f23 = K_COULOMB * abs(q2 * q3) / (r23 ** 2)
+    cos_source_angle = _cos_from_sides(r13, r23, r12)
+    direction_factor = _charge_sign(q1 * q3) * _charge_sign(q2 * q3)
+    return (f13 ** 2 + f23 ** 2 + 2 * f13 * f23 * direction_factor * cos_source_angle) ** 0.5
+
+
+def _net_force_on_a_in_right_triangle(known: dict[str, object]):
+    qa = _q(known, "charge")
+    qb = _q(known, "charge_2")
+    qc = _q(known, "charge_3")
+    ab = _q(known, "length")
+    hypotenuse_bc = _q(known, "length_2")
+    ac = (hypotenuse_bc ** 2 - ab ** 2) ** 0.5
+    force_ab = K_COULOMB * abs(qa * qb) / (ab ** 2)
+    force_ac = K_COULOMB * abs(qa * qc) / (ac ** 2)
+    return (force_ab ** 2 + force_ac ** 2) ** 0.5
+
+
 K_COULOMB = 8.9875517923e9 * ureg.newton * (ureg.meter ** 2) / (ureg.coulomb ** 2)
 EPSILON_0 = 8.8541878128e-12 * ureg.farad / ureg.meter
 MU_0 = 4 * math.pi * 1e-7 * ureg.newton / (ureg.ampere ** 2)
@@ -700,6 +742,21 @@ FORMULAS: tuple[Formula, ...] = (
         solve=lambda k: 0.5 * _q(k, "inductance") * (_q(k, "current") ** 2),
     ),
     Formula(
+        id="lc_natural_frequency",
+        domain="circuits",
+        subfield="lc_oscillation",
+        target="frequency",
+        required=("inductance", "capacitance"),
+        output_unit="Hz",
+        expression="f = 1 / (2*pi*sqrt(L*C))",
+        explanation_template="The natural oscillation frequency of an ideal LC circuit is f = 1/(2*pi*sqrt(LC)).",
+        keywords=("natural oscillation frequency", "lc circuit", "resonant frequency", "oscillation", "frequency", "inductance", "capacitance"),
+        variables={"f": "frequency", "L": "inductance", "C": "capacitance"},
+        conditions=("Ideal LC circuit with inductance L and capacitance C.",),
+        common_mistakes=("Use frequency f in hertz, not angular frequency omega = 1/sqrt(LC)."),
+        solve=lambda k: 1 / (2 * math.pi * ((_q(k, "inductance") * _q(k, "capacitance")) ** 0.5)),
+    ),
+    Formula(
         id="electric_field_from_force_charge",
         domain="electrostatics",
         subfield="electric_field",
@@ -982,6 +1039,86 @@ FORMULAS: tuple[Formula, ...] = (
         * abs(_q(k, "charge_3"))
         * (abs(_q(k, "charge")) + abs(_q(k, "charge_2")))
         / ((_q(k, "length") / 2) ** 2),
+    ),
+    Formula(
+        id="net_force_three_charges_triangle_on_q3",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="force",
+        required=("charge", "charge_2", "charge_3", "length", "length_2", "length_3"),
+        output_unit="N",
+        expression="F_net = |F13 + F23| using Coulomb forces and the law of cosines",
+        explanation_template=(
+            "For q3 at vertex C with source charges at A and B, compute the two Coulomb force "
+            "magnitudes and combine them as vectors using the triangle side lengths."
+        ),
+        keywords=(
+            "point c",
+            "q3",
+            "ca",
+            "ac",
+            "cb",
+            "bc",
+            "triangle",
+            "magnitude of the electric force acting on q3",
+            "force acting on q3",
+        ),
+        variables={
+            "F_net": "force",
+            "q1": "charge",
+            "q2": "charge_2",
+            "q3": "charge_3",
+            "AC": "length",
+            "BC": "length_2",
+            "AB": "length_3",
+        },
+        conditions=(
+            "q3 is at point C.",
+            "length and length_2 are the distances from q3 to the two source charges.",
+            "length_3 is the distance between the two source charges.",
+        ),
+        common_mistakes=(
+            "Do not use the midpoint shortcut unless the problem explicitly says midpoint.",
+            "Attraction reverses one force direction; combine force vectors, not only magnitudes.",
+        ),
+        solve=_net_force_on_third_charge_by_triangle_sides,
+    ),
+    Formula(
+        id="net_force_right_triangle_at_a_from_b_c",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="force",
+        required=("charge", "charge_2", "charge_3", "length", "length_2"),
+        output_unit="N",
+        expression="F_A = sqrt((k|qA*qB|/AB^2)^2 + (k|qA*qC|/AC^2)^2), AC=sqrt(BC^2-AB^2)",
+        explanation_template=(
+            "For a right triangle ABC right-angled at A, the forces on charge A from B and C "
+            "are perpendicular; compute AC from AB and BC, then combine by Pythagoras."
+        ),
+        keywords=(
+            "right-angled triangle",
+            "right-angled at a",
+            "right angle at a",
+            "charge at a",
+            "net electric force acting on the charge at a",
+            "ab",
+            "bc",
+        ),
+        variables={
+            "F_A": "force",
+            "qA": "charge",
+            "qB": "charge_2",
+            "qC": "charge_3",
+            "AB": "length",
+            "BC": "length_2",
+        },
+        conditions=(
+            "ABC is right-angled at A.",
+            "length is AB and length_2 is the hypotenuse BC.",
+            "The target charge is at A.",
+        ),
+        common_mistakes=("Do not use BC as the distance from A to C; compute AC by Pythagoras.",),
+        solve=_net_force_on_a_in_right_triangle,
     ),
     Formula(
         id="electric_potential_energy_two_point_charges",
@@ -1568,11 +1705,13 @@ def retrieve_formulas(
     known: dict[str, object],
     preferred_formula_ids: tuple[str, ...] = (),
 ) -> list[Formula]:
+    lower = question.lower()
     candidates = [
         formula
         for formula in FORMULAS
         if (target is None or formula.target == target)
         and all(required in known for required in formula.required)
+        and _formula_condition_matches(formula, lower)
     ]
     preferred = {formula_id: index for index, formula_id in enumerate(preferred_formula_ids)}
     return sorted(
@@ -1621,3 +1760,34 @@ def _formula_score(
         llm_bonus = 1000 - preferred[formula.id]
     keyword_score = sum(1 for keyword in formula.keywords if keyword in lower)
     return (llm_bonus, keyword_score)
+
+
+def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
+    if formula.id == "net_force_midpoint_between_opposite_equal_charges":
+        return "midpoint" in lower_question or "middle of" in lower_question
+    if formula.id == "net_force_three_collinear_middle_charge":
+        return "straight line" in lower_question or "collinear" in lower_question
+    if formula.id in {
+        "net_force_equal_coulomb_equilateral",
+        "net_force_two_equal_sources_equilateral_on_target",
+    }:
+        return "equilateral" in lower_question
+    if formula.id == "net_force_equal_charges_right_angle":
+        return (
+            ("isosceles right triangle" in lower_question or "identical charges" in lower_question)
+            and ("right angle" in lower_question or "right-angled" in lower_question)
+        )
+    if formula.id == "net_force_three_charges_triangle_on_q3":
+        return (
+            ("q3" in lower_question or "point c" in lower_question)
+            and ("ac" in lower_question or "ca" in lower_question)
+            and ("bc" in lower_question or "cb" in lower_question)
+        )
+    if formula.id == "net_force_right_triangle_at_a_from_b_c":
+        return (
+            ("right-angled at a" in lower_question or "right angle at a" in lower_question)
+            and "ab" in lower_question
+            and "bc" in lower_question
+            and ("charge at a" in lower_question or "qa" in lower_question)
+        )
+    return True

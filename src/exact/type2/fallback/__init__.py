@@ -1,3 +1,3 @@
-from exact.type2.fallback.pot import run_pot_fallback
+"""Fallback execution helpers for Type 2 solvers."""
 
-__all__ = ["run_pot_fallback"]
+__all__: list[str] = []

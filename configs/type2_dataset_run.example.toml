@@ -19,10 +19,11 @@ progress_every = 1
 # Type 2 is PoT-first: retrieve formulas, ask the LLM to generate Pint code,
 # execute in the sandbox, verify answer/unit/formula IDs, then generate final
 # evidence. A real LLM backend is required.
-backend = "ollama"
+backend = "groq"
 enabled = true
-model = "ministral-3:8b-cloud"
-api_key_env = ""
+model = "llama-3.1-8b-instant"
+api_key = ""
+api_key_env = "GROQ_API_KEY"
 
 max_tokens = 512
 temperature = 0.0
@@ -30,10 +31,6 @@ top_p = 1.0
 timeout_seconds = 60.0
 max_retries = 2
 
-# Ollama local daemon provides an OpenAI-compatible endpoint. Cloud models still
-# go through the local Ollama daemon after `ollama signin`.
-base_url = "http://127.0.0.1:11434/v1"
-api_key = ""
 
 # For ollama:
 # backend = "ollama"

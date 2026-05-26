@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -195,7 +196,7 @@ def generate_final_explanation(
         temperature=settings.llm_temperature,
         max_tokens=settings.llm_max_tokens,
     )
-    return FinalExplanationSpec.model_validate(raw)
+    return _validate_final_explanation_spec(raw)
 
 
 def _build_extraction_messages(question: str):
@@ -368,6 +369,40 @@ def _validate_pot_code_spec(raw: dict[str, Any]) -> PotCodeSpec:
         if recovered is None:
             raise
         return PotCodeSpec.model_validate(recovered)
+
+
+def _validate_final_explanation_spec(raw: dict[str, Any]) -> FinalExplanationSpec:
+    normalized = _normalize_final_explanation_raw(raw)
+    return FinalExplanationSpec.model_validate(normalized)
+
+
+def _normalize_final_explanation_raw(raw: object) -> object:
+    if not isinstance(raw, dict):
+        return raw
+    normalized = dict(raw)
+    explanation = normalized.get("explanation")
+    if not isinstance(explanation, str):
+        normalized["explanation"] = _stringify_value(explanation) if explanation is not None else "Generated explanation."
+    normalized["premises"] = _string_list(normalized.get("premises"))
+    normalized["cot"] = _string_list(normalized.get("cot"))
+    return normalized
+
+
+def _string_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [_stringify_value(item) for item in value]
+    return [_stringify_value(value)]
+
+
+def _stringify_value(value: object) -> str:
+    if isinstance(value, str):
+        return value
+    try:
+        return json.dumps(value, ensure_ascii=False, sort_keys=True)
+    except TypeError:
+        return str(value)
 
 
 def _normalize_pot_code_raw(raw: object) -> object:
