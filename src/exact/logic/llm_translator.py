@@ -260,13 +260,14 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
     schema_hint = (
         '{"predicates":[{"name":"predicate_name","arity":1,"gloss":"meaning",'
         '"argument_roles":["entity"]}],'
-        '"premises":[{"source_idx":0,"facts":[],"rules":[{"conditions":[],'
+        '"premises":[{"source_idx":0,"facts":[{"text":"...","pred":"predicate_name",'
+        '"args":["item"],"negated":false}],"rules":[{"conditions":[{"text":"...",'
+        '"pred":"condition_name","args":["?x"],"negated":false}],'
         '"conclusion":{"text":"...","pred":"predicate_name","args":["?x"],'
         '"negated":false}}]}],'
         '"query":{"claim":{"text":"...","pred":"predicate_name","args":["sophia"],'
         '"negated":false}},'
-        '"options":[{"label":"A","text":"...","goal":{"text":"...",'
-        '"pred":"predicate_name","args":["sophia"],"negated":false}}]}'
+        '"options":[]}'
     )
     examples = (
         "Example 1:\n"
@@ -283,16 +284,13 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
         "\"conclusion\":{\"text\":\"qualified for advanced courses\",\"pred\":\"qualified_for_advanced_courses\",\"args\":[\"?x\"],\"negated\":false}}]},"
         "{\"source_idx\":1,\"facts\":[{\"text\":\"Sophia has completed the core curriculum\",\"pred\":\"completed_core_curriculum\",\"args\":[\"sophia\"],\"negated\":false}],\"rules\":[]}],"
         "\"query\":{\"claim\":{\"text\":\"Sophia qualifies for advanced courses\",\"pred\":\"qualified_for_advanced_courses\",\"args\":[\"sophia\"],\"negated\":false}},\"options\":[]}\n\n"
-        "Example 2:\n"
-        "Question: Which conclusion follows? A. Sophia is eligible for the international program B. Sophia needs a recommendation\n"
-        "Options JSON fragment: \"options\":[{\"label\":\"A\",\"text\":\"Sophia is eligible for the international program\",\"goal\":{\"text\":\"Sophia is eligible for the international program\",\"pred\":\"eligible_for_international_program\",\"args\":[\"sophia\"],\"negated\":false}}]\n"
     )
     return [
         {
             "role": "system",
             "content": (
                 "You are an autoformalizer for educational logic QA. "
-                "Return JSON only. Do not answer the question. "
+                "Return JSON only. Keep it compact and valid. Do not use markdown fences. Do not answer the question. "
                 "Translate text into Horn-style predicates for a symbolic solver."
             ),
         },
@@ -306,9 +304,11 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
                 "- Reuse predicate names from predicates everywhere; never invent variants.\n"
                 "- pred and constants must be lowercase snake_case; variables use ?x, ?y.\n"
                 "- Generic rules use variables; named facts/goals use constants.\n"
+                "- Standalone assertions go in facts, not rules.\n"
+                "- Every rule must have at least one condition; never output conditions:[].\n"
                 "- Split conjunctions into separate condition atoms.\n"
                 "- Preserve source_idx exactly.\n"
-                "- Translate each A-D option into options[].goal when options exist.\n"
+                "- Do not translate A-D options; always set options to []. The pipeline evaluates MCQ options separately.\n"
                 "- Mark negated=true only for explicit negation.\n\n"
                 f"{examples}\n"
                 f"Premises:\n{premise_text}\n\nQuestion:\n{question}"
