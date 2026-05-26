@@ -1,0 +1,1468 @@
+[
+    {
+        "Reference_ID": "AmperesCircuitalLaw",
+        "Title": "Ampère’s Circuital Law",
+        "LaTeX_Formula": "\\nabla \\times \\textbf{B} = \\mu_{0} \\left( \\textbf{J} + \\epsilon_{0} \\frac{\\partial \\textbf{E}}{\\partial t} \\right)",
+        "Explanation": "The curl of the magnetic field depends on the electric current density and the rate of change of the electric field with time.",
+        "Fields": [
+            "Classical Electromagnetism",
+            "Maxwell's Equations"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{B}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic field"
+            },
+            {
+                "Symbol": "\\mu_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permeability of free space"
+            },
+            {
+                "Symbol": "\\textbf{J}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric current density"
+            },
+            {
+                "Symbol": "\\epsilon_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permittivity of free space"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ConservationOfChargeRelation",
+        "Title": "The Relation for the Conservation of Charge",
+        "LaTeX_Formula": "\\nabla \\cdot \\textbf{J} = - \\frac{\\partial \\rho}{\\partial t}",
+        "Explanation": "The divergence of the current density is equal to the negative of the rate of change of charge density.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{J}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the current density"
+            },
+            {
+                "Symbol": "\\rho",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the charge density"
+            },
+            {
+                "Symbol": "t",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is time"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "CoulombsLaw",
+        "Title": "Coulomb’s Law",
+        "LaTeX_Formula": "F = k_{e} \\frac{q_1 q_2}{r^2}",
+        "Explanation": "The magnitude of the force between two point charges is directly proportional to the product of the two charges and inversely proportional to the square of the distance between them.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "F",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{N}",
+                "Meaning": "is the magnitude of the force experienced by each point charge"
+            },
+            {
+                "Symbol": "k_{e}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{N\\,m^{2}\\,C^{-2}}",
+                "Meaning": "is the Coulomb Constant, equal to $\\frac{1}{4 \\pi \\epsilon_{0}}$"
+            },
+            {
+                "Symbol": "q_1",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C}",
+                "Meaning": "is the electric charge of the first point charge"
+            },
+            {
+                "Symbol": "q_2",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C}",
+                "Meaning": "is the electric charge of the second point charge"
+            },
+            {
+                "Symbol": "r",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m}",
+                "Meaning": "is the distance between the point charges"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfCapacitance",
+        "Title": "The Definition of Capacitance",
+        "LaTeX_Formula": "C = \\frac{Q}{V}",
+        "Explanation": "The capacitance across an insulating material is the ratio of the magnitude of the charge separated by the material to the potential difference across it.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "C",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the capacitance"
+            },
+            {
+                "Symbol": "Q",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the magnitude of the charge"
+            },
+            {
+                "Symbol": "V",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the potential difference"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfEfficiency",
+        "Title": "The Definition of Efficiency",
+        "LaTeX_Formula": "\\eta = \\frac{E_{\\text{useful}}}{E_{\\text{total}}}",
+        "Explanation": "The efficiency of a process is the ratio of its useful energy or power output to its total energy or power input.",
+        "Fields": [
+            "Classical Mechanics",
+            "Thermodynamics",
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\eta",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the efficiency of the process"
+            },
+            {
+                "Symbol": "E_{\\text{useful}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the useful energy output of the process"
+            },
+            {
+                "Symbol": "E_{\\text{total}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the total energy input of the process"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfElectricalResistivity",
+        "Title": "The Definition of Electrical Resistivity",
+        "LaTeX_Formula": "\\rho = R \\frac{A}{l}",
+        "Explanation": "Electrical resistivity is a property of a material that quantifies how strongly it opposes the flow of electric current.",
+        "Fields": [
+            "Electrical Circuits",
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\rho",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the resistivity of the material"
+            },
+            {
+                "Symbol": "R",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the resistance of a piece of the material with a constant cross-sectional area"
+            },
+            {
+                "Symbol": "A",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m^{2}}",
+                "Meaning": "is the cross-sectional area of the piece of material"
+            },
+            {
+                "Symbol": "l",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m}",
+                "Meaning": "is the length of the piece of the material"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfElectricDipoleMoment",
+        "Title": "The Definition of Electric Dipole Moment",
+        "LaTeX_Formula": "\\textbf{p} = q \\textbf{a}",
+        "Explanation": "For two charges of $+q$ and $-q$, where the positive charge has a displacement $\\textbf{a}$ from the negative charge, the electric dipole moment of the two charges is the product of the magnitude of the charges and their displacement.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{p}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{Cm}",
+                "Meaning": "is the electric dipole moment"
+            },
+            {
+                "Symbol": "q",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C}",
+                "Meaning": "is the magnitude of each charge"
+            },
+            {
+                "Symbol": "\\textbf{a}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{m}",
+                "Meaning": "is the displacement of the positive charge from the negative charge"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfElectricFlux",
+        "Title": "The Definition of Electric Flux",
+        "LaTeX_Formula": "\\phi_E = \\int_S \\textbf{E} \\cdot \\mathrm{d} \\textbf{A}",
+        "Explanation": "The electric flux through a surface is equal to the integral of the scalar product of the electric field and the normal to the surface. In a uniform electric field, if a flat surface is perpendicular to the direction of the electric field, then the electric flux is equal to the field strength multiplied by the area of the surface. If the surface is parallel to the field, then the flux is zero.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\phi _E",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric flux"
+            },
+            {
+                "Symbol": "S",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the surface being integrated over"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\mathrm{d} \\textbf{A}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is an infinitesimal area on the surface $S$"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfElectricSusceptibility",
+        "Title": "The Definition of Electric Susceptibility",
+        "LaTeX_Formula": "\\textbf{P} = \\epsilon_{0} \\chi_{E} \\textbf{E}",
+        "Explanation": "The electric susceptibility of a dielectric is a constant of proportionality between the polarisation of the dielectric and an applied electric field.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{P}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the polarisation"
+            },
+            {
+                "Symbol": "\\epsilon_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permittivity of free space"
+            },
+            {
+                "Symbol": "\\chi_{E}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric susceptibility of the material"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfFluxDensity",
+        "Title": "The Definition of Flux Density",
+        "LaTeX_Formula": "f = \\frac{L}{4 \\pi d^{2}}",
+        "Explanation": "The flux density due to a luminous object at a distance $d$ away from that object is proportional to the total luminosity of that object and inversely proportional to the square of the distance to that object.",
+        "Fields": [
+            "Electromagnetism",
+            "Space Physics"
+        ],
+        "Variables": [
+            {
+                "Symbol": "f",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{W\\,m^{-2}}",
+                "Meaning": "is the flux density at a distance $d$ away from the object"
+            },
+            {
+                "Symbol": "L",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{W}",
+                "Meaning": "is the luminosity of the object"
+            },
+            {
+                "Symbol": "d",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m}",
+                "Meaning": "is the distance away from the object"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfMagneticVectorPotential",
+        "Title": "The Definition of the Magnetic Vector Potential",
+        "LaTeX_Formula": "\\textbf{B} = \\nabla \\times \\textbf{A}",
+        "Explanation": "The magnetic vector potential is a vector potential such that its curl is the magnetic field.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{B}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic field"
+            },
+            {
+                "Symbol": "\\textbf{A}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic vector potential"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfRelativePermittivity",
+        "Title": "The Definition of Relative Permittivity",
+        "LaTeX_Formula": "\\epsilon_{r} = 1 + \\chi_{E}",
+        "Explanation": "The relative permittivity of a material is a measure of how easily the material polarises in response to an electric field.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\epsilon_{r}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the relative permittivity"
+            },
+            {
+                "Symbol": "\\chi_{E}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric susceptibility"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfTheElectricField",
+        "Title": "The Definition of the Electric Field",
+        "LaTeX_Formula": "\\textbf{E} = \\frac{\\textbf{F}_{e}}{q}",
+        "Explanation": "The electric field is the electric force per unit charge exerted on a charged object.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N\\,C^{-1}}",
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\textbf{F}_{e}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N}",
+                "Meaning": "is the electric force exerted on a charged object"
+            },
+            {
+                "Symbol": "q",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C}",
+                "Meaning": "is the electric charge of the object"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfThePoyntingVector",
+        "Title": "The Definition of the Poynting Vector",
+        "LaTeX_Formula": "\\textbf{S} = \\frac{1}{\\mu_{0}} \\textbf{E} \\times \\textbf{B}",
+        "Explanation": "The Poynting Vector is proportional to the vector product of the electric and magnetic fields.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{S}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the Poynting Vector"
+            },
+            {
+                "Symbol": "\\mu_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permeability of free space"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\textbf{B}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "DefinitionOfTheSpeedOfLight",
+        "Title": "The Definition of the Speed of Light",
+        "LaTeX_Formula": "c = \\frac{1}{\\sqrt{\\epsilon_{0} \\mu_{0}}}",
+        "Explanation": "The speed of light can be defined in terms of the permittivity of free space and the permeability of free space.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "c",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m\\,s^{-1}}",
+                "Meaning": "is the speed of light in free space"
+            },
+            {
+                "Symbol": "\\epsilon_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permittivity of free space"
+            },
+            {
+                "Symbol": "\\mu_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permeability of free space"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ElectricFieldDueToAnInfiniteFlatSurfaceOfCharge",
+        "Title": "The Electric Field due to an Infinite Flat Surface of Charge",
+        "LaTeX_Formula": "\\textbf{E} = \\frac{\\sigma}{2 \\varepsilon_{0}} \\hat{\\textbf{n}}",
+        "Explanation": "The magnitude of the electric field at a point due to an infinitely wide and long, flat surface of charge is constant everywhere, and depends only on the charge density per unit area of the surface. The direction of the electric field at that point is parallel to the normal to the surface.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N\\,C^{-1}}",
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\sigma",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C\\,m^{-2}}",
+                "Meaning": "is the charge density per unit area"
+            },
+            {
+                "Symbol": "\\varepsilon_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permittivity of free space"
+            },
+            {
+                "Symbol": "\\textbf{n}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the normal to the surface"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ElectricFieldDueToAnInfiniteLineOfCharge",
+        "Title": "The Electric Field due to an Infinite Line of Charge",
+        "LaTeX_Formula": "\\textbf{E} = \\frac{1}{2 \\pi \\varepsilon_{0}} \\frac{\\lambda}{|\\textbf{r}|} \\hat{\\textbf{r}}",
+        "Explanation": "The magnitude of the electric field at a point due to an infinitely long line of charge is inversely proportional to the radial distance between the point and the line of charge, and the direction of the field at that point is always radial towards or away from the line of charge.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N\\,C^{-1}}",
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\varepsilon_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permittivity of free space"
+            },
+            {
+                "Symbol": "\\lambda",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C\\,m^{-1}}",
+                "Meaning": "is the charge density per unit length"
+            },
+            {
+                "Symbol": "\\textbf{r}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{m}",
+                "Meaning": "is the radial displacement of the point from the line of charge"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ElectricFieldInTermsOfPotentials",
+        "Title": "The Formula for the Electric Field in terms of Potentials",
+        "LaTeX_Formula": "\\textbf{E} = - \\frac{\\partial \\textbf{A}}{\\partial t} - \\nabla \\phi",
+        "Explanation": "The electric field is proportional to the sum of the rate of change of the magnetic vector potential and the gradient of the electric potential.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\textbf{A}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic vector potential"
+            },
+            {
+                "Symbol": "t",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is time"
+            },
+            {
+                "Symbol": "\\phi",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric potential"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ElectricFieldOfAPointCharge",
+        "Title": "The Electric Field of a Point Charge",
+        "LaTeX_Formula": "E = k_{e} \\frac{q}{r^{2}}",
+        "Explanation": "The magnitude of the electric field produced by a point charge is directly proportional to the value of the charge and inversely proportional to the square of the distance from the charge.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "E",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the magnitude of the electric field"
+            },
+            {
+                "Symbol": "k_{e}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the Coulomb Constant, equal to $\\frac{1}{4 \\pi \\epsilon_{0}}$"
+            },
+            {
+                "Symbol": "q",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric charge of the point charge"
+            },
+            {
+                "Symbol": "r",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the distance from the charge"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ElectricPotentialEnergyOfTwoPointCharges",
+        "Title": "The Electric Potential Energy of Two Point Charges",
+        "LaTeX_Formula": "U = k_{e} \\frac{q_{1} q_{2}}{r}",
+        "Explanation": "The electric potential energy of two point charges is directly proportional to the product of the two charges, and inversely proportional to the distance between them.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "U",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric potential energy"
+            },
+            {
+                "Symbol": "k_{e}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the Coulomb Constant, equal to $\\frac{1}{4 \\pi \\epsilon_{0}}$"
+            },
+            {
+                "Symbol": "q_1",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric charge of the first point charge"
+            },
+            {
+                "Symbol": "q_2",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric charge of the second point charge"
+            },
+            {
+                "Symbol": "r",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the distance between the charges"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ElectricPotentialOfAPointCharge",
+        "Title": "The Absolute Electric Potential of a Point Charge",
+        "LaTeX_Formula": "V = k_{e} \\frac{q}{r}",
+        "Explanation": "The absolute electric potential at a distance $r$ from a point charge is directly proportional to the size of the charge, $q$, and inversely proportional to the distance $r$.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "V",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the absolute electric potential"
+            },
+            {
+                "Symbol": "k_{e}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the Coulomb Constant, equal to $\\frac{1}{4 \\pi \\epsilon_{0}}$"
+            },
+            {
+                "Symbol": "q",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric charge of the point charge"
+            },
+            {
+                "Symbol": "r",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the distance from the charge"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "FlowRateOfElectromagneticMomentum",
+        "Title": "The Formula for the Flow Rate of Electromagnetic Momentum",
+        "LaTeX_Formula": "\\frac{1}{A} \\frac{\\mathrm{d}p}{\\mathrm{d}t} = \\frac{S}{c} = \\frac{EB}{\\mu_{0} c}",
+        "Explanation": "The radiation pressure exerted by an electromagnetic wave is directly proportional to the magnitude of the Poynting Vector of the wave.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "A",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the area of the surface that absorbs the wave"
+            },
+            {
+                "Symbol": "p",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the momentum of the wave"
+            },
+            {
+                "Symbol": "t",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is time"
+            },
+            {
+                "Symbol": "S",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the magnitude of the Poynting Vector"
+            },
+            {
+                "Symbol": "c",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the speed of light in free space"
+            },
+            {
+                "Symbol": "E",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the magnitude of the amplitude of the electric field"
+            },
+            {
+                "Symbol": "B",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the magnitude of the amplitude of the magnetic field"
+            },
+            {
+                "Symbol": "\\mu_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permeability of free space"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "FormulaForTheTotalCapacitanceOfCapacitorsConnectedInParallel",
+        "Title": "The Formula for the Total Capacitance of Capacitors Connected in Parallel",
+        "LaTeX_Formula": "C_{\\text{total}} = \\sum_{i} C_{i}",
+        "Explanation": "The total capacitance of a set of capacitors connected in parallel is the sum of the capacitances.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "C_{\\text{total}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the total capacitance"
+            },
+            {
+                "Symbol": "C_{i}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the capacitance of the ith capacitor"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "FormulaForTheTotalCapacitanceOfCapacitorsConnectedInSeries",
+        "Title": "The Formula for the Total Capacitance of Capacitors Connected in Series",
+        "LaTeX_Formula": "\\frac{1}{C_{\\text{total}}} = \\sum_{i} \\frac{1}{C_{i}}",
+        "Explanation": "The total capacitance of a set of capacitors connected in series is equal to the inverse of the sum of the inverse of each capacitance.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "C_{\\text{total}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the total capacitance"
+            },
+            {
+                "Symbol": "C_{i}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the capacitance of the ith capacitor"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "GaussLawForElectricity",
+        "Title": "Gauss’ Law for Electricity",
+        "LaTeX_Formula": "\\nabla \\cdot \\textbf{E} = \\frac{\\rho}{\\epsilon_0}",
+        "Explanation": "The divergence of the electric field is directly proportional to the charge density.",
+        "Fields": [
+            "Classical Electromagnetism",
+            "Maxwell's Equations"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N\\,C^{-1}}",
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\rho",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C\\,m^{-3}}",
+                "Meaning": "is the charge density"
+            },
+            {
+                "Symbol": "\\epsilon_0",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permittivity of free space"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "GaussLawForMagnetism",
+        "Title": "Gauss’ Law for Magnetism",
+        "LaTeX_Formula": "\\nabla \\cdot \\textbf{B} = 0",
+        "Explanation": "The divergence of the magnetic field is zero. There are no magnetic monopoles.",
+        "Fields": [
+            "Classical Electromagnetism",
+            "Maxwell's Equations"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{B}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "IntensityOfAnElectromagneticWaveInTermsOfThePoyntingVector",
+        "Title": "The Intensity of an Electromagnetic Wave in terms of the Poynting Vector",
+        "LaTeX_Formula": "I = \\frac{E_{\\text{max}} B_{\\text{max}}}{2 \\mu_{0}}",
+        "Explanation": "The intensity of an electromagnetic wave is the time-averaged value of the Poynting Vector.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "I",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the intensity of the electromagnetic wave"
+            },
+            {
+                "Symbol": "E_{\\text{max}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the peak value of the electric field"
+            },
+            {
+                "Symbol": "B_{\\text{max}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the peak value of the magnetic field"
+            },
+            {
+                "Symbol": "\\mu_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permeability of free space"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "LorentzForceEquation",
+        "Title": "The Lorentz Force Equation",
+        "LaTeX_Formula": "\\textbf{F} = q \\textbf{E} + q \\textbf{v} \\times \\textbf{B}",
+        "Explanation": "The Lorentz Force is the combination of the electric and magnetic force exerted on a point charge due to electric and magnetic fields.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{F}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N}",
+                "Meaning": "is the Lorentz Force"
+            },
+            {
+                "Symbol": "q",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{C}",
+                "Meaning": "is the charge of the particle"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{N\\,C^{-1}}",
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\textbf{v}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{m\\,s^{-1}}",
+                "Meaning": "is the velocity of the particle"
+            },
+            {
+                "Symbol": "\\textbf{B}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": "\\mathrm{T}",
+                "Meaning": "is the magnetic field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "MagneticFieldInAnInfiniteSolenoid",
+        "Title": "The Formula for the Magnetic Field inside an Infinitely Long Solenoid",
+        "LaTeX_Formula": "B = \\mu_{0} n I",
+        "Explanation": "The strength of the magnetic field inside an infinitely long solenoid is proportional to the product of the current in the solenoid and the number of turns per unit length of the solenoid.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "B",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the strength of the magnetic field"
+            },
+            {
+                "Symbol": "\\mu_{0}",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the permeability of free space"
+            },
+            {
+                "Symbol": "n",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m^{-1}}",
+                "Meaning": "is the number of turns per unit length of the solenoid"
+            },
+            {
+                "Symbol": "I",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{A}",
+                "Meaning": "is the current in the solenoid"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "MaxwellFaradayEquation",
+        "Title": "The Maxwell-Faraday Equation",
+        "LaTeX_Formula": "\\nabla \\times \\textbf{E} = - \\frac{\\partial \\textbf{B}}{\\partial t}",
+        "Explanation": "The curl of the electric field is directly proportional to the rate of change of a time-varying magnetic field.",
+        "Fields": [
+            "Classical Electromagnetism",
+            "Maxwell's Equations"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the electric field"
+            },
+            {
+                "Symbol": "\\textbf{B}",
+                "Role": "Variable",
+                "Object_Type": "Vector",
+                "Unit": null,
+                "Meaning": "is the magnetic field"
+            },
+            {
+                "Symbol": "t",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is time"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "OhmsLaw",
+        "Title": "Ohm’s Law",
+        "LaTeX_Formula": "I = \\frac{V}{R}",
+        "Explanation": "The current through an electrical conductor is directly proportional to the potential difference across it.",
+        "Fields": [
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "I",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the current through the conductor"
+            },
+            {
+                "Symbol": "V",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the potential difference across the conductor"
+            },
+            {
+                "Symbol": "R",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the resistance of the conductor"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "PhotonMomentumFormula",
+        "Title": "The Photon Momentum Formula",
+        "LaTeX_Formula": "p = \\frac{E}{c}",
+        "Explanation": "The momentum of a photon is directly proportional to its energy.",
+        "Fields": [
+            "Special Relativity",
+            "Quantum Mechanics",
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "p",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{kg\\,m\\,s^{-1}}",
+                "Meaning": "is the momentum of the photon"
+            },
+            {
+                "Symbol": "E",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{J}",
+                "Meaning": "is the energy of the photon"
+            },
+            {
+                "Symbol": "c",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m\\,s^{-1}}",
+                "Meaning": "is the speed of light in free space"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "PotentialDifferenceFormulaForComponentsInSeries",
+        "Title": "The Formula for the Total Potential Difference across Electrical Components Connected in Series",
+        "LaTeX_Formula": "V_{\\text{total}} = \\sum_{j} V_{j}",
+        "Explanation": "For electrical components that are connected in series, the total potential difference across all of the components is the sum of the potential difference across each component.",
+        "Fields": [
+            "Electromagnetism",
+            "Electrical Circuits"
+        ],
+        "Variables": [
+            {
+                "Symbol": "V_{\\text{total}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the total potential difference across all components"
+            },
+            {
+                "Symbol": "V_{j}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the potential difference across component $j$"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "PotentialEnergyOfAnElectricDipole",
+        "Title": "The Potential Energy of an Electric Dipole in an Electric Field",
+        "LaTeX_Formula": "U = - \\textbf{p} \\cdot \\textbf{E}",
+        "Explanation": "The potential energy of an electric dipole in an electric field is equal to the scalar product of the electric dipole moment and the electric field.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "U",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the potential energy"
+            },
+            {
+                "Symbol": "\\textbf{p}",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the electric dipole moment"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the electric field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "PowerTransferredByAnElectricalComponent",
+        "Title": "The Power Transferred by an Electrical Component",
+        "LaTeX_Formula": "P = IV",
+        "Explanation": "The power transferred by an electrical component is equal to the product of the current through the component and the electric potential difference across it.",
+        "Fields": [
+            "Electromagnetism",
+            "Electrical Circuits"
+        ],
+        "Variables": [
+            {
+                "Symbol": "P",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the power transferred by the electrical component"
+            },
+            {
+                "Symbol": "I",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the current through the component"
+            },
+            {
+                "Symbol": "V",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the potential difference across the component"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "ResistanceFormulaForComponentsInSeries",
+        "Title": "The Formula for the Total Resistance of Electrical Components Connected in Series",
+        "LaTeX_Formula": "R_{\\text{total}} = \\sum_{j} R_{j}",
+        "Explanation": "For electrical components that are connected in series, the total resistance of all of the components is the sum of the resistance of each component.",
+        "Fields": [
+            "Electromagnetism",
+            "Electrical Circuits"
+        ],
+        "Variables": [
+            {
+                "Symbol": "R_{\\text{total}}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the total resistance of all of the components"
+            },
+            {
+                "Symbol": "R_{j}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the resistance of component $j$"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "SpeedOfElectromagneticWavesInMatter",
+        "Title": "The Formula for the Speed of Electromagnetic Waves in Matter",
+        "LaTeX_Formula": "v = \\frac{1}{\\sqrt{\\epsilon \\mu}}",
+        "Explanation": "When an electromagnetic wave passes through a dielectric, the speed of the wave is less than the speed of light in a vacuum.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "v",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m\\,s^{-1}}",
+                "Meaning": "is the speed of light in the dielectric"
+            },
+            {
+                "Symbol": "\\epsilon",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the electric permittivity of the dielectric"
+            },
+            {
+                "Symbol": "\\mu",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the magnetic permeability of the dielectric"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "StefanBoltzmannLaw",
+        "Title": "The Stefan-Boltzmann Law",
+        "LaTeX_Formula": "P = A \\varepsilon \\sigma T^{4}",
+        "Explanation": "The total power emitted by an ideal blackbody is proportional to the fourth power of the temperature of the blackbody.",
+        "Fields": [
+            "Thermodynamics",
+            "Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "P",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{W}",
+                "Meaning": "is the total power radiated by the blackbody"
+            },
+            {
+                "Symbol": "A",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": "\\mathrm{m^{2}}",
+                "Meaning": "is the surface area of the blackbody"
+            },
+            {
+                "Symbol": "\\varepsilon",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the emissivity of the blackbody"
+            },
+            {
+                "Symbol": "\\sigma",
+                "Role": "Constant",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the Stefan-Boltzmann Constant"
+            },
+            {
+                "Symbol": "T",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the temperature of the blackbody"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "TorqueOnAnElectricDipole",
+        "Title": "The Torque on an Electric Dipole",
+        "LaTeX_Formula": "\\tau = \\textbf{p} \\times \\textbf{E}",
+        "Explanation": "The torque exerted on an electric dipole in the presence of an electric field is the vector product of the electric dipole moment and the electric field.",
+        "Fields": [
+            "Classical Electromagnetism"
+        ],
+        "Variables": [
+            {
+                "Symbol": "\\tau",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the torque"
+            },
+            {
+                "Symbol": "\\textbf{p}",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the electric dipole moment"
+            },
+            {
+                "Symbol": "\\textbf{E}",
+                "Role": "Variable",
+                "Object_Type": 0,
+                "Unit": null,
+                "Meaning": "is the electric field"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "TransformerPowerEquation",
+        "Title": "The Transformer Power Equation for an Ideal Transformer",
+        "LaTeX_Formula": "I_{P}V_{P} = I_{S}V_{S}",
+        "Explanation": "For an ideal transformer, the product of the current in and potential difference across the primary coil is equal to the product of the current in and potential difference across the secondary coil.",
+        "Fields": [
+            "Electric Circuits"
+        ],
+        "Variables": [
+            {
+                "Symbol": "I_{P}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the current in the primary coil"
+            },
+            {
+                "Symbol": "V_{P}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the potential difference across the primary coil"
+            },
+            {
+                "Symbol": "I_{S}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the current in the secondary coil"
+            },
+            {
+                "Symbol": "V_{S}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the potential difference across the secondary coil"
+            }
+        ]
+    },
+    {
+        "Reference_ID": "TransformerVoltageEquation",
+        "Title": "The Transformer Voltage Equation",
+        "LaTeX_Formula": "\\frac{V_{P}}{V_{S}} = \\frac{N_{P}}{N_{S}}",
+        "Explanation": "The ratio of the voltage across the primary coil of a transformer to the voltage across the secondary coil of the transformer is equal to the ratio of the number of turns on the primary coil to the number of turns on the secondary coil.",
+        "Fields": [
+            "Electric Circuits"
+        ],
+        "Variables": [
+            {
+                "Symbol": "V_{P}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the voltage across the primary coil of the transformer"
+            },
+            {
+                "Symbol": "V_{S}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the voltage across the secondary coil of the transformer"
+            },
+            {
+                "Symbol": "N_{P}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the number of turns on the primary coil"
+            },
+            {
+                "Symbol": "N_{S}",
+                "Role": "Variable",
+                "Object_Type": "Scalar",
+                "Unit": null,
+                "Meaning": "is the number of turns on the secondary coil"
+            }
+        ]
+    }
+]
