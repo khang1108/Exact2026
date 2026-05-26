@@ -200,19 +200,56 @@ class LLMClient(OpenAICompatibleJsonClient):
 
 
 class LocalClient(BaseTextLLMClient):
-    def __init__(self, model_name: str):
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        device_map: str | None = "auto",
+        torch_dtype: str = "float16",
+        local_files_only: bool = False,
+        trust_remote_code: bool = False,
+    ):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
         logger.info("Loading local tokenizer for %s", model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model_kwargs: dict[str, Any] = {"dtype": _preferred_torch_dtype()}
-        if importlib.util.find_spec("accelerate") is not None:
-            model_kwargs["device_map"] = "auto"
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            local_files_only=local_files_only,
+            trust_remote_code=trust_remote_code,
+        )
+        model_kwargs: dict[str, Any] = {
+            "torch_dtype": _resolve_torch_dtype(torch_dtype),
+            "local_files_only": local_files_only,
+            "trust_remote_code": trust_remote_code,
+        }
+        if device_map is not None:
+            if importlib.util.find_spec("accelerate") is not None:
+                model_kwargs["device_map"] = device_map
+            else:
+                logger.warning("Ignoring device_map=%s because accelerate is not installed", device_map)
 
         logger.info("Loading local model %s with %s", model_name, model_kwargs)
         started_at = time.monotonic()
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
+        try:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                attn_implementation="flash_attention_2",
+                **model_kwargs,
+            )
+        except (ImportError, ValueError, RuntimeError) as exc:
+            if not _should_retry_with_sdpa(exc):
+                raise
+            logger.warning(
+                "flash_attention_2 unavailable for %s; retrying with sdpa: %s",
+                model_name,
+                exc,
+            )
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                attn_implementation="sdpa",
+                **model_kwargs,
+            )
         if "device_map" not in model_kwargs and torch.cuda.is_available():
             self.model = self.model.to("cuda")
         logger.info("Loaded local model %s in %.1fs", model_name, time.monotonic() - started_at)
@@ -269,8 +306,23 @@ class LocalClient(BaseTextLLMClient):
 class LocalJsonClient(BaseJsonLLMClient):
     """JSON adapter over the direct transformers-based LocalClient."""
 
-    def __init__(self, model_name: str, top_p: float = 1.0):
-        self.client = LocalClient(model_name)
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        top_p: float = 1.0,
+        device_map: str | None = "auto",
+        torch_dtype: str = "float16",
+        local_files_only: bool = False,
+        trust_remote_code: bool = False,
+    ):
+        self.client = LocalClient(
+            model_name,
+            device_map=device_map,
+            torch_dtype=torch_dtype,
+            local_files_only=local_files_only,
+            trust_remote_code=trust_remote_code,
+        )
         self.top_p = top_p
 
     def complete_json_sync(
@@ -302,11 +354,20 @@ def build_json_client_from_settings(settings: Settings | None = None) -> BaseJso
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
     if settings.llm_provider == "local":
-        return LocalJsonClient(settings.llm_model, top_p=settings.llm_top_p)
+        return LocalJsonClient(
+            settings.llm_model,
+            top_p=settings.llm_top_p,
+            device_map=settings.llm_device_map,
+            torch_dtype=settings.llm_torch_dtype,
+            local_files_only=settings.llm_local_files_only,
+            trust_remote_code=settings.llm_trust_remote_code,
+        )
     return None
 
 
-def _torch_dtype(name: str):
+def _resolve_torch_dtype(name: str):
+    import torch
+
     if name == "auto":
         return "auto"
     if name == "float32":
@@ -314,6 +375,18 @@ def _torch_dtype(name: str):
     if name == "bfloat16":
         return torch.bfloat16
     return torch.float16
+
+
+def _should_retry_with_sdpa(exc: BaseException) -> bool:
+    text = str(exc).lower()
+    retry_markers = (
+        "flash_attn",
+        "flash attention",
+        "flash_attention_2",
+        "attn_implementation",
+        "sm_75",
+    )
+    return isinstance(exc, (ImportError, ValueError)) or any(marker in text for marker in retry_markers)
 
 
 def _parse_json_object(text: str) -> dict[str, Any]:
@@ -331,11 +404,3 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise ValueError("LLM JSON output must be an object")
     return parsed
-
-
-def _preferred_torch_dtype() -> Any:
-    import torch
-
-    if torch.cuda.is_available():
-        return torch.float16
-    return torch.float32

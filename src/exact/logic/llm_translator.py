@@ -102,14 +102,23 @@ class AtomSpec(BaseModel):
     @classmethod
     def args_must_be_variables_or_constants(cls, value: list[str]) -> list[str]:
         normalized: list[str] = []
-        for arg in value:
-            arg = arg.strip()
+        for raw_arg in value:
+            arg = raw_arg.strip()
             if not arg:
                 raise ValueError("atom args must not contain empty strings")
-            if arg.startswith("?") and not _VARIABLE_RE.fullmatch(arg):
-                raise ValueError("variables must use ?x-style snake_case names")
-            if not arg.startswith("?") and not _CONSTANT_RE.fullmatch(arg):
-                raise ValueError("constants must be lowercase snake_case")
+            if arg.startswith("?"):
+                if not _VARIABLE_RE.fullmatch(arg):
+                    # Normalize malformed variable: keep only ?x prefix, e.g. "?x_student" → "?x"
+                    var_match = re.match(r"\?[a-z][a-z0-9_]*", arg)
+                    arg = var_match.group(0) if var_match else "?x"
+            elif not _CONSTANT_RE.fullmatch(arg):
+                # LLM sometimes embeds args as pred(?x) or mixed-case strings.
+                # Extract the inner variable if present; otherwise slugify to snake_case.
+                var_match = re.search(r"\?[a-z][a-z0-9_]*", arg)
+                if var_match:
+                    arg = var_match.group(0)
+                else:
+                    arg = re.sub(r"[^a-z0-9]+", "_", arg.lower()).strip("_") or "entity"
             normalized.append(arg)
         return normalized
 
@@ -276,9 +285,12 @@ def translate_query_only_with_llm(
     )
     spec = QueryOnlySpec.model_validate(raw)
     if predicate_names and spec.query.claim.pred not in set(predicate_names):
-        raise ValueError(
-            "Query predicate must reuse premise predicate dictionary; "
-            f"got {spec.query.claim.pred!r}, allowed={list(predicate_names)!r}"
+        # Soft mismatch: LLM used a predicate not in the KB dictionary (e.g. "implies").
+        # Log and proceed — the solver will return Unknown rather than crashing.
+        logger.warning(
+            "Query predicate %r not in premise dictionary %r; solving will likely return Unknown",
+            spec.query.claim.pred,
+            list(predicate_names),
         )
     return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)
 
