@@ -81,6 +81,7 @@ def main() -> None:
                     example.request,
                     translator_client=translator_client if use_type1_llm else None,
                     settings=settings if use_type1_llm else disabled_settings,
+                    question_type=route.question_type,
                 )
             elif route.task_type == TaskType.TYPE2_PHYSICS:
                 response = run_type2_pipeline(

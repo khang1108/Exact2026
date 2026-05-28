@@ -5,11 +5,11 @@ Hybrid neuro-symbolic pipeline for the [EXACT 2026](https://ura.hcmut.edu.vn/exa
 ## Layout
 
 - `src/exact/` — core library (`exact.config`, pipelines, solvers)
-- `app/` — FastAPI service (`uvicorn app.main:app`)
-- `data/` — datasets, formula banks, few-shot pools
-- `eval/` — offline metrics and runs
+- `src/exact/app/` — FastAPI service (`uvicorn exact.app.main:app`)
+- `src/exact/datasets/` — datasets and normalized loaders
+- `artifacts/` — prediction and evaluation outputs
 - `docs/` — challenge notes and experiment logs
-- `paper/` — paper drafts
+- `papers/` — paper drafts and references
 
 ## Quick start
 
@@ -40,12 +40,53 @@ export EXACT_LLM_BASE_URL=http://127.0.0.1:8001/v1
 export EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
 ```
 
+## Docker with remote vLLM
+
+The Docker image runs only the EXACT API. Host vLLM separately on a VM or GPU
+machine that exposes an OpenAI-compatible endpoint.
+
+Build the API image:
+
+```bash
+docker build -t exact2026-api .
+```
+
+Run it against a vLLM server on another VM:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -e EXACT_LLM_BASE_URL=http://VM_PRIVATE_IP_OR_DNS:8000/v1 \
+  -e EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct \
+  -e EXACT_LLM_API_KEY=EMPTY \
+  exact2026-api
+```
+
+If vLLM is running on the same host as Docker, use Docker's host gateway:
+
+```bash
+docker run --rm -p 8080:8080 \
+  --add-host=host.docker.internal:host-gateway \
+  -e EXACT_LLM_BASE_URL=http://host.docker.internal:8000/v1 \
+  -e EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct \
+  -e EXACT_LLM_API_KEY=EMPTY \
+  exact2026-api
+```
+
+The vLLM side should listen on a reachable interface, for example:
+
+```bash
+vllm serve Qwen/Qwen2.5-7B-Instruct \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --served-model-name Qwen/Qwen2.5-7B-Instruct
+```
+
 Type 1 is LLM-only: if no JSON LLM client is configured, the request fails with
 a clear error instead of substituting a local parser.
 
-Type 2 is currently a clean extension point. The API routes physics questions
-there and returns a structured placeholder response until the team implements
-the paper-backed physics pipeline.
+Type 2 uses a PoT-first physics pipeline: formula retrieval, LLM-generated Pint
+code, sandbox execution, answer/unit/formula verification, and evidence
+generation.
 
 Example Type 1 request:
 
