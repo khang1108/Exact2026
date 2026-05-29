@@ -5,9 +5,12 @@ from fastapi import APIRouter, Request
 from exact.common.schemas import (
     BatchPredictionRequest,
     BatchPredictionResponse,
+    OfficialBatchPredictionResponse,
+    OfficialPredictionResponse,
     PredictionRequest,
     PredictionResponse,
     TaskType,
+    to_official_response,
 )
 from exact.logger import get_request_logger
 from exact.router.task_router import TaskRouter
@@ -23,8 +26,7 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@api_router.post("/predict", response_model=PredictionResponse)
-def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
+def _predict_internal(payload: PredictionRequest, request: Request) -> PredictionResponse:
     route = task_router.route(payload)
     logger = get_request_logger(
         __name__,
@@ -54,10 +56,33 @@ def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
         )
 
 
-@api_router.post("/batch", response_model=BatchPredictionResponse)
+@api_router.post("/predict", response_model=OfficialPredictionResponse)
+def predict(payload: PredictionRequest, request: Request) -> dict:
+    """Run the full EXACT pipeline and return the official challenge shape."""
+
+    return to_official_response(_predict_internal(payload, request))
+
+
+@api_router.post("/debug/predict", response_model=PredictionResponse)
+def debug_predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
+    """Run prediction while preserving local metadata useful during development."""
+
+    return _predict_internal(payload, request)
+
+
+@api_router.post("/batch", response_model=OfficialBatchPredictionResponse)
 def batch_predict(
     payload: BatchPredictionRequest,
     request: Request,
+) -> dict:
+    predictions = [to_official_response(_predict_internal(item, request)) for item in payload.instances]
+    return {"predictions": predictions}
+
+
+@api_router.post("/debug/batch", response_model=BatchPredictionResponse)
+def debug_batch_predict(
+    payload: BatchPredictionRequest,
+    request: Request,
 ) -> BatchPredictionResponse:
-    predictions = [predict(item, request) for item in payload.instances]
+    predictions = [_predict_internal(item, request) for item in payload.instances]
     return BatchPredictionResponse(predictions=predictions)

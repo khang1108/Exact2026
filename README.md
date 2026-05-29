@@ -26,12 +26,14 @@ Health check: `GET http://localhost:8080/health`
 The API exposes:
 
 - `GET /health`
-- `POST /predict`
-- `POST /batch`
+- `POST /predict` — official EXACT response shape
+- `POST /batch` — official EXACT response shape for multiple instances
+- `POST /debug/predict` — internal response with debug metadata
+- `POST /debug/batch` — internal response with debug metadata
 
-Each prediction returns at least `answer`, `explanation`, `fol`, `cot`, `premises`,
-and `confidence`, with local metadata such as `id`, `task_type`, `question_type`,
-`unit`, and `error` included during development.
+Official predictions return `answer` and `explanation`, plus optional `fol`,
+`cot`, `premises`, and `confidence`. Local metadata such as `id`, `task_type`,
+`question_type`, `unit`, and `error` is available from the `/debug/*` routes.
 
 Configure a local OpenAI-compatible LLM server for real predictions:
 

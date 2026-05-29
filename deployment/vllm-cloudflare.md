@@ -138,9 +138,9 @@ curl -s https://exact-api.example.com/predict \
   }'
 ```
 
-If the organizer requires a strictly minimal response body, return
-`to_official_response(response)` at the API boundary or add a separate
-submission route that drops local debug fields such as `id`, `task_type`,
+`/predict` returns the official EXACT response body: required `answer` and
+`explanation`, plus optional `fol`, `cot`, `premises`, and `confidence`. Use
+`/debug/predict` when you need local metadata such as `id`, `task_type`,
 `question_type`, `unit`, and `error`.
 
 ## Operational notes

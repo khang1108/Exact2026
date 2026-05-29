@@ -153,10 +153,31 @@ class PredictionResponse(AppBaseModel):
     error: str | None = None
 
 
+class OfficialPredictionResponse(AppBaseModel):
+    """Official EXACT API response shape.
+
+    The challenge requires `answer` and `explanation`; the remaining fields are
+    optional evidence that can improve reasoning-depth review.
+    """
+
+    answer: str
+    explanation: str
+    fol: str | None = None
+    cot: list[str] | None = None
+    premises: list[str] | None = None
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+
+
 class BatchPredictionResponse(AppBaseModel):
     """Batch API response containing one prediction result per input instance."""
 
     predictions: list[PredictionResponse]
+
+
+class OfficialBatchPredictionResponse(AppBaseModel):
+    """Batch wrapper using the official per-item response shape."""
+
+    predictions: list[OfficialPredictionResponse]
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
