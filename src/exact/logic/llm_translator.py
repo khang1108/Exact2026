@@ -117,8 +117,12 @@ class AtomSpec(BaseModel):
             if not arg:
                 raise ValueError("atom args must not contain empty strings")
             if arg.startswith("?"):
-                if not _VARIABLE_RE.fullmatch(arg):
-                    # Normalize malformed variable: keep only ?x prefix, e.g. "?x_student" → "?x"
+                if len(arg) > 8:
+                    # Long ?name strings (e.g. ?best_practices_project) are LLM-invented
+                    # entity names with a spurious ? prefix — treat as ground constants.
+                    arg = re.sub(r"[^a-z0-9]+", "_", arg[1:].lower()).strip("_") or "entity"
+                elif not _VARIABLE_RE.fullmatch(arg):
+                    # Short malformed variable: normalise to nearest valid form.
                     var_match = re.match(r"\?[a-z][a-z0-9_]*", arg)
                     arg = var_match.group(0) if var_match else "?x"
             elif not _CONSTANT_RE.fullmatch(arg):
@@ -153,9 +157,21 @@ class PremiseSpec(BaseModel):
 
     @model_validator(mode="after")
     def drop_malformed_rules(self) -> "PremiseSpec":
-        # Drop rules with empty conditions or missing conclusion — LLM sometimes
-        # generates these at higher sampling temperatures.
-        self.rules = [r for r in self.rules if r.conditions and r.conclusion is not None]
+        # Drop rules with empty conditions or missing conclusion (LLM sampling noise).
+        # Also drop identity rules A → A which derive nothing new.
+        def _is_identity(r: RuleSpec) -> bool:
+            return (
+                r.conclusion is not None
+                and len(r.conditions) == 1
+                and r.conditions[0].pred == r.conclusion.pred
+                and r.conditions[0].args == r.conclusion.args
+                and r.conditions[0].negated == r.conclusion.negated
+            )
+
+        self.rules = [
+            r for r in self.rules
+            if r.conditions and r.conclusion is not None and not _is_identity(r)
+        ]
         return self
 
 
@@ -694,11 +710,22 @@ def _mcq_options_token_budget(max_tokens: int) -> int:
 
 
 def _repair_atom_dict(atom: dict[str, Any], pred_map: dict[str, str]) -> None:
-    """In-place: normalize pred name, remap via pred_map, drop text field."""
+    """In-place: normalize pred name, remap via pred_map, drop text field.
+
+    Also eliminates double negation: if the LLM embeds negation in the predicate
+    name itself (e.g. ``not_follows_pep8``) *and* sets ``negated=True``, the two
+    cancel each other out.  Strip the ``not_`` prefix and flip ``negated`` so the
+    rest of the pipeline sees a clean positive or single-negation atom.
+    """
     atom.pop("text", None)
     if "pred" in atom and isinstance(atom["pred"], str):
         old = atom["pred"]
-        atom["pred"] = pred_map.get(old, _normalize_pred_name(old))
+        norm = pred_map.get(old, _normalize_pred_name(old))
+        if norm.startswith("not_"):
+            # LLM encoded negation in the pred name — strip it and flip negated flag.
+            norm = norm[4:] or "pred"
+            atom["negated"] = not bool(atom.get("negated", False))
+        atom["pred"] = norm
     if "args" in atom and not isinstance(atom["args"], list):
         atom["args"] = [str(atom["args"])] if atom["args"] is not None else []
 
