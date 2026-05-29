@@ -70,6 +70,9 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
         "llm_local_files_only": bool(llm.get("local_files_only", settings.llm_local_files_only)),
         "llm_trust_remote_code": bool(llm.get("trust_remote_code", settings.llm_trust_remote_code)),
         "mock_llm": False,
+        "type1_enable_cot_fallback": bool(
+            pipeline.get("type1_enable_cot_fallback", settings.type1_enable_cot_fallback)
+        ),
     }
 
     if not bool(pipeline.get("use_type1_llm", True)) and not bool(

@@ -21,7 +21,7 @@ model = "Qwen/Qwen2.5-7B-Instruct"
 base_url = "http://127.0.0.1:8000/v1"
 api_key = "EMPTY"
 
-max_tokens = 2048
+max_tokens = 1024
 temperature = 0.0
 top_p = 1.0
 timeout_seconds = 60.0
@@ -30,4 +30,5 @@ max_retries = 2
 [pipeline]
 use_type1_llm = true
 use_type2_llm_fallback = false
+type1_enable_cot_fallback = false
 fail_fast = false

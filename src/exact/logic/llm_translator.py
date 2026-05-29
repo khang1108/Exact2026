@@ -13,7 +13,7 @@ import re
 from typing import Any, Protocol
 
 from openai.types.chat import ChatCompletionMessageParam
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from exact.config import Settings, get_settings
 from exact.logic.ir import Atom, Fact, ParsedPremise, Query, Rule
@@ -41,11 +41,11 @@ class JsonLLMClient(Protocol):
 class PredicateSpec(BaseModel):
     """Canonical predicate dictionary entry for one translated instance."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     name: str
     arity: int = Field(ge=0)
-    gloss: str
+    gloss: str = ""
     argument_roles: list[str] = Field(default_factory=list)
 
     @field_validator("name")
@@ -56,14 +56,6 @@ class PredicateSpec(BaseModel):
             raise ValueError("predicate name must be snake_case")
         return value
 
-    @field_validator("gloss")
-    @classmethod
-    def gloss_must_not_be_empty(cls, value: str) -> str:
-        value = value.strip()
-        if not value:
-            raise ValueError("predicate gloss must not be empty")
-        return value
-
     @field_validator("argument_roles")
     @classmethod
     def roles_must_not_be_blank(cls, value: list[str]) -> list[str]:
@@ -71,22 +63,25 @@ class PredicateSpec(BaseModel):
 
 
 class AtomSpec(BaseModel):
-    """LLM-produced atom using text plus optional canonical pred/args."""
+    """LLM-produced atom with compact canonical pred/args fields."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
-    text: str
+    text: str = ""
     negated: bool = False
     pred: str | None = None
     args: list[str] = Field(default_factory=list)
 
     @field_validator("text")
     @classmethod
-    def text_must_not_be_empty(cls, value: str) -> str:
-        value = value.strip()
-        if not value:
-            raise ValueError("atom text must not be empty")
-        return value
+    def text_can_be_omitted(cls, value: str) -> str:
+        return value.strip()
+
+    @model_validator(mode="after")
+    def pred_or_text_must_exist(self) -> "AtomSpec":
+        if not self.pred and not self.text:
+            raise ValueError("atom must include pred or text")
+        return self
 
     @field_validator("pred")
     @classmethod
@@ -98,12 +93,16 @@ class AtomSpec(BaseModel):
             raise ValueError("atom pred must be snake_case")
         return value
 
-    @field_validator("args")
+    @field_validator("args", mode="before")
     @classmethod
-    def args_must_be_variables_or_constants(cls, value: list[str]) -> list[str]:
+    def args_must_be_variables_or_constants(cls, value: Any) -> list[str]:
+        if value is None:
+            return []
+        if not isinstance(value, list):
+            value = [value]
         normalized: list[str] = []
         for raw_arg in value:
-            arg = raw_arg.strip()
+            arg = _coerce_atom_arg(raw_arg)
             if not arg:
                 raise ValueError("atom args must not contain empty strings")
             if arg.startswith("?"):
@@ -126,7 +125,7 @@ class AtomSpec(BaseModel):
 class RuleSpec(BaseModel):
     """Horn rule with conjunctive conditions and one conclusion atom."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     conditions: list[AtomSpec] = Field(default_factory=list)
     conclusion: AtomSpec
@@ -142,7 +141,7 @@ class RuleSpec(BaseModel):
 class PremiseSpec(BaseModel):
     """Formalization for one source premise index."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     source_idx: int
     facts: list[AtomSpec] = Field(default_factory=list)
@@ -152,7 +151,7 @@ class PremiseSpec(BaseModel):
 class QuerySpec(BaseModel):
     """Formalized yes/no/unknown target claim."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     claim: AtomSpec
 
@@ -160,7 +159,7 @@ class QuerySpec(BaseModel):
 class OptionSpec(BaseModel):
     """Formalized multiple-choice option goal."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     label: str
     text: str
@@ -186,7 +185,7 @@ class OptionSpec(BaseModel):
 class TranslationSpec(BaseModel):
     """Complete LLM autoformalization for premises, query, and options."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
 
     predicates: list[PredicateSpec] = Field(default_factory=list)
     premises: list[PremiseSpec]
@@ -231,7 +230,7 @@ def translate_with_llm(
     raw = client.complete_json_sync(
         messages=messages,
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=_translation_token_budget(settings.llm_max_tokens, len(premises)),
     )
     logger.info("Validating LLM translation schema")
     spec = TranslationSpec.model_validate(raw)
@@ -255,11 +254,25 @@ def translate_premises_only_with_llm(
     client = llm_client or LLMClient.from_settings(settings)
     messages = _build_premises_only_messages(premises)
     logger.info("Starting premise-only LLM translation: premises=%s", len(premises))
-    raw = client.complete_json_sync(
-        messages=messages,
-        temperature=settings.llm_temperature if temperature is None else temperature,
-        max_tokens=settings.llm_max_tokens,
-    )
+    base_budget = _premise_token_budget(settings.llm_max_tokens, len(premises))
+    temp = settings.llm_temperature if temperature is None else temperature
+
+    last_exc: ValueError | None = None
+    for attempt, budget in enumerate([base_budget, min(8192, base_budget * 2)], start=1):
+        try:
+            raw = client.complete_json_sync(messages=messages, temperature=temp, max_tokens=budget)
+            break
+        except ValueError as exc:
+            msg = str(exc)
+            if "invalid JSON" not in msg and "incomplete JSON" not in msg:
+                raise
+            last_exc = exc
+            logger.warning(
+                "Premise translation attempt %s/2 failed (budget=%s): %s", attempt, budget, msg[:200]
+            )
+    else:
+        raise last_exc  # type: ignore[misc]
+
     spec = PremisesOnlySpec.model_validate(raw)
     parsed = _premise_specs_to_parsed(spec.premises, premises)
     predicate_names = tuple(predicate.name for predicate in spec.predicates)
@@ -281,7 +294,7 @@ def translate_query_only_with_llm(
     raw = client.complete_json_sync(
         messages=messages,
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=_query_token_budget(settings.llm_max_tokens),
     )
     spec = QueryOnlySpec.model_validate(raw)
     if predicate_names and spec.query.claim.pred not in set(predicate_names):
@@ -300,18 +313,20 @@ def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMes
 
     premise_text = "\n".join(f"{idx}: {premise}" for idx, premise in enumerate(premises))
     schema_hint = (
-        '{"predicates":[{"name":"pred","arity":1,"gloss":"meaning","argument_roles":["entity"]}],'
-        '"premises":[{"source_idx":0,"facts":[{"text":"...","pred":"pred","args":["item"],"negated":false}],'
-        '"rules":[{"conditions":[{"text":"...","pred":"cond","args":["?x"],"negated":false}],'
-        '"conclusion":{"text":"...","pred":"pred","args":["?x"],"negated":false}}]}]}'
+        '{"predicates":[{"name":"pred","arity":1}],'
+        '"premises":[{"source_idx":0,"facts":[{"pred":"pred","args":["item"],"negated":false}],'
+        '"rules":[{"conditions":[{"pred":"cond","args":["?x"],"negated":false}],'
+        '"conclusion":{"pred":"pred","args":["?x"],"negated":false}}]}]}'
     )
     return [
         {
             "role": "system",
             "content": (
                 "You are an autoformalizer for educational logic QA. "
-                "Return JSON only. No markdown fences. "
-                "Translate premises into Horn-style predicates for a symbolic solver."
+                "Return JSON only. No markdown fences. No extra text. "
+                "Translate premises into compact Horn-style predicates for a symbolic solver. "
+                "CRITICAL: never include a 'text' field in any atom object. "
+                "CRITICAL: args must be an array of strings only, never nested objects."
             ),
         },
         {
@@ -319,11 +334,16 @@ def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMes
             "content": (
                 f"Translate these premises into Horn-style IR. Output valid JSON matching: {schema_hint}\n"
                 "Rules:\n"
+                "- NEVER include 'text' fields in facts, conditions, or conclusions — omit them entirely\n"
+                "- NEVER include 'gloss' or 'argument_roles' in predicates — only name and arity\n"
                 "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
+                "- args must be an array of strings only, e.g. [\"?x\"], never nested objects\n"
+                "- Do not use pred values `and`, `or`, `either`, or `not`; split conjunctions and use negated=true for negation\n"
                 "- Generic rules use variables (?x); named facts use constants (sofia)\n"
                 "- Standalone assertions go in facts; implications go in rules\n"
                 "- Every rule must have at least one condition; never output conditions:[]\n"
                 "- Split conjunctions into separate condition atoms\n"
+                "- If a premise has alternatives with `or`, keep only Horn-compatible direct conditions and do not model disjunction\n"
                 "- Preserve source_idx exactly\n\n"
                 f"Premises:\n{premise_text}"
             ),
@@ -338,8 +358,7 @@ def _build_query_only_messages(
     """Compact query-only prompt for YNU/open-ended questions."""
 
     schema_hint = (
-        '{"query":{"claim":{"text":"...","pred":"predicate_name",'
-        '"args":["entity"],"negated":false}}}'
+        '{"query":{"claim":{"pred":"predicate_name","args":["entity"],"negated":false}}}'
     )
     predicate_instruction = (
         "Allowed predicate names from premise translation: "
@@ -354,7 +373,8 @@ def _build_query_only_messages(
             "content": (
                 "You are an autoformalizer for educational logic QA. "
                 "Return JSON only. No markdown fences. "
-                "Translate the question target into one Horn-style query atom."
+                "Translate the question target into one Horn-style query atom. "
+                "Never put JSON objects inside args; args must be strings only."
             ),
         },
         {
@@ -365,6 +385,8 @@ def _build_query_only_messages(
                 "- Do not answer the question\n"
                 f"{predicate_instruction}"
                 "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
+                "- Prefer atom shape {\"pred\":\"name\",\"args\":[\"entity\"],\"negated\":false}; omit text fields\n"
+                "- args must be an array of strings only, e.g. [\"student\"], never nested objects\n"
                 "- Mark negated=true only for explicit negation\n\n"
                 f"Question:\n{question}"
             ),
@@ -413,32 +435,23 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
 
     premise_text = "\n".join(f"{idx}: {premise}" for idx, premise in enumerate(premises))
     schema_hint = (
-        '{"predicates":[{"name":"predicate_name","arity":1,"gloss":"meaning",'
-        '"argument_roles":["entity"]}],'
-        '"premises":[{"source_idx":0,"facts":[{"text":"...","pred":"predicate_name",'
-        '"args":["item"],"negated":false}],"rules":[{"conditions":[{"text":"...",'
-        '"pred":"condition_name","args":["?x"],"negated":false}],'
-        '"conclusion":{"text":"...","pred":"predicate_name","args":["?x"],'
-        '"negated":false}}]}],'
-        '"query":{"claim":{"text":"...","pred":"predicate_name","args":["sophia"],'
-        '"negated":false}},'
+        '{"predicates":[{"name":"predicate_name","arity":1}],'
+        '"premises":[{"source_idx":0,"facts":[{"pred":"predicate_name","args":["item"],"negated":false}],'
+        '"rules":[{"conditions":[{"pred":"condition_name","args":["?x"],"negated":false}],'
+        '"conclusion":{"pred":"predicate_name","args":["?x"],"negated":false}}]}],'
+        '"query":{"claim":{"pred":"predicate_name","args":["sophia"],"negated":false}},'
         '"options":[]}'
     )
     examples = (
         "Example 1:\n"
-        "Premise 0: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.\n"
-        "Premise 1: Sophia has completed the core curriculum.\n"
-        "Question: Does Sophia qualify for advanced courses?\n"
-        "JSON: {\"predicates\":["
-        "{\"name\":\"completed_core_curriculum\",\"arity\":1,\"gloss\":\"entity completed core curriculum\",\"argument_roles\":[\"entity\"]},"
-        "{\"name\":\"passed_science_assessment\",\"arity\":1,\"gloss\":\"entity passed science assessment\",\"argument_roles\":[\"entity\"]},"
-        "{\"name\":\"qualified_for_advanced_courses\",\"arity\":1,\"gloss\":\"entity qualifies for advanced courses\",\"argument_roles\":[\"entity\"]}],"
-        "\"premises\":[{\"source_idx\":0,\"facts\":[],\"rules\":[{\"conditions\":["
-        "{\"text\":\"completed the core curriculum\",\"pred\":\"completed_core_curriculum\",\"args\":[\"?x\"],\"negated\":false},"
-        "{\"text\":\"passed the science assessment\",\"pred\":\"passed_science_assessment\",\"args\":[\"?x\"],\"negated\":false}],"
-        "\"conclusion\":{\"text\":\"qualified for advanced courses\",\"pred\":\"qualified_for_advanced_courses\",\"args\":[\"?x\"],\"negated\":false}}]},"
-        "{\"source_idx\":1,\"facts\":[{\"text\":\"Sophia has completed the core curriculum\",\"pred\":\"completed_core_curriculum\",\"args\":[\"sophia\"],\"negated\":false}],\"rules\":[]}],"
-        "\"query\":{\"claim\":{\"text\":\"Sophia qualifies for advanced courses\",\"pred\":\"qualified_for_advanced_courses\",\"args\":[\"sophia\"],\"negated\":false}},\"options\":[]}\n\n"
+        "Premise 0: If a student completes assignments, the student passes.\n"
+        "Premise 1: Sophia completes assignments.\n"
+        "Question: Does Sophia pass?\n"
+        "JSON: {\"predicates\":[{\"name\":\"completes_assignments\",\"arity\":1},{\"name\":\"passes\",\"arity\":1}],"
+        "\"premises\":[{\"source_idx\":0,\"facts\":[],\"rules\":[{\"conditions\":[{\"pred\":\"completes_assignments\",\"args\":[\"?x\"],\"negated\":false}],"
+        "\"conclusion\":{\"pred\":\"passes\",\"args\":[\"?x\"],\"negated\":false}}]},"
+        "{\"source_idx\":1,\"facts\":[{\"pred\":\"completes_assignments\",\"args\":[\"sophia\"],\"negated\":false}],\"rules\":[]}],"
+        "\"query\":{\"claim\":{\"pred\":\"passes\",\"args\":[\"sophia\"],\"negated\":false}},\"options\":[]}\n\n"
     )
     return [
         {
@@ -446,7 +459,8 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
             "content": (
                 "You are an autoformalizer for educational logic QA. "
                 "Return JSON only. Keep it compact and valid. Do not use markdown fences. Do not answer the question. "
-                "Translate text into Horn-style predicates for a symbolic solver."
+                "Translate text into Horn-style predicates for a symbolic solver. "
+                "Never put JSON objects inside args; args must be strings only."
             ),
         },
         {
@@ -456,12 +470,17 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
                 "Rules:\n"
                 "- Output valid JSON only, matching this shape: "
                 f"{schema_hint}\n"
+                "- Keep output compact; omit atom text fields.\n"
+                "- predicates may contain only name and arity; omit gloss and argument_roles unless needed.\n"
                 "- Reuse predicate names from predicates everywhere; never invent variants.\n"
                 "- pred and constants must be lowercase snake_case; variables use ?x, ?y.\n"
+                "- args must be arrays of strings only, never nested JSON objects.\n"
+                "- Do not use pred values `and`, `or`, `either`, or `not`; split conjunctions and use negated=true for negation.\n"
                 "- Generic rules use variables; named facts/goals use constants.\n"
                 "- Standalone assertions go in facts, not rules.\n"
                 "- Every rule must have at least one condition; never output conditions:[].\n"
                 "- Split conjunctions into separate condition atoms.\n"
+                "- If a premise has alternatives with `or`, keep only Horn-compatible direct conditions and do not model disjunction.\n"
                 "- Preserve source_idx exactly.\n"
                 "- Do not translate A-D options; always set options to []. The pipeline evaluates MCQ options separately.\n"
                 "- Mark negated=true only for explicit negation.\n\n"
@@ -470,6 +489,22 @@ def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMe
             ),
         },
     ]
+
+
+def _coerce_atom_arg(raw_arg: Any) -> str:
+    if isinstance(raw_arg, str):
+        return raw_arg.strip()
+    if isinstance(raw_arg, dict):
+        nested_args = raw_arg.get("args")
+        if isinstance(nested_args, list) and nested_args:
+            return _coerce_atom_arg(nested_args[0])
+        pred = raw_arg.get("pred")
+        if isinstance(pred, str) and pred.strip():
+            return pred.strip()
+        text = raw_arg.get("text")
+        if isinstance(text, str) and text.strip():
+            return text.strip()
+    return str(raw_arg).strip()
 
 
 def _spec_to_ir(
@@ -485,12 +520,34 @@ def _atom_from_spec(spec: AtomSpec) -> Atom:
     """Convert validated LLM atom JSON to the solver IR."""
 
     if spec.pred:
+        text = spec.text or _format_atom_text(spec.pred, spec.args)
         return Atom(
             pred=spec.pred.strip(),
             args=tuple(arg.strip() for arg in spec.args if arg.strip()),
             negated=spec.negated,
-            text=spec.text,
+            text=text,
         )
 
     atom = atom_from_text(spec.text)
     return Atom(pred=atom.pred, args=atom.args, negated=spec.negated, text=atom.text)
+
+
+def _format_atom_text(pred: str, args: list[str]) -> str:
+    args_text = ", ".join(args)
+    return f"{pred}({args_text})" if args_text else pred
+
+
+def _translation_token_budget(max_tokens: int, premise_count: int) -> int:
+    # Each premise can produce nested rule JSON; 280 tokens/premise is more realistic.
+    # Allow exceeding the global max_tokens cap when premises demand it.
+    needed = max(1024, 512 + 280 * premise_count)
+    return min(8192, max(needed, max_tokens))
+
+
+def _premise_token_budget(max_tokens: int, premise_count: int) -> int:
+    needed = max(1024, 512 + 280 * premise_count)
+    return min(8192, max(needed, max_tokens))
+
+
+def _query_token_budget(max_tokens: int) -> int:
+    return min(max_tokens, 384)

@@ -76,6 +76,10 @@ class Settings(BaseSettings):
         le=2.0,
         validation_alias="EXACT_TYPE1_SAMPLING_TEMPERATURE",
     )
+    type1_enable_cot_fallback: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_ENABLE_COT_FALLBACK",
+    )
     llm_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_MAX_RETRIES")
     llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")

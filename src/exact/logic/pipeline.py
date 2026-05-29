@@ -206,7 +206,7 @@ def run_type1_pipeline(
         error="; ".join(warnings) if warnings else None,
     )
 
-    if result.label == "Unknown":
+    if result.label == "Unknown" and settings.type1_enable_cot_fallback:
         return _run_cot_unknown_fallback(
             request=request,
             response=response,

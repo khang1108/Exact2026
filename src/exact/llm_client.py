@@ -140,7 +140,10 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         try:
             return _parse_json_object(text)
         except ValueError as exc:
-            raise ValueError(f"LLM returned invalid JSON with finish_reason={choice.finish_reason}: {text}") from exc
+            raise ValueError(
+                "LLM returned invalid JSON "
+                f"with finish_reason={choice.finish_reason}: {_clip_text(text)}"
+            ) from exc
 
     def complete_json_sync(
         self,
@@ -391,16 +394,69 @@ def _should_retry_with_sdpa(exc: BaseException) -> bool:
 
 def _parse_json_object(text: str) -> dict[str, Any]:
     text = text.strip()
-    start = text.find("{")
-    end = text.rfind("}")
+    span = _find_first_json_object_span(text)
+    start = -1 if span is None else span[0]
+    end = -1 if span is None else span[1]
     if start == -1:
-        raise ValueError(f"LLM output did not contain a JSON object: {text}")
+        raise ValueError(f"LLM output did not contain a JSON object: {_clip_text(text)}")
     if end == -1 or end < start:
-        raise ValueError(f"LLM output contained incomplete JSON; increase EXACT_MAX_NEW_TOKENS: {text}")
+        raise ValueError(
+            "LLM output contained incomplete JSON; reduce prompt/output size or increase "
+            f"EXACT_MAX_NEW_TOKENS. Output snippet: {_clip_text(text)}"
+        )
     try:
         parsed = json.loads(text[start : end + 1])
     except json.JSONDecodeError as exc:
-        raise ValueError(f"LLM returned invalid JSON: {text}") from exc
+        snippet = _json_error_snippet(text[start : end + 1], exc.pos)
+        raise ValueError(
+            f"LLM returned invalid JSON at char {exc.pos}: {exc.msg}. Around error: {snippet}"
+        ) from exc
     if not isinstance(parsed, dict):
         raise ValueError("LLM JSON output must be an object")
     return parsed
+
+
+def _find_first_json_object_span(text: str) -> tuple[int, int] | None:
+    start = text.find("{")
+    if start == -1:
+        return None
+
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return start, index
+
+    return (start, -1)
+
+
+def _clip_text(text: str, limit: int = 1200) -> str:
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    head = text[: limit // 2]
+    tail = text[-limit // 2 :]
+    return f"{head} ... <truncated {len(text) - limit} chars> ... {tail}"
+
+
+def _json_error_snippet(text: str, pos: int, radius: int = 500) -> str:
+    start = max(0, pos - radius)
+    end = min(len(text), pos + radius)
+    return _clip_text(text[start:end], limit=radius * 2)

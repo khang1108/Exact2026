@@ -11,7 +11,7 @@ from exact.logger import get_logger
 
 logger = get_logger(__name__)
 
-LLM_PARSER_VERSION = "llm_translator_v1"
+LLM_PARSER_VERSION = "llm_translator_v3"
 
 
 @dataclass(frozen=True)

@@ -263,6 +263,30 @@ def test_ynu_symbolic_unknown_uses_cot_fallback() -> None:
     assert client.cot_calls == 1
 
 
+def test_ynu_symbolic_unknown_can_skip_cot_fallback_for_fast_mode() -> None:
+    """Fast competition/eval mode can avoid the extra LLM call after symbolic Unknown."""
+
+    from exact.logic.kb import clear_kb_cache
+    clear_kb_cache()
+
+    client = SamplingVoteTranslatorClient([None], query_pred="alpha", cot_answer="Yes")
+    request = PredictionRequest.model_validate(
+        {"id": "ynu_no_cot", "premises-NL": ["No translated fact."], "question": "Does Alpha follow?"}
+    )
+
+    response = run_type1_pipeline(
+        request,
+        translator_client=client,
+        settings=explicit_llm_settings().model_copy(
+            update={"type1_translation_samples": 1, "type1_enable_cot_fallback": False}
+        ),
+        question_type=QuestionType.YES_NO_UNCERTAIN,
+    )
+
+    assert response.answer == "Unknown"
+    assert client.cot_calls == 0
+
+
 def test_mcq_symbolic_consistency_vote_prefers_majority_option() -> None:
     """MCQ sampled premise translations should vote over selected option labels."""
 
