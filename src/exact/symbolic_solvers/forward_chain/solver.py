@@ -72,6 +72,10 @@ def derive_closure(kb: KnowledgeBase) -> tuple[set[Atom], dict[Atom, ProofStep]]
     proofs: dict[Atom, ProofStep] = {}
 
     for fact in kb.facts:
+        if not _is_ground(fact.atom):
+            # LLM occasionally emits rule conclusions as facts with variables.
+            # Non-ground "facts" are semantically rules, not base assertions — skip them.
+            continue
         if fact.atom not in known:
             known.add(fact.atom)
             proofs[fact.atom] = ProofStep(

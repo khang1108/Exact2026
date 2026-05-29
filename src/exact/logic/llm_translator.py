@@ -325,6 +325,7 @@ def translate_premises_only_with_llm(
 def translate_query_only_with_llm(
     question: str,
     predicate_names: tuple[str, ...] = (),
+    entity_constants: tuple[str, ...] = (),
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
 ) -> Query:
@@ -336,7 +337,7 @@ def translate_query_only_with_llm(
     logger.info("Starting query-only LLM translation: question_chars=%s", len(question))
 
     messages: list[ChatCompletionMessageParam] = _build_query_only_messages(
-        question, predicate_names=predicate_names
+        question, predicate_names=predicate_names, entity_constants=entity_constants
     )
     predicate_set = set(predicate_names)
     spec: QueryOnlySpec | None = None
@@ -390,6 +391,31 @@ def translate_query_only_with_llm(
                 "Query predicate %r not in premise dictionary %r; solving will likely return Unknown",
                 pred,
                 list(predicate_names),
+            )
+
+    # Entity constant remapping: if the query uses an entity name that doesn't exist
+    # in the KB (e.g. "sophia" when KB has "sofia"), remap to the closest KB constant.
+    if entity_constants:
+        claim = spec.query.claim  # type: ignore[union-attr]
+        entity_set = set(entity_constants)
+        remapped: list[str] = []
+        changed = False
+        for arg in (claim.args or []):
+            if arg.startswith("?") or arg in entity_set:
+                remapped.append(arg)
+            else:
+                closest_ent = _closest_entity(arg, entity_constants)
+                if closest_ent:
+                    logger.debug("Query entity %r remapped to KB constant %r", arg, closest_ent)
+                    remapped.append(closest_ent)
+                    changed = True
+                else:
+                    remapped.append(arg)
+        if changed:
+            spec = QueryOnlySpec(
+                query=QuerySpec(
+                    claim=AtomSpec(pred=claim.pred, args=remapped, negated=claim.negated)
+                )
             )
 
     return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)  # type: ignore[union-attr]
@@ -476,6 +502,7 @@ def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMes
 def _build_query_only_messages(
     question: str,
     predicate_names: tuple[str, ...] = (),
+    entity_constants: tuple[str, ...] = (),
 ) -> list[ChatCompletionMessageParam]:
     """Compact query-only prompt for YNU/open-ended questions."""
 
@@ -489,6 +516,13 @@ def _build_query_only_messages(
         "If the question's target concept is not literally in this list, pick the "
         "closest matching predicate from the list above.\n"
         if predicate_names
+        else ""
+    )
+    entity_instruction = (
+        "CRITICAL — entity names in args MUST be EXACTLY one of these known constants "
+        "(copy verbatim, do NOT translate, rephrase, or alter spelling):\n"
+        f"  {', '.join(entity_constants)}\n"
+        if entity_constants
         else ""
     )
     return [
@@ -508,6 +542,7 @@ def _build_query_only_messages(
                 "Rules:\n"
                 "- Do not answer the question\n"
                 f"{predicate_instruction}"
+                f"{entity_instruction}"
                 "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
                 "- Prefer atom shape {\"pred\":\"name\",\"args\":[\"entity\"],\"negated\":false}; omit text fields\n"
                 "- args must be an array of strings only, e.g. [\"student\"], never nested objects\n"
@@ -727,6 +762,15 @@ def _repair_raw_output(raw: dict[str, Any]) -> dict[str, Any]:
         if isinstance(claim, dict):
             _repair_atom_dict(claim, pred_map)
     return raw
+
+
+def _closest_entity(entity: str, entity_constants: tuple[str, ...]) -> str | None:
+    """Return the KB entity constant with the highest string similarity to entity."""
+    if not entity_constants:
+        return None
+    import difflib
+    matches = difflib.get_close_matches(entity, entity_constants, n=1, cutoff=0.6)
+    return matches[0] if matches else None
 
 
 def _closest_predicate(pred: str, predicate_names: tuple[str, ...]) -> str | None:

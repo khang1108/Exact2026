@@ -188,9 +188,14 @@ def run_type1_pipeline(
     query_errors: list[str] = []
     for index, kb in enumerate(kb_candidates, start=1):
         try:
+            entity_constants = tuple(sorted({
+                arg for fact in kb.facts for arg in fact.atom.args
+                if not arg.startswith("?")
+            }))
             query = translate_query_only_with_llm(
                 question=request.question,
                 predicate_names=kb.predicate_names,
+                entity_constants=entity_constants,
                 llm_client=translator_client,
                 settings=settings,
             )
