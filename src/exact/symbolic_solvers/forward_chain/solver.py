@@ -71,24 +71,62 @@ def derive_closure(kb: KnowledgeBase) -> tuple[set[Atom], dict[Atom, ProofStep]]
     known: set[Atom] = set()
     proofs: dict[Atom, ProofStep] = {}
 
+    # A non-ground fact is hallucinated when the LLM duplicates a rule conclusion as a
+    # fact inside the SAME premise (same source_idx).  Facts with ?x from a *different*
+    # premise are genuine universals like "All Python code is well-tested" (P4).
+    rule_by_source: set[tuple[int, str]] = {
+        (rule.source_idx, rule.conclusion.pred) for rule in kb.rules
+    }
+
+    # Separate genuine universal facts ("All X are P" → P(?x)) from ground facts.
+    universal_facts: list[tuple[Atom, int]] = []
+
     for fact in kb.facts:
-        if not _is_ground(fact.atom):
-            # LLM occasionally emits rule conclusions as facts with variables.
-            # Non-ground "facts" are semantically rules, not base assertions — skip them.
-            continue
-        if fact.atom not in known:
-            known.add(fact.atom)
-            proofs[fact.atom] = ProofStep(
-                derived=fact.atom,
-                used_premises=(fact.source_idx,),
-                rule_idx=None,
-                parents=(),
-                natural_language=f"Premise {fact.source_idx + 1} states {fact.atom.display()}.",
-            )
+        if _is_ground(fact.atom):
+            if fact.atom not in known:
+                known.add(fact.atom)
+                proofs[fact.atom] = ProofStep(
+                    derived=fact.atom,
+                    used_premises=(fact.source_idx,),
+                    rule_idx=None,
+                    parents=(),
+                    natural_language=f"Premise {fact.source_idx + 1} states {fact.atom.display()}.",
+                )
+        elif (fact.source_idx, fact.atom.pred) not in rule_by_source:
+            # Non-ground fact whose (source_idx, pred) does not match any rule conclusion
+            # in the same premise → treat as a genuine "∀x: P(x)" universal assertion.
+            universal_facts.append((fact.atom, fact.source_idx))
+        # else: same premise also has a rule concluding this pred → hallucinated copy.
 
     changed = True
     while changed:
         changed = False
+
+        # Instantiate universal facts for every ground constant currently in the closure.
+        if universal_facts:
+            ground_constants: set[str] = {
+                arg for atom in known for arg in atom.args if not is_variable(arg)
+            }
+            for univ_atom, source_idx in universal_facts:
+                variables = [a for a in univ_atom.args if is_variable(a)]
+                if len(variables) == 1:  # only handle single-variable universals
+                    var = variables[0]
+                    for const in ground_constants:
+                        grounded = apply_subst(univ_atom, {var: const})
+                        if _is_ground(grounded) and grounded not in known:
+                            known.add(grounded)
+                            proofs[grounded] = ProofStep(
+                                derived=grounded,
+                                used_premises=(source_idx,),
+                                rule_idx=None,
+                                parents=(),
+                                natural_language=(
+                                    f"Premise {source_idx + 1} universally "
+                                    f"states {grounded.display()}."
+                                ),
+                            )
+                            changed = True
+
         for rule in kb.rules:
             for binding, parents in _match_conditions(rule.conditions, tuple(known)):
                 conclusion = apply_subst(rule.conclusion, binding)

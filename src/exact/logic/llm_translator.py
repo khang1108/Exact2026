@@ -481,9 +481,14 @@ def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMes
                 "- Generic rules use variables (?x); named facts use constants (sofia)\n"
                 "- Standalone assertions go in facts; implications go in rules\n"
                 "- Every rule must have at least one condition; never output conditions:[]\n"
+                "- CRITICAL: if a premise says 'If A and B then C', the rule must have TWO conditions: "
+                "[{pred:A,args:[?x]},{pred:B,args:[?x]}] with conclusion {pred:C,args:[?x]}. "
+                "NEVER write an identity rule where condition and conclusion share the same pred.\n"
                 "- Split conjunctions into separate condition atoms\n"
                 "- If a premise has alternatives with `or`, keep only Horn-compatible direct conditions and do not model disjunction\n"
                 "- Preserve source_idx exactly\n\n"
+                "Example multi-condition rule — Premise: 'If a student completes courses and passes exams, they graduate':\n"
+                '{"source_idx":0,"facts":[],"rules":[{"conditions":[{"pred":"completes_courses","args":["?x"],"negated":false},{"pred":"passes_exams","args":["?x"],"negated":false}],"conclusion":{"pred":"graduates","args":["?x"],"negated":false}}]}\n\n'
                 f"Premises:\n{premise_text}"
             ),
         },
