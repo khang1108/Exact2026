@@ -36,7 +36,7 @@ and `confidence`, with local metadata such as `id`, `task_type`, `question_type`
 Configure a local OpenAI-compatible LLM server for real predictions:
 
 ```bash
-export EXACT_LLM_BASE_URL=http://127.0.0.1:8001/v1
+export EXACT_LLM_BASE_URL=http://127.0.0.1:8000/v1
 export EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
 ```
 
@@ -80,6 +80,10 @@ vllm serve Qwen/Qwen2.5-7B-Instruct \
   --port 8000 \
   --served-model-name Qwen/Qwen2.5-7B-Instruct
 ```
+
+For the VM + Cloudflare Tunnel deployment path, see
+[`deployment/vllm-cloudflare.md`](deployment/vllm-cloudflare.md). The recommended topology
+is to keep vLLM private and expose only the EXACT FastAPI `/predict` endpoint.
 
 Type 1 is LLM-only: if no JSON LLM client is configured, the request fails with
 a clear error instead of substituting a local parser.

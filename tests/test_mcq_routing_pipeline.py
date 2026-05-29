@@ -20,9 +20,11 @@ class RecordingTranslatorClient:
 
     def __init__(self) -> None:
         self.user_prompt = ""
+        self.user_prompts: list[str] = []
 
     def complete_json_sync(self, messages, temperature: float = 0.0, max_tokens: int = 2048):
         self.user_prompt = str(messages[-1]["content"])
+        self.user_prompts.append(self.user_prompt)
         return {
             "predicates": [{"name": "alpha", "arity": 0, "gloss": "alpha", "argument_roles": []}],
             "premises": [{"source_idx": 0, "facts": [{"text": "Alpha", "pred": "alpha", "args": []}], "rules": []}],
@@ -381,10 +383,14 @@ def test_mcq_pipeline_sends_only_premises_to_llm() -> None:
         question_type=QuestionType.MCQ,
     )
 
-    assert "0: Alpha." in client.user_prompt
-    assert "Which conclusion follows" not in client.user_prompt
-    assert "A. Alpha" not in client.user_prompt
-    assert "B. Beta" not in client.user_prompt
+    premise_prompts = [
+        prompt for prompt in client.user_prompts if "Translate these premises" in prompt
+    ]
+    assert premise_prompts
+    assert all("0: Alpha." in prompt for prompt in premise_prompts)
+    assert all("Which conclusion follows" not in prompt for prompt in premise_prompts)
+    assert all("A. Alpha" not in prompt for prompt in premise_prompts)
+    assert all("B. Beta" not in prompt for prompt in premise_prompts)
 
 
 def test_decide_mcq_winner_prefers_fewest_premises_among_entailed_options() -> None:

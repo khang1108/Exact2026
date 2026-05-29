@@ -13,7 +13,7 @@ import re
 from typing import Any, Protocol
 
 from openai.types.chat import ChatCompletionMessageParam
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from exact.config import Settings, get_settings
 from exact.logic.ir import Atom, Fact, ParsedPremise, Query, Rule
@@ -51,9 +51,9 @@ class PredicateSpec(BaseModel):
     @field_validator("name")
     @classmethod
     def name_must_be_snake_case(cls, value: str) -> str:
-        value = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or "pred"
+        value = value.strip()
         if not _PREDICATE_RE.fullmatch(value):
-            value = "pred"
+            raise ValueError("predicate name must be lowercase snake_case")
         return value
 
     @field_validator("argument_roles")
@@ -88,9 +88,9 @@ class AtomSpec(BaseModel):
     def pred_must_be_snake_case(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        value = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or "pred"
+        value = value.strip()
         if not _PREDICATE_RE.fullmatch(value):
-            value = "pred"
+            raise ValueError("atom pred must be lowercase snake_case")
         return value
 
     @field_validator("args", mode="before")
@@ -163,7 +163,7 @@ class OptionSpec(BaseModel):
 
     label: str
     text: str
-    goal: AtomSpec
+    claim: AtomSpec = Field(validation_alias=AliasChoices("claim", "goal"))
 
     @field_validator("label")
     @classmethod
