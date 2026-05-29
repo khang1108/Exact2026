@@ -29,6 +29,11 @@ class BaseJsonLLMClient(ABC):
         messages: Iterable[ChatCompletionMessageParam],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        # When provided, the server is asked to constrain its output to JSON
+        # that matches this schema (vLLM guided_json / lm-format-enforcer).
+        # Subclasses that do not support guided decoding should silently ignore
+        # this parameter — the prompt-level constraints act as the fallback.
+        json_schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Synchronously return a JSON object for command-line scripts and sync routes."""
 
@@ -37,6 +42,7 @@ class BaseJsonLLMClient(ABC):
         messages: Iterable[ChatCompletionMessageParam],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Async adapter for sync-first clients."""
 
@@ -45,6 +51,7 @@ class BaseJsonLLMClient(ABC):
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
+            json_schema=json_schema,
         )
 
     async def complete_as(
@@ -53,6 +60,7 @@ class BaseJsonLLMClient(ABC):
         schema: type[BaseModel],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
     ) -> BaseModel:
         """Return a JSON response validated as a Pydantic model."""
 
@@ -60,6 +68,7 @@ class BaseJsonLLMClient(ABC):
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
+            json_schema=json_schema,
         )
         try:
             return schema.model_validate(data)
@@ -118,10 +127,15 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         messages: Iterable[ChatCompletionMessageParam],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Gọi API của LLM để sinh ra một câu trả lời dưới dạng JSON.
         Dùng httpx trực tiếp để tránh headers của OpenAI SDK bị Cloudflare WAF chặn.
+
+        Khi json_schema được cung cấp, nó được truyền xuống vLLM dưới key "guided_json"
+        (lm-format-enforcer).  Server phải hỗ trợ tính năng này; nếu không, payload
+        vẫn hợp lệ vì "guided_json" là extra field bị bỏ qua bởi OpenAI-compatible servers.
         """
         import httpx
 
@@ -132,6 +146,11 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
             "max_tokens": max_tokens,
             "response_format": {"type": "json_object"},
         }
+        # guided_json constrains token sampling to only produce JSON matching the
+        # schema, effectively replacing the retry-on-bad-JSON loop with a one-shot
+        # guarantee.  Only sent when the caller opts in (settings.type1_use_guided_json).
+        if json_schema is not None:
+            payload["guided_json"] = json_schema
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
@@ -175,6 +194,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         messages: Iterable[ChatCompletionMessageParam],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Synchronous wrapper for command-line scripts, FastAPI sync routes, and Jupyter notebooks.
@@ -185,6 +205,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens,
+            json_schema=json_schema,
         )
         try:
             asyncio.get_running_loop()
@@ -362,6 +383,10 @@ class LocalJsonClient(BaseJsonLLMClient):
         messages: Iterable[ChatCompletionMessageParam],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        # LocalClient uses HuggingFace Transformers directly and does not
+        # support guided JSON decoding — the parameter is accepted to satisfy
+        # the BaseJsonLLMClient interface but is intentionally ignored here.
+        json_schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         text = self.client.complete(
             messages=list(messages),

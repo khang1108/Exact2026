@@ -10,6 +10,7 @@ SymbCoT/Logic-LM++ motivation for later verifier/repair stages.
 from __future__ import annotations
 
 import json
+import inspect
 import re
 from typing import Any, Protocol
 
@@ -17,12 +18,40 @@ from openai.types.chat import ChatCompletionMessageParam
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from exact.config import Settings, get_settings
-from exact.logic.ir import Atom, Fact, ParsedPremise, Query, Rule
+from exact.logic.ir import (
+    And,
+    Atom,
+    Fact,
+    Formula,
+    FormulaItem,
+    Implies,
+    Not,
+    Or,
+    ParsedPremise,
+    Query,
+    Rule,
+    TranslatedProblem,
+)
 from exact.logic.parser import atom_from_text
+from exact.logic.prompts import (
+    build_full_translation_messages,
+    build_mcq_options_messages,
+    build_premises_only_messages,
+    build_problem_formula_messages,
+    build_query_only_messages,
+)
 from exact.llm_client import LLMClient
 from exact.logger import get_logger
 
 logger = get_logger(__name__)
+
+# Backward-compatible aliases for notebooks/debug scripts that imported these
+# private helpers before the prompt text moved to exact.logic.prompts.
+_build_messages = build_full_translation_messages
+_build_mcq_options_messages = build_mcq_options_messages
+_build_premises_only_messages = build_premises_only_messages
+_build_problem_formula_messages = build_problem_formula_messages
+_build_query_only_messages = build_query_only_messages
 
 _PREDICATE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 _VARIABLE_RE = re.compile(r"^\?[a-z][a-z0-9_]*$")
@@ -46,6 +75,11 @@ class JsonLLMClient(Protocol):
         messages: list[ChatCompletionMessageParam],
         temperature: float = 0.0,
         max_tokens: int = 2048,
+        # Optional JSON Schema for guided decoding (vLLM guided_json parameter).
+        # When provided and the server supports it, the model is constrained to
+        # produce JSON conforming to this schema from the first token, eliminating
+        # the need for retry on structural failures.
+        json_schema: dict[str, Any] | None = None,
     ) -> dict[str, Any]: ...
 
 
@@ -245,6 +279,200 @@ class MCQOptionsSpec(BaseModel):
     options: list[OptionSpec]
 
 
+def translate_problem_with_llm(
+    premises: list[str],
+    question: str,
+    options: list[tuple[str, str]] | None,
+    llm_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
+    temperature: float | None = None,
+) -> TranslatedProblem:
+    """Translate a full Type 1 problem into formula-level premise/goal IR.
+
+    One LLM call handles premises + query/options with a single shared predicate
+    dictionary, preventing the vocabulary drift that caused atom mismatch in the
+    legacy three-call approach.  A second attempt with a doubled token budget is
+    made if the first response is truncated or structurally invalid.
+
+    Args:
+        premises:    NL premise strings (index = source_idx in FormulaItem).
+        question:    NL question stem, including embedded options for MCQ.
+        options:     Parsed MCQ pairs [(label, text), …] or None for Yes/No.
+        llm_client:  JSON-returning LLM client (falls back to settings).
+        settings:    App settings (uses get_settings() if None).
+        temperature: Override translation temperature; defaults to settings value.
+
+    Returns:
+        TranslatedProblem containing shared predicates, premise formulas, and goals.
+
+    Raises:
+        RuntimeError: If both translation attempts fail.
+    """
+
+    settings = settings or get_settings()
+    client = llm_client or LLMClient.from_settings(settings)
+    temp = settings.llm_temperature if temperature is None else temperature
+    goal_count = len(options) if options is not None else 1
+    base_budget = _problem_token_budget(
+        settings.llm_max_tokens,
+        premise_count=len(premises),
+        goal_count=goal_count,
+    )
+    messages = build_problem_formula_messages(premises, question, options)
+    json_schema = (
+        _problem_formula_json_schema()
+        if settings.type1_use_guided_json and _client_accepts_json_schema(client)
+        else None
+    )
+    logger.info(
+        "translate_problem_with_llm: premises=%d, goals=%d, budget=%d",
+        len(premises),
+        goal_count,
+        base_budget,
+    )
+
+    # Two-attempt loop: first with base budget, then with 2× budget when the
+    # response is truncated (incomplete JSON) or fails schema validation.
+    # Keeping both attempts here (not in the caller) avoids rebuilding the
+    # prompt and keeps the conversation in a single warm turn.
+    last_exc: Exception | None = None
+    for attempt, token_limit in enumerate([base_budget, min(8192, base_budget * 2)], start=1):
+        try:
+            request_kwargs: dict[str, Any] = {
+                "messages": messages,
+                "temperature": temp,
+                "max_tokens": token_limit,
+            }
+            if json_schema is not None:
+                request_kwargs["json_schema"] = json_schema
+            raw = client.complete_json_sync(**request_kwargs)
+        except ValueError as exc:
+            # The JSON client raises ValueError for invalid/incomplete JSON.
+            # Only retry on JSON parse failures; other ValueErrors propagate.
+            msg = str(exc)
+            if "invalid JSON" not in msg and "incomplete JSON" not in msg:
+                raise
+            last_exc = exc
+            logger.warning(
+                "translate_problem attempt %d/2 JSON error (budget=%d): %s",
+                attempt, token_limit, msg[:200],
+            )
+            continue
+
+        try:
+            return _translated_problem_from_raw(
+                raw, premises=premises, question=question, options=options
+            )
+        except (ValueError, KeyError) as exc:
+            # The formula parser raises ValueError for missing/malformed nodes.
+            last_exc = exc
+            logger.warning(
+                "translate_problem attempt %d/2 parse error: %s",
+                attempt, str(exc)[:300],
+            )
+            logger.debug("Raw LLM output (attempt %d): %s", attempt, json.dumps(raw)[:2000])
+
+    raise RuntimeError(
+        f"translate_problem_with_llm failed after 2 attempts: {last_exc}"
+    ) from last_exc
+
+
+def _client_accepts_json_schema(client: JsonLLMClient) -> bool:
+    try:
+        return "json_schema" in inspect.signature(client.complete_json_sync).parameters
+    except (TypeError, ValueError):
+        return False
+
+
+def _problem_formula_json_schema() -> dict[str, Any]:
+    formula_ref = {"$ref": "#/$defs/formula"}
+    atom = {
+        "type": "object",
+        "required": ["type", "pred", "args"],
+        "additionalProperties": False,
+        "properties": {
+            "type": {"const": "atom"},
+            "pred": {"type": "string"},
+            "args": {"type": "array", "items": {"type": "string"}},
+            "negated": {"type": "boolean"},
+        },
+    }
+    formula_item = {
+        "type": "object",
+        "required": ["source_idx", "role", "text", "formula"],
+        "additionalProperties": False,
+        "properties": {
+            "source_idx": {"type": "integer"},
+            "role": {"enum": ["premise", "query", "option"]},
+            "text": {"type": "string"},
+            "label": {"type": ["string", "null"]},
+            "formula": formula_ref,
+        },
+    }
+    return {
+        "type": "object",
+        "required": ["predicates", "premises", "goals"],
+        "additionalProperties": False,
+        "properties": {
+            "predicates": {
+                "type": "object",
+                "additionalProperties": {"type": "integer", "minimum": 0},
+            },
+            "premises": {"type": "array", "items": formula_item},
+            "goals": {"type": "array", "items": formula_item},
+        },
+        "$defs": {
+            "formula": {
+                "oneOf": [
+                    atom,
+                    {
+                        "type": "object",
+                        "required": ["type", "arg"],
+                        "additionalProperties": False,
+                        "properties": {"type": {"const": "not"}, "arg": formula_ref},
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "args"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "and"},
+                            "args": {
+                                "type": "array",
+                                "minItems": 2,
+                                "items": formula_ref,
+                            },
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "args"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "or"},
+                            "args": {
+                                "type": "array",
+                                "minItems": 2,
+                                "items": formula_ref,
+                            },
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "antecedent", "consequent"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "implies"},
+                            "antecedent": formula_ref,
+                            "consequent": formula_ref,
+                        },
+                    },
+                ]
+            }
+        },
+    }
+
+
 def translate_with_llm(
     premises: list[str],
     question: str,
@@ -255,7 +483,7 @@ def translate_with_llm(
 
     settings = settings or get_settings()
     client = llm_client or LLMClient.from_settings(settings)
-    messages = _build_messages(premises, question)
+    messages = build_full_translation_messages(premises, question)
     logger.info(
         "Starting LLM translation: premises=%s, question_chars=%s, max_tokens=%s",
         len(premises),
@@ -287,7 +515,7 @@ def translate_premises_only_with_llm(
 
     settings = settings or get_settings()
     client = llm_client or LLMClient.from_settings(settings)
-    messages = _build_premises_only_messages(premises)
+    messages = build_premises_only_messages(premises)
     logger.info("Starting premise-only LLM translation: premises=%s", len(premises))
     base_budget = _premise_token_budget(settings.llm_max_tokens, len(premises))
     temp = settings.llm_temperature if temperature is None else temperature
@@ -352,7 +580,7 @@ def translate_query_only_with_llm(
     budget = _query_token_budget(settings.llm_max_tokens)
     logger.info("Starting query-only LLM translation: question_chars=%s", len(question))
 
-    messages: list[ChatCompletionMessageParam] = _build_query_only_messages(
+    messages: list[ChatCompletionMessageParam] = build_query_only_messages(
         question, predicate_names=predicate_names, entity_constants=entity_constants
     )
     predicate_set = set(predicate_names)
@@ -427,7 +655,7 @@ def translate_mcq_options_with_llm(
 
     settings = settings or get_settings()
     client = llm_client or LLMClient.from_settings(settings)
-    messages = _build_mcq_options_messages(question, predicate_names)
+    messages = build_mcq_options_messages(question, predicate_names)
     logger.info("Starting MCQ option translation: %s options", len(options))
     raw = client.complete_json_sync(
         messages=messages,
@@ -447,106 +675,238 @@ def translate_mcq_options_with_llm(
     return result
 
 
-def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMessageParam]:
-    """Compact premise-only prompt for KnowledgeBase caching."""
-
-    premise_text = "\n".join(f"{idx}: {premise}" for idx, premise in enumerate(premises))
-    schema_hint = (
-        '{"predicates":[{"name":"pred","arity":1}],'
-        '"premises":[{"source_idx":0,"facts":[{"pred":"pred","args":["item"],"negated":false}],'
-        '"rules":[{"conditions":[{"pred":"cond","args":["?x"],"negated":false}],'
-        '"conclusion":{"pred":"pred","args":["?x"],"negated":false}}]}]}'
-    )
-    return [
-        {
-            "role": "system",
-            "content": (
-                "You are an autoformalizer for educational logic QA. "
-                "Return JSON only. No markdown fences. No extra text. "
-                "Translate premises into compact Horn-style predicates for a symbolic solver. "
-                "CRITICAL: never include a 'text' field in any atom object. "
-                "CRITICAL: args must be an array of strings only, never nested objects."
-            ),
-        },
-        {
-            "role": "user",
-            "content": (
-                f"Translate these premises into Horn-style IR. Output valid JSON matching: {schema_hint}\n"
-                "Rules:\n"
-                "- NEVER include 'text' fields in facts, conditions, or conclusions — omit them entirely\n"
-                "- NEVER include 'gloss' or 'argument_roles' in predicates — only name and arity\n"
-                "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
-                "- args must be an array of strings only, e.g. [\"?x\"], never nested objects\n"
-                "- Do not use pred values `and`, `or`, `either`, or `not`; split conjunctions and use negated=true for negation\n"
-                "- Generic rules use variables (?x); named facts use constants (sofia)\n"
-                "- Standalone assertions go in facts; implications go in rules\n"
-                "- Every rule must have at least one condition; never output conditions:[]\n"
-                "- CRITICAL: if a premise says 'If A and B then C', the rule must have TWO conditions: "
-                "[{pred:A,args:[?x]},{pred:B,args:[?x]}] with conclusion {pred:C,args:[?x]}. "
-                "NEVER write an identity rule where condition and conclusion share the same pred.\n"
-                "- Split conjunctions into separate condition atoms\n"
-                "- If a premise has alternatives with `or`, keep only Horn-compatible direct conditions and do not model disjunction\n"
-                "- Preserve source_idx exactly\n\n"
-                "Example multi-condition rule — Premise: 'If a student completes courses and passes exams, they graduate':\n"
-                '{"source_idx":0,"facts":[],"rules":[{"conditions":[{"pred":"completes_courses","args":["?x"],"negated":false},{"pred":"passes_exams","args":["?x"],"negated":false}],"conclusion":{"pred":"graduates","args":["?x"],"negated":false}}]}\n\n'
-                f"Premises:\n{premise_text}"
-            ),
-        },
-    ]
-
-
-def _build_query_only_messages(
+def _translated_problem_from_raw(
+    raw: dict[str, Any],
+    *,
+    premises: list[str],
     question: str,
-    predicate_names: tuple[str, ...] = (),
-    entity_constants: tuple[str, ...] = (),
-) -> list[ChatCompletionMessageParam]:
-    """Compact query-only prompt for YNU/open-ended questions."""
+    options: list[tuple[str, str]] | None,
+) -> TranslatedProblem:
+    """Convert raw one-shot LLM JSON into typed formula IR."""
 
-    schema_hint = (
-        '{"query":{"claim":{"pred":"predicate_name","args":["entity"],"negated":false}}}'
+    raw = _repair_problem_raw_output(raw)
+    predicates = _predicates_from_problem_raw(raw.get("predicates", {}))
+    premise_items = tuple(
+        _formula_item_from_raw(item, default_role="premise", default_source_idx=index, default_text=premises[index])
+        for index, item in enumerate(raw.get("premises", []))
+        if isinstance(item, dict)
     )
-    predicate_instruction = (
-        "CRITICAL — query.claim.pred MUST be EXACTLY one of these allowed names "
-        "(no variants, no synonyms, no new inventions):\n"
-        f"  {', '.join(predicate_names)}\n"
-        "If the question's target concept is not literally in this list, pick the "
-        "closest matching predicate from the list above.\n"
-        if predicate_names
-        else ""
+    if not premise_items:
+        raise ValueError("problem translation produced no premise formulas")
+
+    raw_goals = raw.get("goals")
+    if raw_goals is None and options is not None:
+        raw_goals = raw.get("options")
+    if raw_goals is None and options is None:
+        raw_goals = [raw.get("query")] if isinstance(raw.get("query"), dict) else []
+    goal_items = tuple(
+        _formula_item_from_raw(
+            item,
+            default_role="option" if options is not None else "query",
+            default_source_idx=-1,
+            default_text=_default_goal_text(item, question, options),
+        )
+        for item in (raw_goals or [])
+        if isinstance(item, dict)
     )
-    entity_instruction = (
-        "CRITICAL — entity names in args MUST be EXACTLY one of these known constants "
-        "(copy verbatim, do NOT translate, rephrase, or alter spelling):\n"
-        f"  {', '.join(entity_constants)}\n"
-        if entity_constants
-        else ""
+    if not goal_items:
+        raise ValueError("problem translation produced no goal formulas")
+
+    return TranslatedProblem(
+        predicates=predicates,
+        premises=premise_items,
+        goals=goal_items,
     )
-    return [
-        {
-            "role": "system",
-            "content": (
-                "You are an autoformalizer for educational logic QA. "
-                "Return JSON only. No markdown fences. "
-                "Translate the question target into one Horn-style query atom. "
-                "Never put JSON objects inside args; args must be strings only."
-            ),
-        },
-        {
-            "role": "user",
-            "content": (
-                f"Translate this question target into valid JSON matching: {schema_hint}\n"
-                "Rules:\n"
-                "- Do not answer the question\n"
-                f"{predicate_instruction}"
-                f"{entity_instruction}"
-                "- pred and constants: lowercase snake_case; variables: ?x, ?y\n"
-                "- Prefer atom shape {\"pred\":\"name\",\"args\":[\"entity\"],\"negated\":false}; omit text fields\n"
-                "- args must be an array of strings only, e.g. [\"student\"], never nested objects\n"
-                "- Mark negated=true only for explicit negation\n\n"
-                f"Question:\n{question}"
-            ),
-        },
-    ]
+
+
+def _default_goal_text(
+    item: dict[str, Any],
+    question: str,
+    options: list[tuple[str, str]] | None,
+) -> str:
+    if options is None:
+        return question
+    label = str(item.get("label") or "").strip().upper()
+    return dict(options).get(label, question)
+
+
+def _predicates_from_problem_raw(value: Any) -> dict[str, int]:
+    if isinstance(value, dict):
+        predicates: dict[str, int] = {}
+        for raw_name, raw_arity in value.items():
+            name = _normalize_pred_name(str(raw_name))
+            try:
+                arity = int(raw_arity)
+            except (TypeError, ValueError):
+                arity = 0
+            predicates[name] = max(0, arity)
+        return predicates
+
+    if isinstance(value, list):
+        predicates = {}
+        for item in value:
+            if not isinstance(item, dict) or "name" not in item:
+                continue
+            pred = PredicateSpec.model_validate(item)
+            predicates[pred.name] = pred.arity
+        return predicates
+
+    return {}
+
+
+def _formula_item_from_raw(
+    item: dict[str, Any],
+    *,
+    default_role: str,
+    default_source_idx: int,
+    default_text: str,
+) -> FormulaItem:
+    formula_raw = item.get("formula") or item.get("claim") or item.get("goal")
+    if not isinstance(formula_raw, dict):
+        raise ValueError(f"formula item is missing a formula object: {item!r}")
+
+    role = str(item.get("role") or default_role).strip().lower()
+    if role not in {"premise", "query", "option"}:
+        raise ValueError(f"unsupported formula item role: {role!r}")
+
+    label = item.get("label")
+    if label is not None:
+        label = str(label).strip().upper() or None
+        if label is not None and label not in _OPTION_LABELS:
+            raise ValueError(f"unsupported option label: {label!r}")
+
+    try:
+        source_idx = int(item.get("source_idx", default_source_idx))
+    except (TypeError, ValueError):
+        source_idx = default_source_idx
+
+    return FormulaItem(
+        formula=_formula_from_raw(formula_raw),
+        source_idx=source_idx,
+        text=str(item.get("text") or default_text).strip(),
+        role=role,  # type: ignore[arg-type]
+        label=label,
+    )
+
+
+def _formula_from_raw(raw: Any) -> Formula:
+    """Parse a recursive formula JSON object into Formula IR.
+
+    Accepts multiple key aliases produced by different LLMs or prompt versions:
+      - op key: "type" | "kind" | "op"  (all recognised)
+      - implies: "antecedent"/"consequent" OR "lhs"/"rhs" OR "if"/"then"
+      - and/or children: "args" OR "items" OR "operands" OR "children"
+    This tolerance prevents hard failures when an 8B model uses a slightly
+    different key name from what the prompt specified.
+    """
+
+    if not isinstance(raw, dict):
+        raise ValueError(f"formula must be a JSON object, got {type(raw).__name__}")
+
+    # Unwrap a nested "formula" wrapper if the LLM added an extra level.
+    if "formula" in raw and isinstance(raw["formula"], dict):
+        return _formula_from_raw(raw["formula"])
+    # Some models output {"atom": {...}} instead of the atom fields directly.
+    if "atom" in raw and isinstance(raw["atom"], dict):
+        raw = {**raw["atom"], "type": "atom"}
+
+    # Determine node kind from any of the three op-key variants.
+    kind = str(raw.get("type") or raw.get("kind") or raw.get("op") or "").strip().lower()
+    if not kind:
+        # Fall back: if "pred" is present it must be an atom; otherwise unknown.
+        kind = "atom" if raw.get("pred") or raw.get("text") else ""
+
+    # ── atom ──────────────────────────────────────────────────────────────────
+    if kind in {"atom", "literal"}:
+        atom_raw = dict(raw)
+        # Strip op-key variants before passing to AtomSpec
+        atom_raw.pop("type", None)
+        atom_raw.pop("kind", None)
+        atom_raw.pop("op", None)
+        _repair_atom_dict(atom_raw, {})
+        return _atom_from_spec(AtomSpec.model_validate(atom_raw))
+
+    # ── not ───────────────────────────────────────────────────────────────────
+    if kind in {"not", "neg", "negation"}:
+        # Accept "arg" (standard) or "formula"/"operand" (LLM variants)
+        child = raw.get("arg") or raw.get("formula") or raw.get("operand")
+        if child is None:
+            raise ValueError(f"not node missing 'arg' child: {raw!r}")
+        return Not(_formula_from_raw(child))
+
+    # ── and ───────────────────────────────────────────────────────────────────
+    if kind in {"and", "conjunction"}:
+        return And(_formula_args(raw, "and"))
+
+    # ── or ────────────────────────────────────────────────────────────────────
+    if kind in {"or", "disjunction"}:
+        return Or(_formula_args(raw, "or"))
+
+    # ── implies ───────────────────────────────────────────────────────────────
+    if kind in {"implies", "imply", "if_then", "if-then", "implication"}:
+        # Accept "antecedent"/"consequent" (standard) OR "lhs"/"rhs" (schema v2
+        # alias) OR "if"/"then" (natural-language style).  Try each pair in order.
+        antecedent = (
+            raw.get("antecedent")
+            or raw.get("lhs")
+            or raw.get("if")
+        )
+        consequent = (
+            raw.get("consequent")
+            or raw.get("rhs")
+            or raw.get("then")
+        )
+        if antecedent is None or consequent is None:
+            raise ValueError(
+                f"implies formula requires antecedent+consequent (or lhs+rhs): {raw!r}"
+            )
+        return Implies(_formula_from_raw(antecedent), _formula_from_raw(consequent))
+
+    raise ValueError(f"unsupported formula type: {kind!r}")
+
+
+def _formula_args(raw: dict[str, Any], kind: str) -> tuple[Formula, ...]:
+    """Extract and parse the child-formula list from an and/or node.
+
+    Tries multiple key names because different LLMs and prompt versions use
+    different conventions for the children of conjunction/disjunction nodes:
+      "args"     — used by the current prompt (matches atom.args key name)
+      "items"    — alternative that avoids the atom.args name collision
+      "operands" — natural-language style
+      "children" — tree-style
+
+    We specifically check that each extracted value is a dict (formula object)
+    and not a string (which would mean the LLM confused atom.args with and.args).
+    """
+    # Try keys in preference order; "args" first since that's what the prompt says.
+    for key in ("args", "items", "operands", "children"):
+        candidate = raw.get(key)
+        if isinstance(candidate, list):
+            # If entries are dicts they are formula nodes — use this list.
+            # If entries are strings the LLM confused atom.args with and.args;
+            # skip this key and try the next one.
+            if all(isinstance(v, dict) for v in candidate):
+                values = candidate
+                break
+    else:
+        raise ValueError(f"{kind} formula has no valid child-formula list in {list(raw.keys())}")
+
+    if len(values) < 2:
+        raise ValueError(f"{kind} formula requires at least 2 children, got {len(values)}")
+    return tuple(_formula_from_raw(value) for value in values)
+
+
+def _repair_problem_raw_output(raw: dict[str, Any]) -> dict[str, Any]:
+    """Deep-copy and normalize common raw problem-translation fields."""
+
+    raw = json.loads(json.dumps(raw))
+    if isinstance(raw.get("predicates"), list):
+        raw["predicates"] = {
+            _normalize_pred_name(str(item.get("name"))): int(item.get("arity") or 0)
+            for item in raw["predicates"]
+            if isinstance(item, dict) and item.get("name")
+        }
+    return raw
 
 
 def _premise_specs_to_parsed(
@@ -584,67 +944,6 @@ def _premise_specs_to_parsed(
         parsed_by_idx.get(i) or ParsedPremise(warnings=(f"No LLM IR for premise {i}",))
         for i in range(len(raw_premises))
     )
-
-
-def _build_messages(premises: list[str], question: str) -> list[ChatCompletionMessageParam]:
-    """Build a compact autoformalization prompt for a local <=8B LLM."""
-
-    premise_text = "\n".join(f"{idx}: {premise}" for idx, premise in enumerate(premises))
-    schema_hint = (
-        '{"predicates":[{"name":"predicate_name","arity":1}],'
-        '"premises":[{"source_idx":0,"facts":[{"pred":"predicate_name","args":["item"],"negated":false}],'
-        '"rules":[{"conditions":[{"pred":"condition_name","args":["?x"],"negated":false}],'
-        '"conclusion":{"pred":"predicate_name","args":["?x"],"negated":false}}]}],'
-        '"query":{"claim":{"pred":"predicate_name","args":["sophia"],"negated":false}},'
-        '"options":[]}'
-    )
-    examples = (
-        "Example 1:\n"
-        "Premise 0: If a student completes assignments, the student passes.\n"
-        "Premise 1: Sophia completes assignments.\n"
-        "Question: Does Sophia pass?\n"
-        "JSON: {\"predicates\":[{\"name\":\"completes_assignments\",\"arity\":1},{\"name\":\"passes\",\"arity\":1}],"
-        "\"premises\":[{\"source_idx\":0,\"facts\":[],\"rules\":[{\"conditions\":[{\"pred\":\"completes_assignments\",\"args\":[\"?x\"],\"negated\":false}],"
-        "\"conclusion\":{\"pred\":\"passes\",\"args\":[\"?x\"],\"negated\":false}}]},"
-        "{\"source_idx\":1,\"facts\":[{\"pred\":\"completes_assignments\",\"args\":[\"sophia\"],\"negated\":false}],\"rules\":[]}],"
-        "\"query\":{\"claim\":{\"pred\":\"passes\",\"args\":[\"sophia\"],\"negated\":false}},\"options\":[]}\n\n"
-    )
-    return [
-        {
-            "role": "system",
-            "content": (
-                "You are an autoformalizer for educational logic QA. "
-                "Return JSON only. Keep it compact and valid. Do not use markdown fences. Do not answer the question. "
-                "Translate text into Horn-style predicates for a symbolic solver. "
-                "Never put JSON objects inside args; args must be strings only."
-            ),
-        },
-        {
-            "role": "user",
-            "content": (
-                "Task: build one predicate dictionary, then formalize premises, query, and MCQ options.\n"
-                "Rules:\n"
-                "- Output valid JSON only, matching this shape: "
-                f"{schema_hint}\n"
-                "- Keep output compact; omit atom text fields.\n"
-                "- predicates may contain only name and arity; omit gloss and argument_roles unless needed.\n"
-                "- Reuse predicate names from predicates everywhere; never invent variants.\n"
-                "- pred and constants must be lowercase snake_case; variables use ?x, ?y.\n"
-                "- args must be arrays of strings only, never nested JSON objects.\n"
-                "- Do not use pred values `and`, `or`, `either`, or `not`; split conjunctions and use negated=true for negation.\n"
-                "- Generic rules use variables; named facts/goals use constants.\n"
-                "- Standalone assertions go in facts, not rules.\n"
-                "- Every rule must have at least one condition; never output conditions:[].\n"
-                "- Split conjunctions into separate condition atoms.\n"
-                "- If a premise has alternatives with `or`, keep only Horn-compatible direct conditions and do not model disjunction.\n"
-                "- Preserve source_idx exactly.\n"
-                "- Do not translate A-D options; always set options to []. The pipeline evaluates MCQ options separately.\n"
-                "- Mark negated=true only for explicit negation.\n\n"
-                f"{examples}\n"
-                f"Premises:\n{premise_text}\n\nQuestion:\n{question}"
-            ),
-        },
-    ]
 
 
 def _coerce_atom_arg(raw_arg: Any) -> str:
@@ -702,6 +1001,11 @@ def _translation_token_budget(max_tokens: int, premise_count: int) -> int:
 
 def _premise_token_budget(max_tokens: int, premise_count: int) -> int:
     needed = max(1024, 512 + 280 * premise_count)
+    return min(8192, max(needed, max_tokens))
+
+
+def _problem_token_budget(max_tokens: int, premise_count: int, goal_count: int) -> int:
+    needed = max(1536, 768 + 320 * premise_count + 180 * goal_count)
     return min(8192, max(needed, max_tokens))
 
 
@@ -788,39 +1092,3 @@ def _closest_predicate(pred: str, predicate_names: tuple[str, ...]) -> str | Non
         if overlap > best_score:
             best_score, best_name = overlap, name
     return best_name if best_score >= 0.30 else None
-
-
-def _build_mcq_options_messages(
-    question: str,
-    predicate_names: tuple[str, ...],
-) -> list[ChatCompletionMessageParam]:
-    """Prompt to translate each MCQ option text into a KB atom."""
-
-    schema_hint = (
-        '{"options":[{"label":"A","claim":{"pred":"name","args":["?x"],"negated":false}},'
-        '{"label":"B","claim":{"pred":"name","args":["?x"],"negated":false}}]}'
-    )
-    predicate_list = ", ".join(predicate_names) if predicate_names else "(use descriptive snake_case)"
-    return [
-        {
-            "role": "system",
-            "content": (
-                "You are an autoformalizer for educational logic QA. "
-                "Return JSON only. No markdown fences. "
-                "Map each MCQ option to ONE atom from the given predicate list."
-            ),
-        },
-        {
-            "role": "user",
-            "content": (
-                f"Translate each MCQ option into a Horn atom. Output JSON matching: {schema_hint}\n"
-                "Rules:\n"
-                f"- Available predicates: {predicate_list}\n"
-                "- Pick the predicate that best captures the option's core claim\n"
-                "- negated=true if the option asserts the predicate does NOT hold\n"
-                "- args: '?x' for generic entity, snake_case constant for a named entity\n"
-                "- Include all options (A, B, C, D) that appear in the question\n\n"
-                f"Question:\n{question}"
-            ),
-        },
-    ]

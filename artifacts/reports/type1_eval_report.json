@@ -1,21 +1,28 @@
 {
-  "source": "../artifacts/predictions/type1/eval_run.json",
-  "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
-  "count": 1,
+  "source": "../artifacts/predictions/type1/remote_api_eval_run.json",
+  "api_base_url": "https://api.iamphuckhang.dev",
+  "endpoint": "https://api.iamphuckhang.dev/debug/predict",
+  "count": 10,
   "summary": {
-    "total": 1,
-    "scored_total": 1,
-    "correct": 0,
-    "wrong": 1,
+    "total": 10,
+    "scored_total": 10,
+    "correct": 1,
+    "wrong": 9,
     "missing_gold": 0,
-    "accuracy": 0.0,
+    "accuracy": 0.1,
     "pipeline_errors": 1,
     "by_question_type": {
-      "unknown": {
-        "total": 1,
+      "mcq": {
+        "total": 5,
+        "correct": 1,
+        "accuracy": 0.2,
+        "pipeline_errors": 1
+      },
+      "yes_no_uncertain": {
+        "total": 5,
         "correct": 0,
         "accuracy": 0.0,
-        "pipeline_errors": 1
+        "pipeline_errors": 0
       }
     }
   },
@@ -24,9 +31,81 @@
       "id": "logic_0000_00",
       "answer": "",
       "gold_answer": "A",
-      "question_type": "unknown",
+      "question_type": "mcq",
       "status": "pipeline_error",
-      "error": "Type 1 MCQ LLM premise translation failed for request logic_0000_00: All LLM premise translation candidates failed: candidate 1/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; candidate 2/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; candidate 3/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400"
+      "error": "ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)"
+    },
+    {
+      "id": "logic_0000_01",
+      "answer": "Unknown",
+      "gold_answer": "Yes",
+      "question_type": "yes_no_uncertain",
+      "status": "wrong",
+      "error": null
+    },
+    {
+      "id": "logic_0001_00",
+      "answer": "A",
+      "gold_answer": "C",
+      "question_type": "mcq",
+      "status": "wrong",
+      "error": "No MCQ option symbolically entailed; LLM fallback used."
+    },
+    {
+      "id": "logic_0001_01",
+      "answer": "Unknown",
+      "gold_answer": "Yes",
+      "question_type": "yes_no_uncertain",
+      "status": "wrong",
+      "error": "No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10"
+    },
+    {
+      "id": "logic_0002_00",
+      "answer": "A",
+      "gold_answer": "C",
+      "question_type": "mcq",
+      "status": "wrong",
+      "error": "No MCQ option symbolically entailed; LLM fallback used."
+    },
+    {
+      "id": "logic_0002_01",
+      "answer": "Unknown",
+      "gold_answer": "Yes",
+      "question_type": "yes_no_uncertain",
+      "status": "wrong",
+      "error": "No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10"
+    },
+    {
+      "id": "logic_0003_00",
+      "answer": "A",
+      "gold_answer": "A",
+      "question_type": "mcq",
+      "status": "correct",
+      "error": "No MCQ option symbolically entailed; LLM fallback used."
+    },
+    {
+      "id": "logic_0003_01",
+      "answer": "Unknown",
+      "gold_answer": "Yes",
+      "question_type": "yes_no_uncertain",
+      "status": "wrong",
+      "error": "No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6"
+    },
+    {
+      "id": "logic_0004_00",
+      "answer": "B",
+      "gold_answer": "C",
+      "question_type": "mcq",
+      "status": "wrong",
+      "error": "No MCQ option symbolically entailed; LLM fallback used."
+    },
+    {
+      "id": "logic_0004_01",
+      "answer": "Unknown",
+      "gold_answer": "Yes",
+      "question_type": "yes_no_uncertain",
+      "status": "wrong",
+      "error": "No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6; No LLM IR for premise 7"
     }
   ]
 }

@@ -9,6 +9,7 @@ reuse them, and a Logic-LM/LINC-style solver/verifier can reason over them.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Literal, Union
 
 
 @dataclass(frozen=True, order=True)
@@ -31,6 +32,59 @@ class Atom:
             f"{self.pred}({', '.join(self.args)})" if self.args else self.pred.replace("_", " ")
         )
         return f"not {label}" if self.negated else label
+
+
+@dataclass(frozen=True)
+class Not:
+    """Formula-level negation around an atom or compound formula."""
+
+    arg: "Formula"
+
+
+@dataclass(frozen=True)
+class And:
+    """Formula-level conjunction."""
+
+    args: tuple["Formula", ...]
+
+
+@dataclass(frozen=True)
+class Or:
+    """Formula-level disjunction."""
+
+    args: tuple["Formula", ...]
+
+
+@dataclass(frozen=True)
+class Implies:
+    """Formula-level implication."""
+
+    antecedent: "Formula"
+    consequent: "Formula"
+
+
+# Atom remains the literal leaf so existing Horn IR users keep working.
+Formula = Union[Atom, Not, And, Or, Implies]
+
+
+@dataclass(frozen=True)
+class FormulaItem:
+    """Translated premise, query, or option formula with source provenance."""
+
+    formula: Formula
+    source_idx: int
+    text: str
+    role: Literal["premise", "query", "option"]
+    label: str | None = None
+
+
+@dataclass(frozen=True)
+class TranslatedProblem:
+    """One-shot Type 1 translation containing premise and goal formulas."""
+
+    predicates: dict[str, int]
+    premises: tuple[FormulaItem, ...]
+    goals: tuple[FormulaItem, ...]
 
 
 @dataclass(frozen=True)

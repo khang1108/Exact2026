@@ -1,5 +1,10 @@
 id,answer,gold_answer,question_type,status,error
-logic_0000_00,,A,unknown,pipeline_error,"Type 1 MCQ LLM premise translation failed for request logic_0000_00: All LLM premise translation candidates failed: candidate 1/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; candidate 2/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; candidate 3/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400"
+logic_0000_00,,A,mcq,pipeline_error,"ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)"
+logic_0000_01,Unknown,Yes,yes_no_uncertain,wrong,
+logic_0001_00,A,C,mcq,wrong,No MCQ option symbolically entailed; LLM fallback used.
+logic_0001_01,Unknown,Yes,yes_no_uncertain,wrong,No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10
+logic_0002_00,A,C,mcq,wrong,No MCQ option symbolically entailed; LLM fallback used.
+logic_0002_01,Unknown,Yes,yes_no_uncertain,wrong,No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10
+logic_0003_01,Unknown,Yes,yes_no_uncertain,wrong,No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6
+logic_0004_00,B,C,mcq,wrong,No MCQ option symbolically entailed; LLM fallback used.
+logic_0004_01,Unknown,Yes,yes_no_uncertain,wrong,No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6; No LLM IR for premise 7

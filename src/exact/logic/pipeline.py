@@ -15,11 +15,21 @@ from exact.common.schemas import PredictionRequest, PredictionResponse, Question
 from exact.llm_client import build_json_client_from_settings
 from exact.logic.explain import explain_result, kb_to_fol_like_text
 from exact.logic.kb import get_or_build_kb_candidates
-from exact.logic.ir import Atom, SolveResult
+from exact.logic.ir import (
+    And,
+    Atom,
+    Formula,
+    Implies,
+    Not,
+    Or,
+    SolveResult,
+    TranslatedProblem,
+)
 from exact.logic.kb import KnowledgeBase
 from exact.logic.llm_translator import (
     JsonLLMClient,
     translate_mcq_options_with_llm,
+    translate_problem_with_llm,
     translate_query_only_with_llm,
 )
 from exact.logic.parser import atom_from_text
@@ -27,6 +37,7 @@ from exact.logger import get_logger, get_request_logger
 
 logger = get_logger(__name__)
 from exact.symbolic_solvers import ForwardChainSolver, Z3Solver
+from exact.symbolic_solvers.z3_prop import FormulaZ3Result, Z3PropSolver
 
 
 _OPTION_RE = re.compile(
@@ -146,6 +157,25 @@ def run_type1_pipeline(
 
     routed_question_type = question_type or QuestionType.YES_NO_UNCERTAIN
     premises = request.premises_nl or []
+    formula_z3_error: str | None = None
+    if settings.type1_use_formula_z3:
+        try:
+            return _run_formula_z3_pipeline(
+                request=request,
+                routed_question_type=routed_question_type,
+                premises=premises,
+                translator_client=translator_client,
+                settings=settings,
+                logger=logger,
+            )
+        except Exception as exc:
+            logger.exception("Type 1 formula-Z3 path failed")
+            if not settings.type1_enable_legacy_fallback:
+                raise RuntimeError(
+                    f"Type 1 formula-Z3 path failed for request {request.id}: {exc}"
+                ) from exc
+            formula_z3_error = f"formula_z3_failed: {exc}"
+
     samples = max(1, settings.type1_translation_samples)
     sampling_temperature = (
         settings.type1_sampling_temperature if samples > 1 else settings.llm_temperature
@@ -166,7 +196,10 @@ def run_type1_pipeline(
                 f"Type 1 MCQ LLM premise translation failed for request {request.id}: {exc}"
             ) from exc
         return _run_mcq_vote_path(
-            request, kb_candidates, routed_question_type, candidate_warnings,
+            request,
+            kb_candidates,
+            routed_question_type,
+            tuple(w for w in (formula_z3_error, *candidate_warnings) if w),
             translator_client=translator_client, settings=settings,
         )
 
@@ -225,13 +258,15 @@ def run_type1_pipeline(
     )
     explanation, cot, cited_premises = explain_result(result, kb)
     vote_line = f"symbolic_consistency_vote: {vote_summary}"
-    warnings = (*candidate_warnings, *query_errors, *result.warnings)
+    warnings = tuple(w for w in (formula_z3_error, *candidate_warnings, *query_errors, *result.warnings) if w)
 
     response = PredictionResponse(
         id=request.id,
         task_type=TaskType.TYPE1_LOGIC,
         question_type=routed_question_type,
-        answer=result.label,
+        # Convert internal "Unknown" → "Uncertain" for competition submission.
+        # Internal logic (vote summary, CoT trigger below) still uses result.label.
+        answer=_to_competition_label(result.label),
         explanation=f"{explanation} {vote_line}",
         fol=kb_to_fol_like_text(kb) or None,
         cot=[*cot, vote_line],
@@ -250,6 +285,279 @@ def run_type1_pipeline(
         )
 
     return response
+
+
+def _run_formula_z3_pipeline(
+    *,
+    request: PredictionRequest,
+    routed_question_type: QuestionType,
+    premises: list[str],
+    translator_client: JsonLLMClient,
+    settings: Settings,
+    logger,
+) -> PredictionResponse:
+    """One-shot formula translation followed by Z3 entailment."""
+
+    options = extract_options(request.question) if routed_question_type == QuestionType.MCQ else None
+    if routed_question_type == QuestionType.MCQ and not options:
+        return PredictionResponse(
+            id=request.id,
+            task_type=TaskType.TYPE1_LOGIC,
+            question_type=routed_question_type,
+            answer="A",
+            explanation="No multiple-choice options were parsed, so the system returned default option A.",
+            fol=None,
+            cot=["formula_z3_skipped: no A-D options parsed"],
+            premises=[],
+            confidence=0.05,
+            error="MCQ routed but no options were parsed.",
+        )
+
+    translated = translate_problem_with_llm(
+        premises=premises,
+        question=request.question,
+        options=options,
+        llm_client=translator_client,
+        settings=settings,
+    )
+    solver = Z3PropSolver()
+    logger.info(
+        "Formula-Z3 translation complete: premises=%s goals=%s predicates=%s",
+        len(translated.premises),
+        len(translated.goals),
+        len(translated.predicates),
+    )
+
+    if routed_question_type == QuestionType.MCQ:
+        return _run_formula_z3_mcq_path(
+            request=request,
+            translated=translated,
+            options=options or [],
+            solver=solver,
+            question_type=routed_question_type,
+            llm_client=translator_client,
+            settings=settings,
+        )
+
+    return _run_formula_z3_query_path(
+        request=request,
+        translated=translated,
+        solver=solver,
+        question_type=routed_question_type,
+        llm_client=translator_client,
+        settings=settings,
+        logger=logger,
+    )
+
+
+def _run_formula_z3_query_path(
+    *,
+    request: PredictionRequest,
+    translated: TranslatedProblem,
+    solver: Z3PropSolver,
+    question_type: QuestionType,
+    llm_client: JsonLLMClient,
+    settings: Settings,
+    logger,
+) -> PredictionResponse:
+    result = solver.solve_query(translated)
+    internal_answer = result.answer or "Unknown"
+    answer = _to_competition_label(internal_answer)
+    response = PredictionResponse(
+        id=request.id,
+        task_type=TaskType.TYPE1_LOGIC,
+        question_type=question_type,
+        answer=answer,
+        explanation=_formula_query_explanation(result),
+        fol=_translated_problem_to_fol_like_text(translated),
+        cot=_formula_cot(translated, result, kind="query"),
+        premises=_formula_premise_refs(translated, include_all=internal_answer != "Unknown"),
+        confidence=_formula_query_confidence(result),
+        error="; ".join(result.warnings) if result.warnings else None,
+    )
+
+    if (internal_answer == "Unknown" or result.answer is None) and settings.type1_enable_cot_fallback:
+        return _run_cot_unknown_fallback(
+            request=request,
+            response=response,
+            llm_client=llm_client,
+            settings=settings,
+            logger=logger,
+        )
+    return response
+
+
+def _run_formula_z3_mcq_path(
+    *,
+    request: PredictionRequest,
+    translated: TranslatedProblem,
+    options: list[tuple[str, str]],
+    solver: Z3PropSolver,
+    question_type: QuestionType,
+    llm_client: JsonLLMClient,
+    settings: Settings,
+) -> PredictionResponse:
+    stem = strip_options_from_question(request.question)
+    result = solver.solve_mcq(translated, stem=stem)
+    if result.answer is None and settings.type1_enable_cot_fallback:
+        fallback = _run_mcq_llm_fallback(
+            request=request,
+            options=options,
+            question_type=question_type,
+            llm_client=llm_client,
+            settings=settings,
+        )
+        if fallback is not None:
+            return fallback.model_copy(
+                update={
+                    "fol": _translated_problem_to_fol_like_text(translated),
+                    "cot": [
+                        *_formula_cot(translated, result, kind="mcq"),
+                        *(fallback.cot or []),
+                    ],
+                    "error": _join_errors(
+                        "; ".join(result.warnings) if result.warnings else None,
+                        fallback.error,
+                    ),
+                }
+            )
+
+    answer = result.answer or "Unknown"
+    return PredictionResponse(
+        id=request.id,
+        task_type=TaskType.TYPE1_LOGIC,
+        question_type=question_type,
+        answer=answer,
+        explanation=_formula_mcq_explanation(result),
+        fol=_translated_problem_to_fol_like_text(translated),
+        cot=_formula_cot(translated, result, kind="mcq"),
+        premises=_formula_premise_refs(translated, include_all=answer != "Unknown"),
+        confidence=_formula_mcq_confidence(result),
+        error="; ".join(result.warnings) if result.warnings else None,
+    )
+
+
+def _formula_query_explanation(result: FormulaZ3Result) -> str:
+    answer = result.answer or "Unknown"
+    if result.answer is None:
+        return (
+            "Formula-Z3 could not produce a trusted symbolic answer because the translated "
+            "theory was inconsistent or incomplete."
+        )
+    return (
+        f"Formula-Z3 judged the query as {answer}. It uses entailment checks where "
+        "T entails phi iff T and not(phi) is UNSAT; the translated theory status was "
+        f"{result.theory_status}."
+    )
+
+
+def _formula_mcq_explanation(result: FormulaZ3Result) -> str:
+    if result.answer is None:
+        return (
+            "Formula-Z3 did not find a uniquely usable entailed option, so the case should "
+            "be repaired or handled by the fail-safe fallback."
+        )
+    valid = ", ".join(result.valid_labels) if result.valid_labels else result.answer
+    return (
+        f"Option {result.answer} was selected by Formula-Z3 entailment. Entailed options: "
+        f"{valid}. The translated theory status was {result.theory_status}."
+    )
+
+
+def _formula_query_confidence(result: FormulaZ3Result) -> float:
+    if result.warnings or result.answer is None:
+        return 0.20
+    if result.answer in {"Yes", "No"}:
+        return 0.78
+    return 0.35
+
+
+def _formula_mcq_confidence(result: FormulaZ3Result) -> float:
+    if result.answer is None:
+        return 0.10
+    if len(result.valid_labels) == 1:
+        return 0.80
+    return 0.64
+
+
+def _formula_cot(
+    translated: TranslatedProblem,
+    result: FormulaZ3Result,
+    *,
+    kind: str,
+) -> list[str]:
+    lines = [
+        (
+            "llm_formula_translation: "
+            f"premises={len(translated.premises)}, goals={len(translated.goals)}, "
+            f"predicates={len(translated.predicates)}"
+        ),
+        f"z3_prop_theory_status: {result.theory_status}",
+    ]
+    if kind == "mcq":
+        valid = ", ".join(result.valid_labels) if result.valid_labels else "none"
+        lines.append(f"z3_prop_mcq_valid_options: {valid}")
+        if result.core_sizes:
+            core_text = ", ".join(
+                f"{label}={size}" for label, size in result.core_sizes
+            )
+            lines.append(f"z3_prop_unsat_core_sizes: {core_text}")
+    else:
+        lines.append(f"z3_prop_query_answer: {result.answer or 'Unknown'}")
+    for warning in result.warnings:
+        lines.append(f"z3_prop_warning: {warning}")
+    return lines
+
+
+def _translated_problem_to_fol_like_text(problem: TranslatedProblem) -> str:
+    predicate_text = ", ".join(
+        f"{name}/{arity}" for name, arity in sorted(problem.predicates.items())
+    )
+    premise_lines = [
+        f"P{item.source_idx + 1}: {_formula_to_text(item.formula)}"
+        for item in problem.premises
+    ]
+    goal_lines = []
+    for item in problem.goals:
+        label = f"{item.label}: " if item.label else ""
+        goal_lines.append(f"{item.role}:{label}{_formula_to_text(item.formula)}")
+    return "\n".join(
+        [
+            f"Predicates: {predicate_text or '(implicit)'}",
+            "Premises:",
+            *premise_lines,
+            "Goals:",
+            *goal_lines,
+        ]
+    )
+
+
+def _formula_to_text(formula: Formula) -> str:
+    if isinstance(formula, Atom):
+        args = ", ".join(formula.args)
+        atom = f"{formula.pred}({args})" if args else formula.pred
+        return f"not {atom}" if formula.negated else atom
+    if isinstance(formula, Not):
+        return f"not ({_formula_to_text(formula.arg)})"
+    if isinstance(formula, And):
+        return "(" + " and ".join(_formula_to_text(arg) for arg in formula.args) + ")"
+    if isinstance(formula, Or):
+        return "(" + " or ".join(_formula_to_text(arg) for arg in formula.args) + ")"
+    if isinstance(formula, Implies):
+        return (
+            f"({_formula_to_text(formula.antecedent)} -> "
+            f"{_formula_to_text(formula.consequent)})"
+        )
+    return str(formula)
+
+
+def _formula_premise_refs(problem: TranslatedProblem, include_all: bool) -> list[str]:
+    if not include_all:
+        return []
+    return [
+        f"P{item.source_idx + 1}: {item.text}"
+        for item in sorted(problem.premises, key=lambda item: item.source_idx)
+    ]
 
 
 def _run_cot_unknown_fallback(
@@ -326,14 +634,36 @@ def _build_cot_unknown_messages(
 
 
 def _normalize_cot_answer(value: object) -> str:
+    """Map an LLM-produced answer token to the competition label.
+
+    The internal solver uses "Unknown" for the undecidable case, but the
+    competition rubric for Yes/No/Uncertain questions expects "Uncertain".
+    We normalise here so both the symbolic path and the CoT fallback path
+    always output the same external-facing label.
+    """
     answer = str(value or "").strip().lower()
     if answer in {"yes", "true", "entailed"}:
         return "Yes"
     if answer in {"no", "false", "contradicted"}:
         return "No"
     if answer in {"unknown", "uncertain", "not enough information"}:
-        return "Unknown"
+        # BTC confirmed the third label is "Uncertain", not "Unknown".
+        return "Uncertain"
     raise ValueError(f"CoT fallback returned unsupported answer: {value!r}")
+
+
+def _to_competition_label(internal_label: str) -> str:
+    """Convert an internal solver label to the competition submission format.
+
+    Internal solvers use "Unknown" for the undecidable case (matches Z3/
+    forward-chain conventions). The competition expects "Uncertain" as the
+    third valid answer for Yes/No/Uncertain questions.
+
+    MCQ and other answer types are returned unchanged.
+    """
+    if internal_label == "Unknown":
+        return "Uncertain"
+    return internal_label
 
 
 def _as_string_list(value: object) -> list[str]:

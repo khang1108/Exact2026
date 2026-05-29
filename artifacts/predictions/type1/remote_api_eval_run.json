@@ -1,0 +1,347 @@
+{
+  "api_base_url": "https://api.iamphuckhang.dev",
+  "endpoint": "https://api.iamphuckhang.dev/debug/predict",
+  "use_debug_endpoint": true,
+  "limit": 10,
+  "count": 10,
+  "format": "exact_predictions",
+  "predictions": [
+    {
+      "answer": "",
+      "explanation": "pipeline error: ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
+      "fol": null,
+      "cot": [],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "logic_0000_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "error": "ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
+      "gold_answer": "A",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "official": {
+        "answer": "",
+        "explanation": "pipeline error: ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
+        "fol": null,
+        "cot": [],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "_elapsed_s": 60.17,
+      "_status": "error"
+    },
+    {
+      "answer": "Unknown",
+      "explanation": "The provided premises do not provide enough information to determine whether all Python projects being well-structured implies that they are optimized. While there are connections between well-structured projects and optimization through other premises, this specific implication is not directly supported.",
+      "fol": "P1: is_well_tested(?x) -> is_optimized(?x)\nP2: does_not_follow_pep8(?x) -> is_not_well_tested(?x)\nP5: follows_pep8(?x) -> is_easy_to_maintain(?x)\nP6: is_well_tested(?x) -> follows_pep8(?x)\nP7: is_well_structured(?x) -> is_optimized(?x)\nP8: is_easy_to_maintain(?x) -> is_well_tested(?x)\nP9: is_optimized(?x) -> has_clean_and_readable_code(?x)\nP14: does_not_follow_pep8(?x) -> is_not_well_structured(?x)\nP1: not is_optimized(?x) -> not is_well_tested(?x)\nP2: not is_not_well_tested(?x) -> not does_not_follow_pep8(?x)\nP5: not is_easy_to_maintain(?x) -> not follows_pep8(?x)\nP6: not follows_pep8(?x) -> not is_well_tested(?x)\nP7: not is_optimized(?x) -> not is_well_structured(?x)\nP8: not is_well_tested(?x) -> not is_easy_to_maintain(?x)\nP9: not has_clean_and_readable_code(?x) -> not is_optimized(?x)\nP14: not is_not_well_structured(?x) -> not does_not_follow_pep8(?x)",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation.",
+        "symbolic_consistency_vote: Unknown=2",
+        "Given the premises, we cannot derive a direct relationship between well-structured projects and optimization.",
+        "There are no premises that explicitly state that well-structured projects are optimized.",
+        "cot_fallback_after_symbolic_unknown: answer=Unknown"
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "logic_0000_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "unit": null,
+      "error": null,
+      "gold_answer": "Yes",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "official": {
+        "answer": "Unknown",
+        "explanation": "The provided premises do not provide enough information to determine whether all Python projects being well-structured implies that they are optimized. While there are connections between well-structured projects and optimization through other premises, this specific implication is not directly supported.",
+        "fol": "P1: is_well_tested(?x) -> is_optimized(?x)\nP2: does_not_follow_pep8(?x) -> is_not_well_tested(?x)\nP5: follows_pep8(?x) -> is_easy_to_maintain(?x)\nP6: is_well_tested(?x) -> follows_pep8(?x)\nP7: is_well_structured(?x) -> is_optimized(?x)\nP8: is_easy_to_maintain(?x) -> is_well_tested(?x)\nP9: is_optimized(?x) -> has_clean_and_readable_code(?x)\nP14: does_not_follow_pep8(?x) -> is_not_well_structured(?x)\nP1: not is_optimized(?x) -> not is_well_tested(?x)\nP2: not is_not_well_tested(?x) -> not does_not_follow_pep8(?x)\nP5: not is_easy_to_maintain(?x) -> not follows_pep8(?x)\nP6: not follows_pep8(?x) -> not is_well_tested(?x)\nP7: not is_optimized(?x) -> not is_well_structured(?x)\nP8: not is_well_tested(?x) -> not is_easy_to_maintain(?x)\nP9: not has_clean_and_readable_code(?x) -> not is_optimized(?x)\nP14: not is_not_well_structured(?x) -> not does_not_follow_pep8(?x)",
+        "cot": [
+          "No symbolic proof was found for the claim or for its negation.",
+          "symbolic_consistency_vote: Unknown=2",
+          "Given the premises, we cannot derive a direct relationship between well-structured projects and optimization.",
+          "There are no premises that explicitly state that well-structured projects are optimized.",
+          "cot_fallback_after_symbolic_unknown: answer=Unknown"
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "_elapsed_s": 6.86,
+      "_status": "wrong"
+    },
+    {
+      "answer": "A",
+      "explanation": "To qualify for the university scholarship, Sophia must first be awarded an honors diploma (P4) and then either complete a capstone project or receive a faculty recommendation (P5 and P6). Given that Sophia has completed the core curriculum (P7), passed the science assessment (P8), completed research methodology (P9), and completed her capstone project (P10), she meets all the criteria for being awarded an honors diploma. Therefore, she can qualify for the university scholarship by receiving a faculty recommendation or completing the capstone project, making A the strongest conclusion. symbolic_consistency_vote: A=2",
+      "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+      "cot": [
+        "mcq_llm_fallback: answer=A",
+        "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+        "symbolic_consistency_vote: A=2"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "id": "logic_0001_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "unit": null,
+      "error": "No MCQ option symbolically entailed; LLM fallback used.",
+      "gold_answer": "C",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "official": {
+        "answer": "A",
+        "explanation": "To qualify for the university scholarship, Sophia must first be awarded an honors diploma (P4) and then either complete a capstone project or receive a faculty recommendation (P5 and P6). Given that Sophia has completed the core curriculum (P7), passed the science assessment (P8), completed research methodology (P9), and completed her capstone project (P10), she meets all the criteria for being awarded an honors diploma. Therefore, she can qualify for the university scholarship by receiving a faculty recommendation or completing the capstone project, making A the strongest conclusion. symbolic_consistency_vote: A=2",
+        "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+        "cot": [
+          "mcq_llm_fallback: answer=A",
+          "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+          "symbolic_consistency_vote: A=2"
+        ],
+        "premises": [],
+        "confidence": 1.0
+      },
+      "_elapsed_s": 47.68,
+      "_status": "wrong"
+    },
+    {
+      "answer": "Unknown",
+      "explanation": "The provided premises do not provide enough information to determine if Sophia has passed the language proficiency exam or received a faculty recommendation, which are necessary conditions for the university scholarship.",
+      "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation.",
+        "symbolic_consistency_vote: Unknown=1, Yes=1",
+        "Sophia meets some but not all conditions for the university scholarship.",
+        "She needs to pass the language proficiency exam or receive a faculty recommendation to qualify.",
+        "cot_fallback_after_symbolic_unknown: answer=Unknown"
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "logic_0001_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "unit": null,
+      "error": "No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10",
+      "gold_answer": "Yes",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "official": {
+        "answer": "Unknown",
+        "explanation": "The provided premises do not provide enough information to determine if Sophia has passed the language proficiency exam or received a faculty recommendation, which are necessary conditions for the university scholarship.",
+        "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+        "cot": [
+          "No symbolic proof was found for the claim or for its negation.",
+          "symbolic_consistency_vote: Unknown=1, Yes=1",
+          "Sophia meets some but not all conditions for the university scholarship.",
+          "She needs to pass the language proficiency exam or receive a faculty recommendation to qualify.",
+          "cot_fallback_after_symbolic_unknown: answer=Unknown"
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "_elapsed_s": 3.97,
+      "_status": "wrong"
+    },
+    {
+      "answer": "A",
+      "explanation": "Sophia has completed the core curriculum (P7), passed the science assessment (P8), completed research methodology (P9), completed her capstone project (P10), and completed community service (P11). According to the premises, these qualifications lead to eligibility for the international program (P2) and then to the honors diploma (P4). Finally, having an honors diploma and completing community service (P11) or receiving a faculty recommendation (P6) qualifies her for the university scholarship. symbolic_consistency_vote: A=2",
+      "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+      "cot": [
+        "mcq_llm_fallback: answer=A",
+        "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+        "symbolic_consistency_vote: A=2"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "id": "logic_0002_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "unit": null,
+      "error": "No MCQ option symbolically entailed; LLM fallback used.",
+      "gold_answer": "C",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "official": {
+        "answer": "A",
+        "explanation": "Sophia has completed the core curriculum (P7), passed the science assessment (P8), completed research methodology (P9), completed her capstone project (P10), and completed community service (P11). According to the premises, these qualifications lead to eligibility for the international program (P2) and then to the honors diploma (P4). Finally, having an honors diploma and completing community service (P11) or receiving a faculty recommendation (P6) qualifies her for the university scholarship. symbolic_consistency_vote: A=2",
+        "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+        "cot": [
+          "mcq_llm_fallback: answer=A",
+          "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+          "symbolic_consistency_vote: A=2"
+        ],
+        "premises": [],
+        "confidence": 1.0
+      },
+      "_elapsed_s": 9.06,
+      "_status": "wrong"
+    },
+    {
+      "answer": "Unknown",
+      "explanation": "The provided premises do not provide enough information to determine if Sophia has passed the language proficiency exam or received a faculty recommendation, which are necessary conditions for the university scholarship.",
+      "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation.",
+        "symbolic_consistency_vote: Unknown=1, Yes=1",
+        "Sophia meets some but not all conditions for the university scholarship.",
+        "She needs to pass the language proficiency exam or receive a faculty recommendation to qualify.",
+        "cot_fallback_after_symbolic_unknown: answer=Unknown"
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "logic_0002_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "unit": null,
+      "error": "No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10",
+      "gold_answer": "Yes",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "official": {
+        "answer": "Unknown",
+        "explanation": "The provided premises do not provide enough information to determine if Sophia has passed the language proficiency exam or received a faculty recommendation, which are necessary conditions for the university scholarship.",
+        "fol": "P1: has_completed_core_curriculum(?x) AND passed_science_assessment(?x) -> qualified_for_advanced_courses(?x)\nP2: qualified_for_advanced_courses(?x) AND completed_research_methodology(?x) -> eligible_for_international_program(?x)\nP3: passed_language_proficiency_exam(?x) -> eligible_for_international_program(?x)\nP4: eligible_for_international_program(?x) AND completed_capstone_project(?x) -> awarded_honors_diploma(?x)\nP5: awarded_honors_diploma(?x) AND completed_community_service(?x) -> has_completed(?x, university_scholarship)\nP6: awarded_honors_diploma(?x) AND received_faculty_recommendation(?x) -> has_completed(?x, university_scholarship)\nP1: not qualified_for_advanced_courses(?x) AND passed_science_assessment(?x) -> not has_completed_core_curriculum(?x)\nP1: not qualified_for_advanced_courses(?x) AND has_completed_core_curriculum(?x) -> not passed_science_assessment(?x)\nP2: not eligible_for_international_program(?x) AND completed_research_methodology(?x) -> not qualified_for_advanced_courses(?x)\nP2: not eligible_for_international_program(?x) AND qualified_for_advanced_courses(?x) -> not completed_research_methodology(?x)\nP3: not eligible_for_international_program(?x) -> not passed_language_proficiency_exam(?x)\nP4: not awarded_honors_diploma(?x) AND completed_capstone_project(?x) -> not eligible_for_international_program(?x)\nP4: not awarded_honors_diploma(?x) AND eligible_for_international_program(?x) -> not completed_capstone_project(?x)\nP5: not has_completed(?x, university_scholarship) AND completed_community_service(?x) -> not awarded_honors_diploma(?x)\nP5: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not completed_community_service(?x)\nP6: not has_completed(?x, university_scholarship) AND received_faculty_recommendation(?x) -> not awarded_honors_diploma(?x)\nP6: not has_completed(?x, university_scholarship) AND awarded_honors_diploma(?x) -> not received_faculty_recommendation(?x)",
+        "cot": [
+          "No symbolic proof was found for the claim or for its negation.",
+          "symbolic_consistency_vote: Unknown=1, Yes=1",
+          "Sophia meets some but not all conditions for the university scholarship.",
+          "She needs to pass the language proficiency exam or receive a faculty recommendation to qualify.",
+          "cot_fallback_after_symbolic_unknown: answer=Unknown"
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "_elapsed_s": 4.41,
+      "_status": "wrong"
+    },
+    {
+      "answer": "A",
+      "explanation": "Starting from premise P5, John has completed all required courses. From P1, this makes him eligible for graduation. Moving to P6, his GPA of 3.8 is above 3.5, making him eligible for honors (P2). Finally, from P7, he has completed a thesis, qualifying him for academic distinction (P3). According to P4, this qualification makes him eligible for the graduate fellowship program. symbolic_consistency_vote: A=2",
+      "fol": "P1: completes_all_required_courses(?x) -> eligible_for_graduation(?x)\nP2: eligible_for_graduation(?x) AND maintains_gpa_above_3_5(?x) -> graduates_with_honors(?x)\nP3: graduates_with_honors(?x) AND completes_thesis(?x) -> receives_academic_distinction(?x)\nP4: receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x)\nP1: not eligible_for_graduation(?x) -> not completes_all_required_courses(?x)\nP2: not graduates_with_honors(?x) AND maintains_gpa_above_3_5(?x) -> not eligible_for_graduation(?x)\nP2: not graduates_with_honors(?x) AND eligible_for_graduation(?x) -> not maintains_gpa_above_3_5(?x)\nP3: not receives_academic_distinction(?x) AND completes_thesis(?x) -> not graduates_with_honors(?x)\nP3: not receives_academic_distinction(?x) AND graduates_with_honors(?x) -> not completes_thesis(?x)\nP4: not qualifies_for_graduate_fellowship_program(?x) -> not receives_academic_distinction(?x)",
+      "cot": [
+        "mcq_llm_fallback: answer=A",
+        "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+        "symbolic_consistency_vote: A=2"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "id": "logic_0003_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "unit": null,
+      "error": "No MCQ option symbolically entailed; LLM fallback used.",
+      "gold_answer": "A",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "official": {
+        "answer": "A",
+        "explanation": "Starting from premise P5, John has completed all required courses. From P1, this makes him eligible for graduation. Moving to P6, his GPA of 3.8 is above 3.5, making him eligible for honors (P2). Finally, from P7, he has completed a thesis, qualifying him for academic distinction (P3). According to P4, this qualification makes him eligible for the graduate fellowship program. symbolic_consistency_vote: A=2",
+        "fol": "P1: completes_all_required_courses(?x) -> eligible_for_graduation(?x)\nP2: eligible_for_graduation(?x) AND maintains_gpa_above_3_5(?x) -> graduates_with_honors(?x)\nP3: graduates_with_honors(?x) AND completes_thesis(?x) -> receives_academic_distinction(?x)\nP4: receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x)\nP1: not eligible_for_graduation(?x) -> not completes_all_required_courses(?x)\nP2: not graduates_with_honors(?x) AND maintains_gpa_above_3_5(?x) -> not eligible_for_graduation(?x)\nP2: not graduates_with_honors(?x) AND eligible_for_graduation(?x) -> not maintains_gpa_above_3_5(?x)\nP3: not receives_academic_distinction(?x) AND completes_thesis(?x) -> not graduates_with_honors(?x)\nP3: not receives_academic_distinction(?x) AND graduates_with_honors(?x) -> not completes_thesis(?x)\nP4: not qualifies_for_graduate_fellowship_program(?x) -> not receives_academic_distinction(?x)",
+        "cot": [
+          "mcq_llm_fallback: answer=A",
+          "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+          "symbolic_consistency_vote: A=2"
+        ],
+        "premises": [],
+        "confidence": 1.0
+      },
+      "_elapsed_s": 30.21,
+      "_status": "correct"
+    },
+    {
+      "answer": "Unknown",
+      "explanation": "The provided premises do not prove the claim or its negation, so the answer is Unknown.",
+      "fol": "P1: completes_all_required_courses(?x) -> eligible_for_graduation(?x)\nP2: eligible_for_graduation(?x) AND maintains_gpa_above_3_5(?x) -> graduates_with_honors(?x)\nP3: graduates_with_honors(?x) AND completes_thesis(?x) -> receives_academic_distinction(?x)\nP4: receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x)\nP1: not eligible_for_graduation(?x) -> not completes_all_required_courses(?x)\nP2: not graduates_with_honors(?x) AND maintains_gpa_above_3_5(?x) -> not eligible_for_graduation(?x)\nP2: not graduates_with_honors(?x) AND eligible_for_graduation(?x) -> not maintains_gpa_above_3_5(?x)\nP3: not receives_academic_distinction(?x) AND completes_thesis(?x) -> not graduates_with_honors(?x)\nP3: not receives_academic_distinction(?x) AND graduates_with_honors(?x) -> not completes_thesis(?x)\nP4: not qualifies_for_graduate_fellowship_program(?x) -> not receives_academic_distinction(?x)",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation.",
+        "symbolic_consistency_vote: Unknown=2",
+        "Based on the premises, John meets the requirements for graduation with honors (P2), but there is no information about whether he has completed all required courses for academic distinction (P3).",
+        "cot_fallback_after_symbolic_unknown: answer=Unknown"
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "logic_0003_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "unit": null,
+      "error": "No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6",
+      "gold_answer": "Yes",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "official": {
+        "answer": "Unknown",
+        "explanation": "The provided premises do not prove the claim or its negation, so the answer is Unknown.",
+        "fol": "P1: completes_all_required_courses(?x) -> eligible_for_graduation(?x)\nP2: eligible_for_graduation(?x) AND maintains_gpa_above_3_5(?x) -> graduates_with_honors(?x)\nP3: graduates_with_honors(?x) AND completes_thesis(?x) -> receives_academic_distinction(?x)\nP4: receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x)\nP1: not eligible_for_graduation(?x) -> not completes_all_required_courses(?x)\nP2: not graduates_with_honors(?x) AND maintains_gpa_above_3_5(?x) -> not eligible_for_graduation(?x)\nP2: not graduates_with_honors(?x) AND eligible_for_graduation(?x) -> not maintains_gpa_above_3_5(?x)\nP3: not receives_academic_distinction(?x) AND completes_thesis(?x) -> not graduates_with_honors(?x)\nP3: not receives_academic_distinction(?x) AND graduates_with_honors(?x) -> not completes_thesis(?x)\nP4: not qualifies_for_graduate_fellowship_program(?x) -> not receives_academic_distinction(?x)",
+        "cot": [
+          "No symbolic proof was found for the claim or for its negation.",
+          "symbolic_consistency_vote: Unknown=2",
+          "Based on the premises, John meets the requirements for graduation with honors (P2), but there is no information about whether he has completed all required courses for academic distinction (P3).",
+          "cot_fallback_after_symbolic_unknown: answer=Unknown"
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "_elapsed_s": 3.61,
+      "_status": "wrong"
+    },
+    {
+      "answer": "B",
+      "explanation": "Based on the premises, we know that Professor John has completed training (P5), holds a PhD (P6), and has published at least 3 academic papers (P7). According to P2, if he can teach undergraduate courses and holds a PhD, he can supervise graduate students. Since he meets both conditions of P2, he can supervise graduate students. However, according to P3, to serve on curriculum committees, he also needs at least 3 publications, which he already has. Therefore, he can serve on curriculum committees but cannot propose courses yet because he lacks the positive teaching evaluation required by P4. symbolic_consistency_vote: B=2",
+      "fol": "P5: completed_training(john)\nP6: holds_phd(john)\nP7: has_publications(john)\nP8: received_positive_teaching_evaluation(john)\nP1: completed_training(?x) -> can_teach_undergraduate_courses(?x)\nP2: can_teach_undergraduate_courses(?x) AND holds_phd(?x) -> can_supervise_graduate_students(?x)\nP3: can_supervise_graduate_students(?x) AND has_publications(?x) -> can_serve_on_curriculum_committees(?x)\nP4: can_serve_on_curriculum_committees(?x) AND received_positive_teaching_evaluation(?x) -> can_propose_new_courses(?x)\nP1: not can_teach_undergraduate_courses(?x) -> not completed_training(?x)\nP2: not can_supervise_graduate_students(?x) AND holds_phd(?x) -> not can_teach_undergraduate_courses(?x)\nP2: not can_supervise_graduate_students(?x) AND can_teach_undergraduate_courses(?x) -> not holds_phd(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND has_publications(?x) -> not can_supervise_graduate_students(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND can_supervise_graduate_students(?x) -> not has_publications(?x)\nP4: not can_propose_new_courses(?x) AND received_positive_teaching_evaluation(?x) -> not can_serve_on_curriculum_committees(?x)\nP4: not can_propose_new_courses(?x) AND can_serve_on_curriculum_committees(?x) -> not received_positive_teaching_evaluation(?x)",
+      "cot": [
+        "mcq_llm_fallback: answer=B",
+        "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+        "symbolic_consistency_vote: B=2"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "id": "logic_0004_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "unit": null,
+      "error": "No MCQ option symbolically entailed; LLM fallback used.",
+      "gold_answer": "C",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "official": {
+        "answer": "B",
+        "explanation": "Based on the premises, we know that Professor John has completed training (P5), holds a PhD (P6), and has published at least 3 academic papers (P7). According to P2, if he can teach undergraduate courses and holds a PhD, he can supervise graduate students. Since he meets both conditions of P2, he can supervise graduate students. However, according to P3, to serve on curriculum committees, he also needs at least 3 publications, which he already has. Therefore, he can serve on curriculum committees but cannot propose courses yet because he lacks the positive teaching evaluation required by P4. symbolic_consistency_vote: B=2",
+        "fol": "P5: completed_training(john)\nP6: holds_phd(john)\nP7: has_publications(john)\nP8: received_positive_teaching_evaluation(john)\nP1: completed_training(?x) -> can_teach_undergraduate_courses(?x)\nP2: can_teach_undergraduate_courses(?x) AND holds_phd(?x) -> can_supervise_graduate_students(?x)\nP3: can_supervise_graduate_students(?x) AND has_publications(?x) -> can_serve_on_curriculum_committees(?x)\nP4: can_serve_on_curriculum_committees(?x) AND received_positive_teaching_evaluation(?x) -> can_propose_new_courses(?x)\nP1: not can_teach_undergraduate_courses(?x) -> not completed_training(?x)\nP2: not can_supervise_graduate_students(?x) AND holds_phd(?x) -> not can_teach_undergraduate_courses(?x)\nP2: not can_supervise_graduate_students(?x) AND can_teach_undergraduate_courses(?x) -> not holds_phd(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND has_publications(?x) -> not can_supervise_graduate_students(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND can_supervise_graduate_students(?x) -> not has_publications(?x)\nP4: not can_propose_new_courses(?x) AND received_positive_teaching_evaluation(?x) -> not can_serve_on_curriculum_committees(?x)\nP4: not can_propose_new_courses(?x) AND can_serve_on_curriculum_committees(?x) -> not received_positive_teaching_evaluation(?x)",
+        "cot": [
+          "mcq_llm_fallback: answer=B",
+          "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+          "symbolic_consistency_vote: B=2"
+        ],
+        "premises": [],
+        "confidence": 1.0
+      },
+      "_elapsed_s": 41.26,
+      "_status": "wrong"
+    },
+    {
+      "answer": "Unknown",
+      "explanation": "The provided premises do not provide enough information to determine if Professor John meets all the requirements to propose new courses. While he meets some conditions (training, PhD, publications, positive teaching evaluation), the sequence of conditions leading to the ability to propose new courses is not fully covered by the premises.",
+      "fol": "P1: has_completed_training(?x) -> can_teach_undergraduate_courses(?x)\nP2: can_teach_undergraduate_courses(?x) AND holds_phd(?x) -> can_supervise_graduate_students(?x)\nP3: can_supervise_graduate_students(?x) AND has_at_least_3_publications(?x) -> can_serve_on_curriculum_committees(?x)\nP4: can_serve_on_curriculum_committees(?x) AND has_positive_teaching_evaluation(?x) -> can_propose_new_courses(?x)\nP1: not can_teach_undergraduate_courses(?x) -> not has_completed_training(?x)\nP2: not can_supervise_graduate_students(?x) AND holds_phd(?x) -> not can_teach_undergraduate_courses(?x)\nP2: not can_supervise_graduate_students(?x) AND can_teach_undergraduate_courses(?x) -> not holds_phd(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND has_at_least_3_publications(?x) -> not can_supervise_graduate_students(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND can_supervise_graduate_students(?x) -> not has_at_least_3_publications(?x)\nP4: not can_propose_new_courses(?x) AND has_positive_teaching_evaluation(?x) -> not can_serve_on_curriculum_committees(?x)\nP4: not can_propose_new_courses(?x) AND can_serve_on_curriculum_committees(?x) -> not has_positive_teaching_evaluation(?x)",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation.",
+        "symbolic_consistency_vote: Unknown=1, Yes=1",
+        "Step 1: Identify the conditions for proposing new courses from P4-P1.\nStep 2: Check if Professor John meets each condition.\nStep 3: Conclude that while he meets some conditions, the full sequence is not covered by the premises.",
+        "cot_fallback_after_symbolic_unknown: answer=Unknown"
+      ],
+      "premises": [],
+      "confidence": 0.9,
+      "id": "logic_0004_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "unit": null,
+      "error": "No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6; No LLM IR for premise 7",
+      "gold_answer": "Yes",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "official": {
+        "answer": "Unknown",
+        "explanation": "The provided premises do not provide enough information to determine if Professor John meets all the requirements to propose new courses. While he meets some conditions (training, PhD, publications, positive teaching evaluation), the sequence of conditions leading to the ability to propose new courses is not fully covered by the premises.",
+        "fol": "P1: has_completed_training(?x) -> can_teach_undergraduate_courses(?x)\nP2: can_teach_undergraduate_courses(?x) AND holds_phd(?x) -> can_supervise_graduate_students(?x)\nP3: can_supervise_graduate_students(?x) AND has_at_least_3_publications(?x) -> can_serve_on_curriculum_committees(?x)\nP4: can_serve_on_curriculum_committees(?x) AND has_positive_teaching_evaluation(?x) -> can_propose_new_courses(?x)\nP1: not can_teach_undergraduate_courses(?x) -> not has_completed_training(?x)\nP2: not can_supervise_graduate_students(?x) AND holds_phd(?x) -> not can_teach_undergraduate_courses(?x)\nP2: not can_supervise_graduate_students(?x) AND can_teach_undergraduate_courses(?x) -> not holds_phd(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND has_at_least_3_publications(?x) -> not can_supervise_graduate_students(?x)\nP3: not can_serve_on_curriculum_committees(?x) AND can_supervise_graduate_students(?x) -> not has_at_least_3_publications(?x)\nP4: not can_propose_new_courses(?x) AND has_positive_teaching_evaluation(?x) -> not can_serve_on_curriculum_committees(?x)\nP4: not can_propose_new_courses(?x) AND can_serve_on_curriculum_committees(?x) -> not has_positive_teaching_evaluation(?x)",
+        "cot": [
+          "No symbolic proof was found for the claim or for its negation.",
+          "symbolic_consistency_vote: Unknown=1, Yes=1",
+          "Step 1: Identify the conditions for proposing new courses from P4-P1.\nStep 2: Check if Professor John meets each condition.\nStep 3: Conclude that while he meets some conditions, the full sequence is not covered by the premises.",
+          "cot_fallback_after_symbolic_unknown: answer=Unknown"
+        ],
+        "premises": [],
+        "confidence": 0.9
+      },
+      "_elapsed_s": 5.41,
+      "_status": "wrong"
+    }
+  ]
+}

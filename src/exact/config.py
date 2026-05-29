@@ -20,6 +20,7 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         env_prefix="EXACT_",
         extra="ignore",
+        populate_by_name=True,
     )
 
     environment: Literal["local", "dev", "test", "prod"] = "local"
@@ -66,7 +67,10 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("EXACT_LLM_TOP_P", "EXACT_TOP_P"),
     )
     type1_translation_samples: int = Field(
-        default=3,
+        # Changed from 3 → 1: the new one-shot formula translator (translate_problem_with_llm)
+        # covers premises + query + options in a single call, eliminating vocabulary drift.
+        # Sampling is only used in the repair/fallback path, not on every request.
+        default=1,
         ge=1,
         validation_alias="EXACT_TYPE1_TRANSLATION_SAMPLES",
     )
@@ -87,6 +91,30 @@ class Settings(BaseSettings):
     type1_use_z3_fallback: bool = Field(
         default=True,
         validation_alias="EXACT_TYPE1_USE_Z3_FALLBACK",
+    )
+    type1_use_formula_z3: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_USE_FORMULA_Z3",
+    )
+    type1_enable_legacy_fallback: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_ENABLE_LEGACY_FALLBACK",
+    )
+    # Guided JSON decoding passes the formula JSON schema to vLLM so the model
+    # is constrained to valid formula-tree JSON from the first token.  Requires
+    # vLLM >= 0.6.x with lm-format-enforcer.  Default True because the
+    # competition vLLM server is a custom build that supports guided_json.
+    type1_use_guided_json: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_USE_GUIDED_JSON",
+    )
+    # Soft deadline for a single Type 1 request (seconds).  When the remaining
+    # time is less than this threshold the pipeline skips the LLM repair/fallback
+    # call and returns the best symbolic answer available, preventing ReadTimeout.
+    type1_soft_deadline_s: float = Field(
+        default=45.0,
+        gt=0.0,
+        validation_alias="EXACT_TYPE1_SOFT_DEADLINE_S",
     )
     llm_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_MAX_RETRIES")

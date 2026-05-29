@@ -25,6 +25,15 @@ class RecordingTranslatorClient:
     def complete_json_sync(self, messages, temperature: float = 0.0, max_tokens: int = 2048):
         self.user_prompt = str(messages[-1]["content"])
         self.user_prompts.append(self.user_prompt)
+        if "Translate each MCQ option" in self.user_prompt:
+            return {
+                "options": [
+                    {"label": "A", "text": "Alpha", "claim": {"text": "Alpha", "pred": "alpha", "args": []}},
+                    {"label": "B", "text": "Beta", "claim": {"text": "Beta", "pred": "beta", "args": []}},
+                    {"label": "C", "text": "Gamma", "claim": {"text": "Gamma", "pred": "gamma", "args": []}},
+                    {"label": "D", "text": "Delta", "claim": {"text": "Delta", "pred": "delta", "args": []}},
+                ]
+            }
         return {
             "predicates": [{"name": "alpha", "arity": 0, "gloss": "alpha", "argument_roles": []}],
             "premises": [{"source_idx": 0, "facts": [{"text": "Alpha", "pred": "alpha", "args": []}], "rules": []}],
@@ -108,10 +117,39 @@ class SamplingVoteTranslatorClient:
         }
 
 
+class FormulaTranslatorClient:
+    """Test double for the one-shot formula-Z3 path."""
+
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+        self.calls = 0
+        self.user_prompt = ""
+
+    def complete_json_sync(self, messages, temperature: float = 0.0, max_tokens: int = 2048):
+        self.calls += 1
+        self.user_prompt = str(messages[-1]["content"])
+        return self.payload
+
+
 def explicit_llm_settings() -> Settings:
     """Return settings that require the supplied test LLM client."""
 
-    return Settings(llm_provider="openai", llm_base_url=None)
+    return Settings(
+        llm_provider="openai",
+        llm_base_url=None,
+        type1_use_formula_z3=False,
+        type1_translation_samples=3,
+    )
+
+
+def formula_z3_settings() -> Settings:
+    return Settings(
+        llm_provider="openai",
+        llm_base_url=None,
+        type1_use_formula_z3=True,
+        type1_enable_legacy_fallback=False,
+        type1_enable_cot_fallback=False,
+    )
 
 
 def test_router_detects_mcq_for_logic_question() -> None:
@@ -182,6 +220,119 @@ def test_type1_pipeline_uses_explicit_translator_client() -> None:
     assert response.answer == "Yes"
 
 
+def test_type1_formula_z3_pipeline_uses_one_shot_translation() -> None:
+    """Formula-Z3 path should translate the full problem once and let Z3 decide."""
+
+    client = FormulaTranslatorClient(
+        {
+            "predicates": {"alpha": 0},
+            "premises": [
+                {
+                    "source_idx": 0,
+                    "role": "premise",
+                    "text": "Alpha.",
+                    "formula": {"type": "atom", "pred": "alpha", "args": []},
+                }
+            ],
+            "goals": [
+                {
+                    "source_idx": -1,
+                    "role": "query",
+                    "text": "Does Alpha follow?",
+                    "formula": {"type": "atom", "pred": "alpha", "args": []},
+                }
+            ],
+        }
+    )
+    request = PredictionRequest.model_validate(
+        {"id": "formula_ynu", "premises-NL": ["Alpha."], "question": "Does Alpha follow?"}
+    )
+
+    response = run_type1_pipeline(
+        request,
+        translator_client=client,
+        settings=formula_z3_settings(),
+        question_type=QuestionType.YES_NO_UNCERTAIN,
+    )
+
+    assert client.calls == 1
+    assert "Now translate:" in client.user_prompt
+    assert response.answer == "Yes"
+    assert response.cot is not None
+    assert "z3_prop_query_answer: Yes" in response.cot
+
+
+def test_type1_formula_z3_mcq_handles_compound_option() -> None:
+    """MCQ options can be implication formulas instead of collapsed atoms."""
+
+    client = FormulaTranslatorClient(
+        {
+            "predicates": {"well_tested": 1, "optimized": 1},
+            "premises": [
+                {
+                    "source_idx": 0,
+                    "role": "premise",
+                    "text": "If code is well-tested, the project is optimized.",
+                    "formula": {
+                        "type": "implies",
+                        "antecedent": {"type": "atom", "pred": "well_tested", "args": ["?x"]},
+                        "consequent": {"type": "atom", "pred": "optimized", "args": ["?x"]},
+                    },
+                }
+            ],
+            "goals": [
+                {
+                    "source_idx": -1,
+                    "role": "option",
+                    "label": "A",
+                    "text": "If not optimized then not well-tested.",
+                    "formula": {
+                        "type": "implies",
+                        "antecedent": {
+                            "type": "not",
+                            "arg": {"type": "atom", "pred": "optimized", "args": ["?x"]},
+                        },
+                        "consequent": {
+                            "type": "not",
+                            "arg": {"type": "atom", "pred": "well_tested", "args": ["?x"]},
+                        },
+                    },
+                },
+                {
+                    "source_idx": -1,
+                    "role": "option",
+                    "label": "B",
+                    "text": "The project is optimized.",
+                    "formula": {"type": "atom", "pred": "optimized", "args": ["?x"]},
+                },
+            ],
+        }
+    )
+    request = PredictionRequest.model_validate(
+        {
+            "id": "formula_mcq",
+            "premises-NL": ["If code is well-tested, the project is optimized."],
+            "question": (
+                "Which conclusion follows?\n"
+                "A. If not optimized then not well-tested.\n"
+                "B. The project is optimized."
+            ),
+        }
+    )
+
+    response = run_type1_pipeline(
+        request,
+        translator_client=client,
+        settings=formula_z3_settings(),
+        question_type=QuestionType.MCQ,
+    )
+
+    assert client.calls == 1
+    assert response.answer == "A"
+    assert response.cot is not None
+    assert "z3_prop_mcq_valid_options: A" in response.cot
+
+
 def test_ynu_pipeline_reuses_premise_cache_across_questions() -> None:
     """YNU questions with the same premise group should not retranslate premises."""
 
@@ -212,7 +363,8 @@ def test_ynu_pipeline_reuses_premise_cache_across_questions() -> None:
 
     assert client.premise_calls == 3
     assert client.query_calls == 6
-    assert "Allowed predicate names from premise translation: alpha" in client.query_prompt
+    assert "query.claim.pred MUST be EXACTLY one of these allowed names" in client.query_prompt
+    assert "alpha" in client.query_prompt
 
 
 def test_ynu_symbolic_consistency_vote_prefers_majority_label() -> None:
@@ -285,7 +437,7 @@ def test_ynu_symbolic_unknown_can_skip_cot_fallback_for_fast_mode() -> None:
         question_type=QuestionType.YES_NO_UNCERTAIN,
     )
 
-    assert response.answer == "Unknown"
+    assert response.answer == "Uncertain"
     assert client.cot_calls == 0
 
 
