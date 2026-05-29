@@ -1,0 +1,32 @@
+{
+  "source": "../artifacts/predictions/type1/eval_run.json",
+  "model": "Qwen/Qwen2.5-7B-Instruct-AWQ",
+  "count": 1,
+  "summary": {
+    "total": 1,
+    "scored_total": 1,
+    "correct": 0,
+    "wrong": 1,
+    "missing_gold": 0,
+    "accuracy": 0.0,
+    "pipeline_errors": 1,
+    "by_question_type": {
+      "unknown": {
+        "total": 1,
+        "correct": 0,
+        "accuracy": 0.0,
+        "pipeline_errors": 1
+      }
+    }
+  },
+  "rows": [
+    {
+      "id": "logic_0000_00",
+      "answer": "",
+      "gold_answer": "A",
+      "question_type": "unknown",
+      "status": "pipeline_error",
+      "error": "Type 1 MCQ LLM premise translation failed for request logic_0000_00: All LLM premise translation candidates failed: candidate 1/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; candidate 2/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; candidate 3/3 failed: LLM premise translation failed: Client error '400 Bad Request' for url 'https://api.iamphuckhang.dev/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400"
+    }
+  ]
+}

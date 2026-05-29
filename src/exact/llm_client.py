@@ -102,11 +102,15 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         ):
         self.model = model
         self.max_retries = max_retries
+        self._api_key = api_key
+        self._base_url = (base_url or "https://api.openai.com/v1").rstrip("/")
+        self._timeout = timeout
+        # Keep AsyncOpenAI only for legacy _complete_json_and_close; actual calls use httpx.
         self.client = AsyncOpenAI(
             api_key=api_key,
             base_url=base_url,
             timeout=timeout,
-            max_retries=max_retries,
+            max_retries=0,
         )
 
     async def complete_json(
@@ -117,33 +121,54 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
     ) -> dict[str, Any]:
         """
         Gọi API của LLM để sinh ra một câu trả lời dưới dạng JSON.
-
-        Args:
-            messages: Danh sách các tin nhắn để gửi đến LLM.
-            temperature: Nhiệt độ cho quá trình sinh.
-            max_tokens: Số lượng token tối đa cho phép.
-
-        Returns:
-            Một dictionary chứa kết quả từ LLM.
+        Dùng httpx trực tiếp để tránh headers của OpenAI SDK bị Cloudflare WAF chặn.
         """
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            response_format={"type": "json_object"},
-        )
+        import httpx
 
-        choice = response.choices[0]
-        text = choice.message.content or ""
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": list(messages),
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "response_format": {"type": "json_object"},
+        }
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Content-Type": "application/json",
+        }
+        url = f"{self._base_url}/chat/completions"
 
-        try:
-            return _parse_json_object(text)
-        except ValueError as exc:
-            raise ValueError(
-                "LLM returned invalid JSON "
-                f"with finish_reason={choice.finish_reason}: {_clip_text(text)}"
-            ) from exc
+        last_exc: Exception | None = None
+        for attempt in range(self.max_retries + 1):
+            try:
+                async with httpx.AsyncClient(timeout=self._timeout) as http:
+                    resp = await http.post(url, json=payload, headers=headers)
+                    if resp.status_code == 429 and attempt < self.max_retries:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    resp.raise_for_status()
+                data = resp.json()
+                choice = data["choices"][0]
+                text = choice["message"]["content"] or ""
+                finish_reason = choice.get("finish_reason", "")
+                try:
+                    return _parse_json_object(text)
+                except ValueError as exc:
+                    raise ValueError(
+                        "LLM returned invalid JSON "
+                        f"with finish_reason={finish_reason}: {_clip_text(text)}"
+                    ) from exc
+            except httpx.HTTPStatusError as exc:
+                last_exc = exc
+                if attempt < self.max_retries:
+                    continue
+                raise
+            except (httpx.TransportError, httpx.TimeoutException) as exc:
+                last_exc = exc
+                if attempt < self.max_retries:
+                    continue
+                raise
+        raise last_exc  # type: ignore[misc]
 
     def complete_json_sync(
         self,
@@ -152,19 +177,23 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         max_tokens: int = 2048,
     ) -> dict[str, Any]:
         """
-        Synchronous wrapper for command-line scripts and FastAPI sync routes.
+        Synchronous wrapper for command-line scripts, FastAPI sync routes, and Jupyter notebooks.
         """
+        import concurrent.futures
+
+        coro = self.complete_json(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
         try:
             asyncio.get_running_loop()
         except RuntimeError:
-            return asyncio.run(
-                self._complete_json_and_close(
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                )
-            )
-        raise RuntimeError("complete_json_sync cannot run inside an active event loop")
+            return asyncio.run(coro)
+        # Inside a running event loop (e.g. Jupyter) — run in a dedicated thread
+        # that owns its own event loop so asyncio.run() works cleanly.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(asyncio.run, coro).result()
 
     async def _complete_json_and_close(
         self,
