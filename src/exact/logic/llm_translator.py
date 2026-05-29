@@ -393,31 +393,6 @@ def translate_query_only_with_llm(
                 list(predicate_names),
             )
 
-    # Entity constant remapping: if the query uses an entity name that doesn't exist
-    # in the KB (e.g. "sophia" when KB has "sofia"), remap to the closest KB constant.
-    if entity_constants:
-        claim = spec.query.claim  # type: ignore[union-attr]
-        entity_set = set(entity_constants)
-        remapped: list[str] = []
-        changed = False
-        for arg in (claim.args or []):
-            if arg.startswith("?") or arg in entity_set:
-                remapped.append(arg)
-            else:
-                closest_ent = _closest_entity(arg, entity_constants)
-                if closest_ent:
-                    logger.debug("Query entity %r remapped to KB constant %r", arg, closest_ent)
-                    remapped.append(closest_ent)
-                    changed = True
-                else:
-                    remapped.append(arg)
-        if changed:
-            spec = QueryOnlySpec(
-                query=QuerySpec(
-                    claim=AtomSpec(pred=claim.pred, args=remapped, negated=claim.negated)
-                )
-            )
-
     return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)  # type: ignore[union-attr]
 
 
@@ -762,15 +737,6 @@ def _repair_raw_output(raw: dict[str, Any]) -> dict[str, Any]:
         if isinstance(claim, dict):
             _repair_atom_dict(claim, pred_map)
     return raw
-
-
-def _closest_entity(entity: str, entity_constants: tuple[str, ...]) -> str | None:
-    """Return the KB entity constant with the highest string similarity to entity."""
-    if not entity_constants:
-        return None
-    import difflib
-    matches = difflib.get_close_matches(entity, entity_constants, n=1, cutoff=0.6)
-    return matches[0] if matches else None
 
 
 def _closest_predicate(pred: str, predicate_names: tuple[str, ...]) -> str | None:
