@@ -9,6 +9,7 @@ SymbCoT/Logic-LM++ motivation for later verifier/repair stages.
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any, Protocol
 
@@ -297,23 +298,66 @@ def translate_query_only_with_llm(
 
     settings = settings or get_settings()
     client = llm_client or LLMClient.from_settings(settings)
-    messages = _build_query_only_messages(question, predicate_names=predicate_names)
+    budget = _query_token_budget(settings.llm_max_tokens)
     logger.info("Starting query-only LLM translation: question_chars=%s", len(question))
-    raw = client.complete_json_sync(
-        messages=messages,
-        temperature=settings.llm_temperature,
-        max_tokens=_query_token_budget(settings.llm_max_tokens),
+
+    messages: list[ChatCompletionMessageParam] = _build_query_only_messages(
+        question, predicate_names=predicate_names
     )
-    spec = QueryOnlySpec.model_validate(raw)
-    if predicate_names and spec.query.claim.pred not in set(predicate_names):
-        # Soft mismatch: LLM used a predicate not in the KB dictionary (e.g. "implies").
-        # Log and proceed — the solver will return Unknown rather than crashing.
-        logger.warning(
-            "Query predicate %r not in premise dictionary %r; solving will likely return Unknown",
-            spec.query.claim.pred,
-            list(predicate_names),
+    predicate_set = set(predicate_names)
+    spec: QueryOnlySpec | None = None
+
+    for attempt in range(2):
+        raw = client.complete_json_sync(
+            messages=messages,
+            temperature=settings.llm_temperature,
+            max_tokens=budget,
         )
-    return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)
+        spec = QueryOnlySpec.model_validate(raw)
+        pred = spec.query.claim.pred
+
+        if not predicate_names or pred in predicate_set:
+            break
+
+        if attempt == 0:
+            logger.warning(
+                "Query predicate %r not in premise dictionary; retrying with correction", pred
+            )
+            messages = [
+                *messages,
+                {"role": "assistant", "content": json.dumps(raw)},
+                {
+                    "role": "user",
+                    "content": (
+                        f"WRONG: pred='{pred}' is not in the allowed predicate list.\n"
+                        f"You MUST use EXACTLY one of: {', '.join(predicate_names)}\n"
+                        "Return corrected JSON with pred set to a name from the allowed list."
+                    ),
+                },
+            ]
+    else:
+        pred = spec.query.claim.pred  # type: ignore[union-attr]
+        closest = _closest_predicate(pred, predicate_names)
+        if closest:
+            logger.warning(
+                "Query predicate %r not in premise dictionary; substituting closest match %r",
+                pred,
+                closest,
+            )
+            claim = spec.query.claim  # type: ignore[union-attr]
+            spec = QueryOnlySpec(
+                query=QuerySpec(
+                    claim=AtomSpec(pred=closest, args=claim.args, negated=claim.negated)
+                )
+            )
+        else:
+            logger.warning(
+                "Query predicate %r not in premise dictionary %r; solving will likely return Unknown",
+                pred,
+                list(predicate_names),
+            )
+
+    return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)  # type: ignore[union-attr]
 
 
 def translate_mcq_options_with_llm(
@@ -404,9 +448,11 @@ def _build_query_only_messages(
         '{"query":{"claim":{"pred":"predicate_name","args":["entity"],"negated":false}}}'
     )
     predicate_instruction = (
-        "Allowed predicate names from premise translation: "
-        f"{', '.join(predicate_names)}\n"
-        "You must choose query.claim.pred from this allowed list.\n"
+        "CRITICAL — query.claim.pred MUST be EXACTLY one of these allowed names "
+        "(no variants, no synonyms, no new inventions):\n"
+        f"  {', '.join(predicate_names)}\n"
+        "If the question's target concept is not literally in this list, pick the "
+        "closest matching predicate from the list above.\n"
         if predicate_names
         else ""
     )
@@ -600,6 +646,25 @@ def _query_token_budget(max_tokens: int) -> int:
 def _mcq_options_token_budget(max_tokens: int) -> int:
     # 4 options × ~40 tokens each + JSON wrapper = ~256 tokens minimum
     return max(256, min(max_tokens, 512))
+
+
+def _closest_predicate(pred: str, predicate_names: tuple[str, ...]) -> str | None:
+    """Return the predicate from predicate_names with the highest token-overlap with pred.
+
+    Uses Jaccard similarity on underscore-split tokens. Returns None if no candidate
+    scores at least 0.30 (prevents spurious substitutions for unrelated predicates).
+    """
+    if not predicate_names:
+        return None
+    pred_tokens = set(pred.split("_"))
+    best_score, best_name = 0.0, None
+    for name in predicate_names:
+        name_tokens = set(name.split("_"))
+        union_size = len(pred_tokens | name_tokens)
+        overlap = len(pred_tokens & name_tokens) / union_size if union_size else 0.0
+        if overlap > best_score:
+            best_score, best_name = overlap, name
+    return best_name if best_score >= 0.30 else None
 
 
 def _build_mcq_options_messages(
