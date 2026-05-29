@@ -30,7 +30,8 @@ from exact.symbolic_solvers import ForwardChainSolver
 
 
 _OPTION_RE = re.compile(
-    r"(?:^|\n)\s*([A-D])\.\s*(.*?)(?=(?:\n\s*[A-D]\.\s*)|\Z)",
+    r"(?:^|\n)[ \t]*(?:\(([A-D])\)|([A-D])[.):])[ \t]*(.*?)"
+    r"(?=\n[ \t]*(?:\([A-D]\)|[A-D][.):])|\Z)",
     re.IGNORECASE | re.DOTALL,
 )
 _OPTION_ORDER = ("A", "B", "C", "D")
@@ -38,7 +39,10 @@ _OPTION_ORDER = ("A", "B", "C", "D")
 
 def extract_options(question: str) -> list[tuple[str, str]]:
     options = [
-        (match.group(1).upper(), " ".join(match.group(2).split()))
+        (
+            (match.group(1) or match.group(2)).upper(),
+            " ".join(match.group(3).split()),
+        )
         for match in _OPTION_RE.finditer(question)
     ]
     seen: set[str] = set()
@@ -332,6 +336,66 @@ def _join_errors(*errors: str | None) -> str | None:
     return "; ".join(parts) if parts else None
 
 
+def _run_mcq_llm_fallback(
+    request: PredictionRequest,
+    options: list[tuple[str, str]],
+    question_type: QuestionType,
+    llm_client: JsonLLMClient,
+    settings: Settings,
+) -> PredictionResponse | None:
+    """Direct LLM answer for MCQ when symbolic reasoning cannot prove any option."""
+    premises_text = "\n".join(
+        f"P{i + 1}: {p}" for i, p in enumerate(request.premises_nl or [])
+    )
+    options_text = "\n".join(f"{label}. {text}" for label, text in options)
+    valid_labels = {label for label, _ in options}
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an educational logic reasoner. Return JSON only. "
+                "Choose the best answer strictly from the given premises."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                "Symbolic reasoning could not prove any option. Select the best one using the premises.\n"
+                'Return JSON: {"answer":"A","explanation":"...","confidence":0.0}\n\n'
+                f"Premises:\n{premises_text}\n\n"
+                f"Question:\n{request.question}\n\n"
+                f"Options:\n{options_text}"
+            ),
+        },
+    ]
+    try:
+        raw = llm_client.complete_json_sync(
+            messages=messages,
+            temperature=settings.llm_temperature,
+            max_tokens=min(settings.llm_max_tokens, 512),
+        )
+        answer = str(raw.get("answer", "")).strip().upper()
+        if answer not in valid_labels:
+            return None
+        explanation = str(raw.get("explanation") or "").strip()
+        confidence = _bounded_confidence(raw.get("confidence"), default=0.35)
+        return PredictionResponse(
+            id=request.id,
+            task_type=TaskType.TYPE1_LOGIC,
+            question_type=question_type,
+            answer=answer,
+            explanation=explanation or f"LLM selected option {answer} after no symbolic proof.",
+            fol=None,
+            cot=[f"mcq_llm_fallback: answer={answer}"],
+            premises=[],
+            confidence=confidence,
+            error="No MCQ option symbolically entailed; LLM fallback used.",
+        )
+    except Exception as exc:
+        logger.debug("MCQ LLM fallback failed: %s", exc)
+        return None
+
+
 def _run_mcq_path(
     request: PredictionRequest,
     kb: KnowledgeBase,
@@ -368,14 +432,41 @@ def _run_mcq_path(
             logger.debug("MCQ LLM option translation skipped: %s", exc)
     goals = [(label, translated.get(label) or atom_from_text(text)) for label, text in options]
     results = evaluate_mcq_options(kb, goals)
-    winner = decide_mcq_winner(results, stem)
-    winning_result = results[winner]
-    explanation, proof_cot, cited_premises = explain_result(winning_result, kb)
-    if winning_result.label == "Unknown":
-        explanation = "The selected option has the best available symbolic ranking, but no proof was found."
     option_summary = _format_mcq_option_summary(results)
     no_entailed_option = all(result.label != "Yes" for result in results.values())
 
+    if no_entailed_option:
+        settings_eff = settings or get_settings()
+        if translator_client is not None:
+            fallback = _run_mcq_llm_fallback(
+                request, options, question_type, translator_client, settings_eff,
+            )
+            if fallback is not None:
+                return fallback.model_copy(
+                    update={
+                        "cot": [*(fallback.cot or []), option_summary],
+                        "fol": kb_to_fol_like_text(kb) or None,
+                    }
+                )
+        return PredictionResponse(
+            id=request.id,
+            task_type=TaskType.TYPE1_LOGIC,
+            question_type=question_type,
+            answer="Unknown",
+            explanation=(
+                "No MCQ option was symbolically entailed and LLM fallback did not produce a valid answer. "
+                + option_summary
+            ),
+            fol=kb_to_fol_like_text(kb) or None,
+            cot=[option_summary],
+            premises=[],
+            confidence=0.10,
+            error="No MCQ option was symbolically entailed.",
+        )
+
+    winner = decide_mcq_winner(results, stem)
+    winning_result = results[winner]
+    explanation, proof_cot, cited_premises = explain_result(winning_result, kb)
     return PredictionResponse(
         id=request.id,
         task_type=TaskType.TYPE1_LOGIC,
@@ -386,7 +477,6 @@ def _run_mcq_path(
         cot=[*proof_cot, option_summary],
         premises=cited_premises,
         confidence=_mcq_confidence(results, winner),
-        error="No MCQ option was symbolically entailed." if no_entailed_option else None,
     )
 
 

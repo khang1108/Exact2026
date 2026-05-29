@@ -14,7 +14,7 @@ import re
 from typing import Any, Protocol
 
 from openai.types.chat import ChatCompletionMessageParam
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from exact.config import Settings, get_settings
 from exact.logic.ir import Atom, Fact, ParsedPremise, Query, Rule
@@ -28,6 +28,16 @@ _PREDICATE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 _VARIABLE_RE = re.compile(r"^\?[a-z][a-z0-9_]*$")
 _CONSTANT_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 _OPTION_LABELS = {"A", "B", "C", "D"}
+
+
+def _normalize_pred_name(name: str) -> str:
+    """Coerce any predicate/atom name string to lowercase snake_case."""
+    # CamelCase → snake_case
+    name = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", name)
+    name = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", name)
+    # Replace non-alphanumeric runs with underscore
+    name = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return name or "pred"
 
 
 class JsonLLMClient(Protocol):
@@ -52,9 +62,9 @@ class PredicateSpec(BaseModel):
     @field_validator("name")
     @classmethod
     def name_must_be_snake_case(cls, value: str) -> str:
-        value = value.strip()
+        value = _normalize_pred_name(value.strip())
         if not _PREDICATE_RE.fullmatch(value):
-            raise ValueError("predicate name must be lowercase snake_case")
+            raise ValueError(f"predicate name could not be normalized to snake_case: {value!r}")
         return value
 
     @field_validator("argument_roles")
@@ -89,9 +99,9 @@ class AtomSpec(BaseModel):
     def pred_must_be_snake_case(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        value = value.strip()
+        value = _normalize_pred_name(value.strip())
         if not _PREDICATE_RE.fullmatch(value):
-            raise ValueError("atom pred must be lowercase snake_case")
+            raise ValueError(f"atom pred could not be normalized to snake_case: {value!r}")
         return value
 
     @field_validator("args", mode="before")
@@ -266,25 +276,36 @@ def translate_premises_only_with_llm(
     base_budget = _premise_token_budget(settings.llm_max_tokens, len(premises))
     temp = settings.llm_temperature if temperature is None else temperature
 
-    last_exc: ValueError | None = None
+    last_exc: Exception | None = None
+    spec: PremisesOnlySpec | None = None
     for attempt, budget in enumerate([base_budget, min(8192, base_budget * 2)], start=1):
         try:
             raw = client.complete_json_sync(messages=messages, temperature=temp, max_tokens=budget)
-            break
         except ValueError as exc:
             msg = str(exc)
             if "invalid JSON" not in msg and "incomplete JSON" not in msg:
                 raise
             last_exc = exc
             logger.warning(
-                "Premise translation attempt %s/2 failed (budget=%s): %s", attempt, budget, msg[:200]
+                "Premise translation attempt %s/2 JSON error (budget=%s): %s", attempt, budget, msg[:200]
             )
+            continue
+
+        repaired = _repair_raw_output(raw)
+        try:
+            spec = PremisesOnlySpec.model_validate(repaired)
+            break
+        except ValidationError as exc:
+            last_exc = exc
+            logger.warning(
+                "Premise translation attempt %s/2 schema error: %s", attempt, str(exc)[:300]
+            )
+            logger.debug("Raw LLM output (attempt %s): %s", attempt, json.dumps(raw)[:2000])
     else:
         raise last_exc  # type: ignore[misc]
 
-    spec = PremisesOnlySpec.model_validate(raw)
-    parsed = _premise_specs_to_parsed(spec.premises, premises)
-    predicate_names = tuple(predicate.name for predicate in spec.predicates)
+    parsed = _premise_specs_to_parsed(spec.premises, premises)  # type: ignore[union-attr]
+    predicate_names = tuple(predicate.name for predicate in spec.predicates)  # type: ignore[union-attr]
     return parsed, (), predicate_names
 
 
@@ -313,6 +334,7 @@ def translate_query_only_with_llm(
             temperature=settings.llm_temperature,
             max_tokens=budget,
         )
+        raw = _repair_raw_output(raw)
         spec = QueryOnlySpec.model_validate(raw)
         pred = spec.query.claim.pred
 
@@ -646,6 +668,52 @@ def _query_token_budget(max_tokens: int) -> int:
 def _mcq_options_token_budget(max_tokens: int) -> int:
     # 4 options × ~40 tokens each + JSON wrapper = ~256 tokens minimum
     return max(256, min(max_tokens, 512))
+
+
+def _repair_atom_dict(atom: dict[str, Any], pred_map: dict[str, str]) -> None:
+    """In-place: normalize pred name, remap via pred_map, drop text field."""
+    atom.pop("text", None)
+    if "pred" in atom and isinstance(atom["pred"], str):
+        old = atom["pred"]
+        atom["pred"] = pred_map.get(old, _normalize_pred_name(old))
+    if "args" in atom and not isinstance(atom["args"], list):
+        atom["args"] = [str(atom["args"])] if atom["args"] is not None else []
+
+
+def _repair_atoms_list(atoms: list[Any], pred_map: dict[str, str]) -> None:
+    for atom in atoms:
+        if isinstance(atom, dict):
+            _repair_atom_dict(atom, pred_map)
+
+
+def _repair_raw_output(raw: dict[str, Any]) -> dict[str, Any]:
+    """Normalize predicate names and fix common atom schema issues in raw LLM JSON.
+
+    Performs a deep copy so the original is not mutated.
+    """
+    raw = json.loads(json.dumps(raw))  # deep copy
+    pred_map: dict[str, str] = {}
+    for pred in raw.get("predicates", []):
+        if isinstance(pred, dict) and "name" in pred:
+            old_name = str(pred["name"])
+            new_name = _normalize_pred_name(old_name)
+            pred["name"] = new_name
+            pred_map[old_name] = new_name
+    for premise in raw.get("premises", []):
+        if not isinstance(premise, dict):
+            continue
+        _repair_atoms_list(premise.get("facts", []), pred_map)
+        for rule in premise.get("rules", []):
+            if isinstance(rule, dict):
+                _repair_atoms_list(rule.get("conditions", []), pred_map)
+                if isinstance(rule.get("conclusion"), dict):
+                    _repair_atom_dict(rule["conclusion"], pred_map)
+    query = raw.get("query")
+    if isinstance(query, dict):
+        claim = query.get("claim")
+        if isinstance(claim, dict):
+            _repair_atom_dict(claim, pred_map)
+    return raw
 
 
 def _closest_predicate(pred: str, predicate_names: tuple[str, ...]) -> str | None:
