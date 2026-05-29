@@ -17,9 +17,15 @@ from exact.logic.explain import explain_result, kb_to_fol_like_text
 from exact.logic.kb import get_or_build_kb_candidates
 from exact.logic.ir import Atom, SolveResult
 from exact.logic.kb import KnowledgeBase
-from exact.logic.llm_translator import JsonLLMClient, translate_query_only_with_llm
+from exact.logic.llm_translator import (
+    JsonLLMClient,
+    translate_mcq_options_with_llm,
+    translate_query_only_with_llm,
+)
 from exact.logic.parser import atom_from_text
-from exact.logger import get_request_logger
+from exact.logger import get_logger, get_request_logger
+
+logger = get_logger(__name__)
 from exact.symbolic_solvers import ForwardChainSolver
 
 
@@ -142,7 +148,10 @@ def run_type1_pipeline(
             raise RuntimeError(
                 f"Type 1 MCQ LLM premise translation failed for request {request.id}: {exc}"
             ) from exc
-        return _run_mcq_vote_path(request, kb_candidates, routed_question_type, candidate_warnings)
+        return _run_mcq_vote_path(
+            request, kb_candidates, routed_question_type, candidate_warnings,
+            translator_client=translator_client, settings=settings,
+        )
 
     try:
         kb_candidates, candidate_warnings = get_or_build_kb_candidates(
@@ -327,6 +336,8 @@ def _run_mcq_path(
     request: PredictionRequest,
     kb: KnowledgeBase,
     question_type: QuestionType,
+    translator_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
 ) -> PredictionResponse:
     options = extract_options(request.question)
     if not options:
@@ -344,7 +355,18 @@ def _run_mcq_path(
         )
 
     stem = strip_options_from_question(request.question)
-    goals = build_goals_for_mcq(options)
+
+    # Translate options via LLM (using KB predicate vocabulary) then fall back per-option to text parser.
+    translated: dict[str, Atom] = {}
+    if translator_client is not None:
+        try:
+            translated = translate_mcq_options_with_llm(
+                request.question, options, kb.predicate_names,
+                translator_client, settings,
+            )
+        except Exception as exc:
+            logger.debug("MCQ LLM option translation skipped: %s", exc)
+    goals = [(label, translated.get(label) or atom_from_text(text)) for label, text in options]
     results = evaluate_mcq_options(kb, goals)
     winner = decide_mcq_winner(results, stem)
     winning_result = results[winner]
@@ -373,9 +395,12 @@ def _run_mcq_vote_path(
     kb_candidates: tuple[KnowledgeBase, ...],
     question_type: QuestionType,
     candidate_warnings: tuple[str, ...] = (),
+    translator_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
 ) -> PredictionResponse:
     responses: list[PredictionResponse] = [
-        _run_mcq_path(request, kb, question_type) for kb in kb_candidates
+        _run_mcq_path(request, kb, question_type, translator_client, settings)
+        for kb in kb_candidates
     ]
     winner, vote_summary, confidence = _vote_labels(
         [response.answer for response in responses],

@@ -51,9 +51,9 @@ class PredicateSpec(BaseModel):
     @field_validator("name")
     @classmethod
     def name_must_be_snake_case(cls, value: str) -> str:
-        value = value.strip()
+        value = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or "pred"
         if not _PREDICATE_RE.fullmatch(value):
-            raise ValueError("predicate name must be snake_case")
+            value = "pred"
         return value
 
     @field_validator("argument_roles")
@@ -88,9 +88,9 @@ class AtomSpec(BaseModel):
     def pred_must_be_snake_case(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        value = value.strip()
+        value = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_") or "pred"
         if not _PREDICATE_RE.fullmatch(value):
-            raise ValueError("atom pred must be snake_case")
+            value = "pred"
         return value
 
     @field_validator("args", mode="before")
@@ -210,6 +210,14 @@ class QueryOnlySpec(BaseModel):
     query: QuerySpec
 
 
+class MCQOptionsSpec(BaseModel):
+    """LLM output mapping each MCQ label to a KB-compatible atom."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    options: list[OptionSpec]
+
+
 def translate_with_llm(
     premises: list[str],
     question: str,
@@ -306,6 +314,41 @@ def translate_query_only_with_llm(
             list(predicate_names),
         )
     return Query(claim=_atom_from_spec(spec.query.claim), raw_question=question)
+
+
+def translate_mcq_options_with_llm(
+    question: str,
+    options: list[tuple[str, str]],
+    predicate_names: tuple[str, ...],
+    llm_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
+) -> dict[str, "Atom"]:
+    """Translate MCQ option texts into KB-compatible atoms using the LLM.
+
+    Returns a dict mapping label → Atom for successfully translated options.
+    Missing labels mean translation failed for that option; caller should fall back.
+    """
+
+    settings = settings or get_settings()
+    client = llm_client or LLMClient.from_settings(settings)
+    messages = _build_mcq_options_messages(question, predicate_names)
+    logger.info("Starting MCQ option translation: %s options", len(options))
+    raw = client.complete_json_sync(
+        messages=messages,
+        temperature=settings.llm_temperature,
+        max_tokens=_mcq_options_token_budget(settings.llm_max_tokens),
+    )
+    spec = MCQOptionsSpec.model_validate(raw)
+    valid_labels = {label for label, _ in options}
+    result: dict[str, Atom] = {}
+    for opt in spec.options:
+        if opt.label not in valid_labels:
+            continue
+        try:
+            result[opt.label] = _atom_from_spec(opt.claim)
+        except Exception as exc:
+            logger.debug("MCQ option %s atom conversion failed: %s", opt.label, exc)
+    return result
 
 
 def _build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMessageParam]:
@@ -551,3 +594,44 @@ def _premise_token_budget(max_tokens: int, premise_count: int) -> int:
 
 def _query_token_budget(max_tokens: int) -> int:
     return min(max_tokens, 384)
+
+
+def _mcq_options_token_budget(max_tokens: int) -> int:
+    # 4 options × ~40 tokens each + JSON wrapper = ~256 tokens minimum
+    return max(256, min(max_tokens, 512))
+
+
+def _build_mcq_options_messages(
+    question: str,
+    predicate_names: tuple[str, ...],
+) -> list[ChatCompletionMessageParam]:
+    """Prompt to translate each MCQ option text into a KB atom."""
+
+    schema_hint = (
+        '{"options":[{"label":"A","claim":{"pred":"name","args":["?x"],"negated":false}},'
+        '{"label":"B","claim":{"pred":"name","args":["?x"],"negated":false}}]}'
+    )
+    predicate_list = ", ".join(predicate_names) if predicate_names else "(use descriptive snake_case)"
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are an autoformalizer for educational logic QA. "
+                "Return JSON only. No markdown fences. "
+                "Map each MCQ option to ONE atom from the given predicate list."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Translate each MCQ option into a Horn atom. Output JSON matching: {schema_hint}\n"
+                "Rules:\n"
+                f"- Available predicates: {predicate_list}\n"
+                "- Pick the predicate that best captures the option's core claim\n"
+                "- negated=true if the option asserts the predicate does NOT hold\n"
+                "- args: '?x' for generic entity, snake_case constant for a named entity\n"
+                "- Include all options (A, B, C, D) that appear in the question\n\n"
+                f"Question:\n{question}"
+            ),
+        },
+    ]
