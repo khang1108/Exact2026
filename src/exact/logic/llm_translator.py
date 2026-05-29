@@ -128,14 +128,7 @@ class RuleSpec(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     conditions: list[AtomSpec] = Field(default_factory=list)
-    conclusion: AtomSpec
-
-    @field_validator("conditions")
-    @classmethod
-    def conditions_must_not_be_empty(cls, value: list[AtomSpec]) -> list[AtomSpec]:
-        if not value:
-            raise ValueError("rule conditions must not be empty")
-        return value
+    conclusion: AtomSpec | None = None  # None means rule is malformed and will be dropped
 
 
 class PremiseSpec(BaseModel):
@@ -146,6 +139,13 @@ class PremiseSpec(BaseModel):
     source_idx: int
     facts: list[AtomSpec] = Field(default_factory=list)
     rules: list[RuleSpec] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def drop_malformed_rules(self) -> "PremiseSpec":
+        # Drop rules with empty conditions or missing conclusion — LLM sometimes
+        # generates these at higher sampling temperatures.
+        self.rules = [r for r in self.rules if r.conditions and r.conclusion is not None]
+        return self
 
 
 class QuerySpec(BaseModel):
@@ -459,11 +459,12 @@ def _premise_specs_to_parsed(
         rules = tuple(
             Rule(
                 conditions=tuple(_atom_from_spec(c) for c in rule_spec.conditions),
-                conclusion=_atom_from_spec(rule_spec.conclusion),
+                conclusion=_atom_from_spec(rule_spec.conclusion),  # type: ignore[arg-type]
                 source_idx=source_idx,
                 text=raw_premises[source_idx],
             )
             for rule_spec in premise_spec.rules
+            if rule_spec.conditions and rule_spec.conclusion is not None
         )
         parsed_by_idx[source_idx] = ParsedPremise(facts=facts, rules=rules)
 
