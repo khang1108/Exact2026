@@ -305,7 +305,20 @@ def translate_premises_only_with_llm(
         raise last_exc  # type: ignore[misc]
 
     parsed = _premise_specs_to_parsed(spec.premises, premises)  # type: ignore[union-attr]
-    predicate_names = tuple(predicate.name for predicate in spec.predicates)  # type: ignore[union-attr]
+    # Start with the LLM's explicit predicate dictionary, then add every predicate that
+    # actually appears in the IR (facts, rule conditions, rule conclusions).  The LLM
+    # frequently omits conclusion predicates (e.g. "qualifies_for_scholarship") from its
+    # explicit list, causing query translation to fail with "not in premise dictionary".
+    explicit_names: set[str] = {p.name for p in spec.predicates}  # type: ignore[union-attr]
+    ir_names: set[str] = set()
+    for p in parsed:
+        for fact in p.facts:
+            ir_names.add(fact.atom.pred)
+        for rule in p.rules:
+            ir_names.add(rule.conclusion.pred)
+            for cond in rule.conditions:
+                ir_names.add(cond.pred)
+    predicate_names = tuple(sorted(explicit_names | ir_names))
     return parsed, (), predicate_names
 
 
