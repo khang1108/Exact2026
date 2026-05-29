@@ -26,7 +26,7 @@ from exact.logic.parser import atom_from_text
 from exact.logger import get_logger, get_request_logger
 
 logger = get_logger(__name__)
-from exact.symbolic_solvers import ForwardChainSolver
+from exact.symbolic_solvers import ForwardChainSolver, Z3Solver
 
 
 _OPTION_RE = re.compile(
@@ -65,11 +65,24 @@ def build_goals_for_mcq(options: list[tuple[str, str]]) -> list[tuple[str, Atom]
     return [(label, atom_from_text(text)) for label, text in options]
 
 
+def _solve_with_z3_fallback(kb: KnowledgeBase, claim: Atom, use_z3: bool = True) -> SolveResult:
+    """Run ForwardChain; if Unknown and Z3 is enabled, try Z3 as tiebreaker."""
+    result = ForwardChainSolver().solve(kb, claim)
+    if result.label == "Unknown" and use_z3:
+        z3_result = Z3Solver().solve(kb, claim)
+        if z3_result.label != "Unknown":
+            return z3_result
+    return result
+
+
 def evaluate_mcq_options(
     kb: KnowledgeBase,
     goals: list[tuple[str, Atom]],
     solver: ForwardChainSolver | None = None,
+    use_z3_fallback: bool = False,
 ) -> dict[str, SolveResult]:
+    if use_z3_fallback:
+        return {label: _solve_with_z3_fallback(kb, goal, use_z3=True) for label, goal in goals}
     solver = solver or ForwardChainSolver()
     return {label: solver.solve(kb, goal) for label, goal in goals}
 
@@ -181,7 +194,10 @@ def run_type1_pipeline(
                 llm_client=translator_client,
                 settings=settings,
             )
-            candidate_results.append((kb, ForwardChainSolver().solve(kb, query.claim)))
+            candidate_results.append((
+                kb,
+                _solve_with_z3_fallback(kb, query.claim, use_z3=settings.type1_use_z3_fallback),
+            ))
         except Exception as exc:
             message = f"query candidate {index}/{len(kb_candidates)} failed: {exc}"
             logger.exception("Type 1 LLM query translation failed: %s", message)
@@ -431,7 +447,8 @@ def _run_mcq_path(
         except Exception as exc:
             logger.debug("MCQ LLM option translation skipped: %s", exc)
     goals = [(label, translated.get(label) or atom_from_text(text)) for label, text in options]
-    results = evaluate_mcq_options(kb, goals)
+    use_z3 = (settings or get_settings()).type1_use_z3_fallback
+    results = evaluate_mcq_options(kb, goals, use_z3_fallback=use_z3)
     option_summary = _format_mcq_option_summary(results)
     no_entailed_option = all(result.label != "Yes" for result in results.values())
 

@@ -42,6 +42,7 @@ def build_kb_from_parsed_premises(
     parser_version: str = LLM_PARSER_VERSION,
     predicate_names: tuple[str, ...] = (),
     extra_warnings: tuple[str, ...] = (),
+    add_contrapositives: bool = True,
 ) -> KnowledgeBase:
     facts: list[Fact] = []
     rules: list[Rule] = []
@@ -52,6 +53,9 @@ def build_kb_from_parsed_premises(
         facts.extend(parsed.facts)
         rules.extend(parsed.rules)
         warnings.extend(parsed.warnings)
+
+    if add_contrapositives:
+        rules.extend(_build_contrapositive_rules(tuple(rules)))
 
     return KnowledgeBase(
         raw_premises=raw_premises,
@@ -91,6 +95,7 @@ def build_kb_from_premises(
         logger.exception("LLM premise translation failed")
         raise RuntimeError(f"LLM premise translation failed: {exc}") from exc
 
+    add_contrapositives = getattr(settings, "type1_add_contrapositives", True)
     return (
         build_kb_from_parsed_premises(
             premises,
@@ -99,6 +104,7 @@ def build_kb_from_premises(
             parser_version=LLM_PARSER_VERSION,
             predicate_names=predicate_names,
             extra_warnings=warnings,
+            add_contrapositives=add_contrapositives,
         ),
         warnings,
     )
@@ -222,3 +228,42 @@ def _predicate_names_from_ir(facts: tuple[Fact, ...], rules: tuple[Rule, ...]) -
         names.add(rule.conclusion.pred)
         names.update(condition.pred for condition in rule.conditions)
     return tuple(sorted(names))
+
+
+def _build_contrapositive_rules(rules: tuple[Rule, ...]) -> tuple[Rule, ...]:
+    """Derive contrapositive rules from existing Horn clauses.
+
+    Single-condition  A → B       ⇒  ¬B → ¬A
+    Multi-condition   A ∧ B → C   ⇒  ¬C ∧ B → ¬A  and  ¬C ∧ A → ¬B  (etc.)
+
+    All generated rules are valid logical consequences.  Rules whose conclusion
+    is already negated are skipped to avoid ¬¬A cycling.
+    """
+    contrapositives: list[Rule] = []
+    for rule in rules:
+        conc = rule.conclusion
+        if conc.negated:
+            continue
+        neg_conc = conc.negation()
+        if len(rule.conditions) == 1:
+            cond = rule.conditions[0]
+            if not cond.negated:
+                contrapositives.append(Rule(
+                    conditions=(neg_conc,),
+                    conclusion=cond.negation(),
+                    source_idx=rule.source_idx,
+                    text=rule.text,
+                ))
+        else:
+            # Partial contrapositive for each positive condition
+            for i, cond in enumerate(rule.conditions):
+                if cond.negated:
+                    continue
+                others = tuple(c for j, c in enumerate(rule.conditions) if j != i)
+                contrapositives.append(Rule(
+                    conditions=(neg_conc, *others),
+                    conclusion=cond.negation(),
+                    source_idx=rule.source_idx,
+                    text=rule.text,
+                ))
+    return tuple(contrapositives)

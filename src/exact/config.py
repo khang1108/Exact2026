@@ -80,6 +80,14 @@ class Settings(BaseSettings):
         default=True,
         validation_alias="EXACT_TYPE1_ENABLE_COT_FALLBACK",
     )
+    type1_add_contrapositives: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_ADD_CONTRAPOSITIVES",
+    )
+    type1_use_z3_fallback: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_USE_Z3_FALLBACK",
+    )
     llm_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_MAX_RETRIES")
     llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")
