@@ -332,15 +332,18 @@ wait_for_http "EXACT API" "http://127.0.0.1:${API_PORT}/health" || {
 log_section "Khởi động Cloudflare Tunnel"
 log_info "Log: $TUNNEL_LOG"
 
+# TUNNEL_URL được set bên dưới tuỳ loại tunnel
+TUNNEL_URL=""
+
 if [[ -n "$CLOUDFLARE_TUNNEL_NAME" ]]; then
     # Named tunnel — cần đã setup trước: cloudflared tunnel create <name>
     log_info "Dùng named tunnel: $CLOUDFLARE_TUNNEL_NAME"
     "$CLOUDFLARED_BIN" tunnel run "$CLOUDFLARE_TUNNEL_NAME" \
         >> "$TUNNEL_LOG" 2>&1 &
+    TUNNEL_URL="(named tunnel: $CLOUDFLARE_TUNNEL_NAME)"
 else
     # Quick tunnel — tạo URL ngẫu nhiên, in ra để biết URL
     log_warn "CLOUDFLARE_TUNNEL_NAME chưa set → dùng quick tunnel (URL random mỗi lần)"
-    log_info "URL sẽ xuất hiện trong log: $TUNNEL_LOG"
     "$CLOUDFLARED_BIN" tunnel --url "http://localhost:${API_PORT}" \
         >> "$TUNNEL_LOG" 2>&1 &
 fi
@@ -349,7 +352,7 @@ TUNNEL_PID=$!
 register_pid "cloudflared" "$TUNNEL_PID"
 log_info "cloudflared started (PID $TUNNEL_PID)"
 
-# Với quick tunnel: đợi URL xuất hiện trong log và in ra
+# Với quick tunnel: đợi URL xuất hiện trong log rồi in ra
 if [[ -z "$CLOUDFLARE_TUNNEL_NAME" ]]; then
     log_info "Đang chờ quick tunnel URL..."
     for i in $(seq 1 20); do
@@ -360,6 +363,9 @@ if [[ -z "$CLOUDFLARE_TUNNEL_NAME" ]]; then
         fi
         sleep 2
     done
+    if [[ -z "$TUNNEL_URL" ]]; then
+        TUNNEL_URL="(chưa lấy được URL — xem $TUNNEL_LOG)"
+    fi
 fi
 
 # ---------------------------------------------------------------------------
