@@ -1064,10 +1064,11 @@ def _mcq_options_token_budget(max_tokens: int) -> int:
 
 
 def _formula_premises_token_budget(premise_count: int) -> int:
-    # Each premise formula tree averages ~120 tokens (compact, no text/role fields).
-    # Predicates dict adds ~150 tokens. Base overhead ~200 tokens.
-    # Cap at 6144 to leave headroom for the hard 60s deadline.
-    needed = max(1024, 200 + 150 + 120 * premise_count)
+    # Each premise formula tree averages ~180 tokens (compact JSON, no text/role fields,
+    # but implies/and nodes add nesting). Predicates dict adds ~200 tokens.
+    # Use 200 per premise to avoid silent truncation (the main failure mode).
+    # Cap at 6144; generation speed on A6000 for 14p ≈ 14×180=2520 tokens ≈ 35s → OK.
+    needed = max(1536, 400 + 200 * premise_count)
     return min(6144, needed)
 
 
@@ -1138,7 +1139,12 @@ def translate_formula_premises_only_with_llm(
     )
 
     last_exc: Exception | None = None
-    for attempt, token_limit in enumerate([budget, min(6144, budget * 2)], start=1):
+    # Run up to 3 attempts: base budget → 2× budget → 2× budget with completion hint.
+    # The third attempt fires when the LLM silently returned fewer premises than
+    # expected (valid JSON but incomplete), which the first two retry conditions
+    # (JSON parse errors) would not catch.
+    budgets = [budget, min(6144, budget * 2), min(6144, budget * 2)]
+    for attempt, token_limit in enumerate(budgets, start=1):
         try:
             raw = client.complete_json_sync(
                 messages=messages,
@@ -1150,7 +1156,7 @@ def translate_formula_premises_only_with_llm(
             if "invalid JSON" not in msg and "incomplete JSON" not in msg:
                 raise
             last_exc = exc
-            logger.warning("Premise-only attempt %d/2 JSON error: %s", attempt, msg[:200])
+            logger.warning("Premise-only attempt %d/3 JSON error: %s", attempt, msg[:200])
             continue
 
         try:
@@ -1169,6 +1175,35 @@ def translate_formula_premises_only_with_llm(
             if not premise_items:
                 raise ValueError("premise-only translation returned no premise formulas")
 
+            # Completeness check: if fewer than 80% of premises were translated,
+            # the LLM silently truncated. Retry with an explicit correction prompt.
+            completeness = len(premise_items) / max(len(premises), 1)
+            if completeness < 0.80 and attempt < len(budgets):
+                translated_indices = {item.source_idx for item in premise_items}
+                missing = [i for i in range(len(premises)) if i not in translated_indices]
+                logger.warning(
+                    "Premise-only attempt %d/3: incomplete — %d/%d premises (missing: %s); retrying",
+                    attempt, len(premise_items), len(premises), missing[:5],
+                )
+                messages = [
+                    *messages,
+                    {"role": "assistant", "content": json.dumps(raw)},
+                    {
+                        "role": "user",
+                        "content": (
+                            f"INCOMPLETE: you only translated {len(premise_items)} of "
+                            f"{len(premises)} premises. "
+                            f"You MUST translate ALL {len(premises)} premises. "
+                            f"Missing source_idx values: {missing}. "
+                            "Return complete JSON with every premise translated."
+                        ),
+                    },
+                ]
+                last_exc = ValueError(
+                    f"incomplete premises: {len(premise_items)}/{len(premises)}"
+                )
+                continue
+
             entity_constants = _extract_entity_constants(premise_items)
             result = _CachedFormulaPremises(
                 predicates=predicates,
@@ -1177,14 +1212,14 @@ def translate_formula_premises_only_with_llm(
             )
             _FORMULA_PREMISE_CACHE[cache_key] = result
             logger.info(
-                "translate_formula_premises_only: done — %d premises, %d predicates, %d constants",
-                len(premise_items), len(predicates), len(entity_constants),
+                "translate_formula_premises_only: done — %d/%d premises, %d predicates, %d constants",
+                len(premise_items), len(premises), len(predicates), len(entity_constants),
             )
             return result
 
         except (ValueError, KeyError) as exc:
             last_exc = exc
-            logger.warning("Premise-only attempt %d/2 parse error: %s", attempt, str(exc)[:300])
+            logger.warning("Premise-only attempt %d/3 parse error: %s", attempt, str(exc)[:300])
 
     raise RuntimeError(
         f"translate_formula_premises_only_with_llm failed after 2 attempts: {last_exc}"
