@@ -10,13 +10,8 @@ from exact.type2.solving.units import parse_quantity
 UNIT_REPLACEMENTS = {
     "μ": "u",
     "µ": "u",
-    "Ω": "ohm",
-    "Ω": "ohm",
     "×": "x",
     "−": "-",
-    "⁻": "-",
-    "²": "^2",
-    "³": "^3",
     "π": "pi",
     "℃": "degC",
     "°C": "degC",
@@ -25,16 +20,37 @@ UNIT_REPLACEMENTS = {
     "⋅": "*",
 }
 
+SUPERSCRIPT_REPLACEMENTS = {
+    "⁰": "^0",
+    "¹": "^1",
+    "²": "^2",
+    "³": "^3",
+    "⁴": "^4",
+    "⁵": "^5",
+    "⁶": "^6",
+    "⁷": "^7",
+    "⁸": "^8",
+    "⁹": "^9",
+    "⁺": "+",
+    "⁻": "-",
+}
+
 
 def normalize_question(question: str) -> str:
-    text = unicodedata.normalize("NFKC", question)
+    text = _normalize_superscripts(question)
+    text = unicodedata.normalize("NFKC", text)
     for old, new in UNIT_REPLACEMENTS.items():
         text = text.replace(old, new)
+    text = text.replace("-^", "^-")
     text = re.sub(r"10\s*\^\s*([+-]?\d+)", r"1e\1", text)
     text = re.sub(r"10\s*-\s*(\d+)", r"1e-\1", text)
     text = re.sub(r"(\d)\s*x\s*1e", r"\1e", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+", " ", text).strip()
     return text
+
+
+def _normalize_superscripts(text: str) -> str:
+    return "".join(SUPERSCRIPT_REPLACEMENTS.get(char, char) for char in text)
 
 
 def normalize_unit(unit: str) -> str:
@@ -208,6 +224,8 @@ UNIT_TO_NAME = {
     "j/kg": "heat_of_combustion",
     "j/(kg*degc)": "specific_heat_capacity",
     "j/(kg*degree)": "specific_heat_capacity",
+    "m/s^2": "acceleration",
+    "m/s²": "acceleration",
     "degc": "temperature",
     "k": "temperature",
     "degree": "angle",
@@ -289,9 +307,14 @@ TARGET_PATTERNS = (
     ("force acting", "force"),
     ("electric force", "force"),
     ("force", "force"),
-    ("charge", "charge"),
+    ("angle of deflection", "angle"),
+    ("deflection angle", "angle"),
+    ("deflection of the string", "angle"),
+    ("electric field strength", "electric_field"),
+    ("magnitude of the electric field", "electric_field"),
     ("electric field", "electric_field"),
     ("field strength", "electric_field"),
+    ("charge", "charge"),
     ("frequency", "frequency"),
     ("angular frequency", "angular_frequency"),
     ("inductance", "inductance"),
@@ -329,7 +352,7 @@ TARGET_PATTERNS = (
 )
 
 NUMBER = r"[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?"
-UNIT = r"(?:J/\(kg\*degC\)|J/\(kg\*degree\)|J/kg|kg/m\^3|kg/m³|m\^3|km/h|m/s|uF|nF|pF|mF|F|uC|nC|pC|mC|C|mA|A|mV|kV|V|kohm|ohm|mW|kW|W|mJ|uJ|nJ|J|mH|H|Hz|rad/s|V/m|N/C|mN|N|kPa|Pa|T|mT|Wb|uWb|cm|mm|kg|g|L|m\^2|m|s|h|min|%|degC|degree|degrees|deg|°)"
+UNIT = r"(?:J/\(kg\*degC\)|J/\(kg\*degree\)|kg/m\^3|kg/m³|m/s\^2|m/s²|rad/s|V/m|N/C|m\^3|km/h|uF|nF|pF|mF|uC|nC|pC|mC|mA|kV|mV|kohm|mW|kW|mJ|uJ|nJ|mH|uWb|mN|mT|m\^2|degC|degree|degrees|kg|cm|mm|mm|m|s|h|min|%|F|C|A|V|W|J|H|Hz|N|T|Wb|g|L|ohm|°)"
 
 SYMBOL_VALUE_RE = re.compile(
     rf"\b(?P<symbol>[A-Za-z][A-Za-z0-9_]*)\s*=\s*(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b",

@@ -34,7 +34,7 @@ def run_type2_pipeline(
 
     extraction = _build_solver_extraction(request.question, settings=settings)
     review = verify_type2_extraction(extraction)
-    formula_context = retrieve_formula_context(request.question, extraction)
+    formula_context = retrieve_formula_context(request.question, extraction, settings=settings)
 
     logger.info(
         "PoT extraction: kind=%s target=%s quantities=%s extraction_ok=%s formulas=%s",

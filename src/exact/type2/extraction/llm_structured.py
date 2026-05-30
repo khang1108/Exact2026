@@ -84,7 +84,8 @@ def build_llm_json_client(settings: Settings | None = None) -> JsonClient | None
         return None
     try:
         client = build_json_client_from_settings(settings)
-    except Exception:
+    except Exception as exc:
+        print(f"[!] Error building LLM JSON client: {exc}", flush=True)
         return None
     return client
 
@@ -266,6 +267,8 @@ def _build_pot_messages(question: str, explanation: str, formula_context: str = 
                 "The code must define ans = <numeric result> and ans_unit = <unit string>. "
                 "Use pint for units and sympy only if needed. Do not print. "
                 "Use the supplied formula bank context when it applies, and check units before finalizing. "
+                "Prefer formula IDs from the top of the supplied context, but use multiple retrieved IDs when "
+                "a multi-step solution needs an intermediate value. "
                 "For vector quantities such as electric force/field, never add magnitudes as scalars unless "
                 "the directions are explicitly the same. If geometry is given, compute components or use the "
                 "matching resultant/vector formula from the formula context. "
@@ -288,8 +291,10 @@ def _build_pot_messages(question: str, explanation: str, formula_context: str = 
                 f"{few_shot}\n\n"
                 "Checklist:\n"
                 "- Verify that extracted variables match the requested target.\n"
-                "- Use a formula only when its conditions match the question.\n"
+                "- Use a formula only when its target, required variables, and conditions match the question.\n"
+                "- If no single formula directly solves the target, combine the smallest valid chain of supplied formulas.\n"
                 "- Convert units consistently before computing.\n"
+                "- For geometry, identify whether the problem is a rectangle, triangle, circle, sphere, cylinder, or right triangle before selecting a formula.\n"
                 "- For net electric force/field in a triangle or angled geometry, account for vector directions.\n"
                 "- In an equilateral triangle, two equal forces on one vertex charge have a 60 degree included angle, so the resultant magnitude is sqrt(3) times one force.\n"
                 "- When the problem has multiple distinct charges or labeled roles, keep the source and target charges separate; do not reuse one q variable for all roles.\n"

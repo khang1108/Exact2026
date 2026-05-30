@@ -41,32 +41,26 @@ def solve_with_pot(
     if code_spec is None:
         return _unconfigured_result(extraction)
 
-    code_spec = _canonicalize_formula_ids(code_spec, formula_context)
-    execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
-    if not execution.ok:
-        try:
-            repaired = repair_pot_code(
-                extraction.normalized_question,
-                code_spec.code,
-                execution.error or "execution failed",
-                settings=settings,
-            )
-        except Exception as exc:
-            return _failed_result(extraction, f"LLM code repair returned invalid output: {exc}")
-        if repaired is None:
-            fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error)
-            if fallback is not None:
-                return fallback
-            return _failed_result(extraction, execution.error or "execution failed")
-        code_spec = repaired
-        code_spec = _canonicalize_formula_ids(code_spec, formula_context)
-        execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
+    code_spec, execution, repair_attempts, repair_error = _execute_with_repair_loop(
+        extraction,
+        code_spec,
+        formula_context,
+        settings,
+    )
+    if repair_error is not None:
+        fallback = _try_executable_formula_fallback(extraction, formula_context, repair_error)
+        if fallback is not None:
+            return fallback
+        return _failed_result(extraction, repair_error)
 
     if not execution.ok:
         fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error)
         if fallback is not None:
             return fallback
-        return _failed_result(extraction, execution.error or "execution failed after repair")
+        return _failed_result(
+            extraction,
+            execution.error or f"execution failed after {repair_attempts} repair attempt(s)",
+        )
 
     unit = execution.ans_unit or code_spec.answer_unit
     verified = verify_pot_execution(
@@ -112,6 +106,11 @@ def solve_with_pot(
         cot=[
             "Retrieved formula context for the question.",
             "Generated a Pint-based Python program with the LLM.",
+            *(
+                [f"Repaired the generated program {repair_attempts} time(s) before execution succeeded."]
+                if repair_attempts
+                else []
+            ),
             "Executed the program in the sandbox.",
             "Verified the numeric answer, unit, and formula IDs.",
             *explanation.cot,
@@ -125,6 +124,36 @@ def solve_with_pot(
 def _execute_code_spec(spec: PotCodeSpec, timeout_seconds: float) -> ExecutionResult:
     code = _prepare_generated_code(spec.code)
     return execute_python(code, timeout_seconds=timeout_seconds)
+
+
+def _execute_with_repair_loop(
+    extraction: Extraction,
+    code_spec: PotCodeSpec,
+    formula_context: RetrievedFormulaContext,
+    settings: Settings,
+) -> tuple[PotCodeSpec, ExecutionResult, int, str | None]:
+    code_spec = _canonicalize_formula_ids(code_spec, formula_context)
+    execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
+    repair_attempts = 0
+
+    while not execution.ok and repair_attempts < settings.llm_max_retries:
+        repair_attempts += 1
+        try:
+            repaired = repair_pot_code(
+                extraction.normalized_question,
+                code_spec.code,
+                execution.error or "execution failed",
+                settings=settings,
+            )
+        except Exception as exc:
+            return code_spec, execution, repair_attempts, f"LLM code repair returned invalid output: {exc}"
+        if repaired is None:
+            return code_spec, execution, repair_attempts, execution.error or "execution failed"
+
+        code_spec = _canonicalize_formula_ids(repaired, formula_context)
+        execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
+
+    return code_spec, execution, repair_attempts, None
 
 
 def _canonicalize_formula_ids(spec: PotCodeSpec, formula_context: RetrievedFormulaContext) -> PotCodeSpec:
@@ -161,7 +190,7 @@ def _prepare_generated_code(code: str) -> str:
 
 
 def _normalize_bare_pint_unit_aliases(code: str) -> str:
-    """Repair common LLM unit aliases inside Pint expressions."""
+    """Repair common LLM unit aliases inside Pint expressions, ignoring string literals."""
 
     replacements = {
         "m": "ureg.meter",
@@ -175,11 +204,14 @@ def _normalize_bare_pint_unit_aliases(code: str) -> str:
         "ohm": "ureg.ohm",
     }
     pattern = re.compile(
+        r"'(?:\\.|[^'\\])*'|\"(?:\\.|[^\"\\])*\"|"
         r"(?P<op>[*/])\s*(?P<unit>" + "|".join(map(re.escape, replacements)) + r")\b"
         r"(?P<power>\s*\*\*\s*[-+]?\d+)?"
     )
 
     def replace(match: re.Match[str]) -> str:
+        if match.group("op") is None:
+            return match.group(0)
         unit = match.group("unit")
         return f"{match.group('op')} {replacements[unit]}{match.group('power') or ''}"
 
@@ -223,7 +255,7 @@ class _SqrtToPower(ast.NodeTransformer):
 
 def _is_sqrt_call(func: ast.expr) -> bool:
     if isinstance(func, ast.Attribute):
-        return func.attr == "sqrt" and isinstance(func.value, ast.Name) and func.value.id in {"sympy", "sp"}
+        return func.attr == "sqrt" and isinstance(func.value, ast.Name) and func.value.id in {"sympy", "sp", "math"}
     if isinstance(func, ast.Name):
         return func.id == "sqrt"
     return False

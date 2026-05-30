@@ -7,7 +7,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from exact.config import Settings
 from exact.config import PACKAGE_DIR
+from exact.type2.extraction.llm_structured import select_formula_ids
 from exact.type2.formulas.bank import FORMULAS, formula_summary
 from exact.type2.schemas import Extraction
 
@@ -44,7 +46,8 @@ def canonicalize_formula_ids(
 def retrieve_formula_context(
     question: str,
     extraction: Extraction | None = None,
-    limit: int = 8,
+    limit: int = 24,
+    settings: Settings | None = None,
 ) -> RetrievedFormulaContext:
     executable = [_executable_summary(formula) for formula in FORMULAS]
     knowledge = _load_json_formula_summaries()
@@ -70,6 +73,7 @@ def retrieve_formula_context(
         reverse=True,
     )
     selected = ranked[:limit]
+    selected = _rerank_with_llm(question, extraction, selected, settings=settings)
     return RetrievedFormulaContext(
         formula_ids=tuple(str(item["id"]) for item in selected),
         context=_format_context(selected),
@@ -121,21 +125,90 @@ def _load_json_formula_summaries() -> list[dict[str, Any]]:
 def _format_context(summaries: list[dict[str, Any]]) -> str:
     lines: list[str] = []
     for item in summaries:
-        variables = item.get("variables") or {}
-        conditions = item.get("conditions") or ()
+        variables = _compact_mapping(item.get("variables") or {})
+        conditions = _compact_sequence(item.get("conditions") or ())
         lines.append(
-            "- {id} [{source}; {domain}/{subfield}]: {expression}; "
-            "variables={variables}; conditions={conditions}".format(
+            "- {id} [{source}; {domain}/{subfield}; target={target}; required={required}; output={output}]: "
+            "{expression}; vars={variables}; conditions={conditions}".format(
                 id=item.get("id"),
                 source=item.get("source"),
                 domain=item.get("domain"),
                 subfield=item.get("subfield"),
+                target=item.get("target"),
+                required=tuple(item.get("required") or ()),
+                output=item.get("output_unit"),
                 expression=item.get("expression") or item.get("latex"),
                 variables=variables,
                 conditions=conditions,
             )
         )
     return "\n".join(lines)
+
+
+def _compact_mapping(mapping: dict[str, Any]) -> str:
+    return ", ".join(f"{key}:{value}" for key, value in mapping.items()) or "-"
+
+
+def _compact_sequence(values) -> str:
+    return "; ".join(str(value) for value in values if str(value).strip()) or "-"
+
+
+def _rerank_with_llm(
+    question: str,
+    extraction: Extraction | None,
+    ranked: list[dict[str, Any]],
+    settings: Settings | None = None,
+) -> list[dict[str, Any]]:
+    if settings is None or settings.mock_llm or len(ranked) < 3:
+        return ranked
+
+    top_score = _score_summary(
+        ranked[0],
+        question,
+        target=extraction.target if extraction else None,
+        known=set(extraction.quantities) if extraction else set(),
+    )
+    second_score = _score_summary(
+        ranked[1],
+        question,
+        target=extraction.target if extraction else None,
+        known=set(extraction.quantities) if extraction else set(),
+    )
+    if extraction is not None and extraction.target is not None and top_score[0] >= 6 and top_score > second_score:
+        return ranked
+    if top_score[0] >= 10 and top_score > second_score:
+        return ranked
+
+    candidate_summaries = ranked[:12]
+    selection = select_formula_ids(
+        question,
+        _build_extraction_summary(extraction),
+        candidate_summaries,
+        settings=settings,
+    )
+    if selection is None or not selection.formula_ids:
+        return ranked
+
+    selected_ids = [str(formula_id) for formula_id in selection.formula_ids]
+    selected_lookup = {formula_id: index for index, formula_id in enumerate(selected_ids)}
+    promoted = [item for item in ranked if item.get("id") in selected_lookup]
+    promoted.sort(key=lambda item: selected_lookup[str(item.get("id"))])
+    remainder = [item for item in ranked if item not in promoted]
+    return promoted + remainder
+
+
+def _build_extraction_summary(extraction: Extraction | None) -> str:
+    if extraction is None:
+        return "kind=unknown; target=None; quantities=[]; notes=[]"
+    quantities = [
+        f"{name}={quantity.value} ({quantity.evidence})"
+        for name, quantity in extraction.quantities.items()
+    ]
+    notes = [note for note in extraction.notes if note.strip()]
+    return (
+        f"kind={extraction.kind.value}; target={extraction.target}; "
+        f"quantities={quantities or []}; notes={notes or []}"
+    )
 
 
 def _score_summary(
@@ -159,7 +232,16 @@ def _score_summary(
     required_bonus = len(required & known)
     exact_bonus = 4 if target_bonus and required and required <= known else 0
     executable_bonus = 2 if item.get("source") == "executable" else 0
-    return (target_bonus + exact_bonus, required_bonus, overlap, executable_bonus)
+
+    # Geometry match bonus
+    geom_keywords = {"equilateral", "midpoint", "bisector", "isosceles", "perpendicular", "triangle"}
+    query_geom = query_tokens & geom_keywords
+    geom_bonus = 0
+    if query_geom:
+        item_geom = item_tokens & geom_keywords
+        geom_bonus = 15 * len(query_geom & item_geom)
+
+    return (target_bonus + exact_bonus + geom_bonus, required_bonus, overlap, executable_bonus)
 
 
 def _tokens(text: str) -> list[str]:

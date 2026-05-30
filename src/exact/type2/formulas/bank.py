@@ -55,6 +55,20 @@ def _net_force_on_a_in_right_triangle(known: dict[str, object]):
     force_ac = K_COULOMB * abs(qa * qc) / (ac ** 2)
     return (force_ab ** 2 + force_ac ** 2) ** 0.5
 
+
+def _pythagorean_leg(known: dict[str, object]):
+    hypotenuse = _q(known, "length")
+    leg = _q(known, "length_2")
+    return (hypotenuse ** 2 - leg ** 2) ** 0.5
+
+
+def _deflection_angle_in_uniform_field(known: dict[str, object]):
+    charge = abs(_q(known, "charge"))
+    field = _q(known, "electric_field")
+    mass = _q(known, "mass")
+    gravity = _q(known, "acceleration")
+    return math.atan((charge * field) / (mass * gravity)) * ureg.radian
+
 K_COULOMB = 8.9875517923e9 * ureg.newton * (ureg.meter ** 2) / (ureg.coulomb ** 2)
 EPSILON_0 = 8.8541878128e-12 * ureg.farad / ureg.meter
 MU_0 = 4 * math.pi * 1e-7 * ureg.newton / (ureg.ampere ** 2)
@@ -1184,6 +1198,115 @@ FORMULAS: tuple[Formula, ...] = (
         / (_q(k, "length") ** 2),
     ),
     Formula(
+        id="electric_field_two_equal_sources_equilateral",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "length"),
+        output_unit="N/C",
+        expression="E_net = sqrt(3) * k * |q| / a^2",
+        explanation_template=(
+            "For two identical source charges q at two vertices of an equilateral triangle of side length a, "
+            "the resultant electric field at the remaining vertex is E_net = sqrt(3) * k * |q| / a^2."
+        ),
+        keywords=("equilateral", "triangle", "two identical charges", "remaining vertex", "electric field", "resultant"),
+        variables={"E_net": "electric_field", "q": "charge", "a": "length"},
+        conditions=(
+            "Two identical source charges occupy two vertices of an equilateral triangle.",
+            "Caclulate electric field at the remaining vertex.",
+        ),
+        common_mistakes=("Do not confuse with force which requires a target charge.",),
+        solve=lambda k: math.sqrt(3)
+        * K_COULOMB
+        * abs(_q(k, "charge"))
+        / (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="electric_field_two_equal_sources_right_angle",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "length"),
+        output_unit="N/C",
+        expression="E_net = sqrt(2) * k * |q| / a^2",
+        explanation_template=(
+            "For two identical source charges q at the acute vertices of a right isosceles triangle of leg length a, "
+            "the resultant electric field at the right-angle vertex is E_net = sqrt(2) * k * |q| / a^2."
+        ),
+        keywords=("right triangle", "right angle vertex", "two identical charges", "isosceles right triangle", "electric field", "resultant"),
+        variables={"E_net": "electric_field", "q": "charge", "a": "length"},
+        conditions=(
+            "Two identical source charges occupy the two acute vertices of a right isosceles triangle.",
+            "Calculate electric field at the right-angle vertex.",
+        ),
+        common_mistakes=("Use sqrt(2) for perpendicular electric field vectors.",),
+        solve=lambda k: math.sqrt(2)
+        * K_COULOMB
+        * abs(_q(k, "charge"))
+        / (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="electric_field_midpoint_between_opposite_equal_charges",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "length"),
+        output_unit="N/C",
+        expression="E_net = 8 * k * |q| / d^2",
+        explanation_template=(
+            "For two equal and opposite point charges q separated by distance d, the electric fields at the midpoint "
+            "point in the same direction and add up to E_net = 2 * k * |q| / (d/2)^2 = 8 * k * |q| / d^2."
+        ),
+        keywords=("midpoint", "two charges", "opposite signs", "equal magnitude", "separated by", "electric field", "net"),
+        variables={"E_net": "electric_field", "q": "charge", "d": "length"},
+        conditions=(
+            "Midpoint between two charges of equal magnitude and opposite signs.",
+        ),
+        common_mistakes=("Use d/2 as distance, and add the two field magnitudes together.",),
+        solve=lambda k: 8
+        * K_COULOMB
+        * abs(_q(k, "charge"))
+        / (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="electric_field_midpoint_between_equal_charges",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "length"),
+        output_unit="N/C",
+        expression="E_net = 0",
+        explanation_template=(
+            "For two identical point charges q separated by distance d, the electric fields at the midpoint "
+            "are equal in magnitude and opposite in direction, so they cancel out completely: E_net = 0."
+        ),
+        keywords=("midpoint", "two identical charges", "same sign", "separated by", "electric field", "net"),
+        variables={"E_net": "electric_field", "q": "charge", "d": "length"},
+        conditions=(
+            "Midpoint between two identical charges (same sign and magnitude).",
+        ),
+        common_mistakes=("Do not add the magnitudes; their directions are opposite.",),
+        solve=lambda k: 0 * ureg.newton / ureg.coulomb,
+    ),
+    Formula(
+        id="deflection_angle_uniform_field",
+        domain="electrostatics",
+        subfield="electric_field",
+        target="angle",
+        required=("mass", "charge", "electric_field", "acceleration"),
+        output_unit="rad",
+        expression="theta = atan(q * E / (m * g))",
+        explanation_template="At equilibrium, tan(theta) = qE / (mg), so the deflection angle is atan(qE/(mg)).",
+        keywords=("deflection", "angle", "suspended", "string", "uniform electric field", "equilibrium"),
+        variables={"theta": "angle", "q": "charge", "E": "electric_field", "m": "mass", "g": "acceleration"},
+        conditions=(
+            "A charged object is suspended by a string in a uniform horizontal electric field.",
+            "The system is in static equilibrium.",
+        ),
+        common_mistakes=("Use magnitudes for q, E, m, and g when computing the angle.",),
+        solve=_deflection_angle_in_uniform_field,
+    ),
+    Formula(
         id="relative_permittivity_from_susceptibility",
         domain="electrostatics",
         subfield="dielectrics",
@@ -1469,6 +1592,141 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("Mass and density refer to the same material.",),
         common_mistakes=("Divide mass by density.",),
         solve=lambda k: _q(k, "mass") / _q(k, "density"),
+    ),
+    Formula(
+        id="rectangle_area",
+        domain="mechanics",
+        subfield="geometry",
+        target="area",
+        required=("length", "length_2"),
+        output_unit="m^2",
+        expression="A = l * w",
+        explanation_template="The area of a rectangle is length times width.",
+        keywords=("rectangle", "rectangular", "area", "length", "width"),
+        variables={"A": "area", "l": "length", "w": "length_2"},
+        conditions=("The shape is a rectangle or rectangular face.",),
+        common_mistakes=("Use area units, not perimeter units.",),
+        solve=lambda k: _q(k, "length") * _q(k, "length_2"),
+    ),
+    Formula(
+        id="triangle_area_base_height",
+        domain="mechanics",
+        subfield="geometry",
+        target="area",
+        required=("length", "length_2"),
+        output_unit="m^2",
+        expression="A = 1/2 * b * h",
+        explanation_template="The area of a triangle is one half times base times height.",
+        keywords=("triangle", "area", "base", "height"),
+        variables={"A": "area", "b": "length", "h": "length_2"},
+        conditions=("The two lengths are the triangle base and the perpendicular height.",),
+        common_mistakes=("Remember the factor 1/2.",),
+        solve=lambda k: 0.5 * _q(k, "length") * _q(k, "length_2"),
+    ),
+    Formula(
+        id="circle_area_from_radius",
+        domain="mechanics",
+        subfield="geometry",
+        target="area",
+        required=("length",),
+        output_unit="m^2",
+        expression="A = pi * r^2",
+        explanation_template="The area of a circle is pi times the radius squared.",
+        keywords=("circle", "circular", "area", "radius"),
+        variables={"A": "area", "r": "length"},
+        conditions=("The given length is the radius of a circle.",),
+        common_mistakes=("Square the radius; do not use diameter unless it is first halved.",),
+        solve=lambda k: math.pi * (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="sphere_surface_area_from_radius",
+        domain="mechanics",
+        subfield="geometry",
+        target="area",
+        required=("length",),
+        output_unit="m^2",
+        expression="S = 4 * pi * r^2",
+        explanation_template="The surface area of a sphere is 4*pi*r^2.",
+        keywords=("sphere", "spherical", "surface area", "radius"),
+        variables={"S": "area", "r": "length"},
+        conditions=("The requested quantity is the surface area of a sphere.",),
+        common_mistakes=("Do not use the circle area formula for sphere surface area.",),
+        solve=lambda k: 4 * math.pi * (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="rectangular_prism_volume",
+        domain="mechanics",
+        subfield="geometry",
+        target="volume",
+        required=("length", "length_2", "length_3"),
+        output_unit="m^3",
+        expression="V = l * w * h",
+        explanation_template="The volume of a rectangular prism is length times width times height.",
+        keywords=("rectangular prism", "cuboid", "box", "volume", "length", "width", "height"),
+        variables={"V": "volume", "l": "length", "w": "length_2", "h": "length_3"},
+        conditions=("The solid is a rectangular prism, cuboid, or box.",),
+        common_mistakes=("Use three perpendicular lengths.",),
+        solve=lambda k: _q(k, "length") * _q(k, "length_2") * _q(k, "length_3"),
+    ),
+    Formula(
+        id="cylinder_volume_from_radius_height",
+        domain="mechanics",
+        subfield="geometry",
+        target="volume",
+        required=("length", "length_2"),
+        output_unit="m^3",
+        expression="V = pi * r^2 * h",
+        explanation_template="The volume of a cylinder is pi*r^2*h.",
+        keywords=("cylinder", "cylindrical", "volume", "radius", "height"),
+        variables={"V": "volume", "r": "length", "h": "length_2"},
+        conditions=("The two lengths are the cylinder radius and height.",),
+        common_mistakes=("Square the radius, not the height.",),
+        solve=lambda k: math.pi * (_q(k, "length") ** 2) * _q(k, "length_2"),
+    ),
+    Formula(
+        id="sphere_volume_from_radius",
+        domain="mechanics",
+        subfield="geometry",
+        target="volume",
+        required=("length",),
+        output_unit="m^3",
+        expression="V = 4/3 * pi * r^3",
+        explanation_template="The volume of a sphere is 4/3*pi*r^3.",
+        keywords=("sphere", "spherical", "volume", "radius"),
+        variables={"V": "volume", "r": "length"},
+        conditions=("The given length is the sphere radius.",),
+        common_mistakes=("Cube the radius and include the factor 4/3.",),
+        solve=lambda k: (4 / 3) * math.pi * (_q(k, "length") ** 3),
+    ),
+    Formula(
+        id="pythagorean_hypotenuse",
+        domain="mechanics",
+        subfield="geometry",
+        target="length",
+        required=("length", "length_2"),
+        output_unit="m",
+        expression="c = sqrt(a^2 + b^2)",
+        explanation_template="In a right triangle, the hypotenuse is sqrt(a^2+b^2).",
+        keywords=("right triangle", "right-angled", "hypotenuse", "pythagorean", "legs"),
+        variables={"c": "length", "a": "length", "b": "length_2"},
+        conditions=("The two known lengths are perpendicular legs of a right triangle.",),
+        common_mistakes=("Use this only for the hypotenuse, not for a missing leg.",),
+        solve=lambda k: (_q(k, "length") ** 2 + _q(k, "length_2") ** 2) ** 0.5,
+    ),
+    Formula(
+        id="pythagorean_leg",
+        domain="mechanics",
+        subfield="geometry",
+        target="length",
+        required=("length", "length_2"),
+        output_unit="m",
+        expression="a = sqrt(c^2 - b^2)",
+        explanation_template="In a right triangle, a missing leg is sqrt(c^2-b^2).",
+        keywords=("right triangle", "right-angled", "missing leg", "pythagorean", "hypotenuse"),
+        variables={"a": "length", "c": "length", "b": "length_2"},
+        conditions=("The first known length is the hypotenuse and the second is the other leg.",),
+        common_mistakes=("Subtract the squared known leg from the squared hypotenuse.",),
+        solve=_pythagorean_leg,
     ),
     Formula(
         id="pressure_from_force_area",
@@ -1762,6 +2020,30 @@ def _formula_score(
 
 
 def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
+    if formula.id == "rectangle_area":
+        return any(term in lower_question for term in ("rectangle", "rectangular"))
+    if formula.id == "triangle_area_base_height":
+        return "triangle" in lower_question and "height" in lower_question
+    if formula.id == "circle_area_from_radius":
+        return any(term in lower_question for term in ("circle", "circular")) and "area" in lower_question
+    if formula.id == "sphere_surface_area_from_radius":
+        return any(term in lower_question for term in ("sphere", "spherical")) and "surface area" in lower_question
+    if formula.id == "rectangular_prism_volume":
+        return any(term in lower_question for term in ("rectangular prism", "cuboid", "box"))
+    if formula.id == "cylinder_volume_from_radius_height":
+        return any(term in lower_question for term in ("cylinder", "cylindrical")) and "volume" in lower_question
+    if formula.id == "sphere_volume_from_radius":
+        return any(term in lower_question for term in ("sphere", "spherical")) and "volume" in lower_question
+    if formula.id == "pythagorean_hypotenuse":
+        return (
+            ("right triangle" in lower_question or "right-angled" in lower_question)
+            and ("hypotenuse" in lower_question or "diagonal" in lower_question)
+        )
+    if formula.id == "pythagorean_leg":
+        return (
+            ("right triangle" in lower_question or "right-angled" in lower_question)
+            and ("missing leg" in lower_question or "other leg" in lower_question)
+        )
     if formula.id == "net_force_midpoint_between_opposite_equal_charges":
         return "midpoint" in lower_question or "middle of" in lower_question
     if formula.id == "net_force_three_collinear_middle_charge":
