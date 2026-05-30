@@ -83,6 +83,18 @@ use_pot_solver = true
 # The output still includes answer, unit, confidence, and a compact code explanation.
 generate_final_explanation = true
 
+# Maximum repair attempts for LLM-generated Pint code when execution fails
+pot_max_retries = 3
+
+# Number of formulas to retrieve in the initial lookup
+formula_limit = 24
+
+# Number of candidate formulas to send to LLM for reranking
+rerank_limit = 12
+
+# Execution timeout in seconds for running the code in the Pint sandbox
+pot_timeout = 10.0
+
 [evaluation]
 # Numerical answers are compared after unit conversion when possible.
 relative_tolerance = 0.02

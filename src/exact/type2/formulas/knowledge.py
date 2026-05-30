@@ -214,7 +214,8 @@ def _rerank_with_llm(
     if top_score[0] >= 10 and top_score > second_score:
         return ranked
 
-    candidate_summaries = ranked[:12]
+    rerank_limit = settings.type2_rerank_limit if settings else 12
+    candidate_summaries = ranked[:rerank_limit]
     selection = select_formula_ids(
         question,
         _build_extraction_summary(extraction),

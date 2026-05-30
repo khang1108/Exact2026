@@ -142,6 +142,13 @@ class Settings(BaseSettings):
     llm_local_files_only: bool = Field(default=False, validation_alias="EXACT_LLM_LOCAL_FILES_ONLY")
     llm_trust_remote_code: bool = Field(default=False, validation_alias="EXACT_LLM_TRUST_REMOTE_CODE")
 
+    # Type 2 Physics Pipeline Settings
+    type2_pot_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES")
+    type2_formula_limit: int = Field(default=24, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
+    type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
+    type2_generate_explanation: bool = Field(default=True, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION")
+    type2_pot_timeout: float = Field(default=10.0, gt=0.0, validation_alias="EXACT_TYPE2_POT_TIMEOUT")
+
     api_host: str = "0.0.0.0"
     api_port: int = Field(default=8080, ge=1, le=65535)
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"

@@ -23,6 +23,7 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
     settings = get_settings()
     llm = config.get("llm", {})
     pipeline = config.get("pipeline", {})
+    type2_pipeline = config.get("type2_pipeline", {})
 
     backend = str(llm.get("backend", "none")).strip().lower()
     enabled = bool(llm.get("enabled", backend != "none"))
@@ -73,6 +74,11 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
         "type1_enable_cot_fallback": bool(
             pipeline.get("type1_enable_cot_fallback", settings.type1_enable_cot_fallback)
         ),
+        "type2_pot_max_retries": int(type2_pipeline.get("pot_max_retries", settings.type2_pot_max_retries)),
+        "type2_formula_limit": int(type2_pipeline.get("formula_limit", settings.type2_formula_limit)),
+        "type2_rerank_limit": int(type2_pipeline.get("rerank_limit", settings.type2_rerank_limit)),
+        "type2_generate_explanation": bool(type2_pipeline.get("generate_final_explanation", settings.type2_generate_explanation)),
+        "type2_pot_timeout": float(type2_pipeline.get("pot_timeout", settings.type2_pot_timeout)),
     }
 
     if not bool(pipeline.get("use_type1_llm", True)) and not bool(

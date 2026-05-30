@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 
 from exact.config import Settings, get_settings
@@ -9,16 +10,127 @@ from exact.type2.extraction.llm_structured import (
     generate_final_explanation,
     generate_pot_code,
     repair_pot_code,
+    build_llm_json_client,
 )
 from exact.type2.fallback.executor import ExecutionResult, execute_python
 from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
-from exact.type2.solving.solver import solve_extraction
 from exact.type2.solving.pot_verifier import verify_pot_execution
 
 
 POT_SOLVER_NOT_CONFIGURED = "type2_pot_solver_not_configured"
 POT_SOLVER_FAILED = "type2_pot_solver_failed"
+
+
+def _load_conceptual_kb() -> list[dict[str, Any]]:
+    from exact.config import PACKAGE_DIR
+    path = PACKAGE_DIR / "datasets" / "exact" / "electricity_theory_knowledge_base.json"
+    if not path.exists():
+        return []
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def _retrieve_theory_context(question: str) -> str:
+    kb = _load_conceptual_kb()
+    if not kb:
+        return "No theoretical knowledge base available."
+
+    query_tokens = set(re.findall(r"[a-zA-Z_][a-zA-Z0-9_]*", question.lower()))
+    scored_entries = []
+
+    for entry in kb:
+        text = " ".join([
+            str(entry.get("subtopic_name") or ""),
+            str(entry.get("description_subtopic") or ""),
+            str(entry.get("topic_name") or ""),
+            str(entry.get("description_topic") or ""),
+            " ".join(entry.get("misconceptions") or [])
+        ]).lower()
+        entry_tokens = set(re.findall(r"[a-zA-Z_][a-zA-Z0-9_]*", text))
+        overlap = len(query_tokens & entry_tokens)
+        scored_entries.append((overlap, entry))
+
+    scored_entries.sort(key=lambda x: x[0], reverse=True)
+    top_entries = [item[1] for item in scored_entries[:2] if item[0] > 0]
+    if not top_entries:
+        top_entries = [entry for entry in kb[:2]]
+
+    formatted = []
+    for idx, entry in enumerate(top_entries, start=1):
+        formatted.append(
+            f"Theory Ref {idx} [{entry.get('subtopic_name')} - {entry.get('topic_name')}]:\n"
+            f"- Concept: {entry.get('description_subtopic')}\n"
+            f"- Misconceptions: {'; '.join(entry.get('misconceptions') or [])}\n"
+            f"- Analogies: {'; '.join(entry.get('analogies') or [])}"
+        )
+    return "\n\n".join(formatted)
+
+
+def _solve_conceptual(
+    extraction: Extraction,
+    formula_context: RetrievedFormulaContext,
+    settings: Settings,
+) -> Type2SolveResult:
+    client = build_llm_json_client(settings)
+    if client is None:
+        return _failed_result(extraction, "No LLM client configured for conceptual solver.")
+
+    theory_context = _retrieve_theory_context(extraction.normalized_question)
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an expert physics solver. Answer the conceptual physics question directly and concisely. "
+                "Return JSON only with keys explanation, answer, premises, cot. "
+                "The `answer` field must be the short direct answer (e.g. 'all energy is entirely stored in the magnetic field of the inductor'). "
+                "The `cot` field must be a list of reasoning steps. "
+                "Keep the answer and explanation grounded in standard physics principles and the provided theoretical context."
+            )
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Question:\n{extraction.normalized_question}\n\n"
+                f"Theoretical Reference Context:\n{theory_context}\n\n"
+                f"Formula context:\n{formula_context.context}"
+            )
+        }
+    ]
+
+    try:
+        raw = client.complete_json_sync(
+            messages=messages,
+            temperature=settings.llm_temperature,
+            max_tokens=settings.llm_max_tokens,
+        )
+        answer = str(raw.get("answer") or "").strip()
+        explanation = str(raw.get("explanation") or "").strip()
+        cot = list(raw.get("cot") or [])
+        premises = list(raw.get("premises") or [])
+
+        return Type2SolveResult(
+            answer=answer,
+            unit=None,
+            value=None,
+            formula=None,
+            extraction=extraction,
+            verification=Verification(ok=True, message="Successfully solved conceptual question using RAG & LLM."),
+            cot=[
+                "Detected conceptual question.",
+                "Retrieved theoretical knowledge from electricity_theory_knowledge_base.json.",
+                "Directly generated conceptual answer using LLM.",
+                *cot
+            ],
+            premises=premises if premises else [explanation] if explanation else [answer],
+            confidence=0.85,
+            error=None,
+        )
+    except Exception as exc:
+        return _failed_result(extraction, f"Conceptual LLM solver failed: {exc}")
 
 
 def solve_with_pot(
@@ -28,6 +140,8 @@ def solve_with_pot(
     generate_explanation: bool = True,
 ) -> Type2SolveResult:
     settings = settings or get_settings()
+    if extraction.kind.value == "conceptual":
+        return _solve_conceptual(extraction, formula_context, settings)
     prompt_context = _build_solver_context(extraction, formula_context)
     try:
         code_spec = generate_pot_code(
@@ -133,10 +247,10 @@ def _execute_with_repair_loop(
     settings: Settings,
 ) -> tuple[PotCodeSpec, ExecutionResult, int, str | None]:
     code_spec = _canonicalize_formula_ids(code_spec, formula_context)
-    execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
+    execution = _execute_code_spec(code_spec, settings.type2_pot_timeout)
     repair_attempts = 0
 
-    while not execution.ok and repair_attempts < settings.llm_max_retries:
+    while not execution.ok and repair_attempts < settings.type2_pot_max_retries:
         repair_attempts += 1
         try:
             repaired = repair_pot_code(
@@ -151,7 +265,7 @@ def _execute_with_repair_loop(
             return code_spec, execution, repair_attempts, execution.error or "execution failed"
 
         code_spec = _canonicalize_formula_ids(repaired, formula_context)
-        execution = _execute_code_spec(code_spec, settings.llm_timeout_seconds)
+        execution = _execute_code_spec(code_spec, settings.type2_pot_timeout)
 
     return code_spec, execution, repair_attempts, None
 

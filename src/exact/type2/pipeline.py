@@ -25,6 +25,8 @@ def run_type2_pipeline(
     query -> formula retrieval -> LLM Pint code solver -> verifier ->
     LLM/evidence explanation -> PredictionResponse.
     """
+    from exact.config import get_settings
+    settings = settings or get_settings()
     logger = get_request_logger(
         __name__,
         request_id=request.id,
@@ -34,7 +36,9 @@ def run_type2_pipeline(
 
     extraction = _build_solver_extraction(request.question, settings=settings)
     review = verify_type2_extraction(extraction)
-    formula_context = retrieve_formula_context(request.question, extraction, settings=settings)
+    
+    formula_limit = settings.type2_formula_limit if settings else 24
+    formula_context = retrieve_formula_context(request.question, extraction, limit=formula_limit, settings=settings)
 
     logger.info(
         "PoT extraction: kind=%s target=%s quantities=%s extraction_ok=%s formulas=%s",
@@ -45,11 +49,12 @@ def run_type2_pipeline(
         formula_context.formula_ids,
     )
 
+    generate_explanation = settings.type2_generate_explanation if settings else _GENERATE_FINAL_EXPLANATION
     result = solve_with_pot(
         extraction,
         formula_context,
         settings=settings,
-        generate_explanation=_GENERATE_FINAL_EXPLANATION,
+        generate_explanation=generate_explanation,
     )
     if result.cot is not None:
         result.cot.insert(0, review.verification.message)
