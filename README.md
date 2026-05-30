@@ -2,6 +2,76 @@
 
 Hybrid neuro-symbolic pipeline for the [EXACT 2026](https://ura.hcmut.edu.vn/exact) challenge (transparent educational QA).
 
+---
+
+## Pipeline Overview
+
+### System topology
+
+```
+Evaluator (BTC)
+    │  POST /predict
+    ▼
+Cloudflare Tunnel ──► EXACT FastAPI  :8080   (uvicorn)
+                           │
+                           │  OpenAI-compatible  HTTP
+                           ▼
+                       vLLM server   :8000   (Qwen 2.5-7B-AWQ)
+```
+
+### Request flow
+
+```mermaid
+flowchart TD
+    REQ["POST /predict\n{premises-NL, question}"]
+    REQ --> ROUTER{TaskRouter}
+
+    ROUTER -->|type1_logic| T1["Type 1 — Logic"]
+    ROUTER -->|type2_physics| T2["Type 2 — Physics"]
+
+    T1 --> QTYPE{Question type}
+    QTYPE -->|"A/B/C/D options"| MCQ[MCQ path]
+    QTYPE -->|"Does / Is / Can…"| YNU[Yes / No / Uncertain path]
+    QTYPE -->|other| OE[Open-ended path]
+
+    MCQ & YNU --> TRANS
+
+    subgraph TRANS ["LLM Translation  (≤8B, vLLM)"]
+        direction TB
+        CHK{cache hit?}
+        CHK -->|yes| CACHE["Premise cache\nSHA-256 keyed"]
+        CHK -->|no| P1["Call 1 · premises only\n→ predicate dict + FormulaItems"]
+        P1 --> CACHE
+        CACHE --> P2["Call 2 · goals only\nuses predicate dict from Call 1"]
+        P2 --> TP[TranslatedProblem]
+        P1 -. "fallback if split fails" .-> OS["One-shot call\npremises + goals together"]
+        OS --> TP
+    end
+
+    TP --> Z3["Z3PropSolver\nfinite-domain propositional entailment\nT ⊨ φ  iff  T ∧ ¬φ  UNSAT"]
+
+    Z3 -->|"Yes / No"| ANS
+    Z3 -->|"Unknown + budget > 12 s"| FALLBACK["LLM CoT fallback\n(optional second call)"]
+    FALLBACK --> ANS
+
+    ANS["PredictionResponse\nanswer · explanation · fol · cot · premises · confidence"]
+
+    T2 --> POT["PoT pipeline\nformula retrieval → Pint code → sandbox"]
+    POT --> ANS
+```
+
+### Type 1 — key design decisions
+
+| Decision | Rationale |
+|---|---|
+| **Split translation (2 calls)** | Premise call cached by SHA-256 — 2nd question in same group reuses it (~0 LLM time vs ~40 s). |
+| **Shared predicate dict** | Goals call receives the predicate vocabulary from Call 1 → no vocabulary drift between premises and query. |
+| **Z3 propositional entailment** | Finite-domain grounding turns universally-quantified formulas into ground Boolean constraints. Sound and fast (ms). |
+| **Deadline guard** | Optional CoT / MCQ LLM fallback is skipped if remaining time < 12 s → always returns symbolic answer within 60 s cap. |
+| **Formula IR** | Recursive `Atom / Not / And / Or / Implies` tree replaces flat Horn atoms → handles MCQ options that are implications (contrapositives, conditionals). |
+
+---
+
 ## Layout
 
 - `src/exact/` — core library (`exact.config`, pipelines, solvers)
