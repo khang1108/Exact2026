@@ -15,6 +15,7 @@ from exact.type2.schemas import Extraction
 
 
 JSON_BANK_PATH = PACKAGE_DIR / "datasets" / "exact" / "circuits_and_electrostatics_bank.json"
+REGISTRY_BANK_PATH = PACKAGE_DIR / "datasets" / "exact" / "physics_formulas_registry.json"
 
 
 @dataclass(frozen=True)
@@ -91,34 +92,68 @@ def _executable_summary(formula) -> dict[str, Any]:
 
 @lru_cache
 def _load_json_formula_summaries() -> list[dict[str, Any]]:
-    if not JSON_BANK_PATH.exists():
-        return []
-    rows = json.loads(JSON_BANK_PATH.read_text(encoding="utf-8"))
     summaries: list[dict[str, Any]] = []
-    for row in rows:
-        fields = tuple(row.get("Fields") or ())
-        variables = {
-            str(item.get("Symbol")): str(item.get("Meaning"))
-            for item in row.get("Variables", [])
-            if item.get("Symbol")
-        }
-        summaries.append(
-            {
-                "id": str(row.get("Reference_ID")),
-                "source": "knowledge_json",
-                "title": str(row.get("Title") or row.get("Reference_ID")),
-                "domain": fields[0] if fields else "physics",
-                "subfield": fields[1] if len(fields) > 1 else fields[0] if fields else "physics",
-                "target": None,
-                "required": tuple(variables),
-                "output_unit": None,
-                "expression": str(row.get("LaTeX_Formula") or ""),
-                "latex": str(row.get("LaTeX_Formula") or ""),
-                "variables": variables,
-                "conditions": (str(row.get("Explanation") or ""),),
-                "common_mistakes": (),
+
+    if JSON_BANK_PATH.exists():
+        rows = json.loads(JSON_BANK_PATH.read_text(encoding="utf-8"))
+        for row in rows:
+            fields = tuple(row.get("Fields") or ())
+            variables = {
+                str(item.get("Symbol")): str(item.get("Meaning"))
+                for item in row.get("Variables", [])
+                if item.get("Symbol")
             }
-        )
+            summaries.append(
+                {
+                    "id": str(row.get("Reference_ID")),
+                    "source": "knowledge_json",
+                    "title": str(row.get("Title") or row.get("Reference_ID")),
+                    "domain": fields[0] if fields else "physics",
+                    "subfield": fields[1] if len(fields) > 1 else fields[0] if fields else "physics",
+                    "target": None,
+                    "required": tuple(variables),
+                    "output_unit": None,
+                    "expression": str(row.get("LaTeX_Formula") or ""),
+                    "latex": str(row.get("LaTeX_Formula") or ""),
+                    "variables": variables,
+                    "conditions": (str(row.get("Explanation") or ""),),
+                    "common_mistakes": (),
+                }
+            )
+
+    if REGISTRY_BANK_PATH.exists():
+        rows = json.loads(REGISTRY_BANK_PATH.read_text(encoding="utf-8"))
+        for row in rows:
+            formula_text = row.get("formula", {}).get("en", "")
+            target_val = None
+            if "=" in formula_text:
+                lhs = formula_text.split("=")[0].strip()
+                target_val = lhs.replace("[", "").replace("]", "")
+
+            variables = {
+                str(item.get("en_symbol")): str(item.get("en_name"))
+                for item in row.get("symbol_map", [])
+                if item.get("en_symbol")
+            }
+            required_vars = tuple(v for v in variables if v != target_val)
+            summaries.append(
+                {
+                    "id": str(row.get("key")),
+                    "source": "registry_json",
+                    "title": f"Formula registry {row.get('key')[:8]}",
+                    "domain": "physics",
+                    "subfield": "physics",
+                    "target": target_val,
+                    "required": required_vars,
+                    "output_unit": None,
+                    "expression": formula_text,
+                    "latex": formula_text,
+                    "variables": variables,
+                    "conditions": (f"Formula registry entry {row.get('key')}",),
+                    "common_mistakes": (),
+                }
+            )
+
     return summaries
 
 
