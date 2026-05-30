@@ -67,8 +67,10 @@ API_PORT="${API_PORT:-8080}"
 # Quick tunnel (--url) tạo URL ngẫu nhiên mỗi lần, không cần setup trước
 CLOUDFLARE_TUNNEL_NAME="${CLOUDFLARE_TUNNEL_NAME:-}"  # để trống → quick tunnel
 
-# Timeout (giây) chờ mỗi service ready trước khi tiếp tục
-WAIT_TIMEOUT="${WAIT_TIMEOUT:-120}"
+# Timeout chờ vLLM ready — cần lớn vì phải load model + compile CUDA graphs (~4 phút)
+VLLM_WAIT_TIMEOUT="${VLLM_WAIT_TIMEOUT:-360}"
+# Timeout chờ EXACT API và cloudflared — nhẹ hơn nhiều
+WAIT_TIMEOUT="${WAIT_TIMEOUT:-60}"
 
 # ---------------------------------------------------------------------------
 # 2. Màu output
@@ -117,16 +119,18 @@ rm -f "$PID_FILE"
 # 4. Hàm tiện ích
 # ---------------------------------------------------------------------------
 
-# Chờ một HTTP endpoint trả về 200, tối đa $WAIT_TIMEOUT giây
+# Chờ một HTTP endpoint trả về 200, tối đa $timeout giây
+# Dùng: wait_for_http "tên" "url" [timeout_giây]
 wait_for_http() {
     local name="$1"
     local url="$2"
+    local timeout="${3:-$WAIT_TIMEOUT}"
     local elapsed=0
 
-    log_info "Chờ $name sẵn sàng tại $url ..."
+    log_info "Chờ $name sẵn sàng tại $url (timeout ${timeout}s)..."
     while ! curl -sf "$url" -o /dev/null 2>/dev/null; do
-        if [[ $elapsed -ge $WAIT_TIMEOUT ]]; then
-            log_error "$name không sẵn sàng sau ${WAIT_TIMEOUT}s. Kiểm tra $LOG_DIR/"
+        if [[ $elapsed -ge $timeout ]]; then
+            log_error "$name không sẵn sàng sau ${timeout}s. Kiểm tra $LOG_DIR/"
             return 1
         fi
         sleep 3
@@ -284,7 +288,8 @@ register_pid "vllm" "$VLLM_PID"
 log_info "vLLM started (PID $VLLM_PID)"
 
 # Chờ vLLM healthy trước khi start API
-wait_for_http "vLLM" "http://${VLLM_HOST}:${VLLM_PORT}/health" || {
+# vLLM cần load model + compile CUDA graphs → timeout riêng 360s
+wait_for_http "vLLM" "http://${VLLM_HOST}:${VLLM_PORT}/health" "$VLLM_WAIT_TIMEOUT" || {
     log_error "vLLM không start được. Xem log: $VLLM_LOG"
     exit 1
 }
