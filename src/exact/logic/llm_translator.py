@@ -868,25 +868,37 @@ def _formula_from_raw(raw: Any) -> Formula:
 
     # ── and ───────────────────────────────────────────────────────────────────
     if kind in {"and", "conjunction"}:
-        return And(_formula_args(raw, "and"))
+        args = _formula_args(raw, "and")
+        # LLM sometimes wraps a single condition in an and-node — simplify to child.
+        return args[0] if len(args) == 1 else And(args)
 
     # ── or ────────────────────────────────────────────────────────────────────
     if kind in {"or", "disjunction"}:
-        return Or(_formula_args(raw, "or"))
+        args = _formula_args(raw, "or")
+        return args[0] if len(args) == 1 else Or(args)
 
     # ── implies ───────────────────────────────────────────────────────────────
     if kind in {"implies", "imply", "if_then", "if-then", "implication"}:
-        # Accept "antecedent"/"consequent" (standard) OR "lhs"/"rhs" (schema v2
-        # alias) OR "if"/"then" (natural-language style).  Try each pair in order.
+        # Accept many key pairs — different LLMs use different names.
+        # Standard: antecedent/consequent. Also: lhs/rhs, if/then,
+        # condition/result, premise/conclusion, left/right, from/to.
         antecedent = (
             raw.get("antecedent")
             or raw.get("lhs")
             or raw.get("if")
+            or raw.get("condition")
+            or raw.get("premise")
+            or raw.get("left")
+            or raw.get("from")
         )
         consequent = (
             raw.get("consequent")
             or raw.get("rhs")
             or raw.get("then")
+            or raw.get("result")
+            or raw.get("conclusion")
+            or raw.get("right")
+            or raw.get("to")
         )
         if antecedent is None or consequent is None:
             raise ValueError(
@@ -923,8 +935,9 @@ def _formula_args(raw: dict[str, Any], kind: str) -> tuple[Formula, ...]:
     else:
         raise ValueError(f"{kind} formula has no valid child-formula list in {list(raw.keys())}")
 
-    if len(values) < 2:
-        raise ValueError(f"{kind} formula requires at least 2 children, got {len(values)}")
+    if len(values) < 1:
+        raise ValueError(f"{kind} formula has no valid child-formula list in {list(raw.keys())}")
+    # 1-child case is allowed — caller simplifies and(x) → x, or(x) → x.
     return tuple(_formula_from_raw(value) for value in values)
 
 
