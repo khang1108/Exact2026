@@ -2,32 +2,26 @@
   "source": "../artifacts/predictions/type1/remote_api_eval_run.json",
   "api_base_url": "https://api.iamphuckhang.dev",
   "endpoint": "https://api.iamphuckhang.dev/debug/predict",
-  "count": 37,
+  "count": 10,
   "summary": {
-    "total": 37,
-    "scored_total": 37,
-    "correct": 19,
-    "wrong": 18,
+    "total": 10,
+    "scored_total": 10,
+    "correct": 6,
+    "wrong": 4,
     "missing_gold": 0,
-    "accuracy": 0.5135135135135135,
+    "accuracy": 0.6,
     "pipeline_errors": 0,
     "by_question_type": {
       "mcq": {
-        "total": 18,
-        "correct": 11,
-        "accuracy": 0.6111111111111112,
-        "pipeline_errors": 0
-      },
-      "open_ended": {
-        "total": 1,
-        "correct": 0,
-        "accuracy": 0.0,
+        "total": 5,
+        "correct": 2,
+        "accuracy": 0.4,
         "pipeline_errors": 0
       },
       "yes_no_uncertain": {
-        "total": 18,
-        "correct": 8,
-        "accuracy": 0.4444444444444444,
+        "total": 5,
+        "correct": 4,
+        "accuracy": 0.8,
         "pipeline_errors": 0
       }
     }
@@ -35,27 +29,27 @@
   "rows": [
     {
       "id": "logic_0000_00",
-      "answer": "A",
+      "answer": "B",
       "gold_answer": "A",
       "question_type": "mcq",
-      "status": "correct",
-      "error": "formula_z3_failed: Client error '400 Bad Request' for url 'http://127.0.0.1:8000/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0000_01",
-      "answer": "Uncertain",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
       "status": "wrong",
       "error": null
     },
     {
-      "id": "logic_0001_00",
-      "answer": "C",
-      "gold_answer": "C",
-      "question_type": "mcq",
+      "id": "logic_0000_01",
+      "answer": "Yes",
+      "gold_answer": "Yes",
+      "question_type": "yes_no_uncertain",
       "status": "correct",
       "error": null
+    },
+    {
+      "id": "logic_0001_00",
+      "answer": "A",
+      "gold_answer": "C",
+      "question_type": "mcq",
+      "status": "wrong",
+      "error": "suspicious MCQ goal formalization for option(s) B, D; symbolic ranking requires verification; No MCQ option symbolically entailed; LLM fallback used."
     },
     {
       "id": "logic_0001_01",
@@ -71,7 +65,7 @@
       "gold_answer": "C",
       "question_type": "mcq",
       "status": "wrong",
-      "error": null
+      "error": "suspicious MCQ goal formalization for option(s) B, D; symbolic ranking requires verification; No MCQ option symbolically entailed; LLM fallback used."
     },
     {
       "id": "logic_0002_01",
@@ -87,14 +81,14 @@
       "gold_answer": "A",
       "question_type": "mcq",
       "status": "correct",
-      "error": null
+      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used."
     },
     {
       "id": "logic_0003_01",
-      "answer": "Yes",
+      "answer": "Uncertain",
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
-      "status": "correct",
+      "status": "wrong",
       "error": null
     },
     {
@@ -103,7 +97,7 @@
       "gold_answer": "C",
       "question_type": "mcq",
       "status": "correct",
-      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'can_teach_undergrad', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'holds_phd', 'args': ['?x'], 'negated': False}]}}"
+      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: MCQ translation must contain exactly one role='option' goal for every label: expected=['A', 'B', 'C', 'D'], got=['A']"
     },
     {
       "id": "logic_0004_01",
@@ -111,222 +105,6 @@
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
       "status": "correct",
-      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'can_teach_undergrad', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'holds_phd', 'args': ['?x'], 'negated': False}]}}"
-    },
-    {
-      "id": "logic_0005_00",
-      "answer": "Unknown",
-      "gold_answer": "B",
-      "question_type": "mcq",
-      "status": "wrong",
-      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; no MCQ option was entailed; trigger repair"
-    },
-    {
-      "id": "logic_0005_01",
-      "answer": "Yes",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
-      "status": "correct",
-      "error": null
-    },
-    {
-      "id": "logic_0006_00",
-      "answer": "Unknown",
-      "gold_answer": "C",
-      "question_type": "mcq",
-      "status": "wrong",
-      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; no MCQ option was entailed; trigger repair"
-    },
-    {
-      "id": "logic_0006_01",
-      "answer": "Yes",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0007_00",
-      "answer": "B",
-      "gold_answer": "B",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0007_01",
-      "answer": "Yes",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0008_00",
-      "answer": "B",
-      "gold_answer": "B",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0008_01",
-      "answer": "Yes",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
-      "status": "correct",
-      "error": null
-    },
-    {
-      "id": "logic_0009_00",
-      "answer": "B",
-      "gold_answer": "B",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0009_01",
-      "answer": "Yes",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
-      "status": "correct",
-      "error": null
-    },
-    {
-      "id": "logic_0010_00",
-      "answer": "A",
-      "gold_answer": "B",
-      "question_type": "mcq",
-      "status": "wrong",
-      "error": "formula_z3_failed: translate_problem_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0010_01",
-      "answer": "Uncertain",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0011_00",
-      "answer": "B",
-      "gold_answer": "C",
-      "question_type": "mcq",
-      "status": "wrong",
-      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'and', 'args': [{'type': 'atom', 'pred': 'has_valid_membership_card', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'has_completed_safety_orientation', 'args': ['?x'], 'negated': False}]}], 'consequent': {'type': 'atom', 'pred': 'can_use_equipment', 'args': ['?x'], 'negated': False}}}"
-    },
-    {
-      "id": "logic_0011_01",
-      "answer": "Uncertain",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'and', 'args': [{'type': 'atom', 'pred': 'has_valid_membership_card', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'has_completed_safety_orientation', 'args': ['?x'], 'negated': False}]}], 'consequent': {'type': 'atom', 'pred': 'can_use_equipment', 'args': ['?x'], 'negated': False}}}"
-    },
-    {
-      "id": "logic_0012_00",
-      "answer": "A",
-      "gold_answer": "D",
-      "question_type": "mcq",
-      "status": "wrong",
-      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'active_status', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'completed_courses', 'args': ['?x', '5'], 'negated': False}]}}"
-    },
-    {
-      "id": "logic_0012_01",
-      "answer": "Uncertain",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": "formula_z3_failed: translate_problem_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; No LLM IR for premise 2; No LLM IR for premise 3; No LLM IR for premise 4"
-    },
-    {
-      "id": "logic_0013_00",
-      "answer": "C",
-      "gold_answer": "C",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": null
-    },
-    {
-      "id": "logic_0013_01",
-      "answer": "Yes",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0014_00",
-      "answer": "A",
-      "gold_answer": "A",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: unsupported formula type: 'higher_than'"
-    },
-    {
-      "id": "logic_0014_01",
-      "answer": "Yes",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0015_00",
-      "answer": "A",
-      "gold_answer": "A",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": null
-    },
-    {
-      "id": "logic_0015_01",
-      "answer": "Uncertain",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0016_00",
-      "answer": "A",
-      "gold_answer": "B",
-      "question_type": "mcq",
-      "status": "wrong",
-      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0016_01",
-      "answer": "Yes",
-      "gold_answer": "Yes",
-      "question_type": "yes_no_uncertain",
-      "status": "correct",
-      "error": null
-    },
-    {
-      "id": "logic_0017_00",
-      "answer": "A",
-      "gold_answer": "A",
-      "question_type": "mcq",
-      "status": "correct",
-      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used."
-    },
-    {
-      "id": "logic_0017_01",
-      "answer": "Yes",
-      "gold_answer": "No",
-      "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
-    },
-    {
-      "id": "logic_0018_00",
-      "answer": "Uncertain",
-      "gold_answer": "Yes",
-      "question_type": "open_ended",
-      "status": "wrong",
       "error": null
     }
   ]

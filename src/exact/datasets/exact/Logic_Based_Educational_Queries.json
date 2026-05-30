@@ -20,7 +20,7 @@
       "∀x (EM(x) → WT(x))",
       "∀x (O(x) → CR(x))",
       "∀x (WS(x))",
-      "∀x (CR(x))",
+      "∀x (CR(x))",w
       "∃x (BP(x))",
       "∃x (O(x))",
       "∀x (¬WS(x) → ¬PEP8(x))"
