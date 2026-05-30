@@ -433,8 +433,10 @@ def build_formula_goals_messages(
                 '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n\n'
                 "CRITICAL RULES:\n"
                 f"1. ONLY use predicates from this dict: {pred_list}\n"
-                f"2. ONLY use these entity constants in args: {entity_list}\n"
-                "   (use ?x for generic/universal variables when no specific entity is named)\n"
+                f"2. Known entity constants (named individuals from premises): {entity_list}\n"
+                "   - If the question asks about a NAMED INDIVIDUAL (e.g. 'Does David qualify?')\n"
+                "     → use that entity as a constant: args=[\"david\"], NOT args=[\"?x\"].\n"
+                "   - Use ?x ONLY for universal statements ('all students', 'any project').\n"
                 "3. MCQ options that are implications MUST be implies nodes — never collapse to atom.\n"
                 "4. 'If not A then not B' → implies(atom(A,negated=true), atom(B,negated=true)).\n"
                 f"5. {goal_instruction}\n\n"
