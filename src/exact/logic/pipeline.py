@@ -544,7 +544,9 @@ def _run_formula_z3_mcq_path(
     result = solver.solve_mcq(translated, stem=stem)
 
     remaining = (deadline - time.monotonic()) if deadline is not None else float("inf")
-    if result.answer is None and settings.type1_enable_cot_fallback and remaining >= _FALLBACK_MIN_BUDGET_S:
+    translation_warning = _mcq_translation_warning(translated)
+    needs_fallback = result.answer is None or translation_warning is not None
+    if needs_fallback and settings.type1_enable_cot_fallback and remaining >= _FALLBACK_MIN_BUDGET_S:
         fallback = _run_mcq_llm_fallback(
             request=request,
             options=options,
@@ -563,11 +565,12 @@ def _run_formula_z3_mcq_path(
                     ],
                     "error": _join_errors(
                         "; ".join(result.warnings) if result.warnings else None,
+                        translation_warning,
                         fallback.error,
                     ),
                 }
             )
-    if remaining < _FALLBACK_MIN_BUDGET_S and result.answer is None:
+    if remaining < _FALLBACK_MIN_BUDGET_S and needs_fallback:
         logger.info(
             "Skipping MCQ LLM fallback: only %.1fs remaining (threshold=%.1fs)",
             remaining, _FALLBACK_MIN_BUDGET_S,
@@ -584,7 +587,39 @@ def _run_formula_z3_mcq_path(
         cot=_formula_cot(translated, result, kind="mcq"),
         premises=_formula_premise_refs(translated, result.supporting_premises),
         confidence=_formula_mcq_confidence(result),
-        error="; ".join(result.warnings) if result.warnings else None,
+        error=_join_errors(
+            "; ".join(result.warnings) if result.warnings else None,
+            translation_warning,
+        ),
+    )
+
+
+_CONDITIONAL_OPTION_RE = re.compile(
+    r"\b(if|then|when|whenever|unless|provided|implies?|only if)\b",
+    re.IGNORECASE,
+)
+
+
+def _mcq_translation_warning(problem: TranslatedProblem) -> str | None:
+    """Detect common small-model goal rewrites before trusting symbolic MCQ ranking."""
+
+    suspicious = [
+        item.label or "?"
+        for item in problem.goals
+        if (
+            item.role == "option"
+            and isinstance(item.formula, Implies)
+            and (
+                item.formula.antecedent == item.formula.consequent
+                or not _CONDITIONAL_OPTION_RE.search(item.text)
+            )
+        )
+    ]
+    if not suspicious:
+        return None
+    return (
+        "suspicious MCQ goal formalization for option(s) "
+        f"{', '.join(suspicious)}; symbolic ranking requires verification"
     )
 
 
@@ -643,20 +678,20 @@ def _formula_cot(
             f"premises={len(translated.premises)}, goals={len(translated.goals)}, "
             f"predicates={len(translated.predicates)}"
         ),
-        f"z3_prop_theory_status: {result.theory_status}",
+        f"{result.mode}_theory_status: {result.theory_status}",
     ]
     if kind == "mcq":
         valid = ", ".join(result.valid_labels) if result.valid_labels else "none"
-        lines.append(f"z3_prop_mcq_valid_options: {valid}")
+        lines.append(f"{result.mode}_mcq_valid_options: {valid}")
         if result.core_sizes:
             core_text = ", ".join(
                 f"{label}={size}" for label, size in result.core_sizes
             )
-            lines.append(f"z3_prop_unsat_core_sizes: {core_text}")
+            lines.append(f"{result.mode}_unsat_core_sizes: {core_text}")
     else:
-        lines.append(f"z3_prop_query_answer: {result.answer or 'Unknown'}")
+        lines.append(f"{result.mode}_query_answer: {result.answer or 'Unknown'}")
     for warning in result.warnings:
-        lines.append(f"z3_prop_warning: {warning}")
+        lines.append(f"{result.mode}_warning: {warning}")
     return lines
 
 

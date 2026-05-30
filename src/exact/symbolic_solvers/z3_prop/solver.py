@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from exact.logic.ir import FormulaItem, TranslatedProblem
+from exact.logic.ir import Implies as FormulaImplies
+from exact.logic.ir import FormulaItem, Not as FormulaNot, TranslatedProblem
 from exact.symbolic_solvers.z3_prop.encoder import (
     build_theory,
     collect_domain,
@@ -24,6 +25,7 @@ class EncodedOption:
     label: str
     z3: Any
     item: FormulaItem
+    antecedent_witness: Any | None = None
 
 
 @dataclass(frozen=True)
@@ -99,6 +101,7 @@ class Z3PropSolver:
                 label=item.label or "",
                 z3=encode_goal(item, domain, symbol_table),
                 item=item,
+                antecedent_witness=_encode_antecedent_witness(item, domain, symbol_table),
             )
             for item in problem.goals
             if item.role == "option" and item.label
@@ -122,11 +125,8 @@ class Z3PropSolver:
                 warnings=(str(exc),),
             )
 
-        valid = tuple(
-            option.label
-            for option in sorted(options, key=_option_sort_key)
-            if entails(constraints, option.z3, timeout_ms=self.timeout_ms)
-        )
+        valid_options = _usable_entailed_options(constraints, options, timeout_ms=self.timeout_ms)
+        valid = tuple(option.label for option in valid_options)
         core_sizes = tuple(
             (option.label, unsat_core_size(constraints, option, timeout_ms=self.timeout_ms))
             for option in sorted(options, key=_option_sort_key)
@@ -189,10 +189,7 @@ def judge_mcq(
         raise InconsistentTheoryError("translated premises are inconsistent; trigger repair")
 
     ordered = sorted(options, key=_option_sort_key)
-    valid = [
-        option for option in ordered
-        if entails(constraints, option.z3, timeout_ms=timeout_ms)
-    ]
+    valid = _usable_entailed_options(constraints, ordered, timeout_ms=timeout_ms)
     if not valid:
         return None
     if len(valid) == 1:
@@ -211,11 +208,14 @@ def judge_mcq(
             ),
         ).label
     if "strongest" in stem_lower:
-        return max(
+        # In educational QA, "strongest" asks for the most directly supported
+        # usable conclusion. Comparing siblings under the full theory masks the
+        # distinction once every candidate has already been proven.
+        return min(
             valid,
             key=lambda option: (
-                count_implied_siblings(option, valid, constraints, timeout_ms=timeout_ms),
-                -_option_sort_key(option),
+                unsat_core_size(constraints, option, timeout_ms=timeout_ms),
+                _option_sort_key(option),
             ),
         ).label
 
@@ -228,6 +228,58 @@ def theory_status(constraints: list[Any], timeout_ms: int = 5000) -> str:
     solver = _solver(timeout_ms)
     solver.add(*constraints)
     return str(solver.check())
+
+
+def _usable_entailed_options(
+    constraints: list[Any],
+    options: tuple[EncodedOption, ...] | list[EncodedOption],
+    timeout_ms: int,
+) -> list[EncodedOption]:
+    entailed = [
+        option
+        for option in sorted(options, key=_option_sort_key)
+        if entails(constraints, option.z3, timeout_ms=timeout_ms)
+    ]
+    substantive = [
+        option
+        for option in entailed
+        if not _is_vacuous_implication(constraints, option, timeout_ms=timeout_ms)
+    ]
+    return substantive or entailed
+
+
+def _is_vacuous_implication(
+    constraints: list[Any],
+    option: EncodedOption,
+    timeout_ms: int,
+) -> bool:
+    """Return True when an implication is true only because its antecedent is impossible."""
+
+    if option.antecedent_witness is None:
+        return False
+    from z3 import sat
+
+    solver = _solver(timeout_ms)
+    solver.add(*constraints)
+    solver.add(option.antecedent_witness)
+    return solver.check() != sat
+
+
+def _encode_antecedent_witness(item: FormulaItem, domain, symbol_table) -> Any | None:
+    """Encode ``exists vars. antecedent`` using ``not forall vars. not antecedent``."""
+
+    if not isinstance(item.formula, FormulaImplies):
+        return None
+    from z3 import Not
+
+    negated_antecedent = FormulaItem(
+        formula=FormulaNot(item.formula.antecedent),
+        source_idx=item.source_idx,
+        text=item.text,
+        role=item.role,
+        label=item.label,
+    )
+    return Not(encode_goal(negated_antecedent, domain, symbol_table))
 
 
 def unsat_core_size(

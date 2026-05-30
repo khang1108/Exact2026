@@ -20,22 +20,26 @@ from exact.logic.ir import (
     Iff,
     Implies,
     InSet,
+    Not,
     Number,
     Rule,
     TranslatedProblem,
 )
 from exact.logic.kb import KnowledgeBase
 from exact.logic.llm_translator import (
+    _formula_item_from_raw,
     _formula_from_raw,
     clear_formula_premise_cache,
     translate_formula_premises_only_with_llm,
 )
 from exact.logic.pipeline import (
+    _mcq_translation_warning,
     decide_mcq_winner,
     evaluate_mcq_options,
     extract_options,
     run_type1_pipeline,
 )
+from exact.app.router import health_check
 from exact.router.task_router import TaskRouter
 from exact.scripts.audit_type1_ir_coverage import audit_type1_ir_coverage
 from exact.scripts import evaluate_type1_predictions
@@ -288,7 +292,7 @@ def test_type1_formula_z3_pipeline_uses_one_shot_translation() -> None:
     assert response.answer == "Yes"
     assert response.premises == ["P1: Alpha."]
     assert response.cot is not None
-    assert "z3_prop_query_answer: Yes" in response.cot
+    assert "z3_typed_formula_query_answer: Yes" in response.cot
 
 
 def test_type1_formula_z3_mcq_handles_compound_option() -> None:
@@ -359,7 +363,7 @@ def test_type1_formula_z3_mcq_handles_compound_option() -> None:
     assert client.calls == 1
     assert response.answer == "A"
     assert response.cot is not None
-    assert "z3_prop_mcq_valid_options: A" in response.cot
+    assert "z3_typed_formula_mcq_valid_options: A" in response.cot
 
 
 def test_ynu_pipeline_reuses_premise_cache_across_questions() -> None:
@@ -709,6 +713,176 @@ def test_formula_z3_strongest_option_uses_implication_ordering() -> None:
 
     assert result.answer == "A"
     assert result.supporting_premises == (0,)
+
+
+def test_formula_z3_ignores_vacuously_true_mcq_implications_when_supported_options_exist() -> None:
+    problem = TranslatedProblem(
+        predicates={"a": 1, "b": 1, "missing": 1},
+        premises=(
+            FormulaItem(Atom("a", ("sophia",)), 0, "Sophia has A.", "premise"),
+            FormulaItem(Atom("b", ("sophia",)), 1, "Sophia has B.", "premise"),
+        ),
+        goals=(
+            FormulaItem(Atom("a", ("sophia",)), -1, "Sophia has A.", "option", "A"),
+            FormulaItem(
+                Implies(Not(Atom("a", ("sophia",))), Atom("missing", ("sophia",))),
+                -1,
+                "If Sophia does not have A, then Sophia is missing.",
+                "option",
+                "B",
+            ),
+            FormulaItem(Atom("b", ("sophia",)), -1, "Sophia has B.", "option", "C"),
+        ),
+    )
+
+    result = Z3PropSolver().solve_mcq(problem, stem="Choose the strongest statement.")
+
+    assert result.answer == "A"
+    assert result.valid_labels == ("A", "C")
+
+
+def test_formula_z3_strongest_prefers_shorter_nonvacuous_proof() -> None:
+    problem = TranslatedProblem(
+        predicates={"seed": 1, "intermediate": 1, "downstream": 1},
+        premises=(
+            FormulaItem(Atom("seed", ("sophia",)), 0, "Sophia has seed.", "premise"),
+            FormulaItem(
+                Implies(Atom("seed", ("?x",)), Atom("intermediate", ("?x",))),
+                1,
+                "Seed implies intermediate.",
+                "premise",
+            ),
+            FormulaItem(
+                Implies(Atom("intermediate", ("?x",)), Atom("downstream", ("?x",))),
+                2,
+                "Intermediate implies downstream.",
+                "premise",
+            ),
+        ),
+        goals=(
+            FormulaItem(Atom("downstream", ("sophia",)), -1, "Downstream.", "option", "A"),
+            FormulaItem(Atom("intermediate", ("sophia",)), -1, "Intermediate.", "option", "C"),
+        ),
+    )
+
+    result = Z3PropSolver().solve_mcq(problem, stem="Choose the strongest conclusion.")
+
+    assert result.answer == "C"
+
+
+def test_formula_parser_accepts_impl_alias_and_unwrapped_formula_item() -> None:
+    item = _formula_item_from_raw(
+        {
+            "type": "impl",
+            "antecedent": {"type": "atom", "pred": "studies", "args": ["?x"]},
+            "consequent": {"type": "atom", "pred": "passes", "args": ["?x"]},
+        },
+        default_role="premise",
+        default_source_idx=0,
+        default_text="Students pass.",
+    )
+
+    assert item.formula == Implies(
+        Atom("studies", ("?x",), text="studies(?x)"),
+        Atom("passes", ("?x",), text="passes(?x)"),
+    )
+
+
+def test_suspicious_direct_mcq_claim_rewritten_as_implication_triggers_warning() -> None:
+    problem = TranslatedProblem(
+        predicates={"registered_nurse": 1},
+        premises=(),
+        goals=(
+            FormulaItem(
+                Implies(
+                    Not(Atom("registered_nurse", ("john",))),
+                    Not(Atom("registered_nurse", ("john",))),
+                ),
+                -1,
+                "John is not registered.",
+                "option",
+                "C",
+            ),
+        ),
+    )
+
+    assert _mcq_translation_warning(problem) == (
+        "suspicious MCQ goal formalization for option(s) C; symbolic ranking requires verification"
+    )
+
+
+def test_suspicious_mcq_translation_uses_direct_llm_fallback() -> None:
+    class SuspiciousMCQClient:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def complete_json_sync(self, messages, temperature=0.0, max_tokens=2048):
+            self.calls += 1
+            if "Symbolic reasoning could not prove any option" in str(messages[-1]["content"]):
+                return {"answer": "C", "explanation": "Direct option check.", "confidence": 0.55}
+            return {
+                "predicates": {"registered_nurse": 1},
+                "premises": [
+                    {
+                        "source_idx": 0,
+                        "role": "premise",
+                        "text": "John is registered.",
+                        "formula": {"type": "atom", "pred": "registered_nurse", "args": ["john"]},
+                    }
+                ],
+                "goals": [
+                    {
+                        "source_idx": -1,
+                        "role": "option",
+                        "label": "A",
+                        "text": "John is registered.",
+                        "formula": {"type": "atom", "pred": "registered_nurse", "args": ["john"]},
+                    },
+                    {
+                        "source_idx": -1,
+                        "role": "option",
+                        "label": "C",
+                        "text": "John is not registered.",
+                        "formula": {
+                            "type": "implies",
+                            "antecedent": {
+                                "type": "not",
+                                "arg": {"type": "atom", "pred": "registered_nurse", "args": ["john"]},
+                            },
+                            "consequent": {
+                                "type": "not",
+                                "arg": {"type": "atom", "pred": "registered_nurse", "args": ["john"]},
+                            },
+                        },
+                    },
+                ],
+            }
+
+    client = SuspiciousMCQClient()
+    request = PredictionRequest.model_validate(
+        {
+            "id": "suspicious_mcq",
+            "premises-NL": ["John is registered."],
+            "question": "Which statement is correct?\nA. John is registered.\nC. John is not registered.",
+        }
+    )
+    settings = formula_z3_settings().model_copy(update={"type1_enable_cot_fallback": True})
+
+    response = run_type1_pipeline(
+        request,
+        translator_client=client,
+        settings=settings,
+        question_type=QuestionType.MCQ,
+    )
+
+    assert response.answer == "C"
+    assert client.calls == 2
+    assert response.error is not None
+    assert "suspicious MCQ goal formalization for option(s) C" in response.error
+
+
+def test_health_check_exposes_type1_build_marker() -> None:
+    assert health_check() == {"status": "ok", "build": "type1-typed-smt-v2"}
 
 
 def test_type1_evaluator_separates_diagnostics_from_failed_predictions() -> None:

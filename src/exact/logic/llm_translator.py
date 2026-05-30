@@ -89,7 +89,7 @@ _FORMULA_PREMISE_CACHE: dict[str, _CachedFormulaPremises] = {}
 
 def _hash_premise_list(premises: list[str]) -> str:
     """SHA-256 of joined premise texts, used as cache key."""
-    key = "\n".join(premises) + "\nformula-v1"
+    key = "\n".join(premises) + "\nformula-v2"
     return hashlib.sha256(key.encode()).hexdigest()
 
 
@@ -713,7 +713,7 @@ def translate_premises_only_with_llm(
             )
             logger.debug("Raw LLM output (attempt %s): %s", attempt, json.dumps(raw)[:2000])
     else:
-        raise last_exc  # type: ignore[misc]
+        raise last_exc or RuntimeError("premise translation exhausted attempts without an error")
 
     parsed = _premise_specs_to_parsed(spec.premises, premises)  # type: ignore[union-attr]
     # Start with the LLM's explicit predicate dictionary, then add every predicate that
@@ -1032,6 +1032,10 @@ def _formula_item_from_raw(
     default_text: str,
 ) -> FormulaItem:
     formula_raw = item.get("formula") or item.get("claim") or item.get("goal")
+    if formula_raw is None and any(key in item for key in ("type", "kind", "op", "pred", "atom")):
+        # Small models sometimes omit the FormulaItem wrapper and emit the
+        # recursive formula node directly inside the premises/goals array.
+        formula_raw = item
     if not isinstance(formula_raw, dict):
         raise ValueError(f"formula item is missing a formula object: {item!r}")
 
@@ -1110,7 +1114,7 @@ def _formula_from_raw(raw: Any) -> Formula:
         return args[0] if len(args) == 1 else Or(args)
 
     # ── implies ───────────────────────────────────────────────────────────────
-    if kind in {"implies", "imply", "if_then", "if-then", "implication"}:
+    if kind in {"implies", "imply", "impl", "if_then", "if-then", "implication"}:
         # Accept many key pairs — different LLMs use different names.
         # Standard: antecedent/consequent. Also: lhs/rhs, if/then,
         # condition/result, premise/conclusion, left/right, from/to.

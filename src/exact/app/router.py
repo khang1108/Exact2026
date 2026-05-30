@@ -16,6 +16,7 @@ from exact.logger import get_request_logger
 from exact.router.task_router import TaskRouter
 from exact.logic.pipeline import run_type1_pipeline
 from exact.type2.pipeline import run_type2_pipeline
+from exact.version import TYPE1_PIPELINE_BUILD
 
 api_router = APIRouter()
 task_router = TaskRouter()
@@ -23,7 +24,7 @@ task_router = TaskRouter()
 
 @api_router.get("/health")
 def health_check() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "build": TYPE1_PIPELINE_BUILD}
 
 
 def _predict_internal(payload: PredictionRequest, request: Request) -> PredictionResponse:
