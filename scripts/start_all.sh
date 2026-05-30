@@ -263,6 +263,20 @@ log_section "Khởi động vLLM"
 log_info "Model: $VLLM_MODEL"
 log_info "Log: $VLLM_LOG"
 
+# Kiểm tra GPU memory còn đủ không trước khi start
+# Nếu memory free < 20% tổng → có thể còn process cũ chiếm → cảnh báo
+if command -v nvidia-smi &>/dev/null; then
+    FREE_MIB=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits | head -1 | tr -d ' ')
+    TOTAL_MIB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -1 | tr -d ' ')
+    FREE_PCT=$(( FREE_MIB * 100 / TOTAL_MIB ))
+    log_info "GPU memory: ${FREE_MIB}/${TOTAL_MIB} MiB free (${FREE_PCT}%)"
+    if [[ $FREE_PCT -lt 20 ]]; then
+        log_error "GPU memory còn ${FREE_PCT}% free — có thể còn process cũ chiếm memory."
+        log_error "Chạy: pkill -9 -f vllm && sleep 5, rồi thử lại."
+        exit 1
+    fi
+fi
+
 # Build command array
 VLLM_CMD=(
     "$VLLM_PYTHON" -m vllm.entrypoints.openai.api_server
