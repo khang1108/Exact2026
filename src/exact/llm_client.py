@@ -34,6 +34,10 @@ class BaseJsonLLMClient(ABC):
         # Subclasses that do not support guided decoding should silently ignore
         # this parameter — the prompt-level constraints act as the fallback.
         json_schema: dict[str, Any] | None = None,
+        # When the pipeline knows its remaining time budget it passes it here so
+        # the HTTP client does not wait past the 60s hard cap.  None = use the
+        # client's default self._timeout.
+        timeout_override: float | None = None,
     ) -> dict[str, Any]:
         """Synchronously return a JSON object for command-line scripts and sync routes."""
 
@@ -43,6 +47,7 @@ class BaseJsonLLMClient(ABC):
         temperature: float = 0.0,
         max_tokens: int = 2048,
         json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
     ) -> dict[str, Any]:
         """Async adapter for sync-first clients."""
 
@@ -52,6 +57,7 @@ class BaseJsonLLMClient(ABC):
             temperature=temperature,
             max_tokens=max_tokens,
             json_schema=json_schema,
+            timeout_override=timeout_override,
         )
 
     async def complete_as(
@@ -128,6 +134,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         temperature: float = 0.0,
         max_tokens: int = 2048,
         json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
     ) -> dict[str, Any]:
         """
         Gọi API của LLM để sinh ra một câu trả lời dưới dạng JSON.
@@ -136,9 +143,14 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         Khi json_schema được cung cấp, nó được truyền xuống vLLM dưới key "guided_json"
         (lm-format-enforcer).  Server phải hỗ trợ tính năng này; nếu không, payload
         vẫn hợp lệ vì "guided_json" là extra field bị bỏ qua bởi OpenAI-compatible servers.
+
+        timeout_override: khi pipeline tính được budget còn lại, truyền vào đây để httpx
+        không chờ quá thời gian còn lại (tránh trường hợp call bắt đầu lúc T=50s với
+        self._timeout=55s, dẫn đến vượt hard cap 60s).
         """
         import httpx
 
+        effective_timeout = timeout_override if timeout_override is not None else self._timeout
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": list(messages),
@@ -160,7 +172,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         last_exc: Exception | None = None
         for attempt in range(self.max_retries + 1):
             try:
-                async with httpx.AsyncClient(timeout=self._timeout) as http:
+                async with httpx.AsyncClient(timeout=effective_timeout) as http:
                     resp = await http.post(url, json=payload, headers=headers)
                     if resp.status_code == 429 and attempt < self.max_retries:
                         await asyncio.sleep(2 ** attempt)
@@ -195,6 +207,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         temperature: float = 0.0,
         max_tokens: int = 2048,
         json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
     ) -> dict[str, Any]:
         """
         Synchronous wrapper for command-line scripts, FastAPI sync routes, and Jupyter notebooks.
@@ -206,6 +219,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
             temperature=temperature,
             max_tokens=max_tokens,
             json_schema=json_schema,
+            timeout_override=timeout_override,
         )
         try:
             asyncio.get_running_loop()
@@ -384,9 +398,11 @@ class LocalJsonClient(BaseJsonLLMClient):
         temperature: float = 0.0,
         max_tokens: int = 2048,
         # LocalClient uses HuggingFace Transformers directly and does not
-        # support guided JSON decoding — the parameter is accepted to satisfy
-        # the BaseJsonLLMClient interface but is intentionally ignored here.
+        # support guided JSON decoding or per-call timeout override — both
+        # parameters are accepted to satisfy the BaseJsonLLMClient interface
+        # but are intentionally ignored here.
         json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
     ) -> dict[str, Any]:
         text = self.client.complete(
             messages=list(messages),

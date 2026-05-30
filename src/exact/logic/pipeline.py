@@ -8,6 +8,7 @@ missing or invalid LLM output is logged and raised.
 from __future__ import annotations
 
 import re
+import time
 from collections import Counter
 
 from exact.config import Settings, get_settings
@@ -28,6 +29,8 @@ from exact.logic.ir import (
 from exact.logic.kb import KnowledgeBase
 from exact.logic.llm_translator import (
     JsonLLMClient,
+    translate_formula_goals_with_llm,
+    translate_formula_premises_only_with_llm,
     translate_mcq_options_with_llm,
     translate_problem_with_llm,
     translate_query_only_with_llm,
@@ -157,6 +160,11 @@ def run_type1_pipeline(
 
     routed_question_type = question_type or QuestionType.YES_NO_UNCERTAIN
     premises = request.premises_nl or []
+    # Deadline for optional fallback calls (CoT / MCQ LLM fallback).
+    # Symbolic results are always returned regardless; only the optional second
+    # LLM call is skipped when budget is low to avoid breaching the 60s hard cap.
+    deadline = time.monotonic() + settings.type1_soft_deadline_s
+
     formula_z3_error: str | None = None
     if settings.type1_use_formula_z3:
         try:
@@ -167,6 +175,7 @@ def run_type1_pipeline(
                 translator_client=translator_client,
                 settings=settings,
                 logger=logger,
+                deadline=deadline,
             )
         except Exception as exc:
             logger.exception("Type 1 formula-Z3 path failed")
@@ -295,8 +304,19 @@ def _run_formula_z3_pipeline(
     translator_client: JsonLLMClient,
     settings: Settings,
     logger,
+    deadline: float | None = None,
 ) -> PredictionResponse:
-    """One-shot formula translation followed by Z3 entailment."""
+    """Formula translation followed by Z3 propositional entailment.
+
+    When settings.type1_formula_cache_premises is True (default), uses a
+    split two-call approach:
+      Call 1 (cached): premises only → predicate dict + FormulaItems
+      Call 2 (fast):   query/options → goal FormulaItems using predicate dict
+
+    This avoids re-translating premises for subsequent questions that share
+    the same premise set (common in the dataset — avg 2, max 16 per group).
+    Falls back to the one-shot path if the split path raises.
+    """
 
     options = extract_options(request.question) if routed_question_type == QuestionType.MCQ else None
     if routed_question_type == QuestionType.MCQ and not options:
@@ -313,23 +333,57 @@ def _run_formula_z3_pipeline(
             error="MCQ routed but no options were parsed.",
         )
 
-    translated = translate_problem_with_llm(
-        premises=premises,
-        question=request.question,
-        options=options,
-        llm_client=translator_client,
-        settings=settings,
-    )
+    translated: TranslatedProblem | None = None
+    split_error: str | None = None
+
+    if settings.type1_formula_cache_premises:
+        try:
+            # Call 1: translate and cache premises (free on cache hit)
+            premise_result = translate_formula_premises_only_with_llm(
+                premises=premises,
+                llm_client=translator_client,
+                settings=settings,
+            )
+            # Call 2: translate goals using shared predicate vocabulary
+            goal_items = translate_formula_goals_with_llm(
+                question=request.question,
+                options=options,
+                predicate_dict=premise_result.predicates,
+                entity_constants=premise_result.entity_constants,
+                llm_client=translator_client,
+                settings=settings,
+            )
+            translated = TranslatedProblem(
+                predicates=premise_result.predicates,
+                premises=premise_result.premises,
+                goals=goal_items,
+            )
+            logger.info(
+                "Formula-Z3 split translation: premises=%d goals=%d predicates=%d",
+                len(translated.premises), len(translated.goals), len(translated.predicates),
+            )
+        except Exception as exc:
+            split_error = f"split_translation_failed: {exc}"
+            logger.warning("Split formula translation failed, falling back to one-shot: %s", exc)
+
+    if translated is None:
+        # One-shot fallback: all premises + goals in a single call
+        translated = translate_problem_with_llm(
+            premises=premises,
+            question=request.question,
+            options=options,
+            llm_client=translator_client,
+            settings=settings,
+        )
+        logger.info(
+            "Formula-Z3 one-shot translation: premises=%d goals=%d predicates=%d",
+            len(translated.premises), len(translated.goals), len(translated.predicates),
+        )
+
     solver = Z3PropSolver()
-    logger.info(
-        "Formula-Z3 translation complete: premises=%s goals=%s predicates=%s",
-        len(translated.premises),
-        len(translated.goals),
-        len(translated.predicates),
-    )
 
     if routed_question_type == QuestionType.MCQ:
-        return _run_formula_z3_mcq_path(
+        response = _run_formula_z3_mcq_path(
             request=request,
             translated=translated,
             options=options or [],
@@ -337,17 +391,29 @@ def _run_formula_z3_pipeline(
             question_type=routed_question_type,
             llm_client=translator_client,
             settings=settings,
+            deadline=deadline,
+        )
+    else:
+        response = _run_formula_z3_query_path(
+            request=request,
+            translated=translated,
+            solver=solver,
+            question_type=routed_question_type,
+            llm_client=translator_client,
+            settings=settings,
+            logger=logger,
+            deadline=deadline,
         )
 
-    return _run_formula_z3_query_path(
-        request=request,
-        translated=translated,
-        solver=solver,
-        question_type=routed_question_type,
-        llm_client=translator_client,
-        settings=settings,
-        logger=logger,
-    )
+    # Attach split-path fallback warning if one-shot was used as fallback.
+    if split_error:
+        response = response.model_copy(
+            update={"error": _join_errors(split_error, response.error)}
+        )
+    return response
+
+
+_FALLBACK_MIN_BUDGET_S: float = 12.0  # skip optional LLM fallback if < this many seconds remain
 
 
 def _run_formula_z3_query_path(
@@ -359,6 +425,7 @@ def _run_formula_z3_query_path(
     llm_client: JsonLLMClient,
     settings: Settings,
     logger,
+    deadline: float | None = None,
 ) -> PredictionResponse:
     result = solver.solve_query(translated)
     internal_answer = result.answer or "Unknown"
@@ -376,13 +443,26 @@ def _run_formula_z3_query_path(
         error="; ".join(result.warnings) if result.warnings else None,
     )
 
-    if (internal_answer == "Unknown" or result.answer is None) and settings.type1_enable_cot_fallback:
+    # Only run the optional CoT fallback when the symbolic solver returned Unknown
+    # AND there is enough time budget remaining (>12s). Skip if low on budget to
+    # guarantee we return the symbolic answer before the 60s hard cap.
+    remaining = (deadline - time.monotonic()) if deadline is not None else float("inf")
+    if (
+        (internal_answer == "Unknown" or result.answer is None)
+        and settings.type1_enable_cot_fallback
+        and remaining >= _FALLBACK_MIN_BUDGET_S
+    ):
         return _run_cot_unknown_fallback(
             request=request,
             response=response,
             llm_client=llm_client,
             settings=settings,
             logger=logger,
+        )
+    if remaining < _FALLBACK_MIN_BUDGET_S and internal_answer == "Unknown":
+        logger.info(
+            "Skipping CoT fallback: only %.1fs remaining (threshold=%.1fs)",
+            remaining, _FALLBACK_MIN_BUDGET_S,
         )
     return response
 
@@ -396,10 +476,13 @@ def _run_formula_z3_mcq_path(
     question_type: QuestionType,
     llm_client: JsonLLMClient,
     settings: Settings,
+    deadline: float | None = None,
 ) -> PredictionResponse:
     stem = strip_options_from_question(request.question)
     result = solver.solve_mcq(translated, stem=stem)
-    if result.answer is None and settings.type1_enable_cot_fallback:
+
+    remaining = (deadline - time.monotonic()) if deadline is not None else float("inf")
+    if result.answer is None and settings.type1_enable_cot_fallback and remaining >= _FALLBACK_MIN_BUDGET_S:
         fallback = _run_mcq_llm_fallback(
             request=request,
             options=options,
@@ -421,6 +504,11 @@ def _run_formula_z3_mcq_path(
                     ),
                 }
             )
+    if remaining < _FALLBACK_MIN_BUDGET_S and result.answer is None:
+        logger.info(
+            "Skipping MCQ LLM fallback: only %.1fs remaining (threshold=%.1fs)",
+            remaining, _FALLBACK_MIN_BUDGET_S,
+        )
 
     answer = result.answer or "Unknown"
     return PredictionResponse(

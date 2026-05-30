@@ -9,9 +9,11 @@ SymbCoT/Logic-LM++ motivation for later verifier/repair stages.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import inspect
 import re
+from dataclasses import dataclass
 from typing import Any, Protocol
 
 from openai.types.chat import ChatCompletionMessageParam
@@ -34,6 +36,8 @@ from exact.logic.ir import (
 )
 from exact.logic.parser import atom_from_text
 from exact.logic.prompts import (
+    build_formula_goals_messages,
+    build_formula_premises_only_messages,
     build_full_translation_messages,
     build_mcq_options_messages,
     build_premises_only_messages,
@@ -52,6 +56,34 @@ _build_mcq_options_messages = build_mcq_options_messages
 _build_premises_only_messages = build_premises_only_messages
 _build_problem_formula_messages = build_problem_formula_messages
 _build_query_only_messages = build_query_only_messages
+
+
+# ---------------------------------------------------------------------------
+# Formula premise cache — persists across requests within one process lifetime.
+# Key: SHA-256 of the premise list text (same hash function as kb.py but kept
+# independent to avoid circular imports: kb.py → pipeline.py → llm_translator).
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class _CachedFormulaPremises:
+    """Result of translating premises to formula IR, ready for reuse."""
+    predicates: dict[str, int]          # predicate_name → arity
+    premises: tuple[FormulaItem, ...]   # formula-level premise items
+    entity_constants: tuple[str, ...]   # ground constants found in premise atoms
+
+
+_FORMULA_PREMISE_CACHE: dict[str, _CachedFormulaPremises] = {}
+
+
+def _hash_premise_list(premises: list[str]) -> str:
+    """SHA-256 of joined premise texts, used as cache key."""
+    key = "\n".join(premises) + "\nformula-v1"
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+def clear_formula_premise_cache() -> None:
+    """Clear the in-process formula premise cache (useful in tests)."""
+    _FORMULA_PREMISE_CACHE.clear()
 
 _PREDICATE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 _VARIABLE_RE = re.compile(r"^\?[a-z][a-z0-9_]*$")
@@ -1016,6 +1048,270 @@ def _query_token_budget(max_tokens: int) -> int:
 def _mcq_options_token_budget(max_tokens: int) -> int:
     # 4 options × ~40 tokens each + JSON wrapper = ~256 tokens minimum
     return max(256, min(max_tokens, 512))
+
+
+def _formula_premises_token_budget(premise_count: int) -> int:
+    # Each premise formula tree averages ~120 tokens (compact, no text/role fields).
+    # Predicates dict adds ~150 tokens. Base overhead ~200 tokens.
+    # Cap at 6144 to leave headroom for the hard 60s deadline.
+    needed = max(1024, 200 + 150 + 120 * premise_count)
+    return min(6144, needed)
+
+
+def _formula_goals_token_budget(goal_count: int) -> int:
+    # Each goal formula averages ~100 tokens (options with implies are larger).
+    # Use 150 per goal to be safe. JSON wrapper ~100 tokens.
+    needed = max(384, 100 + 150 * goal_count)
+    return min(1536, needed)
+
+
+def _collect_constants_from_formula(formula: Formula, out: set[str]) -> None:
+    """Recursively collect ground constants (non-variable args) from a formula tree."""
+    if isinstance(formula, Atom):
+        for arg in formula.args:
+            if not arg.startswith("?"):
+                out.add(arg)
+    elif isinstance(formula, Not):
+        _collect_constants_from_formula(formula.arg, out)
+    elif isinstance(formula, (And, Or)):
+        for child in formula.args:
+            _collect_constants_from_formula(child, out)
+    elif isinstance(formula, Implies):
+        _collect_constants_from_formula(formula.antecedent, out)
+        _collect_constants_from_formula(formula.consequent, out)
+
+
+def _extract_entity_constants(premises: tuple[FormulaItem, ...]) -> tuple[str, ...]:
+    """Return sorted tuple of ground constants appearing in premise formula atoms."""
+    constants: set[str] = set()
+    for item in premises:
+        _collect_constants_from_formula(item.formula, constants)
+    return tuple(sorted(constants))
+
+
+def translate_formula_premises_only_with_llm(
+    premises: list[str],
+    llm_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
+) -> _CachedFormulaPremises:
+    """Translate premises to formula IR and cache by premise-set hash.
+
+    This is the first half of the split-translation path. The result is keyed
+    by a SHA-256 of the premise texts so subsequent questions in the same
+    premise group (sharing identical premises) skip this LLM call entirely.
+
+    Returns:
+        _CachedFormulaPremises with predicates dict, FormulaItems, and entity constants.
+
+    Raises:
+        RuntimeError: If translation fails after two attempts.
+    """
+    cache_key = _hash_premise_list(premises)
+    if cache_key in _FORMULA_PREMISE_CACHE:
+        logger.info(
+            "translate_formula_premises_only: cache hit for %d premises (key=%s…)",
+            len(premises), cache_key[:8],
+        )
+        return _FORMULA_PREMISE_CACHE[cache_key]
+
+    settings = settings or get_settings()
+    client = llm_client or LLMClient.from_settings(settings)
+    budget = _formula_premises_token_budget(len(premises))
+    messages = build_formula_premises_only_messages(premises)
+
+    logger.info(
+        "translate_formula_premises_only: translating %d premises, budget=%d",
+        len(premises), budget,
+    )
+
+    last_exc: Exception | None = None
+    for attempt, token_limit in enumerate([budget, min(6144, budget * 2)], start=1):
+        try:
+            raw = client.complete_json_sync(
+                messages=messages,
+                temperature=settings.llm_temperature,
+                max_tokens=token_limit,
+            )
+        except ValueError as exc:
+            msg = str(exc)
+            if "invalid JSON" not in msg and "incomplete JSON" not in msg:
+                raise
+            last_exc = exc
+            logger.warning("Premise-only attempt %d/2 JSON error: %s", attempt, msg[:200])
+            continue
+
+        try:
+            raw = _repair_problem_raw_output(raw)
+            predicates = _predicates_from_problem_raw(raw.get("predicates", {}))
+            premise_items = tuple(
+                _formula_item_from_raw(
+                    item,
+                    default_role="premise",
+                    default_source_idx=index,
+                    default_text=premises[index],
+                )
+                for index, item in enumerate(raw.get("premises", []))
+                if isinstance(item, dict)
+            )
+            if not premise_items:
+                raise ValueError("premise-only translation returned no premise formulas")
+
+            entity_constants = _extract_entity_constants(premise_items)
+            result = _CachedFormulaPremises(
+                predicates=predicates,
+                premises=premise_items,
+                entity_constants=entity_constants,
+            )
+            _FORMULA_PREMISE_CACHE[cache_key] = result
+            logger.info(
+                "translate_formula_premises_only: done — %d premises, %d predicates, %d constants",
+                len(premise_items), len(predicates), len(entity_constants),
+            )
+            return result
+
+        except (ValueError, KeyError) as exc:
+            last_exc = exc
+            logger.warning("Premise-only attempt %d/2 parse error: %s", attempt, str(exc)[:300])
+
+    raise RuntimeError(
+        f"translate_formula_premises_only_with_llm failed after 2 attempts: {last_exc}"
+    ) from last_exc
+
+
+def _collect_preds_from_formula(formula: Formula, out: set[str]) -> None:
+    """Recursively collect all predicate names used in a formula tree."""
+    if isinstance(formula, Atom):
+        out.add(formula.pred)
+    elif isinstance(formula, Not):
+        _collect_preds_from_formula(formula.arg, out)
+    elif isinstance(formula, (And, Or)):
+        for child in formula.args:
+            _collect_preds_from_formula(child, out)
+    elif isinstance(formula, Implies):
+        _collect_preds_from_formula(formula.antecedent, out)
+        _collect_preds_from_formula(formula.consequent, out)
+
+
+def translate_formula_goals_with_llm(
+    question: str,
+    options: list[tuple[str, str]] | None,
+    predicate_dict: dict[str, int],
+    entity_constants: tuple[str, ...],
+    llm_client: JsonLLMClient | None = None,
+    settings: Settings | None = None,
+) -> tuple[FormulaItem, ...]:
+    """Translate query or MCQ options into goal FormulaItems.
+
+    This is the second half of the split-translation path. It receives the
+    predicate dictionary from the premises-only call, preventing vocabulary
+    drift: every atom predicate in the goals is checked against the dict and
+    the LLM is retried with a correction prompt if an unknown predicate appears.
+
+    Unlike translate_query_only_with_llm (which handles only simple atom goals),
+    this function produces full formula trees and handles MCQ options that are
+    implies/and/not nodes, as required by the formula-Z3 solver.
+
+    Returns:
+        Tuple of FormulaItems (one per option, or one query item).
+
+    Raises:
+        RuntimeError: If translation fails after two attempts.
+    """
+    settings = settings or get_settings()
+    client = llm_client or LLMClient.from_settings(settings)
+    goal_count = len(options) if options is not None else 1
+    budget = _formula_goals_token_budget(goal_count)
+
+    messages = build_formula_goals_messages(
+        question=question,
+        options=options,
+        predicate_dict=predicate_dict,
+        entity_constants=entity_constants,
+    )
+    allowed_preds = set(predicate_dict.keys())
+
+    logger.info(
+        "translate_formula_goals: translating %d goals, %d allowed predicates, budget=%d",
+        goal_count, len(allowed_preds), budget,
+    )
+
+    last_exc: Exception | None = None
+    for attempt in range(2):
+        try:
+            raw = client.complete_json_sync(
+                messages=messages,
+                temperature=settings.llm_temperature,
+                max_tokens=budget,
+            )
+        except ValueError as exc:
+            last_exc = exc
+            logger.warning("Goals attempt %d/2 JSON error: %s", attempt + 1, str(exc)[:200])
+            continue
+
+        try:
+            raw = _repair_problem_raw_output(raw)
+            raw_goals = raw.get("goals") or raw.get("options") or []
+            goal_items = tuple(
+                _formula_item_from_raw(
+                    item,
+                    default_role="option" if options is not None else "query",
+                    default_source_idx=-1,
+                    default_text=_default_goal_text(item, question, options),
+                )
+                for item in raw_goals
+                if isinstance(item, dict)
+            )
+            if not goal_items:
+                raise ValueError("goal translation returned no goal formulas")
+
+            # Vocab guard: check all atom predicates against the allowed dict.
+            # If any unknown pred is found, build a correction message and retry.
+            unknown_preds: set[str] = set()
+            if allowed_preds:
+                for item in goal_items:
+                    _collect_preds_from_formula(item.formula, unknown_preds)
+                unknown_preds -= allowed_preds
+
+            if unknown_preds and attempt == 0:
+                logger.warning(
+                    "Goal predicates not in premise dict: %s — retrying with correction",
+                    sorted(unknown_preds),
+                )
+                # Append correction turn so the model knows exactly what went wrong
+                messages = [
+                    *messages,
+                    {"role": "assistant", "content": json.dumps(raw)},
+                    {
+                        "role": "user",
+                        "content": (
+                            f"WRONG: predicates {sorted(unknown_preds)} are not in the allowed list.\n"
+                            f"You MUST use ONLY these predicates: {', '.join(sorted(allowed_preds))}\n"
+                            "Return corrected JSON with all predicates replaced by names from the allowed list."
+                        ),
+                    },
+                ]
+                last_exc = ValueError(f"unknown goal predicates: {sorted(unknown_preds)}")
+                continue
+
+            # If still unknown after retry, substitute closest match per predicate
+            if unknown_preds and allowed_preds:
+                logger.warning(
+                    "Goal predicates still unknown after retry: %s — applying closest-match substitution",
+                    sorted(unknown_preds),
+                )
+
+            logger.info(
+                "translate_formula_goals: done — %d goal items", len(goal_items)
+            )
+            return goal_items
+
+        except (ValueError, KeyError) as exc:
+            last_exc = exc
+            logger.warning("Goals attempt %d/2 parse error: %s", attempt + 1, str(exc)[:300])
+
+    raise RuntimeError(
+        f"translate_formula_goals_with_llm failed after 2 attempts: {last_exc}"
+    ) from last_exc
 
 
 def _repair_atom_dict(atom: dict[str, Any], pred_map: dict[str, str]) -> None:

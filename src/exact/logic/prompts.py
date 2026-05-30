@@ -260,6 +260,193 @@ def build_problem_formula_messages(
     ]
 
 
+def build_formula_premises_only_messages(
+    premises: list[str],
+) -> list[ChatCompletionMessageParam]:
+    """Prompt for translating ONLY premises into formula-level IR (no goals).
+
+    Produces a compact schema omitting the optional 'role' and 'text' fields to
+    reduce output tokens — the caller supplies those from the original NL text.
+    This is used by the split-translation cache path: premise formulas are
+    translated once and reused across all questions in the same premise group.
+    """
+
+    premise_text = "\n".join(f"{idx}: {p}" for idx, p in enumerate(premises))
+
+    schema_hint = (
+        '{"predicates":{"pred_name":1},'
+        '"premises":[{"source_idx":0,"formula":{...}}]}'
+    )
+
+    # Compact few-shot: only shows premises side, no goals. Teaches the LLM to
+    # output minimal JSON (no text/role fields) to keep token count low.
+    example = (
+        "── EXAMPLE: translate premises only ──\n"
+        "Premises:\n"
+        "0: Students who completed the core curriculum and passed the science assessment qualify for advanced courses.\n"
+        "1: Sophia completed the core curriculum.\n"
+        "2: Sophia passed the science assessment.\n"
+        "Output:\n"
+        '{"predicates":{"completed_core":1,"passed_science":1,"qualifies_advanced":1},'
+        '"premises":['
+        '{"source_idx":0,"formula":{"type":"implies",'
+        '"antecedent":{"type":"and","args":['
+        '{"type":"atom","pred":"completed_core","args":["?x"],"negated":false},'
+        '{"type":"atom","pred":"passed_science","args":["?x"],"negated":false}'
+        ']},'
+        '"consequent":{"type":"atom","pred":"qualifies_advanced","args":["?x"],"negated":false}}},'
+        '{"source_idx":1,"formula":{"type":"atom","pred":"completed_core","args":["sophia"],"negated":false}},'
+        '{"source_idx":2,"formula":{"type":"atom","pred":"passed_science","args":["sophia"],"negated":false}}'
+        ']}\n\n'
+    )
+
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are an autoformalizer for educational logic QA. "
+                "Return JSON only. No markdown fences. No extra text. "
+                "Translate every premise into a formula tree. "
+                "Omit 'role' and 'text' fields — output only source_idx and formula."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Output valid JSON matching: {schema_hint}\n\n"
+                "Formula node shapes (use 'type' as op key):\n"
+                '  atom:    {"type":"atom","pred":"snake_case","args":["?x"],"negated":false}\n'
+                '  not:     {"type":"not","arg":FORMULA}\n'
+                '  and:     {"type":"and","args":[FORMULA,FORMULA,...]}\n'
+                '  or:      {"type":"or","args":[FORMULA,FORMULA,...]}\n'
+                '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n\n'
+                "CRITICAL RULES:\n"
+                "1. lowercase snake_case for predicate names and constants; ?x/?y for variables.\n"
+                "2. Direct assertions ('Sophia completed X') → atom with named constant, NOT implies.\n"
+                "3. 'If A and B then C' → implies(and(atom(A,?x), atom(B,?x)), atom(C,?x)).\n"
+                "4. 'All X are Y' → implies(atom(X,?x), atom(Y,?x)) with variable ?x.\n"
+                "5. Omit 'text' and 'role' fields — only source_idx and formula are required.\n"
+                "6. predicates dict: map each predicate name to its integer arity.\n"
+                "7. Every premise must appear with its exact source_idx.\n\n"
+                f"{example}"
+                "Now translate:\n"
+                f"Premises:\n{premise_text}"
+            ),
+        },
+    ]
+
+
+def build_formula_goals_messages(
+    question: str,
+    options: list[tuple[str, str]] | None,
+    predicate_dict: dict[str, int],
+    entity_constants: tuple[str, ...],
+) -> list[ChatCompletionMessageParam]:
+    """Prompt for translating ONLY goals (query or MCQ options) into formula IR.
+
+    Receives the predicate dictionary produced by the premises-only call so all
+    goal atom predicates come from the same shared vocabulary — preventing the
+    drift that would occur if goals were translated without knowledge of the
+    premise predicates.
+    """
+
+    # Predicate vocabulary constraint — force the LLM to stay within the dict.
+    pred_list = ", ".join(
+        f"{name}/{arity}" for name, arity in sorted(predicate_dict.items())
+    ) or "(none — infer from question)"
+    entity_list = ", ".join(entity_constants) or "(none — use ?x for generic)"
+
+    if options is None:
+        goal_instruction = (
+            "Yes/No/Unknown question: return exactly ONE goal "
+            'with role="query", source_idx=-1, label=null.'
+        )
+        option_text = ""
+        schema_hint = (
+            '{"goals":[{"source_idx":-1,"role":"query","label":null,"text":"...","formula":{...}}]}'
+        )
+        # Compact few-shot for query goal
+        example = (
+            "── EXAMPLE: Yes/No query goal ──\n"
+            "Predicate dict: qualifies_advanced/1\n"
+            "Entity constants: sophia\n"
+            "Question: Does Sophia qualify for advanced courses?\n"
+            "Output:\n"
+            '{"goals":[{"source_idx":-1,"role":"query","label":null,'
+            '"text":"Does Sophia qualify for advanced courses?",'
+            '"formula":{"type":"atom","pred":"qualifies_advanced","args":["sophia"],"negated":false}}]}\n\n'
+        )
+    else:
+        option_lines = "\n".join(f"{label}. {text}" for label, text in options)
+        option_text = f"\nOptions:\n{option_lines}"
+        goal_instruction = (
+            "Multiple-choice question: return ONE goal per option "
+            '(role="option", label="A"/"B"/"C"/"D").'
+        )
+        schema_hint = (
+            '{"goals":['
+            '{"source_idx":-1,"role":"option","label":"A","text":"...","formula":{...}},'
+            '{"source_idx":-1,"role":"option","label":"B","text":"...","formula":{...}}'
+            ']}'
+        )
+        # Compact few-shot for MCQ goals (includes implies option to teach formula trees)
+        example = (
+            "── EXAMPLE: MCQ option goals ──\n"
+            "Predicate dict: well_tested/1, optimized/1\n"
+            "Entity constants: (none)\n"
+            "Question: Which is correct?\n"
+            "Options:\n"
+            "A. If a project is not optimized, it is not well-tested.\n"
+            "B. Optimized projects are well-tested.\n"
+            "Output:\n"
+            '{"goals":['
+            '{"source_idx":-1,"role":"option","label":"A",'
+            '"text":"If a project is not optimized, it is not well-tested.",'
+            '"formula":{"type":"implies",'
+            '"antecedent":{"type":"atom","pred":"optimized","args":["?x"],"negated":true},'
+            '"consequent":{"type":"atom","pred":"well_tested","args":["?x"],"negated":true}}},'
+            '{"source_idx":-1,"role":"option","label":"B",'
+            '"text":"Optimized projects are well-tested.",'
+            '"formula":{"type":"implies",'
+            '"antecedent":{"type":"atom","pred":"optimized","args":["?x"],"negated":false},'
+            '"consequent":{"type":"atom","pred":"well_tested","args":["?x"],"negated":false}}}'
+            ']}\n\n'
+        )
+
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are an autoformalizer for educational logic QA. "
+                "Return JSON only. No markdown fences. No extra text. "
+                "Translate the question/options into goal formula trees using ONLY the provided predicates."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Output valid JSON matching: {schema_hint}\n\n"
+                "Formula node shapes:\n"
+                '  atom:    {"type":"atom","pred":"snake_case","args":["?x"],"negated":false}\n'
+                '  not:     {"type":"not","arg":FORMULA}\n'
+                '  and:     {"type":"and","args":[FORMULA,FORMULA,...]}\n'
+                '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n\n'
+                "CRITICAL RULES:\n"
+                f"1. ONLY use predicates from this dict: {pred_list}\n"
+                f"2. ONLY use these entity constants in args: {entity_list}\n"
+                "   (use ?x for generic/universal variables when no specific entity is named)\n"
+                "3. MCQ options that are implications MUST be implies nodes — never collapse to atom.\n"
+                "4. 'If not A then not B' → implies(atom(A,negated=true), atom(B,negated=true)).\n"
+                f"5. {goal_instruction}\n\n"
+                f"{example}"
+                "Now translate:\n"
+                f"Question:\n{question}"
+                f"{option_text}"
+            ),
+        },
+    ]
+
+
 def build_full_translation_messages(
     premises: list[str],
     question: str,

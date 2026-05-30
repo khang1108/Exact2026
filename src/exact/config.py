@@ -108,6 +108,17 @@ class Settings(BaseSettings):
         default=True,
         validation_alias="EXACT_TYPE1_USE_GUIDED_JSON",
     )
+    # Split premise translation from goal translation and cache premise results.
+    # When True, each request makes two smaller LLM calls instead of one large call:
+    #   Call 1 (cached): premises only  → predicate dict + FormulaItems
+    #   Call 2 (fast):   query/options  → goal FormulaItems using predicate dict
+    # This eliminates vocabulary drift across calls (predicate dict is shared) and
+    # makes subsequent questions in the same premise group nearly free (cache hit).
+    # Expected impact: 14-premise groups go from ~55s to ~42s (first Q) / ~8s (later Qs).
+    type1_formula_cache_premises: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_FORMULA_CACHE_PREMISES",
+    )
     # Soft deadline for a single Type 1 request (seconds).  When the remaining
     # time is less than this threshold the pipeline skips the LLM repair/fallback
     # call and returns the best symbolic answer available, preventing ReadTimeout.
@@ -116,8 +127,13 @@ class Settings(BaseSettings):
         gt=0.0,
         validation_alias="EXACT_TYPE1_SOFT_DEADLINE_S",
     )
-    llm_timeout_seconds: float = Field(default=30.0, gt=0)
-    llm_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_MAX_RETRIES")
+    # Per-call timeout for LLM requests. Set high enough that a large one-shot
+    # formula translation (14 premises + 4 options, ~2800 tokens) can complete.
+    # Retries are disabled (max_retries=0) because a retry after timeout wastes
+    # the remaining request budget: 2 × 55s = 110s > 60s hard cap.
+    # The func_timeout backstop in run_type1_pipeline provides the real safety net.
+    llm_timeout_seconds: float = Field(default=55.0, gt=0)
+    llm_max_retries: int = Field(default=0, ge=0, validation_alias="EXACT_MAX_RETRIES")
     llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")
     llm_torch_dtype: Literal["auto", "float16", "bfloat16", "float32"] = Field(
         default="float16",
