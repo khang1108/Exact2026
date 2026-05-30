@@ -352,8 +352,11 @@ TUNNEL_URL=""
 
 if [[ -n "$CLOUDFLARE_TUNNEL_NAME" ]]; then
     # Named tunnel — cần đã setup trước: cloudflared tunnel create <name>
-    log_info "Dùng named tunnel: $CLOUDFLARE_TUNNEL_NAME"
-    "$CLOUDFLARED_BIN" tunnel run "$CLOUDFLARE_TUNNEL_NAME" \
+    # --url chỉ rõ origin để tunnel forward traffic vào, không có sẽ không forward gì cả
+    log_info "Dùng named tunnel: $CLOUDFLARE_TUNNEL_NAME → http://localhost:${API_PORT}"
+    "$CLOUDFLARED_BIN" tunnel run \
+        --url "http://localhost:${API_PORT}" \
+        "$CLOUDFLARE_TUNNEL_NAME" \
         >> "$TUNNEL_LOG" 2>&1 &
     TUNNEL_URL="(named tunnel: $CLOUDFLARE_TUNNEL_NAME)"
 else
