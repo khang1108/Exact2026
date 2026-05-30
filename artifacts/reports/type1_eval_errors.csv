@@ -1,5 +1,19 @@
 id,answer,gold_answer,question_type,status,error
-logic_0000_00,,A,mcq,pipeline_error,"ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)"
-logic_0000_01,,Yes,yes_no_uncertain,pipeline_error,"ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)"
-logic_0001_00,A,C,mcq,wrong,
+logic_0000_01,Uncertain,Yes,yes_no_uncertain,wrong,
 logic_0002_00,A,C,mcq,wrong,
+logic_0005_00,Unknown,B,mcq,wrong,"split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; no MCQ option was entailed; trigger repair"
+logic_0006_00,Unknown,C,mcq,wrong,"split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; no MCQ option was entailed; trigger repair"
+logic_0006_01,Yes,No,yes_no_uncertain,wrong,
+logic_0007_01,Yes,No,yes_no_uncertain,wrong,
+logic_0010_00,A,B,mcq,wrong,"formula_z3_failed: translate_problem_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; No MCQ option symbolically entailed; LLM fallback used."
+logic_0010_01,Uncertain,Yes,yes_no_uncertain,wrong,
+logic_0011_00,B,C,mcq,wrong,"split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'and', 'args': [{'type': 'atom', 'pred': 'has_valid_membership_card', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'has_completed_safety_orientation', 'args': ['?x'], 'negated': False}]}], 'consequent': {'type': 'atom', 'pred': 'can_use_equipment', 'args': ['?x'], 'negated': False}}}"
+logic_0011_01,Uncertain,No,yes_no_uncertain,wrong,"split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'and', 'args': [{'type': 'atom', 'pred': 'has_valid_membership_card', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'has_completed_safety_orientation', 'args': ['?x'], 'negated': False}]}], 'consequent': {'type': 'atom', 'pred': 'can_use_equipment', 'args': ['?x'], 'negated': False}}}"
+logic_0012_00,A,D,mcq,wrong,"split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'active_status', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'completed_courses', 'args': ['?x', '5'], 'negated': False}]}}"
+logic_0012_01,Uncertain,No,yes_no_uncertain,wrong,"formula_z3_failed: translate_problem_with_llm failed after 2 attempts: and formula requires at least 2 children, got 1; No LLM IR for premise 2; No LLM IR for premise 3; No LLM IR for premise 4"
+logic_0013_01,Yes,No,yes_no_uncertain,wrong,
+logic_0014_01,Yes,No,yes_no_uncertain,wrong,
+logic_0015_01,Uncertain,Yes,yes_no_uncertain,wrong,
+logic_0016_00,A,B,mcq,wrong,no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used.
+logic_0017_01,Yes,No,yes_no_uncertain,wrong,
+logic_0018_00,Uncertain,Yes,open_ended,wrong,

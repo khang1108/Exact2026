@@ -2,183 +2,64 @@
   "api_base_url": "https://api.iamphuckhang.dev",
   "endpoint": "https://api.iamphuckhang.dev/debug/predict",
   "use_debug_endpoint": true,
-  "limit": 10,
-  "count": 10,
+  "limit": null,
+  "count": 30,
   "format": "exact_predictions",
   "predictions": [
     {
-      "answer": "",
-      "explanation": "pipeline error: ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
-      "fol": null,
-      "cot": [],
-      "premises": [],
-      "confidence": 0.0,
       "id": "logic_0000_00",
       "task_type": "type1_logic",
       "question_type": "mcq",
-      "error": "ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
+      "answer": "A",
       "gold_answer": "A",
+      "explanation": "To derive this conclusion, we need the following premises: P1 (If a Python code is well-tested, then the project is optimized) and P4 (All Python code is well-tested). From these, we can infer that if a Python project is not optimized, it cannot be well-tested because all well-tested projects are optimized. This requires the fewest premises among the options. symbolic_consistency_vote: A=1",
+      "fol": "P1: is_well_tested(?x) -> is_optimized(?x)\nP2: does_not_follow_pep8(?x) -> is_not_well_tested(?x)\nP5: follows_pep8(python_code) -> is_easy_to_maintain(python_code)\nP6: is_well_tested(python_code) -> follows_pep8(python_code)\nP7: is_well_structured(python_project) -> is_optimized(python_project)\nP8: is_easy_to_maintain(python_project) -> is_well_tested(python_project)\nP9: is_optimized(python_project) -> has_clean_and_readable_code(python_project)\nP14: does_not_follow_pep8(python_code) -> is_not_well_structured(python_code)\nP1: not is_optimized(?x) -> not is_well_tested(?x)\nP2: not is_not_well_tested(?x) -> not does_not_follow_pep8(?x)\nP5: not is_easy_to_maintain(python_code) -> not follows_pep8(python_code)\nP6: not follows_pep8(python_code) -> not is_well_tested(python_code)\nP7: not is_optimized(python_project) -> not is_well_structured(python_project)\nP8: not is_well_tested(python_project) -> not is_easy_to_maintain(python_project)\nP9: not has_clean_and_readable_code(python_project) -> not is_optimized(python_project)\nP14: not is_not_well_structured(python_code) -> not does_not_follow_pep8(python_code)",
+      "cot": [
+        "mcq_llm_fallback: answer=A",
+        "Option entailment results: A: Unknown, B: Unknown, C: Unknown, D: Unknown.",
+        "symbolic_consistency_vote: A=1"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "error": "formula_z3_failed: Client error '400 Bad Request' for url 'http://127.0.0.1:8000/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400; No MCQ option symbolically entailed; LLM fallback used.",
       "route_reason": "premises_nl present; question_type=mcq",
-      "official": {
-        "answer": "",
-        "explanation": "pipeline error: ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
-        "fol": null,
-        "cot": [],
-        "premises": [],
-        "confidence": 0.0
-      },
-      "_elapsed_s": 60.15,
-      "_status": "error"
+      "_elapsed_s": 48.94,
+      "_status": "correct"
     },
     {
-      "answer": "",
-      "explanation": "pipeline error: ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
-      "fol": null,
-      "cot": [],
-      "premises": [],
-      "confidence": 0.0,
       "id": "logic_0000_01",
       "task_type": "type1_logic",
       "question_type": "yes_no_uncertain",
-      "error": "ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
+      "answer": "Uncertain",
       "gold_answer": "Yes",
+      "explanation": "The provided premises do not directly support the claim that if all Python projects are well-structured, then all Python projects are optimized. While there are premises about optimization and well-structure, they do not establish a direct link between being well-structured and being optimized.",
+      "fol": "P1: is_well_tested(?x) -> is_optimized(?x)\nP2: does_not_follow_pep8(?x) -> is_not_well_tested(?x)\nP5: follows_pep8(python_code) -> is_easy_to_maintain(python_code)\nP6: is_well_tested(python_code) -> follows_pep8(python_code)\nP7: is_well_structured(python_project) -> is_optimized(python_project)\nP8: is_easy_to_maintain(python_project) -> is_well_tested(python_project)\nP9: is_optimized(python_project) -> has_clean_and_readable_code(python_project)\nP14: does_not_follow_pep8(python_code) -> is_not_well_structured(python_code)\nP1: not is_optimized(?x) -> not is_well_tested(?x)\nP2: not is_not_well_tested(?x) -> not does_not_follow_pep8(?x)\nP5: not is_easy_to_maintain(python_code) -> not follows_pep8(python_code)\nP6: not follows_pep8(python_code) -> not is_well_tested(python_code)\nP7: not is_optimized(python_project) -> not is_well_structured(python_project)\nP8: not is_well_tested(python_project) -> not is_easy_to_maintain(python_project)\nP9: not has_clean_and_readable_code(python_project) -> not is_optimized(python_project)\nP14: not is_not_well_structured(python_code) -> not does_not_follow_pep8(python_code)",
+      "cot": [
+        "No symbolic proof was found for the claim or for its negation.",
+        "symbolic_consistency_vote: Unknown=1",
+        "The premises describe relationships between well-tested code, PEP 8 standards, ease of maintenance, optimization, and clean code, but do not explicitly connect well-structured projects to optimization.",
+        "cot_fallback_after_symbolic_unknown: answer=Uncertain"
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "error": "formula_z3_failed: Client error '400 Bad Request' for url 'http://127.0.0.1:8000/v1/chat/completions'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
       "route_reason": "premises_nl present; question_type=yes_no_uncertain",
-      "official": {
-        "answer": "",
-        "explanation": "pipeline error: ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)",
-        "fol": null,
-        "cot": [],
-        "premises": [],
-        "confidence": 0.0
-      },
-      "_elapsed_s": 60.17,
-      "_status": "error"
+      "_elapsed_s": 42.19,
+      "_status": "wrong"
     },
     {
-      "answer": "A",
-      "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A, C. The translated theory status was sat.",
-      "fol": "Predicates: awarded_honors/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, faculty_recommendation/1, passed_language/1, passed_science/1, qualified_advanced/1, university_scholarship/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors(?x))\nP5: ((awarded_honors(?x) and completed_community_service(?x)) -> university_scholarship(?x))\nP6: ((awarded_honors(?x) and faculty_recommendation(?x)) -> university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\noption:A: university_scholarship(sophia)\noption:B: (university_scholarship(sophia) -> not faculty_recommendation(sophia))\noption:C: eligible_international(sophia)\noption:D: (awarded_honors(sophia) -> not passed_language(sophia))",
-      "cot": [
-        "llm_formula_translation: premises=11, goals=4, predicates=10",
-        "z3_prop_theory_status: sat",
-        "z3_prop_mcq_valid_options: A, C",
-        "z3_prop_unsat_core_sizes: A=9, C=5"
-      ],
-      "premises": [
-        "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
-        "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
-        "P3: Students who have passed the language proficiency exam are eligible for the international program.",
-        "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
-        "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
-        "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
-        "P7: Sophia has completed the core curriculum.",
-        "P8: Sophia has passed the science assessment.",
-        "P9: Sophia has completed the research methodology course.",
-        "P10: Sophia has completed her capstone project.",
-        "P11: Sophia has completed the required community service hours."
-      ],
-      "confidence": 0.64,
       "id": "logic_0001_00",
       "task_type": "type1_logic",
       "question_type": "mcq",
-      "unit": null,
-      "error": null,
+      "answer": "D",
       "gold_answer": "C",
-      "route_reason": "premises_nl present; question_type=mcq",
-      "official": {
-        "answer": "A",
-        "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A, C. The translated theory status was sat.",
-        "fol": "Predicates: awarded_honors/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, faculty_recommendation/1, passed_language/1, passed_science/1, qualified_advanced/1, university_scholarship/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors(?x))\nP5: ((awarded_honors(?x) and completed_community_service(?x)) -> university_scholarship(?x))\nP6: ((awarded_honors(?x) and faculty_recommendation(?x)) -> university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\noption:A: university_scholarship(sophia)\noption:B: (university_scholarship(sophia) -> not faculty_recommendation(sophia))\noption:C: eligible_international(sophia)\noption:D: (awarded_honors(sophia) -> not passed_language(sophia))",
-        "cot": [
-          "llm_formula_translation: premises=11, goals=4, predicates=10",
-          "z3_prop_theory_status: sat",
-          "z3_prop_mcq_valid_options: A, C",
-          "z3_prop_unsat_core_sizes: A=9, C=5"
-        ],
-        "premises": [
-          "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
-          "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
-          "P3: Students who have passed the language proficiency exam are eligible for the international program.",
-          "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
-          "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
-          "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
-          "P7: Sophia has completed the core curriculum.",
-          "P8: Sophia has passed the science assessment.",
-          "P9: Sophia has completed the research methodology course.",
-          "P10: Sophia has completed her capstone project.",
-          "P11: Sophia has completed the required community service hours."
-        ],
-        "confidence": 0.64
-      },
-      "_elapsed_s": 33.77,
-      "_status": "wrong"
-    },
-    {
-      "answer": "Yes",
-      "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-      "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\nquery:awarded_university_scholarship(sophia)",
+      "explanation": "Option D was selected by Formula-Z3 entailment. Entailed options: A, B, C, D. The translated theory status was sat.",
+      "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone_project/1, completed_community_service/1, completed_core/1, completed_research_methodology/1, eligible_international/1, name/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone_project(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone_project(sophia)\nP11: completed_community_service(sophia)\nGoals:\noption:A: awarded_university_scholarship(sophia)\noption:B: (not awarded_university_scholarship(sophia) -> not received_faculty_recommendation(sophia))\noption:C: eligible_international(sophia)\noption:D: (not awarded_honors_diploma(sophia) -> not passed_language_exam(sophia))",
       "cot": [
-        "llm_formula_translation: premises=11, goals=1, predicates=10",
+        "llm_formula_translation: premises=11, goals=4, predicates=12",
         "z3_prop_theory_status: sat",
-        "z3_prop_query_answer: Yes"
-      ],
-      "premises": [
-        "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
-        "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
-        "P3: Students who have passed the language proficiency exam are eligible for the international program.",
-        "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
-        "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
-        "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
-        "P7: Sophia has completed the core curriculum.",
-        "P8: Sophia has passed the science assessment.",
-        "P9: Sophia has completed the research methodology course.",
-        "P10: Sophia has completed her capstone project.",
-        "P11: Sophia has completed the required community service hours."
-      ],
-      "confidence": 0.78,
-      "id": "logic_0001_01",
-      "task_type": "type1_logic",
-      "question_type": "yes_no_uncertain",
-      "unit": null,
-      "error": null,
-      "gold_answer": "Yes",
-      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
-      "official": {
-        "answer": "Yes",
-        "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-        "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\nquery:awarded_university_scholarship(sophia)",
-        "cot": [
-          "llm_formula_translation: premises=11, goals=1, predicates=10",
-          "z3_prop_theory_status: sat",
-          "z3_prop_query_answer: Yes"
-        ],
-        "premises": [
-          "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
-          "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
-          "P3: Students who have passed the language proficiency exam are eligible for the international program.",
-          "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
-          "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
-          "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
-          "P7: Sophia has completed the core curriculum.",
-          "P8: Sophia has passed the science assessment.",
-          "P9: Sophia has completed the research methodology course.",
-          "P10: Sophia has completed her capstone project.",
-          "P11: Sophia has completed the required community service hours."
-        ],
-        "confidence": 0.78
-      },
-      "_elapsed_s": 23.63,
-      "_status": "correct"
-    },
-    {
-      "answer": "A",
-      "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A, C. The translated theory status was sat.",
-      "fol": "Predicates: awarded_honors/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, faculty_recommendation/1, passed_language/1, passed_science/1, qualified_advanced/1, university_scholarship/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors(?x))\nP5: ((awarded_honors(?x) and completed_community_service(?x)) -> university_scholarship(?x))\nP6: ((awarded_honors(?x) and faculty_recommendation(?x)) -> university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\noption:A: university_scholarship(sophia)\noption:B: (university_scholarship(sophia) -> faculty_recommendation(sophia))\noption:C: eligible_international(sophia)\noption:D: (awarded_honors(sophia) -> passed_language(sophia))",
-      "cot": [
-        "llm_formula_translation: premises=11, goals=4, predicates=10",
-        "z3_prop_theory_status: sat",
-        "z3_prop_mcq_valid_options: A, C",
-        "z3_prop_unsat_core_sizes: A=9, C=5"
+        "z3_prop_mcq_valid_options: A, B, C, D",
+        "z3_prop_unsat_core_sizes: A=9, B=8, C=5, D=3"
       ],
       "premises": [
         "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
@@ -194,47 +75,21 @@
         "P11: Sophia has completed the required community service hours."
       ],
       "confidence": 0.64,
-      "id": "logic_0002_00",
-      "task_type": "type1_logic",
-      "question_type": "mcq",
-      "unit": null,
       "error": null,
-      "gold_answer": "C",
       "route_reason": "premises_nl present; question_type=mcq",
-      "official": {
-        "answer": "A",
-        "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A, C. The translated theory status was sat.",
-        "fol": "Predicates: awarded_honors/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, faculty_recommendation/1, passed_language/1, passed_science/1, qualified_advanced/1, university_scholarship/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors(?x))\nP5: ((awarded_honors(?x) and completed_community_service(?x)) -> university_scholarship(?x))\nP6: ((awarded_honors(?x) and faculty_recommendation(?x)) -> university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\noption:A: university_scholarship(sophia)\noption:B: (university_scholarship(sophia) -> faculty_recommendation(sophia))\noption:C: eligible_international(sophia)\noption:D: (awarded_honors(sophia) -> passed_language(sophia))",
-        "cot": [
-          "llm_formula_translation: premises=11, goals=4, predicates=10",
-          "z3_prop_theory_status: sat",
-          "z3_prop_mcq_valid_options: A, C",
-          "z3_prop_unsat_core_sizes: A=9, C=5"
-        ],
-        "premises": [
-          "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
-          "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
-          "P3: Students who have passed the language proficiency exam are eligible for the international program.",
-          "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
-          "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
-          "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
-          "P7: Sophia has completed the core curriculum.",
-          "P8: Sophia has passed the science assessment.",
-          "P9: Sophia has completed the research methodology course.",
-          "P10: Sophia has completed her capstone project.",
-          "P11: Sophia has completed the required community service hours."
-        ],
-        "confidence": 0.64
-      },
-      "_elapsed_s": 27.85,
+      "_elapsed_s": 6.92,
       "_status": "wrong"
     },
     {
+      "id": "logic_0001_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
       "answer": "Yes",
+      "gold_answer": "Yes",
       "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-      "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\nquery:awarded_university_scholarship(sophia)",
+      "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone_project/1, completed_community_service/1, completed_core/1, completed_research_methodology/1, eligible_international/1, name/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone_project(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone_project(sophia)\nP11: completed_community_service(sophia)\nGoals:\nquery:awarded_university_scholarship(sophia)",
       "cot": [
-        "llm_formula_translation: premises=11, goals=1, predicates=10",
+        "llm_formula_translation: premises=11, goals=1, predicates=12",
         "z3_prop_theory_status: sat",
         "z3_prop_query_answer: Yes"
       ],
@@ -252,44 +107,84 @@
         "P11: Sophia has completed the required community service hours."
       ],
       "confidence": 0.78,
-      "id": "logic_0002_01",
-      "task_type": "type1_logic",
-      "question_type": "yes_no_uncertain",
-      "unit": null,
       "error": null,
-      "gold_answer": "Yes",
       "route_reason": "premises_nl present; question_type=yes_no_uncertain",
-      "official": {
-        "answer": "Yes",
-        "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-        "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone/1, completed_community_service/1, completed_core/1, eligible_international/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone(sophia)\nP11: completed_community_service(sophia)\nGoals:\nquery:awarded_university_scholarship(sophia)",
-        "cot": [
-          "llm_formula_translation: premises=11, goals=1, predicates=10",
-          "z3_prop_theory_status: sat",
-          "z3_prop_query_answer: Yes"
-        ],
-        "premises": [
-          "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
-          "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
-          "P3: Students who have passed the language proficiency exam are eligible for the international program.",
-          "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
-          "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
-          "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
-          "P7: Sophia has completed the core curriculum.",
-          "P8: Sophia has passed the science assessment.",
-          "P9: Sophia has completed the research methodology course.",
-          "P10: Sophia has completed her capstone project.",
-          "P11: Sophia has completed the required community service hours."
-        ],
-        "confidence": 0.78
-      },
-      "_elapsed_s": 23.48,
+      "_elapsed_s": 1.78,
       "_status": "correct"
     },
     {
+      "id": "logic_0002_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
       "answer": "A",
+      "gold_answer": "C",
       "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A. The translated theory status was sat.",
-      "fol": "Predicates: completes_required_courses/1, completes_thesis/1, eligible_for_graduation/1, graduates_with_honors/1, maintains_gpa_above_3_5/1, qualifies_for_graduate_fellowship_program/1, receives_academic_distinction/1\nPremises:\nP1: (completes_required_courses(?x) -> eligible_for_graduation(?x))\nP2: ((eligible_for_graduation(?x) and maintains_gpa_above_3_5(?x)) -> graduates_with_honors(?x))\nP3: ((graduates_with_honors(?x) and completes_thesis(?x)) -> receives_academic_distinction(?x))\nP4: (receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x))\nP5: completes_required_courses(john)\nP6: maintains_gpa_above_3_5(john)\nP7: completes_thesis(john)\nGoals:\noption:A: qualifies_for_graduate_fellowship_program(john)\noption:B: needs_faculty_recommendation_for_the_fellowship(john)\noption:C: must_complete_internship_to_qualify(john)\noption:D: gpa_is_insufficient_for_honors(john)",
+      "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone_project/1, completed_community_service/1, completed_core/1, completed_research_methodology/1, eligible_international/1, name/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone_project(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone_project(sophia)\nP11: completed_community_service(sophia)\nGoals:\noption:A: (awarded_university_scholarship(sophia) -> qualified_advanced(sophia))\noption:B: (awarded_university_scholarship(sophia) -> not received_faculty_recommendation(sophia))\noption:C: (eligible_international(sophia) -> name(sophia))\noption:D: (awarded_honors_diploma(sophia) -> passed_language_exam(sophia))",
+      "cot": [
+        "llm_formula_translation: premises=11, goals=4, predicates=12",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: A",
+        "z3_prop_unsat_core_sizes: A=3"
+      ],
+      "premises": [
+        "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
+        "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
+        "P3: Students who have passed the language proficiency exam are eligible for the international program.",
+        "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
+        "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
+        "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
+        "P7: Sophia has completed the core curriculum.",
+        "P8: Sophia has passed the science assessment.",
+        "P9: Sophia has completed the research methodology course.",
+        "P10: Sophia has completed her capstone project.",
+        "P11: Sophia has completed the required community service hours."
+      ],
+      "confidence": 0.8,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 5.89,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0002_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "Yes",
+      "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
+      "fol": "Predicates: awarded_honors_diploma/1, awarded_university_scholarship/1, completed_capstone_project/1, completed_community_service/1, completed_core/1, completed_research_methodology/1, eligible_international/1, name/1, passed_language_exam/1, passed_science/1, qualified_advanced/1, received_faculty_recommendation/1\nPremises:\nP1: ((completed_core(?x) and passed_science(?x)) -> qualified_advanced(?x))\nP2: ((qualified_advanced(?x) and completed_research_methodology(?x)) -> eligible_international(?x))\nP3: (passed_language_exam(?x) -> eligible_international(?x))\nP4: ((eligible_international(?x) and completed_capstone_project(?x)) -> awarded_honors_diploma(?x))\nP5: ((awarded_honors_diploma(?x) and completed_community_service(?x)) -> awarded_university_scholarship(?x))\nP6: ((awarded_honors_diploma(?x) and received_faculty_recommendation(?x)) -> awarded_university_scholarship(?x))\nP7: completed_core(sophia)\nP8: passed_science(sophia)\nP9: completed_research_methodology(sophia)\nP10: completed_capstone_project(sophia)\nP11: completed_community_service(sophia)\nGoals:\nquery:awarded_university_scholarship(sophia)",
+      "cot": [
+        "llm_formula_translation: premises=11, goals=1, predicates=12",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Yes"
+      ],
+      "premises": [
+        "P1: Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
+        "P2: Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
+        "P3: Students who have passed the language proficiency exam are eligible for the international program.",
+        "P4: Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
+        "P5: Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
+        "P6: Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
+        "P7: Sophia has completed the core curriculum.",
+        "P8: Sophia has passed the science assessment.",
+        "P9: Sophia has completed the research methodology course.",
+        "P10: Sophia has completed her capstone project.",
+        "P11: Sophia has completed the required community service hours."
+      ],
+      "confidence": 0.78,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 1.37,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0003_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "A",
+      "gold_answer": "A",
+      "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A. The translated theory status was sat.",
+      "fol": "Predicates: completes_all_required_courses/1, eligible_for_graduation/1, graduates_with_honors/1, maintains_gpa_above_3_5/1, name/1, qualifies_for_graduate_fellowship_program/1, receives_academic_distinction/1\nPremises:\nP1: (completes_all_required_courses(?x) -> eligible_for_graduation(?x))\nP2: ((eligible_for_graduation(?x) and maintains_gpa_above_3_5(?x)) -> graduates_with_honors(?x))\nP3: ((graduates_with_honors(?x) and completes_a_thesis(?x)) -> receives_academic_distinction(?x))\nP4: (receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x))\nP5: completes_all_required_courses(john)\nP6: maintains_gpa_above_3_5(john)\nP7: completes_a_thesis(john)\nGoals:\noption:A: qualifies_for_graduate_fellowship_program(john)\noption:B: needs_faculty_recommendation_for_fellowship(john)\noption:C: must_complete_internship_to_qualify(john)\noption:D: gpa_insufficient_for_honors(john)",
       "cot": [
         "llm_formula_translation: premises=7, goals=4, predicates=7",
         "z3_prop_theory_status: sat",
@@ -306,41 +201,19 @@
         "P7: John has completed a thesis."
       ],
       "confidence": 0.8,
-      "id": "logic_0003_00",
-      "task_type": "type1_logic",
-      "question_type": "mcq",
-      "unit": null,
       "error": null,
-      "gold_answer": "A",
       "route_reason": "premises_nl present; question_type=mcq",
-      "official": {
-        "answer": "A",
-        "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A. The translated theory status was sat.",
-        "fol": "Predicates: completes_required_courses/1, completes_thesis/1, eligible_for_graduation/1, graduates_with_honors/1, maintains_gpa_above_3_5/1, qualifies_for_graduate_fellowship_program/1, receives_academic_distinction/1\nPremises:\nP1: (completes_required_courses(?x) -> eligible_for_graduation(?x))\nP2: ((eligible_for_graduation(?x) and maintains_gpa_above_3_5(?x)) -> graduates_with_honors(?x))\nP3: ((graduates_with_honors(?x) and completes_thesis(?x)) -> receives_academic_distinction(?x))\nP4: (receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x))\nP5: completes_required_courses(john)\nP6: maintains_gpa_above_3_5(john)\nP7: completes_thesis(john)\nGoals:\noption:A: qualifies_for_graduate_fellowship_program(john)\noption:B: needs_faculty_recommendation_for_the_fellowship(john)\noption:C: must_complete_internship_to_qualify(john)\noption:D: gpa_is_insufficient_for_honors(john)",
-        "cot": [
-          "llm_formula_translation: premises=7, goals=4, predicates=7",
-          "z3_prop_theory_status: sat",
-          "z3_prop_mcq_valid_options: A",
-          "z3_prop_unsat_core_sizes: A=7"
-        ],
-        "premises": [
-          "P1: If a student completes all required courses, they are eligible for graduation.",
-          "P2: If a student is eligible for graduation and maintains a GPA above 3.5, they graduate with honors.",
-          "P3: If a student graduates with honors and completes a thesis, they receive academic distinction.",
-          "P4: If a student receives academic distinction, they qualify for the graduate fellowship program.",
-          "P5: John has completed all required courses.",
-          "P6: John maintains a GPA of 3.8.",
-          "P7: John has completed a thesis."
-        ],
-        "confidence": 0.8
-      },
-      "_elapsed_s": 20.25,
+      "_elapsed_s": 6.78,
       "_status": "correct"
     },
     {
+      "id": "logic_0003_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
       "answer": "Yes",
+      "gold_answer": "Yes",
       "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-      "fol": "Predicates: completes_required_courses/1, completes_thesis/1, eligible_for_graduation/1, graduates_with_honors/1, maintains_gpa_above_3_5/1, qualifies_for_graduate_fellowship_program/1, receives_academic_distinction/1\nPremises:\nP1: (completes_required_courses(?x) -> eligible_for_graduation(?x))\nP2: ((eligible_for_graduation(?x) and maintains_gpa_above_3_5(?x)) -> graduates_with_honors(?x))\nP3: ((graduates_with_honors(?x) and completes_thesis(?x)) -> receives_academic_distinction(?x))\nP4: (receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x))\nP5: completes_required_courses(john)\nP6: maintains_gpa_above_3_5(john)\nP7: completes_thesis(john)\nGoals:\nquery:receives_academic_distinction(john)",
+      "fol": "Predicates: completes_all_required_courses/1, eligible_for_graduation/1, graduates_with_honors/1, maintains_gpa_above_3_5/1, name/1, qualifies_for_graduate_fellowship_program/1, receives_academic_distinction/1\nPremises:\nP1: (completes_all_required_courses(?x) -> eligible_for_graduation(?x))\nP2: ((eligible_for_graduation(?x) and maintains_gpa_above_3_5(?x)) -> graduates_with_honors(?x))\nP3: ((graduates_with_honors(?x) and completes_a_thesis(?x)) -> receives_academic_distinction(?x))\nP4: (receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x))\nP5: completes_all_required_courses(john)\nP6: maintains_gpa_above_3_5(john)\nP7: completes_a_thesis(john)\nGoals:\nquery:receives_academic_distinction(john)",
       "cot": [
         "llm_formula_translation: premises=7, goals=1, predicates=7",
         "z3_prop_theory_status: sat",
@@ -356,38 +229,17 @@
         "P7: John has completed a thesis."
       ],
       "confidence": 0.78,
-      "id": "logic_0003_01",
-      "task_type": "type1_logic",
-      "question_type": "yes_no_uncertain",
-      "unit": null,
       "error": null,
-      "gold_answer": "Yes",
       "route_reason": "premises_nl present; question_type=yes_no_uncertain",
-      "official": {
-        "answer": "Yes",
-        "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-        "fol": "Predicates: completes_required_courses/1, completes_thesis/1, eligible_for_graduation/1, graduates_with_honors/1, maintains_gpa_above_3_5/1, qualifies_for_graduate_fellowship_program/1, receives_academic_distinction/1\nPremises:\nP1: (completes_required_courses(?x) -> eligible_for_graduation(?x))\nP2: ((eligible_for_graduation(?x) and maintains_gpa_above_3_5(?x)) -> graduates_with_honors(?x))\nP3: ((graduates_with_honors(?x) and completes_thesis(?x)) -> receives_academic_distinction(?x))\nP4: (receives_academic_distinction(?x) -> qualifies_for_graduate_fellowship_program(?x))\nP5: completes_required_courses(john)\nP6: maintains_gpa_above_3_5(john)\nP7: completes_thesis(john)\nGoals:\nquery:receives_academic_distinction(john)",
-        "cot": [
-          "llm_formula_translation: premises=7, goals=1, predicates=7",
-          "z3_prop_theory_status: sat",
-          "z3_prop_query_answer: Yes"
-        ],
-        "premises": [
-          "P1: If a student completes all required courses, they are eligible for graduation.",
-          "P2: If a student is eligible for graduation and maintains a GPA above 3.5, they graduate with honors.",
-          "P3: If a student graduates with honors and completes a thesis, they receive academic distinction.",
-          "P4: If a student receives academic distinction, they qualify for the graduate fellowship program.",
-          "P5: John has completed all required courses.",
-          "P6: John maintains a GPA of 3.8.",
-          "P7: John has completed a thesis."
-        ],
-        "confidence": 0.78
-      },
-      "_elapsed_s": 15.46,
+      "_elapsed_s": 1.28,
       "_status": "correct"
     },
     {
+      "id": "logic_0004_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
       "answer": "C",
+      "gold_answer": "C",
       "explanation": "Option C was selected by Formula-Z3 entailment. Entailed options: C. The translated theory status was sat.",
       "fol": "Predicates: at_least_3_publications/1, can_propose_courses/1, can_serve_curriculum_committees/1, can_supervise_graduates/1, can_teach_undergraduate_courses/1, has_completed_training/1, holds_phd/1, positive_teaching_evaluation/1\nPremises:\nP1: (has_completed_training(?x) -> can_teach_undergraduate_courses(?x))\nP2: ((can_teach_undergraduate_courses(?x) and holds_phd(?x)) -> can_supervise_graduates(?x))\nP3: ((can_supervise_graduates(?x) and at_least_3_publications(?x)) -> can_serve_curriculum_committees(?x))\nP4: ((can_serve_curriculum_committees(?x) and positive_teaching_evaluation(?x)) -> can_propose_courses(?x))\nP5: has_completed_training(john)\nP6: holds_phd(john)\nP7: at_least_3_publications(john)\nP8: positive_teaching_evaluation(john)\nGoals:\noption:A: (can_teach_undergraduate_courses(john) and not (can_supervise_graduates(john)))\noption:B: (can_serve_curriculum_committees(john) and not (can_propose_courses(john)))\noption:C: can_propose_courses(john)\noption:D: not (can_serve_curriculum_committees(john))",
       "cot": [
@@ -407,40 +259,17 @@
         "P8: Professor John has received a positive teaching evaluation."
       ],
       "confidence": 0.8,
-      "id": "logic_0004_00",
-      "task_type": "type1_logic",
-      "question_type": "mcq",
-      "unit": null,
-      "error": null,
-      "gold_answer": "C",
+      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'can_teach_undergrad', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'holds_phd', 'args': ['?x'], 'negated': False}]}}",
       "route_reason": "premises_nl present; question_type=mcq",
-      "official": {
-        "answer": "C",
-        "explanation": "Option C was selected by Formula-Z3 entailment. Entailed options: C. The translated theory status was sat.",
-        "fol": "Predicates: at_least_3_publications/1, can_propose_courses/1, can_serve_curriculum_committees/1, can_supervise_graduates/1, can_teach_undergraduate_courses/1, has_completed_training/1, holds_phd/1, positive_teaching_evaluation/1\nPremises:\nP1: (has_completed_training(?x) -> can_teach_undergraduate_courses(?x))\nP2: ((can_teach_undergraduate_courses(?x) and holds_phd(?x)) -> can_supervise_graduates(?x))\nP3: ((can_supervise_graduates(?x) and at_least_3_publications(?x)) -> can_serve_curriculum_committees(?x))\nP4: ((can_serve_curriculum_committees(?x) and positive_teaching_evaluation(?x)) -> can_propose_courses(?x))\nP5: has_completed_training(john)\nP6: holds_phd(john)\nP7: at_least_3_publications(john)\nP8: positive_teaching_evaluation(john)\nGoals:\noption:A: (can_teach_undergraduate_courses(john) and not (can_supervise_graduates(john)))\noption:B: (can_serve_curriculum_committees(john) and not (can_propose_courses(john)))\noption:C: can_propose_courses(john)\noption:D: not (can_serve_curriculum_committees(john))",
-        "cot": [
-          "llm_formula_translation: premises=8, goals=4, predicates=8",
-          "z3_prop_theory_status: sat",
-          "z3_prop_mcq_valid_options: C",
-          "z3_prop_unsat_core_sizes: C=8"
-        ],
-        "premises": [
-          "P1: If a faculty member has completed training, they can teach undergraduate courses.",
-          "P2: If a faculty member can teach undergraduate courses and holds a PhD, they can supervise graduate students.",
-          "P3: If a faculty member can supervise graduate students and has at least 3 publications, they can serve on curriculum committees.",
-          "P4: If a faculty member can serve on curriculum committees and has a positive teaching evaluation, they can propose new courses.",
-          "P5: Professor John has completed pedagogical training.",
-          "P6: Professor John holds a PhD.",
-          "P7: Professor John has published at least 3 academic papers.",
-          "P8: Professor John has received a positive teaching evaluation."
-        ],
-        "confidence": 0.8
-      },
-      "_elapsed_s": 23.16,
+      "_elapsed_s": 34.34,
       "_status": "correct"
     },
     {
+      "id": "logic_0004_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
       "answer": "Yes",
+      "gold_answer": "Yes",
       "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
       "fol": "Predicates: can_propose_new_courses/1, can_serve_on_curriculum_committees/1, can_supervise_graduate_students/1, can_teach_undergraduate_courses/1, has_completed_training/1\nPremises:\nP1: (has_completed_training(?x) -> can_teach_undergraduate_courses(?x))\nP2: ((can_teach_undergraduate_courses(?x) and holds_phd(?x)) -> can_supervise_graduate_students(?x))\nP3: ((can_supervise_graduate_students(?x) and has_at_least_3_publications(?x)) -> can_serve_on_curriculum_committees(?x))\nP4: ((can_serve_on_curriculum_committees(?x) and has_positive_teaching_evaluation(?x)) -> can_propose_new_courses(?x))\nP5: has_completed_training(john)\nP6: holds_phd(john)\nP7: has_at_least_3_publications(john)\nP8: has_positive_teaching_evaluation(john)\nGoals:\nquery:can_propose_new_courses(john)",
       "cot": [
@@ -459,36 +288,514 @@
         "P8: Professor John has received a positive teaching evaluation."
       ],
       "confidence": 0.78,
-      "id": "logic_0004_01",
+      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'can_teach_undergrad', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'holds_phd', 'args': ['?x'], 'negated': False}]}}",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 29.65,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0005_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "B",
+      "gold_answer": "B",
+      "explanation": "Option B was selected by Formula-Z3 entailment. Entailed options: B, C. The translated theory status was sat.",
+      "fol": "Predicates: access_restricted_archives/1, apply_collaborative_projects/1, completed_research_ethics/1, departmental_endorsement/1, eligible_library_access/1, has_taught_5_years/1, published_paper/1, submit_research_proposals/1\nPremises:\nP1: (has_taught_5_years(?x) -> eligible_library_access(?x))\nP2: ((eligible_library_access(?x) and published_paper(?x)) -> access_restricted_archives(?x))\nP3: ((access_restricted_archives(?x) and completed_research_ethics(?x)) -> submit_research_proposals(?x))\nP4: ((submit_research_proposals(?x) and departmental_endorsement(?x)) -> apply_collaborative_projects(?x))\nP5: has_taught_5_years(professor_john)\nP6: published_paper(professor_john)\nP7: completed_research_ethics(professor_john)\nP8: departmental_endorsement(professor_john)\nGoals:\noption:A: (access_restricted_archives(professor_john) and not (submit_research_proposals(professor_john)))\noption:B: apply_collaborative_projects(professor_john)\noption:C: (not (published_paper(professor_john)) -> not access_restricted_archives(professor_john))\noption:D: (eligible_library_access(professor_john) and not (apply_collaborative_projects(professor_john)))",
+      "cot": [
+        "llm_formula_translation: premises=8, goals=4, predicates=8",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: B, C",
+        "z3_prop_unsat_core_sizes: B=8, C=1"
+      ],
+      "premises": [
+        "P1: If a faculty member has taught for at least 5 years, they are eligible for extended library access.",
+        "P2: If someone has extended library access and has published at least one academic paper, they can access restricted archives.",
+        "P3: If someone can access restricted archives and has completed research ethics training, they can submit research proposals.",
+        "P4: If someone can submit research proposals and has a departmental endorsement, they can apply for collaborative research projects.",
+        "P5: Professor John has taught for at least 5 years.",
+        "P6: Professor John has published at least one academic paper.",
+        "P7: Professor John has completed research ethics training.",
+        "P8: Professor John has a departmental endorsement."
+      ],
+      "confidence": 0.64,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 7.21,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0005_01",
       "task_type": "type1_logic",
       "question_type": "yes_no_uncertain",
-      "unit": null,
-      "error": null,
+      "answer": "Yes",
       "gold_answer": "Yes",
+      "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
+      "fol": "Predicates: access_restricted_archives/1, apply_collaborative_projects/1, completed_research_ethics/1, departmental_endorsement/1, eligible_library_access/1, has_taught_5_years/1, published_paper/1, submit_research_proposals/1\nPremises:\nP1: (has_taught_5_years(?x) -> eligible_library_access(?x))\nP2: ((eligible_library_access(?x) and published_paper(?x)) -> access_restricted_archives(?x))\nP3: ((access_restricted_archives(?x) and completed_research_ethics(?x)) -> submit_research_proposals(?x))\nP4: ((submit_research_proposals(?x) and departmental_endorsement(?x)) -> apply_collaborative_projects(?x))\nP5: has_taught_5_years(professor_john)\nP6: published_paper(professor_john)\nP7: completed_research_ethics(professor_john)\nP8: departmental_endorsement(professor_john)\nGoals:\nquery:apply_collaborative_projects(professor_john)",
+      "cot": [
+        "llm_formula_translation: premises=8, goals=1, predicates=8",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Yes"
+      ],
+      "premises": [
+        "P1: If a faculty member has taught for at least 5 years, they are eligible for extended library access.",
+        "P2: If someone has extended library access and has published at least one academic paper, they can access restricted archives.",
+        "P3: If someone can access restricted archives and has completed research ethics training, they can submit research proposals.",
+        "P4: If someone can submit research proposals and has a departmental endorsement, they can apply for collaborative research projects.",
+        "P5: Professor John has taught for at least 5 years.",
+        "P6: Professor John has published at least one academic paper.",
+        "P7: Professor John has completed research ethics training.",
+        "P8: Professor John has a departmental endorsement."
+      ],
+      "confidence": 0.78,
+      "error": null,
       "route_reason": "premises_nl present; question_type=yes_no_uncertain",
-      "official": {
-        "answer": "Yes",
-        "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
-        "fol": "Predicates: can_propose_new_courses/1, can_serve_on_curriculum_committees/1, can_supervise_graduate_students/1, can_teach_undergraduate_courses/1, has_completed_training/1\nPremises:\nP1: (has_completed_training(?x) -> can_teach_undergraduate_courses(?x))\nP2: ((can_teach_undergraduate_courses(?x) and holds_phd(?x)) -> can_supervise_graduate_students(?x))\nP3: ((can_supervise_graduate_students(?x) and has_at_least_3_publications(?x)) -> can_serve_on_curriculum_committees(?x))\nP4: ((can_serve_on_curriculum_committees(?x) and has_positive_teaching_evaluation(?x)) -> can_propose_new_courses(?x))\nP5: has_completed_training(john)\nP6: holds_phd(john)\nP7: has_at_least_3_publications(john)\nP8: has_positive_teaching_evaluation(john)\nGoals:\nquery:can_propose_new_courses(john)",
-        "cot": [
-          "llm_formula_translation: premises=8, goals=1, predicates=5",
-          "z3_prop_theory_status: sat",
-          "z3_prop_query_answer: Yes"
-        ],
-        "premises": [
-          "P1: If a faculty member has completed training, they can teach undergraduate courses.",
-          "P2: If a faculty member can teach undergraduate courses and holds a PhD, they can supervise graduate students.",
-          "P3: If a faculty member can supervise graduate students and has at least 3 publications, they can serve on curriculum committees.",
-          "P4: If a faculty member can serve on curriculum committees and has a positive teaching evaluation, they can propose new courses.",
-          "P5: Professor John has completed pedagogical training.",
-          "P6: Professor John holds a PhD.",
-          "P7: Professor John has published at least 3 academic papers.",
-          "P8: Professor John has received a positive teaching evaluation."
-        ],
-        "confidence": 0.78
-      },
-      "_elapsed_s": 16.69,
+      "_elapsed_s": 1.8,
       "_status": "correct"
+    },
+    {
+      "id": "logic_0006_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "C",
+      "gold_answer": "C",
+      "explanation": "John cannot transport hazardous materials because he does not have a safety endorsement, which is required according to premise P2.",
+      "fol": "Predicates: can_cross_state_lines_with_hazardous_cargo/1, can_transport_hazardous_materials/1, can_transport_standard_goods/1, completed_hazmat_training/1, has_interstate_permit/1, has_license/1, has_passed_inspection/1, received_safety_endorsement/1\nPremises:\nP1: ((has_passed_inspection(?x) and has_license(?x)) -> can_transport_standard_goods(?x))\nP2: ((can_transport_standard_goods(?x) and completed_hazmat_training(?x) and not (received_safety_endorsement(?x))) -> can_transport_hazardous_materials(?x))\nP3: ((can_transport_hazardous_materials(?x) and has_interstate_permit(?x)) -> can_cross_state_lines_with_hazardous_cargo(?x))\nP4: has_passed_inspection(john)\nP5: has_license(john)\nP6: completed_hazmat_training(john)\nP7: not (received_safety_endorsement(john))\nP8: has_interstate_permit(john)\nGoals:\noption:A: (can_transport_hazardous_materials(john) -> not can_cross_state_lines_with_hazardous_cargo(john))\noption:C: not can_transport_hazardous_materials(john)\noption:D: (not (can_transport_hazardous_materials(john)) and not (can_transport_standard_goods(john)))",
+      "cot": [
+        "llm_formula_translation: premises=8, goals=3, predicates=8",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: none",
+        "z3_prop_warning: no MCQ option was entailed; trigger repair",
+        "mcq_llm_fallback: answer=C"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used.",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 5.6,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0006_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "No",
+      "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
+      "fol": "Predicates: can_cross_state_lines_with_hazardous_cargo/1, can_transport_hazardous_materials/1, can_transport_standard_goods/1, completed_hazmat_training/1, has_interstate_permit/1, has_license/1, has_passed_inspection/1, received_safety_endorsement/1\nPremises:\nP1: ((has_passed_inspection(?x) and has_license(?x)) -> can_transport_standard_goods(?x))\nP2: ((can_transport_standard_goods(?x) and completed_hazmat_training(?x) and not (received_safety_endorsement(?x))) -> can_transport_hazardous_materials(?x))\nP3: ((can_transport_hazardous_materials(?x) and has_interstate_permit(?x)) -> can_cross_state_lines_with_hazardous_cargo(?x))\nP4: has_passed_inspection(john)\nP5: has_license(john)\nP6: completed_hazmat_training(john)\nP7: not (received_safety_endorsement(john))\nP8: has_interstate_permit(john)\nGoals:\nquery:can_cross_state_lines_with_hazardous_cargo(john)",
+      "cot": [
+        "llm_formula_translation: premises=8, goals=1, predicates=8",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Yes"
+      ],
+      "premises": [
+        "P1: If a driver has passed vehicle inspection and has the appropriate license, they can transport standard goods.",
+        "P2: If a driver can transport standard goods and has completed hazmat training and received a safety endorsement, they can transport hazardous materials.",
+        "P3: If a driver can transport hazardous materials and has an interstate permit, they can cross state lines with hazardous cargo.",
+        "P4: John has passed vehicle inspection.",
+        "P5: John has the appropriate license.",
+        "P6: John has completed hazmat training.",
+        "P7: John has not received a safety endorsement.",
+        "P8: John has an interstate permit."
+      ],
+      "confidence": 0.78,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 1.47,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0007_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "B",
+      "gold_answer": "B",
+      "explanation": "Dr. John has a PhD, which is higher than MSc according to premise P6. Since faculty members with a degree higher than MSc can teach graduate courses (P2), Dr. John can teach graduate courses. Additionally, since anyone who teaches graduate courses can be a research mentor (P3), Dr. John can be a research mentor.",
+      "fol": "Predicates: can_be_research_mentor/1, can_teach_graduate/1, can_teach_undergraduate/1, degree_higher_than/2, has_degree/2, is_a_faci_mem/1, is_higher_than/3, teaches/1\nPremises:\nP1: ((degree_higher_than(?x, ?y) and can_teach_undergraduate(?x)) -> can_teach_undergraduate(?y))\nP2: ((degree_higher_than(?x, ?y) and can_teach_graduate(?x)) -> can_teach_graduate(?y))\nP3: (can_teach_graduate(?x) -> can_be_research_mentor(?x))\nP4: ((is_higher_than(?x, ?y) and is_higher_than(?y, ?z)) -> is_higher_than(?x, ?z))\nP5: degree_higher_than(msc, ba)\nP6: degree_higher_than(phd, msc)\nP7: is_a_faci_mem(dr_john)\nP8: has_degree(dr_john, phd)\nGoals:\noption:A: (can_teach_undergraduate(dr_john) and not (can_teach_graduate(dr_john)))\noption:B: can_be_research_mentor(dr_john)\noption:C: not (can_teach_graduate(dr_john))\noption:D: (is_a_faci_mem(dr_john) -> not (can_be_research_mentor(dr_john)))",
+      "cot": [
+        "llm_formula_translation: premises=8, goals=4, predicates=8",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: none",
+        "z3_prop_warning: no MCQ option was entailed; trigger repair",
+        "mcq_llm_fallback: answer=B"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used.",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 6.25,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0007_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "No",
+      "explanation": "Dr. John's PhD qualification makes him eligible to be a research mentor because he meets the criteria set by the premises. According to P2, faculty members with a degree higher than MSc can teach graduate courses. Since PhD is higher than MSc (P6), Dr. John, having a PhD, can teach graduate courses. By P3, anyone who teaches graduate courses can be a research mentor. Therefore, Dr. John is eligible to be a research mentor.",
+      "fol": "Predicates: can_be_research_mentor/1, can_teach_graduate/1, can_teach_undergraduate/1, degree_higher_than/2, has_degree/2, is_a_faci_mem/1, is_higher_than/3, teaches/1\nPremises:\nP1: ((degree_higher_than(?x, ?y) and can_teach_undergraduate(?x)) -> can_teach_undergraduate(?y))\nP2: ((degree_higher_than(?x, ?y) and can_teach_graduate(?x)) -> can_teach_graduate(?y))\nP3: (can_teach_graduate(?x) -> can_be_research_mentor(?x))\nP4: ((is_higher_than(?x, ?y) and is_higher_than(?y, ?z)) -> is_higher_than(?x, ?z))\nP5: degree_higher_than(msc, ba)\nP6: degree_higher_than(phd, msc)\nP7: is_a_faci_mem(dr_john)\nP8: has_degree(dr_john, phd)\nGoals:\nquery:can_be_research_mentor(dr_john)",
+      "cot": [
+        "llm_formula_translation: premises=8, goals=1, predicates=8",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Unknown",
+        "step1: PhD is higher than MSc (P6).",
+        "step2: Dr. John has a PhD (P8).",
+        "step3: Faculty members with a degree higher than MSc can teach graduate courses (P2).",
+        "step4: Dr. John can teach graduate courses because he has a degree higher than MSc.",
+        "step5: Anyone who teaches graduate courses can be a research mentor (P3).",
+        "step6: Therefore, Dr. John is eligible to be a research mentor.",
+        "cot_fallback_after_symbolic_unknown: answer=Yes"
+      ],
+      "premises": [],
+      "confidence": 0.9,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 4.9,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0008_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "B",
+      "gold_answer": "B",
+      "explanation": "Given P4, the faculty prioritizes pedagogical training and curriculum development, which by P3 makes the curriculum well-structured. From P1 and P5, since the curriculum is well-structured and has exercises (P5), it enhances student engagement. From P2, if the curriculum enhances student engagement and provides access to advanced resources (P6), it enhances critical thinking.",
+      "fol": "Predicates: curriculum_well_structured/1, enhances_critical_thinking/1, enhances_engagement/1, has_exercises/1, prioritizes_development/1, prioritizes_training/1, provides_resources/1\nPremises:\nP1: ((curriculum_well_structured(?x) and has_exercises(?x)) -> enhances_engagement(?x))\nP2: ((enhances_engagement(?x) and provides_resources(?x)) -> enhances_critical_thinking(?x))\nP3: ((prioritizes_training(?x) and prioritizes_development(?x)) -> curriculum_well_structured(?x))\nP4: prioritizes_training(faculty)\nP5: has_exercises(curriculum)\nP6: provides_resources(curriculum)\nGoals:\noption:A: (enhances_engagement(curriculum) and not (enhances_critical_thinking(curriculum)))\noption:B: enhances_critical_thinking(curriculum)\noption:C: (enhances_critical_thinking(curriculum) -> not (provides_resources(curriculum)))\noption:D: (curriculum_well_structured(curriculum) and not (has_exercises(curriculum)))",
+      "cot": [
+        "llm_formula_translation: premises=6, goals=4, predicates=7",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: none",
+        "z3_prop_warning: no MCQ option was entailed; trigger repair",
+        "mcq_llm_fallback: answer=B"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used.",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 11.34,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0008_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "Yes",
+      "explanation": "Given the premises, if the faculty prioritizes pedagogical training and curriculum development (P4), then the curriculum is well-structured (P3). A well-structured curriculum with exercises (P5) enhances student engagement. With access to advanced resources (P6), this enhances critical thinking (P2). Therefore, the combination leads to enhanced critical thinking.",
+      "fol": "Predicates: curriculum_well_structured/1, enhances_critical_thinking/1, enhances_engagement/1, has_exercises/1, prioritizes_development/1, prioritizes_training/1, provides_resources/1\nPremises:\nP1: ((curriculum_well_structured(?x) and has_exercises(?x)) -> enhances_engagement(?x))\nP2: ((enhances_engagement(?x) and provides_resources(?x)) -> enhances_critical_thinking(?x))\nP3: ((prioritizes_training(?x) and prioritizes_development(?x)) -> curriculum_well_structured(?x))\nP4: prioritizes_training(faculty)\nP5: has_exercises(curriculum)\nP6: provides_resources(curriculum)\nGoals:\nquery:((prioritizes_training(?x) and curriculum_well_structured(?x)) -> enhances_critical_thinking(?x))",
+      "cot": [
+        "llm_formula_translation: premises=6, goals=1, predicates=7",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Unknown",
+        "Step 1: Faculty prioritizes pedagogical training and curriculum development -> Curriculum is well-structured (P3).",
+        "Step 2: Well-structured curriculum with exercises -> Enhances student engagement (P1).",
+        "Step 3: Enhanced student engagement with advanced resources -> Enhances critical thinking (P2).",
+        "cot_fallback_after_symbolic_unknown: answer=Yes"
+      ],
+      "premises": [],
+      "confidence": 0.9,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 5.66,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0009_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "B",
+      "gold_answer": "B",
+      "explanation": "Given P4, the faculty prioritizes pedagogical training and curriculum development, which by P3 makes the curriculum well-structured. From P1 and P5, since the curriculum is well-structured and has exercises (P5), it enhances student engagement. From P2, if the curriculum enhances student engagement and provides access to advanced resources (P6), it enhances critical thinking.",
+      "fol": "Predicates: curriculum_well_structured/1, enhances_critical_thinking/1, enhances_engagement/1, has_exercises/1, prioritizes_development/1, prioritizes_training/1, provides_resources/1\nPremises:\nP1: ((curriculum_well_structured(?x) and has_exercises(?x)) -> enhances_engagement(?x))\nP2: ((enhances_engagement(?x) and provides_resources(?x)) -> enhances_critical_thinking(?x))\nP3: ((prioritizes_training(?x) and prioritizes_development(?x)) -> curriculum_well_structured(?x))\nP4: prioritizes_training(faculty)\nP5: has_exercises(curriculum)\nP6: provides_resources(curriculum)\nGoals:\noption:A: (enhances_engagement(curriculum) and not (enhances_critical_thinking(curriculum)))\noption:B: enhances_critical_thinking(curriculum)\noption:C: (enhances_critical_thinking(curriculum) -> not (provides_resources(curriculum)))\noption:D: (curriculum_well_structured(curriculum) and not (has_exercises(curriculum)))",
+      "cot": [
+        "llm_formula_translation: premises=6, goals=4, predicates=7",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: none",
+        "z3_prop_warning: no MCQ option was entailed; trigger repair",
+        "mcq_llm_fallback: answer=B"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used.",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 11.41,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0009_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "Yes",
+      "explanation": "Given the premises, if the faculty prioritizes pedagogical training and curriculum development (P4), then the curriculum is well-structured (P3). A well-structured curriculum with exercises (P5) enhances student engagement. With access to advanced resources (P6), this enhances critical thinking (P2). Therefore, the combination leads to enhanced critical thinking.",
+      "fol": "Predicates: curriculum_well_structured/1, enhances_critical_thinking/1, enhances_engagement/1, has_exercises/1, prioritizes_development/1, prioritizes_training/1, provides_resources/1\nPremises:\nP1: ((curriculum_well_structured(?x) and has_exercises(?x)) -> enhances_engagement(?x))\nP2: ((enhances_engagement(?x) and provides_resources(?x)) -> enhances_critical_thinking(?x))\nP3: ((prioritizes_training(?x) and prioritizes_development(?x)) -> curriculum_well_structured(?x))\nP4: prioritizes_training(faculty)\nP5: has_exercises(curriculum)\nP6: provides_resources(curriculum)\nGoals:\nquery:((prioritizes_training(?x) and curriculum_well_structured(?x)) -> enhances_critical_thinking(?x))",
+      "cot": [
+        "llm_formula_translation: premises=6, goals=1, predicates=7",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Unknown",
+        "Step 1: Faculty prioritizes pedagogical training and curriculum development -> Curriculum is well-structured (P3).",
+        "Step 2: Well-structured curriculum with exercises -> Enhances student engagement (P1).",
+        "Step 3: Enhanced student engagement with advanced resources -> Enhances critical thinking (P2).",
+        "cot_fallback_after_symbolic_unknown: answer=Yes"
+      ],
+      "premises": [],
+      "confidence": 0.9,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 5.61,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0010_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "B",
+      "gold_answer": "B",
+      "explanation": "Option B was selected by Formula-Z3 entailment. Entailed options: B, D. The translated theory status was sat.",
+      "fol": "Predicates: can_enroll_in_course_b/1, eligible_for_internship_program/1, enrolled_in_and_passed_course_b/1, enrolled_in_course_a/1, enrolled_in_course_c/1\nPremises:\nP1: (enrolled_in_course_a(?x) -> can_enroll_in_course_b(?x))\nP2: (enrolled_in_and_passed_course_b(?x) -> enrolled_in_course_c(?x))\nP3: (enrolled_in_course_c(?x) -> eligible_for_internship_program(?x))\nP4: enrolled_in_course_a(david)\nP5: enrolled_in_and_passed_course_b(david)\nGoals:\noption:A: (enrolled_in_course_c(david) and not (eligible_for_internship_program(david)))\noption:B: eligible_for_internship_program(david)\noption:C: not (enrolled_in_and_passed_course_b(david))\noption:D: enrolled_in_and_passed_course_b(david)",
+      "cot": [
+        "llm_formula_translation: premises=5, goals=4, predicates=5",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: B, D",
+        "z3_prop_unsat_core_sizes: B=3, D=1"
+      ],
+      "premises": [
+        "P1: If a student completes Course A, they can enroll in Course B.",
+        "P2: If a student enrolls in Course B and passes it, they can enroll in Course C.",
+        "P3: Enrollment in Course C makes a student eligible for the internship program.",
+        "P4: David has completed Course A.",
+        "P5: David has enrolled in and passed Course B."
+      ],
+      "confidence": 0.64,
+      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: unsupported formula type: 'impl'",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 26.43,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0010_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "Yes",
+      "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
+      "fol": "Predicates: eligible_internship/1, enrolls_in/1, passes/1\nPremises:\nP1: (enrolls_in(?x, course_a) -> enrolls_in(?x, course_b))\nP2: ((enrolls_in(?x, course_b) and passes(?x, course_b)) -> enrolls_in(?x, course_c))\nP3: (enrolls_in(?x, course_c) -> eligible_internship(?x))\nP4: enrolls_in(david, course_a)\nP5: (enrolls_in(david, course_b) and passes(david, course_b))\nGoals:\nquery:eligible_internship(david)",
+      "cot": [
+        "llm_formula_translation: premises=5, goals=1, predicates=3",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Yes"
+      ],
+      "premises": [
+        "P1: If a student completes Course A, they can enroll in Course B.",
+        "P2: If a student enrolls in Course B and passes it, they can enroll in Course C.",
+        "P3: Enrollment in Course C makes a student eligible for the internship program.",
+        "P4: David has completed Course A.",
+        "P5: David has enrolled in and passed Course B."
+      ],
+      "confidence": 0.78,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 1.36,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0011_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "B",
+      "gold_answer": "C",
+      "explanation": "Option B was selected by Formula-Z3 entailment. Entailed options: B. The translated theory status was sat.",
+      "fol": "Predicates: book_training/1, can_use_equipment/1, completed_safety_orientation/1, has_trainer/1, membership_duration/1, paid_annual_fees_on_time/1, valid_membership_card/1\nPremises:\nP1: completed_safety_orientation(alex)\nP2: membership_duration(alex, 8)\nP3: paid_annual_fees_on_time(alex)\nP4: ((valid_membership_card(?x) and completed_safety_orientation(?x)) -> can_use_equipment(?x))\nP5: ((can_use_equipment(?x) and has_trainer(?x)) -> book_training(?x))\nP6: (membership_duration(?x, ?y) -> has_trainer(?x))\nP7: (paid_annual_fees_on_time(?x) -> valid_membership_card(?x))\nGoals:\noption:A: (can_use_equipment(alex) and not (book_training(alex)))\noption:B: (has_trainer(alex) -> book_training(alex))\noption:C: not (membership_duration(alex, 8))\noption:D: not (paid_annual_fees_on_time(alex))",
+      "cot": [
+        "llm_formula_translation: premises=7, goals=4, predicates=7",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: B",
+        "z3_prop_unsat_core_sizes: B=5"
+      ],
+      "premises": [
+        "P1: Alex has completed safety orientation.",
+        "P2: Alex has a membership duration of 8 months.",
+        "P3: Alex has paid annual fees on time.",
+        "P4: If a person has a valid membership card and has completed safety orientation, they can use equipment.",
+        "P5: If a person can use equipment and has a trainer, they can book training.",
+        "P6: If a person’s membership duration is at least 6 months, they are eligible for a trainer.",
+        "P7: If a person has paid the annual fee, they have a valid membership."
+      ],
+      "confidence": 0.8,
+      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'and', 'args': [{'type': 'atom', 'pred': 'has_valid_membership_card', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'has_completed_safety_orientation', 'args': ['?x'], 'negated': False}]}], 'consequent': {'type': 'atom', 'pred': 'can_use_equipment', 'args': ['?x'], 'negated': False}}}",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 35.8,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0011_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Uncertain",
+      "gold_answer": "No",
+      "explanation": "The symbolic solver returned Unknown, indicating that the entailment check was SAT but it cannot definitively confirm or deny if Alex meets all requirements for booking training sessions based on the given premises.",
+      "fol": "Predicates: can_use_equipment/1, has_completed_safety_orientation/1, has_membership_duration/1, has_paid_annual_fees/1, has_valid_membership_card/1, is_eligible_for_trainer/1\nPremises:\nP1: has_completed_safety_orientation(alex)\nP2: has_membership_duration(alex, 8)\nP3: has_paid_annual_fees(alex)\nP4: ((has_valid_membership_card(?x) and has_completed_safety_orientation(?x)) -> can_use_equipment(?x))\nP5: ((can_use_equipment(?x) and has_trainer(?x)) -> can_book_training(?x))\nP6: (has_membership_duration(?x, 6) -> has_trainer(?x))\nP7: (has_paid_annual_fees(?x) -> has_valid_membership_card(?x))\nGoals:\nquery:can_book_training(alex)",
+      "cot": [
+        "llm_formula_translation: premises=7, goals=1, predicates=6",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Unknown",
+        "The symbolic solver's result being Unknown means it cannot conclusively determine if Alex meets all the requirements for booking training sessions based on the premises provided.",
+        "cot_fallback_after_symbolic_unknown: answer=Uncertain"
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'and', 'args': [{'type': 'atom', 'pred': 'has_valid_membership_card', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'has_completed_safety_orientation', 'args': ['?x'], 'negated': False}]}], 'consequent': {'type': 'atom', 'pred': 'can_use_equipment', 'args': ['?x'], 'negated': False}}}",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 34.29,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0012_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "A",
+      "gold_answer": "D",
+      "explanation": "Option A was selected by Formula-Z3 entailment. Entailed options: A. The translated theory status was sat.",
+      "fol": "Predicates: active_status/1, advisor_approval/1, completed_courses/2, eligible_for_advanced_classes/1\nPremises:\nP1: ((active_status(?x) and completed_courses(?x, 5)) -> eligible_for_advanced_classes(?x))\nP2: (eligible_for_advanced_classes(?x) -> advisor_approval(?x))\nP3: active_status(sarah)\nP4: completed_courses(sarah, 4)\nP5: advisor_approval(sarah)\nGoals:\noption:A: advisor_approval(sarah)\noption:B: not ((active_status(sarah) and completed_courses(sarah, 5)))\noption:C: (((active_status(sarah) and completed_courses(sarah, 5)) -> eligible_for_advanced_classes(sarah)) and not (advisor_approval(sarah)))\noption:D: (active_status(sarah) -> eligible_for_advanced_classes(sarah))",
+      "cot": [
+        "llm_formula_translation: premises=5, goals=4, predicates=4",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: A",
+        "z3_prop_unsat_core_sizes: A=1"
+      ],
+      "premises": [
+        "P1: Students with active status who have completed at least 5 courses are eligible for advanced classes.",
+        "P2: Eligible students must obtain advisor approval to take advanced classes.",
+        "P3: Sarah has active student status.",
+        "P4: Sarah has completed 4 courses.",
+        "P5: Sarah has obtained advisor approval."
+      ],
+      "confidence": 0.8,
+      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'active_status', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'completed_courses', 'args': ['?x', '5'], 'negated': False}]}}",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 28.04,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0012_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Uncertain",
+      "gold_answer": "No",
+      "explanation": "Given that P4 states Sarah has completed 4 courses, which is less than the required 5 courses (P1), she does not meet the eligibility criteria for advanced classes. However, the symbolic solver returned 'Unknown', indicating an indeterminate state in the logical check. Therefore, based on the premises provided, Sarah does not meet the requirement of having completed at least 5 courses, but the solver's output is uncertain.",
+      "fol": "Predicates: active_status/1, advisor_approval/1, completed_courses/1, eligible_for_advanced_classes/1\nPremises:\nP1: ((active_status(?x) and completed_courses(?x, 5)) -> eligible_for_advanced_classes(?x))\nP2: (eligible_for_advanced_classes(?x) -> advisor_approval(?x))\nP3: active_status(sarah)\nP4: completed_courses(sarah, 4)\nP5: advisor_approval(sarah)\nGoals:\nquery:(eligible_for_advanced_classes(sarah) and advisor_approval(sarah))",
+      "cot": [
+        "llm_formula_translation: premises=5, goals=1, predicates=4",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Unknown",
+        "Step 1: Check if Sarah meets the course completion requirement (P1).",
+        "Step 2: Compare Sarah's course completion (P3 and P4) with the requirement (P1).",
+        "Step 3: Determine that Sarah does not meet the course completion requirement.",
+        "Step 4: Recognize the symbolic solver's uncertainty despite clear logical steps.",
+        "cot_fallback_after_symbolic_unknown: answer=Uncertain"
+      ],
+      "premises": [],
+      "confidence": 0.7,
+      "error": "split_translation_failed: translate_formula_premises_only_with_llm failed after 2 attempts: implies formula requires antecedent+consequent (or lhs+rhs): {'type': 'implies', 'antecedent': {'type': 'and', 'args': [{'type': 'atom', 'pred': 'active_status', 'args': ['?x'], 'negated': False}, {'type': 'atom', 'pred': 'completed_courses', 'args': ['?x', '5'], 'negated': False}]}}",
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 24.17,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0013_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "C",
+      "gold_answer": "C",
+      "explanation": "Option C was selected by Formula-Z3 entailment. Entailed options: C. The translated theory status was sat.",
+      "fol": "Predicates: can_supervise_graduate_research/1, eligible_to_supervise_masters/1, has_phd/1, qualified_to_teach_graduate_courses/1\nPremises:\nP1: (has_phd(?x) -> qualified_to_teach_graduate_courses(?x))\nP2: has_phd(?x)\nP3: (has_phd(?x) -> eligible_to_supervise_masters(?x))\nP4: (qualified_to_teach_graduate_courses(?x) -> can_supervise_graduate_research(?x))\nP5: has_phd(john)\nGoals:\noption:A: (qualified_to_teach_graduate_courses(john) and not (can_supervise_graduate_research(john)))\noption:B: (eligible_to_supervise_masters(john) and not (can_supervise_graduate_research(john)))\noption:C: (qualified_to_teach_graduate_courses(john) and can_supervise_graduate_research(john))\noption:D: not (can_supervise_graduate_research(john))",
+      "cot": [
+        "llm_formula_translation: premises=5, goals=4, predicates=4",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: C",
+        "z3_prop_unsat_core_sizes: C=3"
+      ],
+      "premises": [
+        "P1: If a professor has a PhD degree, they are qualified to teach graduate courses.",
+        "P2: A doctoral degree (PhD) is higher than a Master's degree.",
+        "P3: If a professor holds a degree higher than a Master's, they are eligible to supervise Master's students.",
+        "P4: All professors qualified to teach graduate courses can also supervise graduate-level research.",
+        "P5: Professor John holds a PhD degree."
+      ],
+      "confidence": 0.8,
+      "error": "split_translation_failed: translate_formula_goals_with_llm failed after 2 attempts: LLM returned invalid JSON with finish_reason=length: {\"goals\":[{\"source_idx\":-1,\"role\":\"option\",\"label\":\"A\",\"text\":\"Can teach graduate courses but cannot supervise research\",\"formula\":{\"type\":\"and\",\"args\":[{\"type\":\"implies\",\"antecedent\":{\"type\":\"atom\",\"pred\":\"qualified_to_teach_graduate_courses\",\"args\":[\"john\"],\"negated\":false},\"consequent\":{\"type\":\"atom\",\"pred\":\"can_supervise_graduate_level_research\",\"args\":[\"john\"],\"negated\":true}}]}},\"source_idx\",-1,\"role\",\"option\",\"label\",\"B\",\"text\",\"Can supervise Master's students but not graduate research\",\"formula\",\"{\",\"type\",\"and\",\"args\",\"[\",\"{\",\"type\",\"implies\",\"antecedent\",\"{\",\"type\",\"atom\",\"pred\",\"can ... <truncated 552 chars> ... e,\":\"atom,\",\"pred,\":\"can_supervise_graduate_level_research,\",\"args,\":[],\"[\":\"john,\",\"]\":\"negated,\\\":false,\",\"}\\\"},\\\"{\":\"type,\\\":\\\"implies,\\\",\\\"antecedent,\\\":\\\"{\",\"type,\\\":\\\"atom,\\\",\\\"pred,\\\":\\\"degree_higher_than_master_s,\\\",\\\"args,\":[],\"[\":\"john,\",\"]\\\":\\\"negated,\\\":false,\\\",\\\"}\\\"}]}\\\"],\\\"}},{\\\"source_idx,-1,\\\"role\\\",\\\"option\\\",\\\"label\\\",\\\"D\\\",\\\"text\\\",\\\"Needs additional certification to supervise\\\",\\\"formula\\\",\\\"{\":\"\",\":type,\\\":\\\"not,\\\",\\\"arg,\\\":\\\"{\":\"\",\":type,\\\":\\\"atom,\\\",\\\"pred,\\\":\\\"eligible_to_supervise_master_s_students,\\\",\\\"args,\":[],\"[\":\"john,\",\"]\\\":\\\"negated,\\\":false,\\\",\\\"}\\\"}\\\"}],\\\"}]\"",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 35.59,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0013_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "No",
+      "explanation": "Formula-Z3 judged the query as Yes. It uses entailment checks where T entails phi iff T and not(phi) is UNSAT; the translated theory status was sat.",
+      "fol": "Predicates: can_supervise_graduate_level_research/1, degree_higher_than_master_s/1, eligible_to_supervise_master_s_students/1, has_phd/1, qualified_to_teach_graduate_courses/1\nPremises:\nP1: (has_phd(?x) -> qualified_to_teach_graduate_courses(?x))\nP2: degree_higher_than_master_s(phd, master)\nP3: (degree_higher_than_master_s(?x, master) -> eligible_to_supervise_master_s_students(?x))\nP4: (qualified_to_teach_graduate_courses(?x) -> can_supervise_graduate_level_research(?x))\nP5: has_phd(john)\nGoals:\nquery:can_supervise_graduate_level_research(john)",
+      "cot": [
+        "llm_formula_translation: premises=5, goals=1, predicates=5",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Yes"
+      ],
+      "premises": [
+        "P1: If a professor has a PhD degree, they are qualified to teach graduate courses.",
+        "P2: A doctoral degree (PhD) is higher than a Master's degree.",
+        "P3: If a professor holds a degree higher than a Master's, they are eligible to supervise Master's students.",
+        "P4: All professors qualified to teach graduate courses can also supervise graduate-level research.",
+        "P5: Professor John holds a PhD degree."
+      ],
+      "confidence": 0.78,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 1.49,
+      "_status": "wrong"
+    },
+    {
+      "id": "logic_0014_00",
+      "task_type": "type1_logic",
+      "question_type": "mcq",
+      "answer": "A",
+      "gold_answer": "A",
+      "explanation": "Dr. John is a department head with a PhD, which means he holds a degree higher than a Bachelor's (P6). According to P1 and P2, lecturers with a Master's degree or higher can teach undergraduate courses. Therefore, Dr. John can teach undergraduate courses.",
+      "fol": "Predicates: can_teach/1, higher_than/2, holds/1, is_department_head/1\nPremises:\nP1: (holds(?x, master_s_degree) -> can_teach(?x, undergraduate_courses))\nP2: (holds(?x, degree_higher_than_master_s) -> can_teach(?x, undergraduate_courses))\nP3: (higher_than(phd, master_s_degree) -> higher_than(?x, master_s_degree))\nP4: (higher_than(master_s_degree, bachelor_s_degree) -> higher_than(?x, bachelor_s_degree))\nP5: ((higher_than(?x, ?y) and higher_than(?y, ?z)) -> higher_than(?x, ?z))\nP6: (is_department_head(?x) -> higher_than(?x, bachelor_s_degree))\nP7: is_department_head(dr_john)\nGoals:\noption:A: can_teach(dr_john)\noption:B: (is_department_head(dr_john) -> (not can_teach(dr_john) and is_department_head(dr_john)))\noption:C: (can_teach(dr_john) -> not higher_than(master_s_degree, bachelor_s_degree))\noption:D: (can_teach(dr_john) -> not higher_than(phd, bachelor_s_degree))",
+      "cot": [
+        "llm_formula_translation: premises=7, goals=4, predicates=4",
+        "z3_prop_theory_status: sat",
+        "z3_prop_mcq_valid_options: none",
+        "z3_prop_warning: no MCQ option was entailed; trigger repair",
+        "mcq_llm_fallback: answer=A"
+      ],
+      "premises": [],
+      "confidence": 1.0,
+      "error": "no MCQ option was entailed; trigger repair; No MCQ option symbolically entailed; LLM fallback used.",
+      "route_reason": "premises_nl present; question_type=mcq",
+      "_elapsed_s": 6.21,
+      "_status": "correct"
+    },
+    {
+      "id": "logic_0014_01",
+      "task_type": "type1_logic",
+      "question_type": "yes_no_uncertain",
+      "answer": "Yes",
+      "gold_answer": "No",
+      "explanation": "Dr. John, being a department head with a PhD, holds a degree higher than a Bachelor's (P6). According to premise P2, lecturers with a degree higher than a Master's can teach undergraduate courses. Since a PhD is higher than a Master's (P3), Dr. John can teach undergraduate courses.",
+      "fol": "Predicates: can_teach/1, higher_than/2, holds/1, is_department_head/1\nPremises:\nP1: (holds(?x, master_s_degree) -> can_teach(?x, undergraduate_courses))\nP2: (holds(?x, degree_higher_than_master_s) -> can_teach(?x, undergraduate_courses))\nP3: (higher_than(phd, master_s_degree) -> higher_than(?x, master_s_degree))\nP4: (higher_than(master_s_degree, bachelor_s_degree) -> higher_than(?x, bachelor_s_degree))\nP5: ((higher_than(?x, ?y) and higher_than(?y, ?z)) -> higher_than(?x, ?z))\nP6: (is_department_head(?x) -> higher_than(?x, bachelor_s_degree))\nP7: is_department_head(dr_john)\nGoals:\nquery:can_teach(dr_john, undergraduate_courses)",
+      "cot": [
+        "llm_formula_translation: premises=7, goals=1, predicates=4",
+        "z3_prop_theory_status: sat",
+        "z3_prop_query_answer: Unknown",
+        "step",
+        "cot_fallback_after_symbolic_unknown: answer=Yes"
+      ],
+      "premises": [],
+      "confidence": 0.9,
+      "error": null,
+      "route_reason": "premises_nl present; question_type=yes_no_uncertain",
+      "_elapsed_s": 3.2,
+      "_status": "wrong"
     }
   ]
 }
