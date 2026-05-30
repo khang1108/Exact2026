@@ -1,11 +1,35 @@
 """Tests for Type 1 question routing and multiple-choice pipeline behavior."""
 
+import asyncio
+
+import httpx
 import pytest
 
 from exact.config import Settings
 from exact.common.schemas import PredictionRequest, QuestionType, TaskType
-from exact.logic.ir import Atom, Fact, Rule
+from exact.llm_client import OpenAICompatibleJsonClient
+from exact.logic.fol_parser import parse_fol
+from exact.logic.ir import (
+    Atom,
+    Compare,
+    Exists,
+    Fact,
+    ForAll,
+    FormulaItem,
+    Function,
+    Iff,
+    Implies,
+    InSet,
+    Number,
+    Rule,
+    TranslatedProblem,
+)
 from exact.logic.kb import KnowledgeBase
+from exact.logic.llm_translator import (
+    _formula_from_raw,
+    clear_formula_premise_cache,
+    translate_formula_premises_only_with_llm,
+)
 from exact.logic.pipeline import (
     decide_mcq_winner,
     evaluate_mcq_options,
@@ -13,6 +37,9 @@ from exact.logic.pipeline import (
     run_type1_pipeline,
 )
 from exact.router.task_router import TaskRouter
+from exact.scripts.audit_type1_ir_coverage import audit_type1_ir_coverage
+from exact.scripts import evaluate_type1_predictions
+from exact.symbolic_solvers.z3_prop import Z3PropSolver
 
 
 class RecordingTranslatorClient:
@@ -147,6 +174,7 @@ def formula_z3_settings() -> Settings:
         llm_provider="openai",
         llm_base_url=None,
         type1_use_formula_z3=True,
+        type1_formula_cache_premises=False,
         type1_enable_legacy_fallback=False,
         type1_enable_cot_fallback=False,
     )
@@ -258,6 +286,7 @@ def test_type1_formula_z3_pipeline_uses_one_shot_translation() -> None:
     assert client.calls == 1
     assert "Now translate:" in client.user_prompt
     assert response.answer == "Yes"
+    assert response.premises == ["P1: Alpha."]
     assert response.cot is not None
     assert "z3_prop_query_answer: Yes" in response.cot
 
@@ -575,3 +604,271 @@ def test_decide_mcq_winner_prefers_fewest_premises_among_entailed_options() -> N
     )
 
     assert decide_mcq_winner(results, "Which conclusion follows with the fewest premises?") == "B"
+
+
+def test_guided_json_400_retries_without_http_retry_budget(monkeypatch) -> None:
+    payloads = []
+    responses = [
+        httpx.Response(
+            400,
+            request=httpx.Request("POST", "http://local.test/v1/chat/completions"),
+        ),
+        httpx.Response(
+            200,
+            request=httpx.Request("POST", "http://local.test/v1/chat/completions"),
+            json={"choices": [{"message": {"content": '{"answer":"Yes"}'}, "finish_reason": "stop"}]},
+        ),
+    ]
+
+    class FakeAsyncClient:
+        def __init__(self, timeout):
+            self.timeout = timeout
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, traceback):
+            return None
+
+        async def post(self, url, json, headers):
+            payloads.append(json)
+            return responses.pop(0)
+
+    monkeypatch.setattr(httpx, "AsyncClient", FakeAsyncClient)
+    client = OpenAICompatibleJsonClient(
+        api_key="EMPTY",
+        base_url="http://local.test/v1",
+        model="test-model",
+        max_retries=0,
+    )
+
+    result = asyncio.run(
+        client.complete_json(
+            messages=[{"role": "user", "content": "Return JSON"}],
+            json_schema={"$ref": "#/$defs/formula"},
+        )
+    )
+
+    assert result == {"answer": "Yes"}
+    assert len(payloads) == 2
+    assert "guided_json" in payloads[0]
+    assert "guided_json" not in payloads[1]
+
+
+def test_formula_premise_cache_rejects_incomplete_translation() -> None:
+    class IncompleteFormulaClient:
+        def __init__(self):
+            self.calls = 0
+
+        def complete_json_sync(self, messages, temperature=0.0, max_tokens=2048):
+            self.calls += 1
+            return {
+                "predicates": {"alpha": 0},
+                "premises": [
+                    {
+                        "source_idx": 0,
+                        "role": "premise",
+                        "text": "Alpha.",
+                        "formula": {"type": "atom", "pred": "alpha", "args": []},
+                    }
+                ],
+            }
+
+    clear_formula_premise_cache()
+    client = IncompleteFormulaClient()
+
+    with pytest.raises(RuntimeError, match="exactly one formula for every premise"):
+        translate_formula_premises_only_with_llm(
+            ["Alpha.", "Beta."],
+            llm_client=client,
+            settings=Settings(llm_provider="openai", llm_base_url=None),
+        )
+
+    assert client.calls == 3
+
+
+def test_formula_z3_strongest_option_uses_implication_ordering() -> None:
+    problem = TranslatedProblem(
+        predicates={"a": 1, "b": 1},
+        premises=(
+            FormulaItem(Atom("a", ("sophia",)), 0, "Sophia has A.", "premise"),
+            FormulaItem(
+                Implies(Atom("a", ("?x",)), Atom("b", ("?x",))),
+                1,
+                "A implies B.",
+                "premise",
+            ),
+        ),
+        goals=(
+            FormulaItem(Atom("a", ("sophia",)), -1, "A", "option", "A"),
+            FormulaItem(Atom("b", ("sophia",)), -1, "B", "option", "B"),
+        ),
+    )
+
+    result = Z3PropSolver().solve_mcq(problem, stem="Choose the strongest statement.")
+
+    assert result.answer == "A"
+    assert result.supporting_premises == (0,)
+
+
+def test_type1_evaluator_separates_diagnostics_from_failed_predictions() -> None:
+    recovered = evaluate_type1_predictions.evaluate_prediction(
+        {
+            "id": "recovered",
+            "answer": "Uncertain",
+            "gold_answer": "Unknown",
+            "question_type": "yes_no_uncertain",
+            "error": "split translation fallback used",
+        },
+        case_sensitive=False,
+    )
+    failed = evaluate_type1_predictions.evaluate_prediction(
+        {
+            "id": "failed",
+            "answer": "",
+            "gold_answer": "Yes",
+            "question_type": "yes_no_uncertain",
+            "error": "connection refused",
+        },
+        case_sensitive=False,
+    )
+
+    summary = evaluate_type1_predictions.summarize([recovered, failed])
+
+    assert recovered.status == "correct"
+    assert failed.status == "pipeline_error"
+    assert summary["pipeline_errors"] == 1
+    assert summary["runtime_diagnostics"] == 2
+
+
+def test_type1_deadline_exhaustion_returns_valid_failsafe_answer() -> None:
+    request = PredictionRequest.model_validate(
+        {"id": "deadline", "premises-NL": ["Alpha."], "question": "Does Alpha follow?"}
+    )
+    settings = formula_z3_settings().model_copy(
+        update={
+            "type1_enable_legacy_fallback": True,
+            "type1_soft_deadline_s": 1e-9,
+        }
+    )
+
+    response = run_type1_pipeline(
+        request,
+        translator_client=FormulaTranslatorClient({}),
+        settings=settings,
+        question_type=QuestionType.YES_NO_UNCERTAIN,
+    )
+
+    assert response.answer == "Uncertain"
+    assert response.confidence == 0.0
+    assert response.cot == ["type1_deadline_exhausted: returned low-confidence fail-safe answer"]
+
+
+def test_released_type1_premises_parse_and_encode_without_errors() -> None:
+    audit = audit_type1_ir_coverage()
+
+    assert audit["records"] == 411
+    assert audit["premises"] == 4470
+    assert audit["errors"] == []
+
+
+def test_fol_parser_normalizes_bound_variables_and_supports_extended_nodes() -> None:
+    formula = parse_fol(
+        "ForAll(s, ranking(s) ∈ {Average, Weak, Poor} ↔ "
+        "Exists(t, membership_duration(t) ≥ 6))"
+    )
+
+    assert formula == ForAll(
+        ("?s",),
+        Iff(
+            InSet(
+                Function("ranking", ("?s",)),
+                ("Average", "Weak", "Poor"),
+            ),
+            Exists(
+                ("?t",),
+                Compare(">=", Function("membership_duration", ("?t",)), Number("6")),
+            ),
+        ),
+    )
+
+
+def test_typed_formula_json_parser_accepts_quantified_numeric_terms() -> None:
+    formula = _formula_from_raw(
+        {
+            "type": "forall",
+            "variables": ["student"],
+            "body": {
+                "type": "implies",
+                "antecedent": {
+                    "type": "compare",
+                    "op": ">=",
+                    "left": {
+                        "type": "function",
+                        "name": "membership_duration",
+                        "args": ["student"],
+                    },
+                    "right": {"type": "number", "value": "6"},
+                },
+                "consequent": {
+                    "type": "atom",
+                    "pred": "eligible_trainer",
+                    "args": ["student"],
+                },
+            },
+        }
+    )
+
+    assert formula == ForAll(
+        ("?student",),
+        Implies(
+            Compare(">=", Function("membership_duration", ("?student",)), Number("6")),
+            Atom("eligible_trainer", ("?student",), text="eligible_trainer(?student)"),
+        ),
+    )
+
+
+def test_typed_smt_solver_handles_numeric_membership_and_existential_reasoning() -> None:
+    premise_texts = (
+        "membership_duration(Alex) = 8",
+        "ForAll(x, membership_duration(x) ≥ 6 → eligible_trainer(x))",
+        "ranking(Alex) = Average",
+        "ForAll(x, ranking(x) ∈ {Average, Weak, Poor} → must_attend_workshop(x))",
+    )
+    problem = TranslatedProblem(
+        predicates={"eligible_trainer": 1, "must_attend_workshop": 1, "verified_trainer": 1},
+        premises=(
+            *tuple(
+                FormulaItem(parse_fol(text), index, text, "premise")
+                for index, text in enumerate(premise_texts)
+            ),
+            FormulaItem(
+                ForAll(
+                    ("person",),
+                    Implies(
+                        Atom("eligible_trainer", ("person",)),
+                        Atom("verified_trainer", ("person",)),
+                    ),
+                ),
+                len(premise_texts),
+                "Every eligible trainer is verified.",
+                "premise",
+            ),
+        ),
+        goals=(
+            FormulaItem(
+                parse_fol(
+                    "Exists(x, eligible_trainer(x) ∧ must_attend_workshop(x) "
+                    "∧ verified_trainer(x))"
+                ),
+                -1,
+                "At least one eligible trainer must attend the workshop.",
+                "query",
+            ),
+        ),
+    )
+
+    result = Z3PropSolver().solve_query(problem)
+
+    assert result.answer == "Yes"
+    assert result.theory_status == "sat"

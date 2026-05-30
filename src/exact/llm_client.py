@@ -170,12 +170,31 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         url = f"{self._base_url}/chat/completions"
 
         last_exc: Exception | None = None
-        for attempt in range(self.max_retries + 1):
+        retry_number = 0
+        attempts_remaining = self.max_retries + 1
+        while attempts_remaining > 0:
+            attempts_remaining -= 1
             try:
                 async with httpx.AsyncClient(timeout=effective_timeout) as http:
                     resp = await http.post(url, json=payload, headers=headers)
-                    if resp.status_code == 429 and attempt < self.max_retries:
-                        await asyncio.sleep(2 ** attempt)
+                    if resp.status_code == 429 and attempts_remaining > 0:
+                        await asyncio.sleep(2 ** retry_number)
+                        retry_number += 1
+                        continue
+                    # 400 with guided_json: the schema was rejected by the server
+                    # (recursive $ref not supported by lm-format-enforcer, or wrong
+                    # vLLM version).  Drop guided_json and retry once without it so
+                    # the formula path continues rather than failing entirely.
+                    if resp.status_code == 400 and "guided_json" in payload:
+                        logger.warning(
+                            "vLLM returned 400 for guided_json request — "
+                            "retrying without guided_json (schema may use unsupported features)"
+                        )
+                        payload = {k: v for k, v in payload.items() if k != "guided_json"}
+                        # This compatibility fallback is independent of ordinary
+                        # retries. Production keeps max_retries=0 to respect the
+                        # 60-second cap, but still needs one unguided attempt.
+                        attempts_remaining += 1
                         continue
                     resp.raise_for_status()
                 data = resp.json()
@@ -191,15 +210,17 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
                     ) from exc
             except httpx.HTTPStatusError as exc:
                 last_exc = exc
-                if attempt < self.max_retries:
+                if attempts_remaining > 0:
+                    retry_number += 1
                     continue
                 raise
             except (httpx.TransportError, httpx.TimeoutException) as exc:
                 last_exc = exc
-                if attempt < self.max_retries:
+                if attempts_remaining > 0:
+                    retry_number += 1
                     continue
                 raise
-        raise last_exc  # type: ignore[misc]
+        raise last_exc or RuntimeError("LLM request exhausted attempts without a response")
 
     def complete_json_sync(
         self,

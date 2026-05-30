@@ -61,13 +61,13 @@ def evaluate_prediction(pred: dict[str, Any], *, case_sensitive: bool) -> EvalRo
     if gold_answer is None or gold_answer == "":
         return _row(pred, answer, gold_answer, question_type, "missing_gold", runtime_error)
 
-    normalized_answer = answer if case_sensitive else answer.lower()
-    normalized_gold = gold_answer if case_sensitive else gold_answer.lower()
+    normalized_answer = _normalize_answer(answer, case_sensitive=case_sensitive)
+    normalized_gold = _normalize_answer(gold_answer, case_sensitive=case_sensitive)
     ok = normalized_answer == normalized_gold
 
     if ok:
         status = "correct"
-    elif runtime_error:
+    elif runtime_error and not answer:
         status = "pipeline_error"
     else:
         status = "wrong"
@@ -81,6 +81,7 @@ def summarize(rows: list[EvalRow]) -> dict[str, Any]:
     scored_total = total - missing_gold
     correct = sum(row.status == "correct" for row in rows)
     pipeline_errors = sum(row.status == "pipeline_error" for row in rows)
+    runtime_diagnostics = sum(bool(row.error) for row in rows)
     wrong = scored_total - correct
 
     return {
@@ -91,6 +92,7 @@ def summarize(rows: list[EvalRow]) -> dict[str, Any]:
         "missing_gold": missing_gold,
         "accuracy": _safe_ratio(correct, scored_total),
         "pipeline_errors": pipeline_errors,
+        "runtime_diagnostics": runtime_diagnostics,
         "by_status": _count_by(rows, "status"),
         "by_question_type": _accuracy_by_question_type(rows),
     }
@@ -111,6 +113,7 @@ def print_summary(summary: dict[str, Any]) -> None:
     print(f"scored_total: {summary['scored_total']}")
     print(f"accuracy: {summary['accuracy']:.3f}")
     print(f"pipeline_errors: {summary['pipeline_errors']}")
+    print(f"runtime_diagnostics: {summary['runtime_diagnostics']}")
     print(f"by_status: {summary['by_status']}")
     print(f"by_question_type: {summary['by_question_type']}")
 
@@ -137,6 +140,13 @@ def _clean_text(value: Any) -> str | None:
     if value is None:
         return None
     return str(value).strip()
+
+
+def _normalize_answer(value: str, *, case_sensitive: bool) -> str:
+    normalized = value if case_sensitive else value.lower()
+    if normalized.lower() in {"unknown", "uncertain"}:
+        return "uncertain"
+    return normalized
 
 
 def _safe_ratio(numerator: int, denominator: int) -> float:
@@ -166,6 +176,7 @@ def _accuracy_by_question_type(rows: list[EvalRow]) -> dict[str, dict[str, Any]]
             "correct": correct,
             "accuracy": _safe_ratio(correct, len(group)),
             "pipeline_errors": sum(row.status == "pipeline_error" for row in group),
+            "runtime_diagnostics": sum(bool(row.error) for row in group),
         }
     return output
 

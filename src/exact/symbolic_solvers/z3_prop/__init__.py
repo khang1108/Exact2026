@@ -1,10 +1,11 @@
-"""Finite-domain propositional Z3 solver for formula-level Type 1 IR."""
+"""Typed Z3 SMT solver for formula-level Type 1 IR."""
 
 from __future__ import annotations
 
 from exact.symbolic_solvers.z3_prop.encoder import (
     GENERIC_CONSTANT,
     AtomKey,
+    EncodingContext,
     build_theory,
     collect_domain,
     encode_goal,
@@ -22,12 +23,14 @@ from exact.symbolic_solvers.z3_prop.solver import (
     judge_mcq,
     judge_query,
     theory_status,
+    unsat_core_indices,
     unsat_core_size,
 )
 
 __all__ = [
     "AtomKey",
     "EncodedOption",
+    "EncodingContext",
     "FormulaZ3Result",
     "GENERIC_CONSTANT",
     "InconsistentTheoryError",
@@ -43,5 +46,6 @@ __all__ = [
     "judge_mcq",
     "judge_query",
     "theory_status",
+    "unsat_core_indices",
     "unsat_core_size",
 ]
