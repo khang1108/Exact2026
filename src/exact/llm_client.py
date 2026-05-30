@@ -177,6 +177,17 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
                     if resp.status_code == 429 and attempt < self.max_retries:
                         await asyncio.sleep(2 ** attempt)
                         continue
+                    # 400 with guided_json: the schema was rejected by the server
+                    # (recursive $ref not supported by lm-format-enforcer, or wrong
+                    # vLLM version).  Drop guided_json and retry once without it so
+                    # the formula path continues rather than failing entirely.
+                    if resp.status_code == 400 and "guided_json" in payload:
+                        logger.warning(
+                            "vLLM returned 400 for guided_json request — "
+                            "retrying without guided_json (schema may use unsupported features)"
+                        )
+                        payload = {k: v for k, v in payload.items() if k != "guided_json"}
+                        continue
                     resp.raise_for_status()
                 data = resp.json()
                 choice = data["choices"][0]
