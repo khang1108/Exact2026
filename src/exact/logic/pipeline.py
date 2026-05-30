@@ -7,6 +7,7 @@ missing or invalid LLM output is logged and raised.
 
 from __future__ import annotations
 
+import inspect
 import re
 import time
 from collections import Counter
@@ -19,12 +20,18 @@ from exact.logic.kb import get_or_build_kb_candidates
 from exact.logic.ir import (
     And,
     Atom,
+    Compare,
+    Exists,
+    ForAll,
     Formula,
+    Iff,
     Implies,
+    InSet,
     Not,
     Or,
     SolveResult,
     TranslatedProblem,
+    term_to_text,
 )
 from exact.logic.kb import KnowledgeBase
 from exact.logic.llm_translator import (
@@ -124,6 +131,30 @@ def decide_mcq_winner(results: dict[str, SolveResult], question_stem: str) -> st
     return min(candidates, key=score)
 
 
+def _deadline_expired(deadline: float | None) -> bool:
+    return deadline is not None and time.monotonic() >= deadline
+
+
+def _deadline_exhausted_response(
+    request: PredictionRequest,
+    question_type: QuestionType,
+    error: str,
+) -> PredictionResponse:
+    answer = "A" if question_type == QuestionType.MCQ else "Uncertain"
+    return PredictionResponse(
+        id=request.id,
+        task_type=TaskType.TYPE1_LOGIC,
+        question_type=question_type,
+        answer=answer,
+        explanation="The Type 1 reasoning budget was exhausted before a trusted proof was available.",
+        fol=None,
+        cot=["type1_deadline_exhausted: returned low-confidence fail-safe answer"],
+        premises=[],
+        confidence=0.0,
+        error=error,
+    )
+
+
 def run_type1_pipeline(
     request: PredictionRequest,
     translator_client: JsonLLMClient | None = None,
@@ -160,9 +191,8 @@ def run_type1_pipeline(
 
     routed_question_type = question_type or QuestionType.YES_NO_UNCERTAIN
     premises = request.premises_nl or []
-    # Deadline for optional fallback calls (CoT / MCQ LLM fallback).
-    # Symbolic results are always returned regardless; only the optional second
-    # LLM call is skipped when budget is low to avoid breaching the 60s hard cap.
+    # Shared budget for every Type 1 LLM call. Each branch passes the remaining
+    # time into clients that support per-call timeout overrides.
     deadline = time.monotonic() + settings.type1_soft_deadline_s
 
     formula_z3_error: str | None = None
@@ -184,6 +214,12 @@ def run_type1_pipeline(
                     f"Type 1 formula-Z3 path failed for request {request.id}: {exc}"
                 ) from exc
             formula_z3_error = f"formula_z3_failed: {exc}"
+            if _deadline_expired(deadline):
+                return _deadline_exhausted_response(
+                    request,
+                    routed_question_type,
+                    formula_z3_error,
+                )
 
     samples = max(1, settings.type1_translation_samples)
     sampling_temperature = (
@@ -198,9 +234,16 @@ def run_type1_pipeline(
                 settings,
                 samples=samples,
                 sampling_temperature=sampling_temperature,
+                deadline=deadline,
             )
         except Exception as exc:
             logger.exception("Type 1 MCQ LLM premise translation failed")
+            if _deadline_expired(deadline):
+                return _deadline_exhausted_response(
+                    request,
+                    routed_question_type,
+                    f"legacy_mcq_translation_failed: {exc}",
+                )
             raise RuntimeError(
                 f"Type 1 MCQ LLM premise translation failed for request {request.id}: {exc}"
             ) from exc
@@ -209,7 +252,7 @@ def run_type1_pipeline(
             kb_candidates,
             routed_question_type,
             tuple(w for w in (formula_z3_error, *candidate_warnings) if w),
-            translator_client=translator_client, settings=settings,
+            translator_client=translator_client, settings=settings, deadline=deadline,
         )
 
     try:
@@ -219,9 +262,16 @@ def run_type1_pipeline(
             settings,
             samples=samples,
             sampling_temperature=sampling_temperature,
+            deadline=deadline,
         )
     except Exception as exc:
         logger.exception("Type 1 LLM premise translation failed")
+        if _deadline_expired(deadline):
+            return _deadline_exhausted_response(
+                request,
+                routed_question_type,
+                f"legacy_translation_failed: {exc}",
+            )
         raise RuntimeError(
             f"Type 1 LLM premise translation failed for request {request.id}: {exc}"
         ) from exc
@@ -240,6 +290,7 @@ def run_type1_pipeline(
                 entity_constants=entity_constants,
                 llm_client=translator_client,
                 settings=settings,
+                deadline=deadline,
             )
             candidate_results.append((
                 kb,
@@ -251,6 +302,12 @@ def run_type1_pipeline(
             query_errors.append(message)
 
     if not candidate_results:
+        if _deadline_expired(deadline):
+            return _deadline_exhausted_response(
+                request,
+                routed_question_type,
+                "; ".join((*candidate_warnings, *query_errors)),
+            )
         raise RuntimeError(
             f"Type 1 LLM query translation failed for request {request.id}: "
             + "; ".join((*candidate_warnings, *query_errors))
@@ -291,6 +348,7 @@ def run_type1_pipeline(
             llm_client=translator_client,
             settings=settings,
             logger=logger,
+            deadline=deadline,
         )
 
     return response
@@ -343,6 +401,7 @@ def _run_formula_z3_pipeline(
                 premises=premises,
                 llm_client=translator_client,
                 settings=settings,
+                deadline=deadline,
             )
             # Call 2: translate goals using shared predicate vocabulary
             goal_items = translate_formula_goals_with_llm(
@@ -352,6 +411,7 @@ def _run_formula_z3_pipeline(
                 entity_constants=premise_result.entity_constants,
                 llm_client=translator_client,
                 settings=settings,
+                deadline=deadline,
             )
             translated = TranslatedProblem(
                 predicates=premise_result.predicates,
@@ -374,6 +434,7 @@ def _run_formula_z3_pipeline(
             options=options,
             llm_client=translator_client,
             settings=settings,
+            deadline=deadline,
         )
         logger.info(
             "Formula-Z3 one-shot translation: premises=%d goals=%d predicates=%d",
@@ -438,7 +499,7 @@ def _run_formula_z3_query_path(
         explanation=_formula_query_explanation(result),
         fol=_translated_problem_to_fol_like_text(translated),
         cot=_formula_cot(translated, result, kind="query"),
-        premises=_formula_premise_refs(translated, include_all=internal_answer != "Unknown"),
+        premises=_formula_premise_refs(translated, result.supporting_premises),
         confidence=_formula_query_confidence(result),
         error="; ".join(result.warnings) if result.warnings else None,
     )
@@ -458,6 +519,7 @@ def _run_formula_z3_query_path(
             llm_client=llm_client,
             settings=settings,
             logger=logger,
+            deadline=deadline,
         )
     if remaining < _FALLBACK_MIN_BUDGET_S and internal_answer == "Unknown":
         logger.info(
@@ -489,6 +551,7 @@ def _run_formula_z3_mcq_path(
             question_type=question_type,
             llm_client=llm_client,
             settings=settings,
+            deadline=deadline,
         )
         if fallback is not None:
             return fallback.model_copy(
@@ -519,7 +582,7 @@ def _run_formula_z3_mcq_path(
         explanation=_formula_mcq_explanation(result),
         fol=_translated_problem_to_fol_like_text(translated),
         cot=_formula_cot(translated, result, kind="mcq"),
-        premises=_formula_premise_refs(translated, include_all=answer != "Unknown"),
+        premises=_formula_premise_refs(translated, result.supporting_premises),
         confidence=_formula_mcq_confidence(result),
         error="; ".join(result.warnings) if result.warnings else None,
     )
@@ -622,7 +685,7 @@ def _translated_problem_to_fol_like_text(problem: TranslatedProblem) -> str:
 
 def _formula_to_text(formula: Formula) -> str:
     if isinstance(formula, Atom):
-        args = ", ".join(formula.args)
+        args = ", ".join(term_to_text(arg) for arg in formula.args)
         atom = f"{formula.pred}({args})" if args else formula.pred
         return f"not {atom}" if formula.negated else atom
     if isinstance(formula, Not):
@@ -636,15 +699,29 @@ def _formula_to_text(formula: Formula) -> str:
             f"({_formula_to_text(formula.antecedent)} -> "
             f"{_formula_to_text(formula.consequent)})"
         )
+    if isinstance(formula, Iff):
+        return f"({_formula_to_text(formula.left)} <-> {_formula_to_text(formula.right)})"
+    if isinstance(formula, ForAll):
+        return f"forall {', '.join(formula.variables)}. ({_formula_to_text(formula.body)})"
+    if isinstance(formula, Exists):
+        return f"exists {', '.join(formula.variables)}. ({_formula_to_text(formula.body)})"
+    if isinstance(formula, Compare):
+        return f"{term_to_text(formula.left)} {formula.op} {term_to_text(formula.right)}"
+    if isinstance(formula, InSet):
+        options = ", ".join(term_to_text(option) for option in formula.options)
+        return f"{term_to_text(formula.member)} in {{{options}}}"
     return str(formula)
 
 
-def _formula_premise_refs(problem: TranslatedProblem, include_all: bool) -> list[str]:
-    if not include_all:
-        return []
+def _formula_premise_refs(
+    problem: TranslatedProblem,
+    supporting_premises: tuple[int, ...],
+) -> list[str]:
+    selected = set(supporting_premises)
     return [
         f"P{item.source_idx + 1}: {item.text}"
         for item in sorted(problem.premises, key=lambda item: item.source_idx)
+        if item.source_idx in selected
     ]
 
 
@@ -654,12 +731,15 @@ def _run_cot_unknown_fallback(
     llm_client: JsonLLMClient,
     settings: Settings,
     logger,
+    deadline: float | None = None,
 ) -> PredictionResponse:
     """Use LLM reasoning when symbolic consistency voting cannot prove a label."""
 
     messages = _build_cot_unknown_messages(request, response)
     try:
-        raw = llm_client.complete_json_sync(
+        raw = _complete_json_sync_with_deadline(
+            llm_client,
+            deadline=deadline,
             messages=messages,
             temperature=settings.llm_temperature,
             max_tokens=settings.llm_max_tokens,
@@ -775,12 +855,38 @@ def _join_errors(*errors: str | None) -> str | None:
     return "; ".join(parts) if parts else None
 
 
+def _complete_json_sync_with_deadline(
+    client: JsonLLMClient,
+    *,
+    deadline: float | None,
+    **kwargs,
+):
+    """Pass a per-call timeout when the client supports the remaining-budget contract."""
+
+    if deadline is not None:
+        remaining = deadline - time.monotonic() - 0.5
+        if remaining <= 0:
+            raise TimeoutError("Type 1 fallback deadline exhausted before LLM call")
+        try:
+            parameters = inspect.signature(client.complete_json_sync).parameters
+            accepts_timeout = "timeout_override" in parameters or any(
+                parameter.kind == inspect.Parameter.VAR_KEYWORD
+                for parameter in parameters.values()
+            )
+        except (TypeError, ValueError):
+            accepts_timeout = False
+        if accepts_timeout:
+            kwargs["timeout_override"] = remaining
+    return client.complete_json_sync(**kwargs)
+
+
 def _run_mcq_llm_fallback(
     request: PredictionRequest,
     options: list[tuple[str, str]],
     question_type: QuestionType,
     llm_client: JsonLLMClient,
     settings: Settings,
+    deadline: float | None = None,
 ) -> PredictionResponse | None:
     """Direct LLM answer for MCQ when symbolic reasoning cannot prove any option."""
     premises_text = "\n".join(
@@ -808,7 +914,9 @@ def _run_mcq_llm_fallback(
         },
     ]
     try:
-        raw = llm_client.complete_json_sync(
+        raw = _complete_json_sync_with_deadline(
+            llm_client,
+            deadline=deadline,
             messages=messages,
             temperature=settings.llm_temperature,
             max_tokens=min(settings.llm_max_tokens, 512),
@@ -841,6 +949,7 @@ def _run_mcq_path(
     question_type: QuestionType,
     translator_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    deadline: float | None = None,
 ) -> PredictionResponse:
     options = extract_options(request.question)
     if not options:
@@ -865,7 +974,7 @@ def _run_mcq_path(
         try:
             translated = translate_mcq_options_with_llm(
                 request.question, options, kb.predicate_names,
-                translator_client, settings,
+                translator_client, settings, deadline=deadline,
             )
         except Exception as exc:
             logger.debug("MCQ LLM option translation skipped: %s", exc)
@@ -880,6 +989,7 @@ def _run_mcq_path(
         if translator_client is not None:
             fallback = _run_mcq_llm_fallback(
                 request, options, question_type, translator_client, settings_eff,
+                deadline=deadline,
             )
             if fallback is not None:
                 return fallback.model_copy(
@@ -927,9 +1037,10 @@ def _run_mcq_vote_path(
     candidate_warnings: tuple[str, ...] = (),
     translator_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    deadline: float | None = None,
 ) -> PredictionResponse:
     responses: list[PredictionResponse] = [
-        _run_mcq_path(request, kb, question_type, translator_client, settings)
+        _run_mcq_path(request, kb, question_type, translator_client, settings, deadline)
         for kb in kb_candidates
     ]
     winner, vote_summary, confidence = _vote_labels(

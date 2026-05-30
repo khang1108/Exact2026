@@ -1,10 +1,11 @@
 """LLM autoformalizer for the Type 1 logic pipeline.
 
 The LLM is used as a semantic parser, not as the final judge. It converts
-natural-language premises/questions into a compact Horn-style IR consumed by
-deterministic symbolic solvers. The design follows the Logic-LM translator →
-solver split, LINC's emphasis on predicate-consistent formalization, and the
-SymbCoT/Logic-LM++ motivation for later verifier/repair stages.
+natural-language premises/questions into typed formula IR consumed by
+deterministic symbolic solvers, while retaining a compact Horn fallback. The
+design follows the Logic-LM translator → solver split, LINC's emphasis on
+predicate-consistent formalization, and the SymbCoT/Logic-LM++ motivation for
+later verifier/repair stages.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import hashlib
 import json
 import inspect
 import re
+import time
 from dataclasses import dataclass
 from typing import Any, Protocol
 
@@ -22,17 +24,27 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field, ValidationError
 from exact.config import Settings, get_settings
 from exact.logic.ir import (
     And,
+    Arithmetic,
     Atom,
+    Compare,
+    Exists,
     Fact,
+    ForAll,
     Formula,
     FormulaItem,
+    Function,
+    Iff,
     Implies,
+    InSet,
     Not,
+    Number,
     Or,
     ParsedPremise,
     Query,
     Rule,
+    Term,
     TranslatedProblem,
+    term_to_text,
 )
 from exact.logic.parser import atom_from_text
 from exact.logic.prompts import (
@@ -112,6 +124,7 @@ class JsonLLMClient(Protocol):
         # produce JSON conforming to this schema from the first token, eliminating
         # the need for retry on structural failures.
         json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
     ) -> dict[str, Any]: ...
 
 
@@ -318,6 +331,7 @@ def translate_problem_with_llm(
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
     temperature: float | None = None,
+    deadline: float | None = None,
 ) -> TranslatedProblem:
     """Translate a full Type 1 problem into formula-level premise/goal IR.
 
@@ -377,7 +391,7 @@ def translate_problem_with_llm(
             }
             if json_schema is not None:
                 request_kwargs["json_schema"] = json_schema
-            raw = client.complete_json_sync(**request_kwargs)
+            raw = _complete_json_sync_with_deadline(client, deadline=deadline, **request_kwargs)
         except ValueError as exc:
             # The JSON client raises ValueError for invalid/incomplete JSON.
             # Only retry on JSON parse failures; other ValueErrors propagate.
@@ -410,14 +424,40 @@ def translate_problem_with_llm(
 
 
 def _client_accepts_json_schema(client: JsonLLMClient) -> bool:
+    return _client_accepts_kwarg(client, "json_schema")
+
+
+def _client_accepts_kwarg(client: JsonLLMClient, name: str) -> bool:
     try:
-        return "json_schema" in inspect.signature(client.complete_json_sync).parameters
+        parameters = inspect.signature(client.complete_json_sync).parameters
+        return name in parameters or any(
+            parameter.kind == inspect.Parameter.VAR_KEYWORD
+            for parameter in parameters.values()
+        )
     except (TypeError, ValueError):
         return False
 
 
+def _complete_json_sync_with_deadline(
+    client: JsonLLMClient,
+    *,
+    deadline: float | None,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Call a JSON client without letting a remote request outlive the pipeline budget."""
+
+    if deadline is not None:
+        remaining = deadline - time.monotonic() - 0.5
+        if remaining <= 0:
+            raise TimeoutError("Type 1 translation deadline exhausted before LLM call")
+        if _client_accepts_kwarg(client, "timeout_override"):
+            kwargs["timeout_override"] = remaining
+    return client.complete_json_sync(**kwargs)
+
+
 def _problem_formula_json_schema() -> dict[str, Any]:
     formula_ref = {"$ref": "#/$defs/formula"}
+    term_ref = {"$ref": "#/$defs/term"}
     atom = {
         "type": "object",
         "required": ["type", "pred", "args"],
@@ -425,7 +465,7 @@ def _problem_formula_json_schema() -> dict[str, Any]:
         "properties": {
             "type": {"const": "atom"},
             "pred": {"type": "string"},
-            "args": {"type": "array", "items": {"type": "string"}},
+            "args": {"type": "array", "items": term_ref},
             "negated": {"type": "boolean"},
         },
     }
@@ -499,8 +539,96 @@ def _problem_formula_json_schema() -> dict[str, Any]:
                             "consequent": formula_ref,
                         },
                     },
+                    {
+                        "type": "object",
+                        "required": ["type", "left", "right"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "iff"},
+                            "left": formula_ref,
+                            "right": formula_ref,
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "variables", "body"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"enum": ["forall", "exists"]},
+                            "variables": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": {"type": "string"},
+                            },
+                            "body": formula_ref,
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "op", "left", "right"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "compare"},
+                            "op": {"enum": ["=", "!=", ">", ">=", "<", "<="]},
+                            "left": term_ref,
+                            "right": term_ref,
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "member", "options"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "in_set"},
+                            "member": term_ref,
+                            "options": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": term_ref,
+                            },
+                        },
+                    },
                 ]
-            }
+            },
+            "term": {
+                "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {
+                        "type": "object",
+                        "required": ["type", "value"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "number"},
+                            "value": {"type": "string"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "name", "args"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "function"},
+                            "name": {"type": "string"},
+                            "args": {"type": "array", "items": term_ref},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "required": ["type", "op", "args"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"const": "arithmetic"},
+                            "op": {"type": "string"},
+                            "args": {
+                                "type": "array",
+                                "minItems": 1,
+                                "items": term_ref,
+                            },
+                        },
+                    },
+                ]
+            },
         },
     }
 
@@ -538,6 +666,7 @@ def translate_premises_only_with_llm(
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
     temperature: float | None = None,
+    deadline: float | None = None,
 ) -> tuple[tuple[ParsedPremise, ...], tuple[str, ...], tuple[str, ...]]:
     """Translate premises to IR without a query for premise-level caching.
 
@@ -556,7 +685,13 @@ def translate_premises_only_with_llm(
     spec: PremisesOnlySpec | None = None
     for attempt, budget in enumerate([base_budget, min(8192, base_budget * 2)], start=1):
         try:
-            raw = client.complete_json_sync(messages=messages, temperature=temp, max_tokens=budget)
+            raw = _complete_json_sync_with_deadline(
+                client,
+                deadline=deadline,
+                messages=messages,
+                temperature=temp,
+                max_tokens=budget,
+            )
         except ValueError as exc:
             msg = str(exc)
             if "invalid JSON" not in msg and "incomplete JSON" not in msg:
@@ -604,6 +739,7 @@ def translate_query_only_with_llm(
     entity_constants: tuple[str, ...] = (),
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    deadline: float | None = None,
 ) -> Query:
     """Translate a Type 1 question into a solver query without retranslating premises."""
 
@@ -619,7 +755,9 @@ def translate_query_only_with_llm(
     spec: QueryOnlySpec | None = None
 
     for attempt in range(2):
-        raw = client.complete_json_sync(
+        raw = _complete_json_sync_with_deadline(
+            client,
+            deadline=deadline,
             messages=messages,
             temperature=settings.llm_temperature,
             max_tokens=budget,
@@ -678,6 +816,7 @@ def translate_mcq_options_with_llm(
     predicate_names: tuple[str, ...],
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    deadline: float | None = None,
 ) -> dict[str, "Atom"]:
     """Translate MCQ option texts into KB-compatible atoms using the LLM.
 
@@ -689,7 +828,9 @@ def translate_mcq_options_with_llm(
     client = llm_client or LLMClient.from_settings(settings)
     messages = build_mcq_options_messages(question, predicate_names)
     logger.info("Starting MCQ option translation: %s options", len(options))
-    raw = client.complete_json_sync(
+    raw = _complete_json_sync_with_deadline(
+        client,
+        deadline=deadline,
         messages=messages,
         temperature=settings.llm_temperature,
         max_tokens=_mcq_options_token_budget(settings.llm_max_tokens),
@@ -718,13 +859,7 @@ def _translated_problem_from_raw(
 
     raw = _repair_problem_raw_output(raw)
     predicates = _predicates_from_problem_raw(raw.get("predicates", {}))
-    premise_items = tuple(
-        _formula_item_from_raw(item, default_role="premise", default_source_idx=index, default_text=premises[index])
-        for index, item in enumerate(raw.get("premises", []))
-        if isinstance(item, dict)
-    )
-    if not premise_items:
-        raise ValueError("problem translation produced no premise formulas")
+    premise_items = _premise_items_from_raw(raw.get("premises", []), premises)
 
     raw_goals = raw.get("goals")
     if raw_goals is None and options is not None:
@@ -741,14 +876,117 @@ def _translated_problem_from_raw(
         for item in (raw_goals or [])
         if isinstance(item, dict)
     )
-    if not goal_items:
-        raise ValueError("problem translation produced no goal formulas")
+    goal_items = _validate_goal_items(goal_items, options=options)
+    predicates = _merge_and_validate_predicates(predicates, (*premise_items, *goal_items))
 
     return TranslatedProblem(
         predicates=predicates,
         premises=premise_items,
         goals=goal_items,
     )
+
+
+def _premise_items_from_raw(raw_items: Any, premises: list[str]) -> tuple[FormulaItem, ...]:
+    """Parse premise items and require a complete, duplicate-free source index set."""
+
+    if not isinstance(raw_items, list):
+        raise ValueError("problem translation premises must be a list")
+    premise_items = tuple(
+        _formula_item_from_raw(
+            item,
+            default_role="premise",
+            default_source_idx=position,
+            default_text=premises[position] if position < len(premises) else "",
+        )
+        for position, item in enumerate(raw_items)
+        if isinstance(item, dict)
+    )
+    if not premise_items:
+        raise ValueError("problem translation produced no premise formulas")
+
+    actual_indices = [item.source_idx for item in premise_items]
+    expected_indices = list(range(len(premises)))
+    if sorted(actual_indices) != expected_indices:
+        raise ValueError(
+            "problem translation must contain exactly one formula for every premise: "
+            f"expected source_idx={expected_indices}, got={sorted(actual_indices)}"
+        )
+    if any(item.role != "premise" for item in premise_items):
+        raise ValueError("problem translation premise items must all have role='premise'")
+    return tuple(sorted(premise_items, key=lambda item: item.source_idx))
+
+
+def _validate_goal_items(
+    goal_items: tuple[FormulaItem, ...],
+    *,
+    options: list[tuple[str, str]] | None,
+) -> tuple[FormulaItem, ...]:
+    """Require the exact query or option set expected by the routed request."""
+
+    if not goal_items:
+        raise ValueError("problem translation produced no goal formulas")
+    if options is None:
+        if len(goal_items) != 1 or goal_items[0].role != "query" or goal_items[0].label is not None:
+            raise ValueError("query translation must contain exactly one unlabeled role='query' goal")
+        return goal_items
+
+    expected_labels = [label for label, _ in options]
+    actual_labels = [item.label for item in goal_items]
+    if (
+        len(goal_items) != len(expected_labels)
+        or set(actual_labels) != set(expected_labels)
+        or any(item.role != "option" for item in goal_items)
+    ):
+        raise ValueError(
+            "MCQ translation must contain exactly one role='option' goal for every label: "
+            f"expected={expected_labels}, got={actual_labels}"
+        )
+    by_label = {item.label: item for item in goal_items}
+    return tuple(by_label[label] for label in expected_labels)
+
+
+def _merge_and_validate_predicates(
+    predicates: dict[str, int],
+    items: tuple[FormulaItem, ...],
+) -> dict[str, int]:
+    """Merge inferred predicates while rejecting conflicting arities."""
+
+    merged = dict(predicates)
+    observed: dict[str, int] = {}
+    for item in items:
+        for atom in _iter_formula_atoms(item.formula):
+            arity = len(atom.args)
+            previous = observed.get(atom.pred)
+            if previous is not None and previous != arity:
+                raise ValueError(
+                    f"predicate {atom.pred!r} used with conflicting arities: {previous} and {arity}"
+                )
+            declared = merged.get(atom.pred)
+            if declared is not None and declared != arity:
+                raise ValueError(
+                    f"predicate {atom.pred!r} declared with arity {declared} but used with arity {arity}"
+                )
+            observed[atom.pred] = arity
+            merged.setdefault(atom.pred, arity)
+    return merged
+
+
+def _iter_formula_atoms(formula: Formula):
+    if isinstance(formula, Atom):
+        yield formula
+    elif isinstance(formula, Not):
+        yield from _iter_formula_atoms(formula.arg)
+    elif isinstance(formula, (And, Or)):
+        for child in formula.args:
+            yield from _iter_formula_atoms(child)
+    elif isinstance(formula, Implies):
+        yield from _iter_formula_atoms(formula.antecedent)
+        yield from _iter_formula_atoms(formula.consequent)
+    elif isinstance(formula, Iff):
+        yield from _iter_formula_atoms(formula.left)
+        yield from _iter_formula_atoms(formula.right)
+    elif isinstance(formula, (ForAll, Exists)):
+        yield from _iter_formula_atoms(formula.body)
 
 
 def _default_goal_text(
@@ -850,13 +1088,7 @@ def _formula_from_raw(raw: Any) -> Formula:
 
     # ── atom ──────────────────────────────────────────────────────────────────
     if kind in {"atom", "literal"}:
-        atom_raw = dict(raw)
-        # Strip op-key variants before passing to AtomSpec
-        atom_raw.pop("type", None)
-        atom_raw.pop("kind", None)
-        atom_raw.pop("op", None)
-        _repair_atom_dict(atom_raw, {})
-        return _atom_from_spec(AtomSpec.model_validate(atom_raw))
+        return _formula_atom_from_raw(raw)
 
     # ── not ───────────────────────────────────────────────────────────────────
     if kind in {"not", "neg", "negation"}:
@@ -906,7 +1138,171 @@ def _formula_from_raw(raw: Any) -> Formula:
             )
         return Implies(_formula_from_raw(antecedent), _formula_from_raw(consequent))
 
+    # ── iff ───────────────────────────────────────────────────────────────────
+    if kind in {"iff", "equivalent", "biconditional"}:
+        left = raw.get("left") or raw.get("lhs")
+        right = raw.get("right") or raw.get("rhs")
+        if left is None or right is None:
+            raise ValueError(f"iff formula requires left+right children: {raw!r}")
+        return Iff(_formula_from_raw(left), _formula_from_raw(right))
+
+    # ── quantifiers ───────────────────────────────────────────────────────────
+    if kind in {"forall", "for_all", "universal", "exists", "existential"}:
+        variables = _variables_from_raw(raw.get("variables") or raw.get("vars") or raw.get("variable"))
+        body = raw.get("body") or raw.get("formula") or raw.get("arg")
+        if body is None:
+            raise ValueError(f"{kind} formula requires a body: {raw!r}")
+        formula = _normalize_bound_variable_terms(_formula_from_raw(body), variables)
+        if kind in {"forall", "for_all", "universal"}:
+            return ForAll(variables, formula)
+        return Exists(variables, formula)
+
+    # ── comparisons and finite membership ─────────────────────────────────────
+    if kind in {"compare", "comparison"}:
+        op = _comparison_op(str(raw.get("operator") or raw.get("op") or raw.get("comparison") or ""))
+        left = raw.get("left") if "left" in raw else raw.get("lhs")
+        right = raw.get("right") if "right" in raw else raw.get("rhs")
+        if left is None or right is None:
+            raise ValueError(f"compare formula requires left+right terms: {raw!r}")
+        return Compare(op, _term_from_raw(left), _term_from_raw(right))
+    if kind in {"in_set", "membership", "in"}:
+        member = raw.get("member") if "member" in raw else raw.get("left")
+        options = raw.get("options") if "options" in raw else raw.get("set")
+        if member is None or not isinstance(options, list) or not options:
+            raise ValueError(f"in_set formula requires member+options: {raw!r}")
+        return InSet(_term_from_raw(member), tuple(_term_from_raw(option) for option in options))
+
     raise ValueError(f"unsupported formula type: {kind!r}")
+
+
+def _formula_atom_from_raw(raw: dict[str, Any]) -> Atom:
+    raw_pred = str(raw.get("pred") or raw.get("name") or "").strip()
+    if not raw_pred:
+        raise ValueError(f"atom formula requires pred: {raw!r}")
+    pred = _normalize_pred_name(raw_pred)
+    args_raw = raw.get("args") or []
+    if not isinstance(args_raw, list):
+        args_raw = [args_raw]
+    args = tuple(_term_from_raw(arg) for arg in args_raw)
+    text = str(raw.get("text") or "").strip() or _format_formula_atom_text(pred, args)
+    return Atom(pred=pred, args=args, negated=bool(raw.get("negated", False)), text=text)
+
+
+def _term_from_raw(raw: Any) -> Term:
+    if isinstance(raw, bool):
+        return str(raw).lower()
+    if isinstance(raw, (int, float)):
+        return Number(str(raw))
+    if isinstance(raw, str):
+        value = raw.strip()
+        if re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)", value):
+            return Number(value)
+        return value
+    if not isinstance(raw, dict):
+        raise ValueError(f"term must be a string, number, or JSON object: {raw!r}")
+
+    kind = str(raw.get("type") or raw.get("kind") or "").strip().lower()
+    if kind in {"number", "numeric"}:
+        return Number(str(raw.get("value")).strip())
+    if kind in {"const", "constant", "symbol", "var", "variable"}:
+        value = str(raw.get("value") or raw.get("name") or "").strip()
+        if not value:
+            raise ValueError(f"{kind} term requires value: {raw!r}")
+        return value
+    if kind in {"function", "func", "call"} or (not kind and raw.get("name")):
+        name = _normalize_pred_name(str(raw.get("name") or raw.get("func") or "").strip())
+        args_raw = raw.get("args") or []
+        if not isinstance(args_raw, list):
+            args_raw = [args_raw]
+        return Function(name, tuple(_term_from_raw(arg) for arg in args_raw))
+    if kind in {"arithmetic", "arith", "operation", "op"}:
+        op = str(raw.get("operator") or raw.get("op") or "").strip()
+        args_raw = raw.get("args") or raw.get("operands") or []
+        if not op or not isinstance(args_raw, list) or not args_raw:
+            raise ValueError(f"arithmetic term requires operator+args: {raw!r}")
+        return Arithmetic(op, tuple(_term_from_raw(arg) for arg in args_raw))
+    raise ValueError(f"unsupported term type: {kind!r}")
+
+
+def _variables_from_raw(raw: Any) -> tuple[str, ...]:
+    values = raw if isinstance(raw, list) else [raw]
+    variables = tuple(
+        value if value.startswith("?") else f"?{value}"
+        for raw_value in values
+        if (value := str(raw_value).strip())
+    )
+    if not variables:
+        raise ValueError("quantifier requires at least one variable")
+    return variables
+
+
+def _normalize_bound_variable_terms(formula: Formula, variables: tuple[str, ...]) -> Formula:
+    aliases = {variable.lstrip("?"): variable for variable in variables}
+
+    def normalize_term(term: Term) -> Term:
+        if isinstance(term, str):
+            return aliases.get(term, term)
+        if isinstance(term, Function):
+            return Function(term.name, tuple(normalize_term(arg) for arg in term.args))
+        if isinstance(term, Arithmetic):
+            return Arithmetic(term.op, tuple(normalize_term(arg) for arg in term.args))
+        return term
+
+    if isinstance(formula, Atom):
+        args = tuple(normalize_term(arg) for arg in formula.args)
+        return Atom(
+            formula.pred,
+            args,
+            negated=formula.negated,
+            text=_format_formula_atom_text(formula.pred, args),
+        )
+    if isinstance(formula, Not):
+        return Not(_normalize_bound_variable_terms(formula.arg, variables))
+    if isinstance(formula, (And, Or)):
+        return type(formula)(
+            tuple(_normalize_bound_variable_terms(child, variables) for child in formula.args)
+        )
+    if isinstance(formula, Implies):
+        return Implies(
+            _normalize_bound_variable_terms(formula.antecedent, variables),
+            _normalize_bound_variable_terms(formula.consequent, variables),
+        )
+    if isinstance(formula, Iff):
+        return Iff(
+            _normalize_bound_variable_terms(formula.left, variables),
+            _normalize_bound_variable_terms(formula.right, variables),
+        )
+    if isinstance(formula, (ForAll, Exists)):
+        return type(formula)(
+            formula.variables,
+            _normalize_bound_variable_terms(formula.body, variables),
+        )
+    if isinstance(formula, Compare):
+        return Compare(formula.op, normalize_term(formula.left), normalize_term(formula.right))
+    if isinstance(formula, InSet):
+        return InSet(
+            normalize_term(formula.member),
+            tuple(normalize_term(option) for option in formula.options),
+        )
+    raise TypeError(f"unsupported formula node: {type(formula).__name__}")
+
+
+def _comparison_op(raw: str) -> str:
+    aliases = {
+        "==": "=",
+        "≠": "!=",
+        "≥": ">=",
+        "≤": "<=",
+    }
+    op = aliases.get(raw.strip(), raw.strip())
+    if op not in {"=", "!=", ">", ">=", "<", "<="}:
+        raise ValueError(f"unsupported comparison operator: {raw!r}")
+    return op
+
+
+def _format_formula_atom_text(pred: str, args: tuple[Term, ...]) -> str:
+    args_text = ", ".join(term_to_text(arg) for arg in args)
+    return f"{pred}({args_text})" if args_text else pred
 
 
 def _formula_args(raw: dict[str, Any], kind: str) -> tuple[Formula, ...]:
@@ -1083,8 +1479,7 @@ def _collect_constants_from_formula(formula: Formula, out: set[str]) -> None:
     """Recursively collect ground constants (non-variable args) from a formula tree."""
     if isinstance(formula, Atom):
         for arg in formula.args:
-            if not arg.startswith("?"):
-                out.add(arg)
+            _collect_constants_from_term(arg, out)
     elif isinstance(formula, Not):
         _collect_constants_from_formula(formula.arg, out)
     elif isinstance(formula, (And, Or)):
@@ -1093,6 +1488,27 @@ def _collect_constants_from_formula(formula: Formula, out: set[str]) -> None:
     elif isinstance(formula, Implies):
         _collect_constants_from_formula(formula.antecedent, out)
         _collect_constants_from_formula(formula.consequent, out)
+    elif isinstance(formula, Iff):
+        _collect_constants_from_formula(formula.left, out)
+        _collect_constants_from_formula(formula.right, out)
+    elif isinstance(formula, (ForAll, Exists)):
+        _collect_constants_from_formula(formula.body, out)
+    elif isinstance(formula, Compare):
+        _collect_constants_from_term(formula.left, out)
+        _collect_constants_from_term(formula.right, out)
+    elif isinstance(formula, InSet):
+        _collect_constants_from_term(formula.member, out)
+        for option in formula.options:
+            _collect_constants_from_term(option, out)
+
+
+def _collect_constants_from_term(term: Term, out: set[str]) -> None:
+    if isinstance(term, str):
+        if not term.startswith("?") and not re.fullmatch(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)", term):
+            out.add(term)
+    elif isinstance(term, (Function, Arithmetic)):
+        for arg in term.args:
+            _collect_constants_from_term(arg, out)
 
 
 def _extract_entity_constants(premises: tuple[FormulaItem, ...]) -> tuple[str, ...]:
@@ -1107,6 +1523,7 @@ def translate_formula_premises_only_with_llm(
     premises: list[str],
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    deadline: float | None = None,
 ) -> _CachedFormulaPremises:
     """Translate premises to formula IR and cache by premise-set hash.
 
@@ -1146,7 +1563,9 @@ def translate_formula_premises_only_with_llm(
     budgets = [budget, min(6144, budget * 2), min(6144, budget * 2)]
     for attempt, token_limit in enumerate(budgets, start=1):
         try:
-            raw = client.complete_json_sync(
+            raw = _complete_json_sync_with_deadline(
+                client,
+                deadline=deadline,
                 messages=messages,
                 temperature=settings.llm_temperature,
                 max_tokens=token_limit,
@@ -1162,28 +1581,20 @@ def translate_formula_premises_only_with_llm(
         try:
             raw = _repair_problem_raw_output(raw)
             predicates = _predicates_from_problem_raw(raw.get("predicates", {}))
-            premise_items = tuple(
-                _formula_item_from_raw(
-                    item,
-                    default_role="premise",
-                    default_source_idx=index,
-                    default_text=premises[index],
-                )
-                for index, item in enumerate(raw.get("premises", []))
-                if isinstance(item, dict)
-            )
-            if not premise_items:
-                raise ValueError("premise-only translation returned no premise formulas")
-
-            # Completeness check: if fewer than 80% of premises were translated,
-            # the LLM silently truncated. Retry with an explicit correction prompt.
-            completeness = len(premise_items) / max(len(premises), 1)
-            if completeness < 0.80 and attempt < len(budgets):
-                translated_indices = {item.source_idx for item in premise_items}
+            try:
+                premise_items = _premise_items_from_raw(raw.get("premises", []), premises)
+            except ValueError as exc:
+                if attempt >= len(budgets):
+                    raise
+                translated_indices = {
+                    item.get("source_idx")
+                    for item in raw.get("premises", [])
+                    if isinstance(item, dict)
+                }
                 missing = [i for i in range(len(premises)) if i not in translated_indices]
                 logger.warning(
-                    "Premise-only attempt %d/3: incomplete — %d/%d premises (missing: %s); retrying",
-                    attempt, len(premise_items), len(premises), missing[:5],
+                    "Premise-only attempt %d/3 rejected: %s; retrying",
+                    attempt, str(exc)[:300],
                 )
                 messages = [
                     *messages,
@@ -1191,19 +1602,17 @@ def translate_formula_premises_only_with_llm(
                     {
                         "role": "user",
                         "content": (
-                            f"INCOMPLETE: you only translated {len(premise_items)} of "
-                            f"{len(premises)} premises. "
-                            f"You MUST translate ALL {len(premises)} premises. "
+                            f"INVALID PREMISE SET: {exc}. "
+                            f"You MUST translate ALL {len(premises)} premises exactly once. "
                             f"Missing source_idx values: {missing}. "
                             "Return complete JSON with every premise translated."
                         ),
                     },
                 ]
-                last_exc = ValueError(
-                    f"incomplete premises: {len(premise_items)}/{len(premises)}"
-                )
+                last_exc = exc
                 continue
 
+            predicates = _merge_and_validate_predicates(predicates, premise_items)
             entity_constants = _extract_entity_constants(premise_items)
             result = _CachedFormulaPremises(
                 predicates=predicates,
@@ -1238,6 +1647,11 @@ def _collect_preds_from_formula(formula: Formula, out: set[str]) -> None:
     elif isinstance(formula, Implies):
         _collect_preds_from_formula(formula.antecedent, out)
         _collect_preds_from_formula(formula.consequent, out)
+    elif isinstance(formula, Iff):
+        _collect_preds_from_formula(formula.left, out)
+        _collect_preds_from_formula(formula.right, out)
+    elif isinstance(formula, (ForAll, Exists)):
+        _collect_preds_from_formula(formula.body, out)
 
 
 def translate_formula_goals_with_llm(
@@ -1247,6 +1661,7 @@ def translate_formula_goals_with_llm(
     entity_constants: tuple[str, ...],
     llm_client: JsonLLMClient | None = None,
     settings: Settings | None = None,
+    deadline: float | None = None,
 ) -> tuple[FormulaItem, ...]:
     """Translate query or MCQ options into goal FormulaItems.
 
@@ -1286,7 +1701,9 @@ def translate_formula_goals_with_llm(
     last_exc: Exception | None = None
     for attempt in range(2):
         try:
-            raw = client.complete_json_sync(
+            raw = _complete_json_sync_with_deadline(
+                client,
+                deadline=deadline,
                 messages=messages,
                 temperature=settings.llm_temperature,
                 max_tokens=budget,
@@ -1311,6 +1728,8 @@ def translate_formula_goals_with_llm(
             )
             if not goal_items:
                 raise ValueError("goal translation returned no goal formulas")
+            goal_items = _validate_goal_items(goal_items, options=options)
+            _merge_and_validate_predicates(predicate_dict, goal_items)
 
             # Vocab guard: check all atom predicates against the allowed dict.
             # If any unknown pred is found, build a correction message and retry.
@@ -1341,10 +1760,11 @@ def translate_formula_goals_with_llm(
                 last_exc = ValueError(f"unknown goal predicates: {sorted(unknown_preds)}")
                 continue
 
-            # If still unknown after retry, substitute closest match per predicate
+            # A still-unknown goal predicate can be legitimate: the question may ask
+            # about a symbol absent from the premises, which should remain unprovable.
             if unknown_preds and allowed_preds:
                 logger.warning(
-                    "Goal predicates still unknown after retry: %s — applying closest-match substitution",
+                    "Goal predicates still unknown after retry: %s — preserving as unprovable symbols",
                     sorted(unknown_preds),
                 )
 

@@ -131,7 +131,8 @@ class Settings(BaseSettings):
     # formula translation (14 premises + 4 options, ~2800 tokens) can complete.
     # Retries are disabled (max_retries=0) because a retry after timeout wastes
     # the remaining request budget: 2 × 55s = 110s > 60s hard cap.
-    # The func_timeout backstop in run_type1_pipeline provides the real safety net.
+    # run_type1_pipeline propagates a shared deadline into each LLM call and
+    # returns a low-confidence fail-safe answer if the budget is exhausted.
     llm_timeout_seconds: float = Field(default=55.0, gt=0)
     llm_max_retries: int = Field(default=0, ge=0, validation_alias="EXACT_MAX_RETRIES")
     llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")

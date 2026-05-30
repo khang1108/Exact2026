@@ -34,13 +34,14 @@ class FormulaZ3Result:
     valid_labels: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
     core_sizes: tuple[tuple[str, int], ...] = ()
+    supporting_premises: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
 class Z3PropSolver:
-    """Finite-domain propositional solver for full formula IR."""
+    """Typed SMT solver for full formula IR with native quantifiers."""
 
-    name: str = "z3_prop_formula"
+    name: str = "z3_typed_formula"
     timeout_ms: int = 5000
 
     def solve_query(self, problem: TranslatedProblem) -> FormulaZ3Result:
@@ -74,7 +75,21 @@ class Z3PropSolver:
                 theory_status="unsat",
                 warnings=(str(exc),),
             )
-        return FormulaZ3Result(answer=answer, mode=self.name, theory_status=status)
+        supporting_premises: tuple[int, ...] = ()
+        if answer == "Yes":
+            supporting_premises = unsat_core_indices(constraints, phi, timeout_ms=self.timeout_ms)
+        elif answer == "No":
+            from z3 import Not
+
+            supporting_premises = unsat_core_indices(
+                constraints, Not(phi), timeout_ms=self.timeout_ms
+            )
+        return FormulaZ3Result(
+            answer=answer,
+            mode=self.name,
+            theory_status=status,
+            supporting_premises=supporting_premises,
+        )
 
     def solve_mcq(self, problem: TranslatedProblem, stem: str = "") -> FormulaZ3Result:
         constraints, symbol_table = build_theory(problem)
@@ -117,6 +132,12 @@ class Z3PropSolver:
             for option in sorted(options, key=_option_sort_key)
             if option.label in valid
         )
+        selected = next((option for option in options if option.label == answer), None)
+        supporting_premises = (
+            unsat_core_indices(constraints, selected.z3, timeout_ms=self.timeout_ms)
+            if selected is not None
+            else ()
+        )
         return FormulaZ3Result(
             answer=answer,
             mode=self.name,
@@ -124,6 +145,7 @@ class Z3PropSolver:
             valid_labels=valid,
             warnings=() if answer else ("no MCQ option was entailed; trigger repair",),
             core_sizes=core_sizes,
+            supporting_premises=supporting_premises,
         )
 
 
@@ -177,22 +199,23 @@ def judge_mcq(
         return valid[0].label
 
     stem_lower = stem.lower()
-    # "fewest premises" and "strongest conclusion" both resolve to minimum unsat-core:
-    # the conclusion provable from the fewest premise constraints is the most directly
-    # entailed and therefore the "strongest" in the dataset's sense.
-    # count_implied_siblings was used previously for "strongest" but produces equal
-    # counts when all valid options are already in the theory closure, causing A to win
-    # alphabetically instead of the logically-correct minimum-core option.
     if (
         "fewest premises" in stem_lower
         or "most direct" in stem_lower
-        or "strongest" in stem_lower
     ):
         return min(
             valid,
             key=lambda option: (
                 unsat_core_size(constraints, option, timeout_ms=timeout_ms),
                 _option_sort_key(option),
+            ),
+        ).label
+    if "strongest" in stem_lower:
+        return max(
+            valid,
+            key=lambda option: (
+                count_implied_siblings(option, valid, constraints, timeout_ms=timeout_ms),
+                -_option_sort_key(option),
             ),
         ).label
 
@@ -214,16 +237,33 @@ def unsat_core_size(
 ) -> int:
     """Count tracked premise constraints needed to entail an option."""
 
+    indices = unsat_core_indices(constraints, option.z3, timeout_ms=timeout_ms)
+    if indices or entails(constraints, option.z3, timeout_ms=timeout_ms):
+        return len(indices)
+    return 10**9
+
+
+def unsat_core_indices(
+    constraints: list[Any],
+    phi: Any,
+    timeout_ms: int = 5000,
+) -> tuple[int, ...]:
+    """Return premise indices from one Z3 core that entail ``phi``."""
+
     from z3 import Bool, Not, unsat
 
     solver = _solver(timeout_ms)
     solver.set(unsat_core=True)
+    markers = []
     for index, constraint in enumerate(constraints):
-        solver.assert_and_track(constraint, Bool(f"premise_{index}"))
-    solver.add(Not(option.z3))
+        marker = Bool(f"premise_{index}")
+        markers.append(marker)
+        solver.assert_and_track(constraint, marker)
+    solver.add(Not(phi))
     if solver.check() != unsat:
-        return 10**9
-    return len(solver.unsat_core())
+        return ()
+    core = set(solver.unsat_core())
+    return tuple(index for index, marker in enumerate(markers) if marker in core)
 
 
 def count_implied_siblings(

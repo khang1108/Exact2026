@@ -1,9 +1,8 @@
 """
 Internal representations for the Type 1 logic branch.
 
-The first production target is a small, inspectable Horn-style core:
-LLM/CLOVER-style parsers can emit these objects, VERUS-style KB caching can
-reuse them, and a Logic-LM/LINC-style solver/verifier can reason over them.
+The legacy Horn core remains available for fast forward chaining. Formula IR
+adds typed terms and first-order structure for the Type 1 SMT path.
 """
 
 from __future__ import annotations
@@ -13,11 +12,39 @@ from typing import Literal, Union
 
 
 @dataclass(frozen=True, order=True)
+class Number:
+    """Exact numeric literal preserved as text for solver conversion."""
+
+    value: str
+
+
+@dataclass(frozen=True, order=True)
+class Function:
+    """Term-valued function application such as ``gpa(sophia)``."""
+
+    name: str
+    args: tuple["Term", ...] = ()
+
+
+@dataclass(frozen=True, order=True)
+class Arithmetic:
+    """Arithmetic term used inside comparisons or nested function arguments."""
+
+    op: str
+    args: tuple["Term", ...]
+
+
+# Strings intentionally remain valid terms so the Horn fallback keeps its
+# compact variable/constant convention without a migration.
+Term = Union[str, Number, Function, Arithmetic]
+
+
+@dataclass(frozen=True, order=True)
 class Atom:
     """A normalized propositional or predicate-like logical statement."""
 
     pred: str
-    args: tuple[str, ...] = ()
+    args: tuple[Term, ...] = ()
     negated: bool = False
     text: str | None = field(default=None, compare=False)
 
@@ -29,7 +56,9 @@ class Atom:
 
     def display(self) -> str:
         label = self.text or (
-            f"{self.pred}({', '.join(self.args)})" if self.args else self.pred.replace("_", " ")
+            f"{self.pred}({', '.join(term_to_text(arg) for arg in self.args)})"
+            if self.args
+            else self.pred.replace("_", " ")
         )
         return f"not {label}" if self.negated else label
 
@@ -63,8 +92,66 @@ class Implies:
     consequent: "Formula"
 
 
+@dataclass(frozen=True)
+class Iff:
+    """Logical biconditional."""
+
+    left: "Formula"
+    right: "Formula"
+
+
+@dataclass(frozen=True)
+class ForAll:
+    """Universal quantifier over one or more variables."""
+
+    variables: tuple[str, ...]
+    body: "Formula"
+
+
+@dataclass(frozen=True)
+class Exists:
+    """Existential quantifier over one or more variables."""
+
+    variables: tuple[str, ...]
+    body: "Formula"
+
+
+@dataclass(frozen=True)
+class Compare:
+    """Comparison between symbolic, functional, or arithmetic terms."""
+
+    op: Literal["=", "!=", ">", ">=", "<", "<="]
+    left: Term
+    right: Term
+
+
+@dataclass(frozen=True)
+class InSet:
+    """Finite set-membership test."""
+
+    member: Term
+    options: tuple[Term, ...]
+
+
 # Atom remains the literal leaf so existing Horn IR users keep working.
-Formula = Union[Atom, Not, And, Or, Implies]
+Formula = Union[Atom, Not, And, Or, Implies, Iff, ForAll, Exists, Compare, InSet]
+
+
+def term_to_text(term: Term) -> str:
+    """Render a typed term deterministically for traces and symbolic names."""
+
+    if isinstance(term, str):
+        return term
+    if isinstance(term, Number):
+        return term.value
+    if isinstance(term, Function):
+        args = ", ".join(term_to_text(arg) for arg in term.args)
+        return f"{term.name}({args})"
+    if isinstance(term, Arithmetic):
+        if len(term.args) == 1:
+            return f"{term.op}{term_to_text(term.args[0])}"
+        return "(" + f" {term.op} ".join(term_to_text(arg) for arg in term.args) + ")"
+    raise TypeError(f"unsupported term node: {type(term).__name__}")
 
 
 @dataclass(frozen=True)

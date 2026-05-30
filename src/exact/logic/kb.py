@@ -78,6 +78,7 @@ def build_kb_from_premises(
     settings: Any,
     premise_hash: str | None = None,
     temperature: float | None = None,
+    deadline: float | None = None,
 ) -> tuple[KnowledgeBase, tuple[str, ...]]:
     """Build a KB from LLM-translated premises.
 
@@ -89,7 +90,7 @@ def build_kb_from_premises(
 
     try:
         parsed_premises, warnings, predicate_names = translate_premises_only_with_llm(
-            list(premises), llm_client, settings, temperature=temperature
+            list(premises), llm_client, settings, temperature=temperature, deadline=deadline
         )
     except Exception as exc:
         logger.exception("LLM premise translation failed")
@@ -114,6 +115,7 @@ def get_or_build_kb(
     premises: list[str] | tuple[str, ...],
     llm_client: Any,
     settings: Any,
+    deadline: float | None = None,
 ) -> tuple[KnowledgeBase, tuple[str, ...]]:
     """Return a cached KB built from LLM-translated premises.
 
@@ -131,6 +133,7 @@ def get_or_build_kb(
         llm_client,
         settings,
         premise_hash=key,
+        deadline=deadline,
     )
     _LLM_KB_CACHE[key] = kb
     logger.debug("LLM KB cache stored: %s premises, key=%s", len(premises), key[:8])
@@ -143,6 +146,7 @@ def build_kb_candidates_from_premises(
     settings: Any,
     samples: int,
     sampling_temperature: float,
+    deadline: float | None = None,
 ) -> tuple[tuple[KnowledgeBase, ...], tuple[str, ...]]:
     """Build k sampled KB candidates from the same premises."""
 
@@ -160,6 +164,7 @@ def build_kb_candidates_from_premises(
                 settings,
                 premise_hash=candidate_hash,
                 temperature=sampling_temperature,
+                deadline=deadline,
             )
         except Exception as exc:
             message = f"candidate {index + 1}/{samples} failed: {exc}"
@@ -184,11 +189,12 @@ def get_or_build_kb_candidates(
     settings: Any,
     samples: int,
     sampling_temperature: float,
+    deadline: float | None = None,
 ) -> tuple[tuple[KnowledgeBase, ...], tuple[str, ...]]:
     """Return cached k-sampled KB candidates for symbolic-consistency voting."""
 
     if samples <= 1:
-        kb, warnings = get_or_build_kb(premises, llm_client, settings)
+        kb, warnings = get_or_build_kb(premises, llm_client, settings, deadline=deadline)
         return (kb,), warnings
 
     parser_version = (
@@ -207,6 +213,7 @@ def get_or_build_kb_candidates(
         settings,
         samples=samples,
         sampling_temperature=sampling_temperature,
+        deadline=deadline,
     )
     _LLM_KB_CANDIDATE_CACHE[key] = (candidates, warnings)
     logger.debug(

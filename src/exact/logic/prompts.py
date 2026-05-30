@@ -5,6 +5,25 @@ from __future__ import annotations
 from openai.types.chat import ChatCompletionMessageParam
 
 
+_TYPED_FORMULA_NODE_GUIDE = (
+    "Formula node shapes (use 'type' as the op key):\n"
+    '  atom:    {"type":"atom","pred":"snake_case","args":[TERM],"negated":false}\n'
+    '  not:     {"type":"not","arg":FORMULA}\n'
+    '  and/or:  {"type":"and","args":[FORMULA,FORMULA,...]}\n'
+    '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n'
+    '  iff:     {"type":"iff","left":FORMULA,"right":FORMULA}\n'
+    '  forall:  {"type":"forall","variables":["?x"],"body":FORMULA}\n'
+    '  exists:  {"type":"exists","variables":["?x"],"body":FORMULA}\n'
+    '  compare: {"type":"compare","op":">=","left":TERM,"right":TERM}\n'
+    '  in_set:  {"type":"in_set","member":TERM,"options":[TERM,TERM,...]}\n'
+    "Term shapes:\n"
+    '  constant or variable: "sophia", "?x"\n'
+    '  exact number: {"type":"number","value":"6.0"}\n'
+    '  function: {"type":"function","name":"gpa","args":["?x"]}\n'
+    '  arithmetic: {"type":"arithmetic","op":"*","args":[TERM,TERM]}\n'
+)
+
+
 def build_premises_only_messages(premises: list[str]) -> list[ChatCompletionMessageParam]:
     """Compact premise-only prompt for KnowledgeBase caching."""
 
@@ -211,6 +230,33 @@ def build_problem_formula_messages(
         "\n\n"
     )
 
+    # ── Few-shot example 3: typed numeric terms + explicit quantifiers ─────────
+    example_3 = (
+        "── EXAMPLE 3: numeric threshold + explicit quantifiers ──\n"
+        "Premises:\n"
+        "0: Alex has trained for 8 months.\n"
+        "1: Every person with at least 6 months of training is an eligible trainer.\n"
+        "Question: Is there an eligible trainer?\n"
+        "Output:\n"
+        '{"predicates":{"eligible_trainer":1},'
+        '"premises":['
+        '{"source_idx":0,"role":"premise","text":"Alex has trained for 8 months.",'
+        '"formula":{"type":"compare","op":"=",'
+        '"left":{"type":"function","name":"membership_duration","args":["alex"]},'
+        '"right":{"type":"number","value":"8"}}},'
+        '{"source_idx":1,"role":"premise","text":"Every person with at least 6 months of training is an eligible trainer.",'
+        '"formula":{"type":"forall","variables":["?x"],"body":{"type":"implies",'
+        '"antecedent":{"type":"compare","op":">=",'
+        '"left":{"type":"function","name":"membership_duration","args":["?x"]},'
+        '"right":{"type":"number","value":"6"}},'
+        '"consequent":{"type":"atom","pred":"eligible_trainer","args":["?x"],"negated":false}}}}'
+        '],'
+        '"goals":[{"source_idx":-1,"role":"query","label":null,"text":"Is there an eligible trainer?",'
+        '"formula":{"type":"exists","variables":["?x"],"body":'
+        '{"type":"atom","pred":"eligible_trainer","args":["?x"],"negated":false}}}]}'
+        "\n\n"
+    )
+
     return [
         {
             "role": "system",
@@ -225,13 +271,7 @@ def build_problem_formula_messages(
             "role": "user",
             "content": (
                 f"Output valid JSON matching: {schema_hint}\n\n"
-                "Formula node shapes (use 'type' as the op key):\n"
-                '  atom:    {"type":"atom","pred":"snake_case","args":["?x"],"negated":false}\n'
-                '  not:     {"type":"not","arg":FORMULA}\n'
-                '  and:     {"type":"and","args":[FORMULA,FORMULA,...]}\n'
-                '  or:      {"type":"or","args":[FORMULA,FORMULA,...]}\n'
-                '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n'
-                "            (aliases accepted: lhs/rhs instead of antecedent/consequent)\n\n"
+                f"{_TYPED_FORMULA_NODE_GUIDE}\n"
                 "CRITICAL RULES:\n"
                 "1. Use lowercase snake_case for predicate names and ground constants; "
                 "   use ?x / ?y for universally quantified variables.\n"
@@ -242,15 +282,20 @@ def build_problem_formula_messages(
                 "4. MCQ options that are implications MUST stay as implies nodes. "
                 "   NEVER collapse 'if...then...' into a single atom.\n"
                 "5. Preserve implication direction exactly: 'If A then B' → antecedent=A, consequent=B.\n"
-                "6. 'All X are Y' (universal) → implies(atom(X,?x), atom(Y,?x)) with variable ?x.\n"
+                "6. Preserve explicit quantification: 'all/every/any' → forall; "
+                "'some/there exists/at least one' → exists.\n"
                 "7. Negation in a compound formula → Not node wrapping the sub-formula, "
                 "   not just negated=true on the atom.\n"
                 "8. predicates dict: map each predicate name to its arity (integer).\n"
                 "9. Every premise must appear in 'premises' with its exact source_idx.\n"
-                f"10. {goal_instruction}\n\n"
+                "10. Preserve OR as an or node and 'if and only if' as iff. Never drop a branch.\n"
+                "11. Numeric properties such as GPA, score, duration, count, and thresholds "
+                "must use function + compare nodes, not opaque predicate names.\n"
+                f"12. {goal_instruction}\n\n"
                 "FEW-SHOT EXAMPLES:\n"
                 f"{example_1}"
                 f"{example_2}"
+                f"{example_3}"
                 "Now translate:\n"
                 f"Premises:\n{premise_text}\n"
                 f"Question:\n{question}\n"
@@ -300,6 +345,25 @@ def build_formula_premises_only_messages(
         ']}\n\n'
     )
 
+    typed_example = (
+        "── EXAMPLE: typed numeric premise ──\n"
+        "Premises:\n"
+        "0: Alex has trained for 8 months.\n"
+        "1: Every person with at least 6 months of training is an eligible trainer.\n"
+        "Output:\n"
+        '{"predicates":{"eligible_trainer":1},'
+        '"premises":['
+        '{"source_idx":0,"formula":{"type":"compare","op":"=",'
+        '"left":{"type":"function","name":"membership_duration","args":["alex"]},'
+        '"right":{"type":"number","value":"8"}}},'
+        '{"source_idx":1,"formula":{"type":"forall","variables":["?x"],"body":{"type":"implies",'
+        '"antecedent":{"type":"compare","op":">=",'
+        '"left":{"type":"function","name":"membership_duration","args":["?x"]},'
+        '"right":{"type":"number","value":"6"}},'
+        '"consequent":{"type":"atom","pred":"eligible_trainer","args":["?x"],"negated":false}}}}'
+        ']}\n\n'
+    )
+
     return [
         {
             "role": "system",
@@ -314,21 +378,17 @@ def build_formula_premises_only_messages(
             "role": "user",
             "content": (
                 f"Output valid JSON matching: {schema_hint}\n\n"
-                "Formula node shapes (use 'type' as op key):\n"
-                '  atom:    {"type":"atom","pred":"snake_case","args":["?x"],"negated":false}\n'
-                '  not:     {"type":"not","arg":FORMULA}\n'
-                '  and:     {"type":"and","args":[FORMULA,FORMULA,...]}\n'
-                '  or:      {"type":"or","args":[FORMULA,FORMULA,...]}\n'
-                '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n\n'
+                f"{_TYPED_FORMULA_NODE_GUIDE}\n"
                 "CRITICAL RULES:\n"
                 "1. lowercase snake_case for predicate names and constants; ?x/?y for variables.\n"
                 "2. Direct assertions ('Sophia completed X') → atom with named constant, NOT implies.\n"
                 "3. 'If A and B then C' → implies(and(atom(A,?x), atom(B,?x)), atom(C,?x)).\n"
-                "4. 'All X are Y' → implies(atom(X,?x), atom(Y,?x)) with variable ?x.\n"
+                "4. Preserve explicit forall/exists scope, OR branches, iff, and numeric comparisons.\n"
                 "5. Omit 'text' and 'role' fields — only source_idx and formula are required.\n"
                 "6. predicates dict: map each predicate name to its integer arity.\n"
                 "7. Every premise must appear with its exact source_idx.\n\n"
                 f"{example}"
+                f"{typed_example}"
                 "Now translate:\n"
                 f"Premises:\n{premise_text}"
             ),
@@ -426,11 +486,7 @@ def build_formula_goals_messages(
             "role": "user",
             "content": (
                 f"Output valid JSON matching: {schema_hint}\n\n"
-                "Formula node shapes:\n"
-                '  atom:    {"type":"atom","pred":"snake_case","args":["?x"],"negated":false}\n'
-                '  not:     {"type":"not","arg":FORMULA}\n'
-                '  and:     {"type":"and","args":[FORMULA,FORMULA,...]}\n'
-                '  implies: {"type":"implies","antecedent":FORMULA,"consequent":FORMULA}\n\n'
+                f"{_TYPED_FORMULA_NODE_GUIDE}\n"
                 "CRITICAL RULES:\n"
                 f"1. ONLY use predicates from this dict: {pred_list}\n"
                 f"2. Known entity constants (named individuals from premises): {entity_list}\n"
@@ -439,7 +495,8 @@ def build_formula_goals_messages(
                 "   - Use ?x ONLY for universal statements ('all students', 'any project').\n"
                 "3. MCQ options that are implications MUST be implies nodes — never collapse to atom.\n"
                 "4. 'If not A then not B' → implies(atom(A,negated=true), atom(B,negated=true)).\n"
-                f"5. {goal_instruction}\n\n"
+                "5. Preserve forall/exists scope, OR branches, iff, and numeric comparisons.\n"
+                f"6. {goal_instruction}\n\n"
                 f"{example}"
                 "Now translate:\n"
                 f"Question:\n{question}"
