@@ -462,8 +462,50 @@ def _should_retry_with_sdpa(exc: BaseException) -> bool:
     return isinstance(exc, (ImportError, ValueError)) or any(marker in text for marker in retry_markers)
 
 
+def _escape_invalid_json_escapes(text: str) -> str:
+    result = []
+    i = 0
+    n = len(text)
+    in_string = False
+    escaped = False
+    while i < n:
+        char = text[i]
+        if in_string:
+            if escaped:
+                is_valid = False
+                if char in ['"', '\\', 'n']:
+                    is_valid = True
+                elif char == 'u':
+                    if i + 4 < n:
+                        hex_part = text[i+1:i+5]
+                        if all(c in '0123456789abcdefABCDEF' for c in hex_part):
+                            is_valid = True
+                if is_valid:
+                    result.append(char)
+                else:
+                    if result and result[-1] == '\\':
+                        result[-1] = '\\\\'
+                    result.append(char)
+                escaped = False
+            else:
+                if char == '\\':
+                    escaped = True
+                    result.append('\\')
+                else:
+                    if char == '"':
+                        in_string = False
+                    result.append(char)
+        else:
+            if char == '"':
+                in_string = True
+            result.append(char)
+        i += 1
+    return "".join(result)
+
+
 def _parse_json_object(text: str) -> dict[str, Any]:
     text = text.strip()
+    text = _escape_invalid_json_escapes(text)
     span = _find_first_json_object_span(text)
     start = -1 if span is None else span[0]
     end = -1 if span is None else span[1]

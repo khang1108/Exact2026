@@ -321,9 +321,15 @@ def _build_final_explanation_messages(
         {
             "role": "system",
             "content": (
-                "You produce concise evidence for a verified physics answer. "
+                "You are an encouraging, experienced, and highly clear physics teacher. "
+                "Produce a warm, pedagogical, yet highly concise explanation (max 3-4 sentences) "
+                "for a verified physics answer. Start with the physical intuition in a very natural, "
+                "human-like tone, then connect it to the math/formulas used. "
                 "Return JSON only with keys explanation, premises, cot. "
-                "Do not change the answer. Ground the explanation in the supplied formulas."
+                "Do not change the answer. Ground the explanation in the supplied formulas. "
+                "CRITICAL: Avoid LaTeX formatting, LaTeX wrappers like \\( \\), and LaTeX backslash commands like \\frac. "
+                "Write all equations and mathematical terms in clean, standard plain text (e.g., use 'W = 1/2 * L * I^2' "
+                "instead of LaTeX fraction and symbol syntax). Do not output any backslashes in your text."
             ),
         },
         {

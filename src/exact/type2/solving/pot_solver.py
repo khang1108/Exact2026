@@ -16,6 +16,7 @@ from exact.type2.fallback.executor import ExecutionResult, execute_python
 from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 from exact.type2.solving.pot_verifier import verify_pot_execution
+from exact.type2.solving.solver import solve_extraction
 
 
 POT_SOLVER_NOT_CONFIGURED = "type2_pot_solver_not_configured"
