@@ -177,21 +177,22 @@ def judge_mcq(
         return valid[0].label
 
     stem_lower = stem.lower()
-    if "fewest premises" in stem_lower or "most direct" in stem_lower:
+    # "fewest premises" and "strongest conclusion" both resolve to minimum unsat-core:
+    # the conclusion provable from the fewest premise constraints is the most directly
+    # entailed and therefore the "strongest" in the dataset's sense.
+    # count_implied_siblings was used previously for "strongest" but produces equal
+    # counts when all valid options are already in the theory closure, causing A to win
+    # alphabetically instead of the logically-correct minimum-core option.
+    if (
+        "fewest premises" in stem_lower
+        or "most direct" in stem_lower
+        or "strongest" in stem_lower
+    ):
         return min(
             valid,
             key=lambda option: (
                 unsat_core_size(constraints, option, timeout_ms=timeout_ms),
                 _option_sort_key(option),
-            ),
-        ).label
-
-    if "strongest" in stem_lower:
-        return max(
-            valid,
-            key=lambda option: (
-                count_implied_siblings(option, valid, constraints, timeout_ms=timeout_ms),
-                -_option_sort_key(option),
             ),
         ).label
 

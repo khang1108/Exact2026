@@ -6,23 +6,23 @@
   "summary": {
     "total": 10,
     "scored_total": 10,
-    "correct": 1,
-    "wrong": 9,
+    "correct": 6,
+    "wrong": 4,
     "missing_gold": 0,
-    "accuracy": 0.1,
-    "pipeline_errors": 1,
+    "accuracy": 0.6,
+    "pipeline_errors": 2,
     "by_question_type": {
       "mcq": {
         "total": 5,
-        "correct": 1,
-        "accuracy": 0.2,
+        "correct": 2,
+        "accuracy": 0.4,
         "pipeline_errors": 1
       },
       "yes_no_uncertain": {
         "total": 5,
-        "correct": 0,
-        "accuracy": 0.0,
-        "pipeline_errors": 0
+        "correct": 4,
+        "accuracy": 0.8,
+        "pipeline_errors": 1
       }
     }
   },
@@ -37,11 +37,11 @@
     },
     {
       "id": "logic_0000_01",
-      "answer": "Unknown",
+      "answer": "",
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": null
+      "status": "pipeline_error",
+      "error": "ReadTimeout: HTTPSConnectionPool(host='api.iamphuckhang.dev', port=443): Read timed out. (read timeout=60.0)"
     },
     {
       "id": "logic_0001_00",
@@ -49,15 +49,15 @@
       "gold_answer": "C",
       "question_type": "mcq",
       "status": "wrong",
-      "error": "No MCQ option symbolically entailed; LLM fallback used."
+      "error": null
     },
     {
       "id": "logic_0001_01",
-      "answer": "Unknown",
+      "answer": "Yes",
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": "No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10"
+      "status": "correct",
+      "error": null
     },
     {
       "id": "logic_0002_00",
@@ -65,15 +65,15 @@
       "gold_answer": "C",
       "question_type": "mcq",
       "status": "wrong",
-      "error": "No MCQ option symbolically entailed; LLM fallback used."
+      "error": null
     },
     {
       "id": "logic_0002_01",
-      "answer": "Unknown",
+      "answer": "Yes",
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": "No LLM IR for premise 6; No LLM IR for premise 7; No LLM IR for premise 8; No LLM IR for premise 9; No LLM IR for premise 10"
+      "status": "correct",
+      "error": null
     },
     {
       "id": "logic_0003_00",
@@ -81,31 +81,31 @@
       "gold_answer": "A",
       "question_type": "mcq",
       "status": "correct",
-      "error": "No MCQ option symbolically entailed; LLM fallback used."
+      "error": null
     },
     {
       "id": "logic_0003_01",
-      "answer": "Unknown",
+      "answer": "Yes",
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": "No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6"
+      "status": "correct",
+      "error": null
     },
     {
       "id": "logic_0004_00",
-      "answer": "B",
+      "answer": "C",
       "gold_answer": "C",
       "question_type": "mcq",
-      "status": "wrong",
-      "error": "No MCQ option symbolically entailed; LLM fallback used."
+      "status": "correct",
+      "error": null
     },
     {
       "id": "logic_0004_01",
-      "answer": "Unknown",
+      "answer": "Yes",
       "gold_answer": "Yes",
       "question_type": "yes_no_uncertain",
-      "status": "wrong",
-      "error": "No LLM IR for premise 4; No LLM IR for premise 5; No LLM IR for premise 6; No LLM IR for premise 7"
+      "status": "correct",
+      "error": null
     }
   ]
 }
