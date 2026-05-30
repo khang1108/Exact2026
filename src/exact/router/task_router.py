@@ -33,13 +33,15 @@ _YNU_FRAMING_RE = re.compile(
 
 @dataclass(frozen=True)
 class RouteDecision:
-    """
-    Một schema dùng để lưu trữ các thông tin về quyết xem sẽ chuyển hướng tới loại nào.
+    """Routing outcome for a prediction request.
 
-    Args:
-        task_type (TaskType): Kiểu dữ liệu của task
-        reason (str): Lý do tại sao quyết định, dùng để debug.
-        question_type (QuestionType): Kiểu dữ liệu của câu hỏi đó, nó là MCQ, YUN, hay là open-ended.
+    Attributes:
+        task_type: Type 1 (logic) or Type 2 (physics).
+        reason: Human-readable routing rationale for logs and debugging.
+        question_type: Shape of the Type 1 question (MCQ, yes/no/uncertain, etc.).
+            When routing cannot classify the stem, defaults to YES_NO_UNCERTAIN so
+            Type 1 still attempts a solvable label instead of open-ended (see
+            ``detect_question_type``).
     """
 
     task_type: TaskType
@@ -52,16 +54,11 @@ class RouteDecision:
 
 
 class TaskRouter:
-    """
-    TaskRouter là một object để điều hướng và quyết định xem sẽ chuyển task tới module nào để xử lý.
-
-    Methods:
-        route(request: PredictionRequest) -> RouteDecision: Dùng để điều hướng request.
-    """
+    """Routes incoming requests to the Type 1 or Type 2 pipeline."""
 
     def route(self, request: PredictionRequest) -> RouteDecision:
         if request.premises_nl:
-            # Nếu có premises, tức là đây là data Type 1.
+            # Premises present → Type 1 logic task.
             question_type = detect_question_type(request)
 
             return RouteDecision(
@@ -69,7 +66,7 @@ class TaskRouter:
                 reason=f"premises_nl present; question_type={question_type.value}",
                 question_type=question_type,
             )
-        # Còn không sẽ là Type 2.
+        # No premises → Type 2 physics/numerical task.
         return RouteDecision(
             task_type=TaskType.TYPE2_PHYSICS,
             reason="premises_nl absent",
@@ -78,14 +75,19 @@ class TaskRouter:
 
 
 def detect_question_type(request: PredictionRequest) -> QuestionType:
-    """
-    Dùng để xác định loại câu hỏi.
+    """Classify a Type 1 question stem for pipeline dispatch.
+
+    Detection order: MCQ (A+B option labels) → yes/no/uncertain heuristics →
+    default YES_NO_UNCERTAIN. The Type 1 dataset has no free-text gold answers;
+    defaulting unmatched stems to YES_NO_UNCERTAIN (rather than OPEN_ENDED)
+    keeps them on a path that can produce Yes/No/Uncertain instead of scoring zero.
 
     Args:
-        request (PredictionRequest): Là một request được truyền tới.
+        request: Prediction request whose ``question`` field is inspected.
 
     Returns:
-        QuestionType: Là loại câu hỏi vừa xác định được (MCQ, YES_NO_UNCERTAIN, OPEN_ENDED)
+        Detected ``QuestionType`` (MCQ, YES_NO_UNCERTAIN, or OPEN_ENDED if ever
+        returned by an explicit rule).
     """
     question = request.question or ""
 

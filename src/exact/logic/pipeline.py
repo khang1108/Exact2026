@@ -161,16 +161,23 @@ def run_type1_pipeline(
     settings: Settings | None = None,
     question_type: QuestionType | None = None,
 ) -> PredictionResponse:
-    """
-    Answer a Type 1 logic query with symbolic proof where possible.
+    """Answer a Type 1 logic query with symbolic proof where possible.
+
+    Primary path (when enabled): LLM formula translation + Z3 propositional
+    entailment. On failure or when disabled, falls back to legacy translation,
+    forward-chain/Z3, MCQ voting, and CoT paths under a shared soft deadline.
 
     Args:
-        request (PredictionRequest): Đại diện cho request cần xử lý
-        translator_client (JsonLLMClient): Client dùng để dịch NL -> Logical Form
-        settings (Settings): Các settings cho pipeline
+        request: Type 1 prediction request (premises + question).
+        translator_client: JSON LLM client for NL→logic translation; built from
+            settings when omitted.
+        settings: Pipeline configuration; loaded from environment when omitted.
+        question_type: Routed question shape; defaults to YES_NO_UNCERTAIN when
+            omitted.
 
     Returns:
-        PredictionResponse: Đại diện cho dự đoán
+        ``PredictionResponse`` with competition-formatted answer, explanation,
+        optional FOL/COT fields, and confidence.
     """
 
     logger = get_request_logger(

@@ -28,7 +28,7 @@ flowchart TD
 
     ROUTER -->|type1_logic| T1["Type 1 — Logic"]
     ROUTER -->|type2_physics| T2["Type 2 — Physics"]
-
+w
     T1 --> QTYPE{Question type}
     QTYPE -->|"A/B/C/D options"| MCQ[MCQ path]
     QTYPE -->|"Does / Is / Can…"| YNU[Yes / No / Uncertain path]
