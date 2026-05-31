@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 from exact.config import Settings
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
 from exact.logger import get_request_logger
@@ -7,12 +9,18 @@ from exact.type2.extraction.extractor import extract_type2
 from exact.type2.extraction.llm_structured import parse_with_llm
 from exact.type2.extraction.verifier import verify_type2_extraction
 from exact.type2.formulas.knowledge import retrieve_formula_context
-from exact.type2.schemas import Extraction, Quantity, Type2QuestionKind, Type2SolveResult
+from exact.type2.schemas import (
+    Extraction,
+    Quantity,
+    Type2QuestionKind,
+    Type2SolveResult,
+    Verification,
+)
 from exact.type2.solving.pot_solver import solve_with_pot
 from exact.type2.solving.units import parse_quantity
 
 
-_GENERATE_FINAL_EXPLANATION = True
+_GENERATE_FINAL_EXPLANATION_OVERRIDE: bool | None = None
 
 
 def run_type2_pipeline(
@@ -35,8 +43,13 @@ def run_type2_pipeline(
     logger.info("Start Type 2 PoT-first pipeline")
 
     extraction = _build_solver_extraction(request.question, settings=settings)
-    review = verify_type2_extraction(extraction)
-    
+    if settings.type2_use_extraction_verifier:
+        review = verify_type2_extraction(extraction)
+    else:
+        review = SimpleNamespace(
+            verification=Verification(True, "Extraction verifier disabled by Type 2 config.")
+        )
+
     formula_limit = settings.type2_formula_limit if settings else 24
     formula_context = retrieve_formula_context(request.question, extraction, limit=formula_limit, settings=settings)
 
@@ -49,7 +62,11 @@ def run_type2_pipeline(
         formula_context.formula_ids,
     )
 
-    generate_explanation = settings.type2_generate_explanation if settings else _GENERATE_FINAL_EXPLANATION
+    generate_explanation = (
+        settings.type2_generate_explanation
+        if _GENERATE_FINAL_EXPLANATION_OVERRIDE is None
+        else _GENERATE_FINAL_EXPLANATION_OVERRIDE
+    )
     result = solve_with_pot(
         extraction,
         formula_context,
@@ -62,18 +79,25 @@ def run_type2_pipeline(
 
 
 def set_generate_final_explanation(enabled: bool) -> None:
-    global _GENERATE_FINAL_EXPLANATION
-    _GENERATE_FINAL_EXPLANATION = enabled
+    global _GENERATE_FINAL_EXPLANATION_OVERRIDE
+    _GENERATE_FINAL_EXPLANATION_OVERRIDE = enabled
 
 
 def _build_solver_extraction(
     question: str,
     settings: Settings | None = None,
 ) -> Extraction:
+    heuristic = extract_type2(question)
+    mode = settings.type2_extraction_mode if settings else "merge"
+    if mode == "heuristic_only":
+        return heuristic
+
     llm_extraction = _try_llm_extraction(question, settings=settings)
-    if llm_extraction is not None:
+    if llm_extraction is None:
+        return heuristic
+    if mode == "llm_only":
         return llm_extraction
-    return extract_type2(question)
+    return _merge_extractions(heuristic, llm_extraction)
 
 
 def _to_prediction_response(
@@ -124,14 +148,14 @@ def _try_llm_extraction(
             value = parse_quantity(item.value, item.unit)
         except Exception:
             continue
-        key = item.name
+        key = _canonical_quantity_name(item.name)
         if key in quantities:
             suffix = 2
             while f"{key}_{suffix}" in quantities:
                 suffix += 1
             key = f"{key}_{suffix}"
         quantities[key] = Quantity(
-            name=item.name,
+            name=key,
             value=value,
             evidence=item.evidence or f"{item.name} = {item.value} {item.unit}",
             confidence=0.7,
@@ -145,3 +169,83 @@ def _try_llm_extraction(
         quantities=quantities,
         notes=tuple(spec.notes),
     )
+
+
+def _merge_extractions(heuristic: Extraction, llm_extraction: Extraction) -> Extraction:
+    quantities = dict(heuristic.quantities)
+    notes = [*heuristic.notes]
+
+    for note in llm_extraction.notes:
+        if note and note not in notes:
+            notes.append(note)
+
+    for key, quantity in llm_extraction.quantities.items():
+        canonical_key = _canonical_quantity_name(key)
+        canonical_quantity = Quantity(
+            name=canonical_key,
+            value=quantity.value,
+            evidence=quantity.evidence,
+            confidence=quantity.confidence,
+        )
+        if _has_equivalent_quantity(quantities, canonical_key, canonical_quantity):
+            continue
+        target_key = canonical_key
+        if target_key in quantities:
+            suffix = 2
+            while f"{target_key}_{suffix}" in quantities:
+                suffix += 1
+            target_key = f"{target_key}_{suffix}"
+        quantities[target_key] = canonical_quantity
+
+    kind = llm_extraction.kind if llm_extraction.kind is not None else heuristic.kind
+    target = llm_extraction.target or heuristic.target
+    normalized_question = heuristic.normalized_question or llm_extraction.normalized_question
+
+    return Extraction(
+        kind=kind,
+        normalized_question=normalized_question,
+        target=target,
+        quantities=quantities,
+        notes=tuple(notes),
+    )
+
+
+def _has_equivalent_quantity(
+    quantities: dict[str, Quantity],
+    key: str,
+    candidate: Quantity,
+) -> bool:
+    existing = quantities.get(key)
+    if existing is None:
+        return False
+    try:
+        converted = candidate.value.to(existing.value.units)
+        return abs(float(converted.magnitude) - float(existing.value.magnitude)) <= 1e-9
+    except Exception:
+        return False
+
+
+def _canonical_quantity_name(name: str) -> str:
+    normalized = name.strip().lower().replace(" ", "_").replace("-", "_")
+    aliases = {
+        "potential_difference": "voltage",
+        "electric_potential": "voltage",
+        "pd": "voltage",
+        "i": "current",
+        "u": "voltage",
+        "v": "voltage",
+        "r": "resistance",
+        "distance": "length",
+        "separation": "length",
+        "radius": "length",
+        "height": "length",
+        "width": "length",
+        "side": "length",
+        "electric_field_strength": "electric_field",
+        "field_strength": "electric_field",
+        "electric_force": "force",
+        "net_force": "force",
+        "heat": "energy",
+        "work": "energy",
+    }
+    return aliases.get(normalized, normalized)

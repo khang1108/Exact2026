@@ -6,7 +6,7 @@ from typing import Any, Protocol
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from exact.config import Settings, get_settings
-from exact.llm_client import LLMClient, build_json_client_from_settings
+from exact.llm_client import build_json_client_from_settings
 from exact.prompts.prompts import Type2JsonFewShotPoTPrompt
 from exact.type2.extraction.extractor import normalize_question
 
@@ -67,6 +67,9 @@ class FormulaChoiceSpec(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     formula_ids: list[str] = Field(default_factory=list)
+    missing_variables: list[str] = Field(default_factory=list)
+    solution_plan: list[str] = Field(default_factory=list)
+    confidence: float | None = None
     notes: list[str] = Field(default_factory=list)
 
 
@@ -80,8 +83,6 @@ class FinalExplanationSpec(BaseModel):
 
 def build_llm_json_client(settings: Settings | None = None) -> JsonClient | None:
     settings = settings or get_settings()
-    if settings.mock_llm:
-        return None
     try:
         client = build_json_client_from_settings(settings)
     except Exception as exc:
@@ -234,8 +235,9 @@ def _build_formula_selection_messages(
             "role": "system",
             "content": (
                 "You select physics formula IDs from a provided formula bank. "
-                "Return JSON only with keys formula_ids and notes. "
-                "Do not invent formula IDs. Prefer formulas whose variables and conditions match."
+                "Return JSON only with keys formula_ids, missing_variables, solution_plan, confidence, notes. "
+                "Do not invent formula IDs. Prefer formulas whose variables and conditions match. "
+                "The solution_plan must be short, concrete, and usable by a teacher explaining the solution."
             ),
         },
         {
@@ -247,7 +249,8 @@ def _build_formula_selection_messages(
                 f"{extraction_summary}\n\n"
                 "Available formula bank entries:\n"
                 f"{formula_summaries}\n\n"
-                "Return the best formula_ids in priority order."
+                "Return the best formula_ids in priority order, list any missing_variables, "
+                "and include a concise step-by-step solution_plan."
             ),
         },
     ]
@@ -259,51 +262,38 @@ def _build_pot_messages(question: str, explanation: str, formula_context: str = 
         {
             "role": "system",
             "content": (
-                "You write a short Python program to solve a physics question. "
-                "Return strict JSON only with keys code, explanation, answer_unit, formula_ids_used. "
-                "Do not wrap the response in markdown or code fences. "
-                "The code must be a JSON string, not a nested JSON object. "
-                "Inside the code string, escape newlines as \\n; do not emit literal line breaks inside any JSON string value. "
-                "The code must define ans = <numeric result> and ans_unit = <unit string>. "
-                "Use pint for units and sympy only if needed. Do not print. "
-                "Use the supplied formula bank context when it applies, and check units before finalizing. "
-                "Prefer formula IDs from the top of the supplied context, but use multiple retrieved IDs when "
-                "a multi-step solution needs an intermediate value. "
-                "For vector quantities such as electric force/field, never add magnitudes as scalars unless "
-                "the directions are explicitly the same. If geometry is given, compute components or use the "
-                "matching resultant/vector formula from the formula context. "
-                "The field formula_ids_used must be a JSON array of strings copied from the supplied formula context. "
-                "When a question contains multiple distinct charges or source/target roles (for example q1, q2, q3, q'), "
-                "keep them separate in code; do not collapse them into one generic q unless the problem explicitly says "
-                "all charges are identical and interchangeable."
+                "You solve a physics problem by writing one short Python/Pint program. "
+                "Return strict JSON only with exactly these keys: code, explanation, answer_unit, formula_ids_used. "
+                "No Markdown, no code fences, no extra prose. "
+                "`code` must be a JSON string with escaped newlines (\\n), never literal newlines; do not use Python triple quotes. "
+                "The program must define ans as the final numeric magnitude and ans_unit as the final unit string. "
+                "Use pint for units and sympy only if genuinely needed; Do not import numpy and do not print. "
+                "Follow the Formula selector plan when present, and use only formulas whose IDs appear in the supplied context. "
+                "Set formula_ids_used to a JSON array of copied formula IDs. "
+                "Preserve distinct physical objects and roles: q1, q2, q3, source charge, target charge, and test charge "
+                "must not be collapsed unless the problem explicitly says they are identical; keep them separate in code, "
+                "and keep the source and target charges separate. "
+                "For vector force/field questions, compute components or use a retrieved resultant/vector formula; "
+                "never add magnitudes as scalars unless directions are explicitly the same. "
+                "Before finalizing, check that units convert to answer_unit and that the result answers the requested target."
             ),
         },
         {
             "role": "user",
             "content": (
-                "Solve the following question using Python.\n"
-                "Return one JSON object only.\n"
-                "Do not use Markdown code fences anywhere in the response.\n"
                 "Question:\n"
                 f"{question}\n\n"
-                f"Failure/context:\n{explanation}\n\n"
+                f"Solver context or previous failure:\n{explanation}\n\n"
                 f"Formula bank context:\n{formula_context or 'No formula context available.'}\n\n"
+                "Strict output contract:\n"
+                "- Return one JSON object only.\n"
+                "- code: complete Python program as one JSON string using escaped newlines.\n"
+                "- explanation: one concise sentence describing the physics computation, not implementation details.\n"
+                "- answer_unit: unit string assigned to ans_unit.\n"
+                "- formula_ids_used: array of formula IDs copied from the supplied context.\n\n"
+                "Few-shot JSON examples:\n"
                 f"{few_shot}\n\n"
-                "Checklist:\n"
-                "- Verify that extracted variables match the requested target.\n"
-                "- Use a formula only when its target, required variables, and conditions match the question.\n"
-                "- If no single formula directly solves the target, combine the smallest valid chain of supplied formulas.\n"
-                "- Convert units consistently before computing.\n"
-                "- For geometry, identify whether the problem is a rectangle, triangle, circle, sphere, cylinder, or right triangle before selecting a formula.\n"
-                "- For net electric force/field in a triangle or angled geometry, account for vector directions.\n"
-                "- In an equilateral triangle, two equal forces on one vertex charge have a 60 degree included angle, so the resultant magnitude is sqrt(3) times one force.\n"
-                "- When the problem has multiple distinct charges or labeled roles, keep the source and target charges separate; do not reuse one q variable for all roles.\n"
-                "- Return JSON strings using escaped newlines only; do not use Python triple quotes or literal newlines inside any JSON string.\n"
-                "- Do not import numpy.\n"
-                "- Define ans as the final numeric magnitude.\n"
-                "- Define ans_unit as the final unit string.\n"
-                "- Set formula_ids_used to a JSON list of IDs from the supplied formula context.\n"
-                "- The output must be valid for strict json.loads without manual cleanup."
+                "Now solve the question. The output must be valid for strict json.loads without cleanup."
             ),
         },
     ]
@@ -329,7 +319,8 @@ def _build_final_explanation_messages(
                 "Do not change the answer. Ground the explanation in the supplied formulas. "
                 "CRITICAL: Avoid LaTeX formatting, LaTeX wrappers like \\( \\), and LaTeX backslash commands like \\frac. "
                 "Write all equations and mathematical terms in clean, standard plain text (e.g., use 'W = 1/2 * L * I^2' "
-                "instead of LaTeX fraction and symbol syntax). Do not output any backslashes in your text."
+                "instead of LaTeX fraction and symbol syntax). Do not output any backslashes in your text. "
+                "Do not mention Python, code, JSON, or implementation details; explain the physics solution as a teacher."
             ),
         },
         {
@@ -339,8 +330,9 @@ def _build_final_explanation_messages(
                 f"Verified answer: {answer}{(' ' + unit) if unit else ''}\n\n"
                 f"Formula IDs used: {formula_ids_used}\n\n"
                 f"Formula context:\n{formula_context}\n\n"
-                f"Code explanation:\n{code_explanation}\n\n"
-                "Write a short explanation and evidence premises."
+                f"Structured solution context:\n{code_explanation}\n\n"
+                "Write a short explanation and evidence premises. Prefer this shape: physical intuition, "
+                "formula choice, substitution/numeric work, final answer."
             ),
         },
     ]
@@ -380,6 +372,7 @@ def _validate_pot_code_spec(raw: dict[str, Any]) -> PotCodeSpec:
         if recovered is None:
             raise
         return PotCodeSpec.model_validate(recovered)
+
 
 def _validate_final_explanation_spec(raw: dict[str, Any]) -> FinalExplanationSpec:
     normalized = _normalize_final_explanation_raw(raw)

@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     data_dir: Path = PACKAGE_DIR / "datasets"
     exact_dataset_dir: Path = PACKAGE_DIR / "datasets" / "exact"
     type1_path: Path = exact_dataset_dir / "Logic_Based_Educational_Queries.json"
-    type2_path: Path = exact_dataset_dir / "Physics_Problems_Text_Only.csv"
+    type2_path: Path = exact_dataset_dir / "type2_physics_questions.csv"
 
     artifacts_dir: Path = ROOT_DIR / "artifacts"
     predictions_dir: Path = artifacts_dir / "predictions"
@@ -49,10 +49,6 @@ class Settings(BaseSettings):
     math_model_id: str = "Qwen/Qwen2.5-Math-7B-Instruct"
     llm_base_url: str | None = None
     llm_api_key: SecretStr | None = None
-    mock_llm: bool = Field(
-        default=False,
-        validation_alias=AliasChoices("EXACT_MOCK_LLM", "MOCK_LLM"),
-    )
     llm_max_tokens: int = Field(default=2048, ge=1, validation_alias="EXACT_MAX_NEW_TOKENS")
     llm_temperature: float = Field(
         default=0.0,
@@ -144,6 +140,46 @@ class Settings(BaseSettings):
     llm_trust_remote_code: bool = Field(default=False, validation_alias="EXACT_LLM_TRUST_REMOTE_CODE")
 
     # Type 2 Physics Pipeline Settings
+    type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
+        default="merge",
+        validation_alias="EXACT_TYPE2_EXTRACTION_MODE",
+    )
+    type2_use_extraction_verifier: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_EXTRACTION_VERIFIER",
+    )
+    type2_use_llm_formula_selection: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_LLM_FORMULA_SELECTION",
+    )
+    type2_use_formula_bank: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_FORMULA_BANK",
+    )
+    type2_use_unit_verifier: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_UNIT_VERIFIER",
+    )
+    type2_force_llm_formula_selection: bool = Field(
+        default=False,
+        validation_alias="EXACT_TYPE2_FORCE_LLM_FORMULA_SELECTION",
+    )
+    type2_use_concept_bank: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_CONCEPT_BANK",
+    )
+    type2_use_pot_solver: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_POT_SOLVER",
+    )
+    type2_deterministic_first: bool = Field(
+        default=False,
+        validation_alias="EXACT_TYPE2_DETERMINISTIC_FIRST",
+    )
+    type2_use_executable_fallback: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_EXECUTABLE_FALLBACK",
+    )
     type2_pot_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES")
     type2_formula_limit: int = Field(default=24, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
     type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")

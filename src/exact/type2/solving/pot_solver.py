@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import ast
 import json
+import math
 import re
+from typing import Any
 
 from exact.config import Settings, get_settings
+from exact.llm_client import has_json_llm_client_config
 from exact.type2.extraction.llm_structured import (
     PotCodeSpec,
     generate_final_explanation,
@@ -15,8 +18,8 @@ from exact.type2.extraction.llm_structured import (
 from exact.type2.fallback.executor import ExecutionResult, execute_python
 from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
-from exact.type2.solving.pot_verifier import verify_pot_execution
-from exact.type2.solving.solver import solve_extraction
+from exact.type2.solving.pot_verifier import PotVerificationResult, verify_pot_execution
+from exact.type2.solving.solver import answer_conceptual, solve_extraction
 
 
 POT_SOLVER_NOT_CONFIGURED = "type2_pot_solver_not_configured"
@@ -25,7 +28,7 @@ POT_SOLVER_FAILED = "type2_pot_solver_failed"
 
 def _load_conceptual_kb() -> list[dict[str, Any]]:
     from exact.config import PACKAGE_DIR
-    path = PACKAGE_DIR / "datasets" / "exact" / "electricity_theory_knowledge_base.json"
+    path = PACKAGE_DIR / "datasets" / "exact" / "type2_electricity_theory_kb.json"
     if not path.exists():
         return []
     try:
@@ -75,9 +78,15 @@ def _solve_conceptual(
     formula_context: RetrievedFormulaContext,
     settings: Settings,
 ) -> Type2SolveResult:
+    curated = answer_conceptual(extraction) if settings.type2_use_concept_bank else None
+    if curated is not None and curated.error is None:
+        return curated
+
     client = build_llm_json_client(settings)
     if client is None:
-        return _failed_result(extraction, "No LLM client configured for conceptual solver.")
+        if curated is not None:
+            return curated
+        return _unconfigured_result(extraction)
 
     theory_context = _retrieve_theory_context(extraction.normalized_question)
 
@@ -110,8 +119,8 @@ def _solve_conceptual(
         )
         answer = str(raw.get("answer") or "").strip()
         explanation = str(raw.get("explanation") or "").strip()
-        cot = list(raw.get("cot") or [])
-        premises = list(raw.get("premises") or [])
+        cot = _as_string_list(raw.get("cot"))
+        premises = _as_string_list(raw.get("premises"))
 
         return Type2SolveResult(
             answer=answer,
@@ -122,7 +131,7 @@ def _solve_conceptual(
             verification=Verification(ok=True, message="Successfully solved conceptual question using RAG & LLM."),
             cot=[
                 "Detected conceptual question.",
-                "Retrieved theoretical knowledge from electricity_theory_knowledge_base.json.",
+                "Retrieved theoretical knowledge from type2_electricity_theory_kb.json.",
                 "Directly generated conceptual answer using LLM.",
                 *cot
             ],
@@ -143,6 +152,31 @@ def solve_with_pot(
     settings = settings or get_settings()
     if extraction.kind.value == "conceptual":
         return _solve_conceptual(extraction, formula_context, settings)
+    if not settings.type2_use_pot_solver:
+        fallback = _try_executable_formula_fallback(
+            extraction,
+            formula_context,
+            "PoT solver disabled by Type 2 config.",
+            settings,
+        )
+        if fallback is not None:
+            return fallback
+        return _failed_result(extraction, "PoT solver disabled and no executable formula solved the extraction.")
+    if settings.type2_deterministic_first:
+        fast_path = _try_executable_formula_fallback(
+            extraction,
+            formula_context,
+            "Deterministic-first mode is enabled.",
+            settings,
+        )
+        if fast_path is not None:
+            fast_path.cot.insert(0, "Used deterministic executable formula before LLM code generation.")
+            return fast_path
+    if not has_json_llm_client_config(settings):
+        fast_path = _try_executable_formula_fallback(extraction, formula_context, "LLM is disabled.", settings)
+        if fast_path is not None:
+            fast_path.cot.insert(0, "Used deterministic executable formula fast path because LLM is disabled.")
+            return fast_path
     prompt_context = _build_solver_context(extraction, formula_context)
     try:
         code_spec = generate_pot_code(
@@ -163,13 +197,13 @@ def solve_with_pot(
         settings,
     )
     if repair_error is not None:
-        fallback = _try_executable_formula_fallback(extraction, formula_context, repair_error)
+        fallback = _try_executable_formula_fallback(extraction, formula_context, repair_error, settings)
         if fallback is not None:
             return fallback
         return _failed_result(extraction, repair_error)
 
     if not execution.ok:
-        fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error)
+        fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error, settings)
         if fallback is not None:
             return fallback
         return _failed_result(
@@ -178,15 +212,16 @@ def solve_with_pot(
         )
 
     unit = execution.ans_unit or code_spec.answer_unit
-    verified = verify_pot_execution(
+    verified = _verify_or_accept_execution(
         execution.ans,
         unit,
         code_spec.formula_ids_used,
-        formula_context.formula_ids,
-        magnitude_target=extraction.target in {"force", "electric_field"},
+        formula_context,
+        extraction,
+        settings,
     )
     if verified.error is not None:
-        fallback = _try_executable_formula_fallback(extraction, formula_context, verified.verification.message)
+        fallback = _try_executable_formula_fallback(extraction, formula_context, verified.verification.message, settings)
         if fallback is not None:
             return fallback
         return Type2SolveResult(
@@ -277,16 +312,75 @@ def _canonicalize_formula_ids(spec: PotCodeSpec, formula_context: RetrievedFormu
         return spec
     return spec.model_copy(update={"formula_ids_used": canonical_ids})
 
+
+def _verify_or_accept_execution(
+    ans: object | None,
+    unit: str | None,
+    formula_ids_used: list[str],
+    formula_context: RetrievedFormulaContext,
+    extraction: Extraction,
+    settings: Settings,
+) -> PotVerificationResult:
+    if settings.type2_use_unit_verifier:
+        return verify_pot_execution(
+            ans,
+            unit,
+            formula_ids_used,
+            formula_context.formula_ids,
+            magnitude_target=extraction.target in {"force", "electric_field"},
+        )
+
+    try:
+        magnitude = float(ans)
+    except (TypeError, ValueError):
+        return PotVerificationResult(
+            verification=Verification(False, f"PoT ans `{ans}` is not numeric."),
+            answer="",
+            unit=None,
+            value=None,
+            error="type2_pot_verification_failed",
+        )
+    if not math.isfinite(magnitude):
+        return PotVerificationResult(
+            verification=Verification(False, "PoT ans is not finite."),
+            answer="",
+            unit=None,
+            value=None,
+            error="type2_pot_verification_failed",
+        )
+    if extraction.target in {"force", "electric_field"}:
+        magnitude = abs(magnitude)
+    return PotVerificationResult(
+        verification=Verification(True, "PoT execution accepted; unit verifier disabled by Type 2 config."),
+        answer=_format_number(magnitude),
+        unit=(unit or "").strip() or None,
+        value=None,
+        error=None,
+    )
+
+
+def _format_number(value: float) -> str:
+    if abs(value) >= 1e4 or (0 < abs(value) < 1e-3):
+        return f"{value:.6g}"
+    text = f"{value:.6f}".rstrip("0").rstrip(".")
+    return text or "0"
+
+
 def _try_executable_formula_fallback(
     extraction: Extraction,
     formula_context: RetrievedFormulaContext,
     reason: str | None,
+    settings: Settings,
 ) -> Type2SolveResult | None:
+    if not settings.type2_use_executable_fallback:
+        return None
     result = solve_extraction(extraction, preferred_formula_ids=formula_context.formula_ids)
     if result.error is not None:
         return None
     result.cot.insert(0, f"PoT solver failed; executable formula fallback was used. Reason: {reason or 'unknown'}")
     return result
+
+
 def _strip_code_fence(code: str) -> str:
     text = code.strip()
     match = re.fullmatch(r"```(?:python)?\s*(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
@@ -424,12 +518,14 @@ def _build_solver_context(
         for key, quantity in extraction.quantities.items()
     )
     allowed_ids = "\n- ".join(formula_context.formula_ids) if formula_context.formula_ids else "None"
+    solution_plan = "\n".join(f"- {step}" for step in formula_context.solution_plan)
     return (
         f"Extraction:\n"
         f"- kind: {extraction.kind.value}\n"
         f"- target: {extraction.target}\n"
         f"- quantities:\n{quantities or '- none'}\n\n"
         f"Allowed formula IDs:\n- {allowed_ids}\n\n"
+        f"Formula selector plan:\n{solution_plan or '- none'}\n\n"
         f"Retrieved formulas:\n{formula_context.context}"
     )
 
@@ -446,16 +542,26 @@ def _final_explanation(
     from exact.type2.extraction.llm_structured import FinalExplanationSpec
 
     unit_suffix = f" {unit}" if unit else ""
+    explanation_context = _build_explanation_context(
+        extraction,
+        answer,
+        unit,
+        formula_context,
+        code_spec,
+    )
     if generate_explanation:
-        spec = generate_final_explanation(
-            extraction.normalized_question,
-            answer,
-            unit,
-            formula_context.context,
-            code_spec.explanation or "The generated program computed the verified result.",
-            code_spec.formula_ids_used,
-            settings=settings,
-        )
+        try:
+            spec = generate_final_explanation(
+                extraction.normalized_question,
+                answer,
+                unit,
+                formula_context.context,
+                explanation_context,
+                code_spec.formula_ids_used,
+                settings=settings,
+            )
+        except Exception:
+            spec = None
         if spec is not None:
             return spec
 
@@ -464,6 +570,65 @@ def _final_explanation(
         premises=[] if not generate_explanation else [formula_context.context] if formula_context.context else [],
         cot=[] if not generate_explanation else ["No LLM final explanation was available; reused the code explanation."],
     )
+
+
+def _build_explanation_context(
+    extraction: Extraction,
+    answer: str,
+    unit: str | None,
+    formula_context: RetrievedFormulaContext,
+    code_spec: PotCodeSpec,
+) -> str:
+    selected_formulas = [
+        {
+            "id": summary.get("id"),
+            "expression": summary.get("expression") or summary.get("latex"),
+            "conditions": list(summary.get("conditions") or ()),
+        }
+        for summary in formula_context.summaries
+        if str(summary.get("id")) in set(code_spec.formula_ids_used)
+    ]
+    if not selected_formulas:
+        selected_formulas = [
+            {
+                "id": summary.get("id"),
+                "expression": summary.get("expression") or summary.get("latex"),
+                "conditions": list(summary.get("conditions") or ()),
+            }
+            for summary in formula_context.summaries[:3]
+        ]
+
+    payload = {
+        "question": extraction.normalized_question,
+        "answer": answer,
+        "unit": unit,
+        "known_quantities": [
+            {
+                "name": quantity.name,
+                "value": str(quantity.value),
+                "evidence": quantity.evidence,
+            }
+            for quantity in extraction.quantities.values()
+        ],
+        "selected_formulas": selected_formulas,
+        "solution_plan": list(formula_context.solution_plan),
+        "numeric_work": code_spec.explanation
+        or f"The verified computation gives {answer}{(' ' + unit) if unit else ''}.",
+        "style": (
+            "Explain like a physics teacher in 2-4 natural sentences: intuition, formula, "
+            "substitution, final answer. Do not mention code."
+        ),
+    }
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True)
+
+
+def _as_string_list(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item).strip()]
+    text = str(value).strip()
+    return [text] if text else []
 
 
 def _unconfigured_result(extraction: Extraction) -> Type2SolveResult:

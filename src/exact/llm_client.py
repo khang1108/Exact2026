@@ -434,6 +434,11 @@ class LocalJsonClient(BaseJsonLLMClient):
         return _parse_json_object(text)
 
 
+def has_json_llm_client_config(settings: Settings | None = None) -> bool:
+    settings = settings or get_settings()
+    return bool(settings.llm_base_url) or settings.llm_provider == "local"
+
+
 def build_json_client_from_settings(settings: Settings | None = None) -> BaseJsonLLMClient | None:
     """Build a JSON-producing LLM client from runtime settings.
 
@@ -443,8 +448,6 @@ def build_json_client_from_settings(settings: Settings | None = None) -> BaseJso
     """
 
     settings = settings or get_settings()
-    if settings.mock_llm:
-        return None
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
     if settings.llm_provider == "local":

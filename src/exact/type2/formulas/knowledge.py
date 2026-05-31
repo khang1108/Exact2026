@@ -4,18 +4,20 @@ import json
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from pathlib import Path
 from typing import Any
 
 from exact.config import Settings
 from exact.config import PACKAGE_DIR
+from exact.llm_client import has_json_llm_client_config
 from exact.type2.extraction.llm_structured import select_formula_ids
 from exact.type2.formulas.bank import FORMULAS, formula_summary
 from exact.type2.schemas import Extraction
 
 
-JSON_BANK_PATH = PACKAGE_DIR / "datasets" / "exact" / "circuits_and_electrostatics_bank.json"
-REGISTRY_BANK_PATH = PACKAGE_DIR / "datasets" / "exact" / "physics_formulas_registry.json"
+JSON_BANK_PATH = (
+    PACKAGE_DIR / "datasets" / "exact" / "type2_circuits_electrostatics_formula_bank.json"
+)
+REGISTRY_BANK_PATH = PACKAGE_DIR / "datasets" / "exact" / "type2_physics_formula_registry.json"
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,10 @@ class RetrievedFormulaContext:
     formula_ids: tuple[str, ...]
     context: str
     summaries: list[dict[str, Any]]
+    solution_plan: tuple[str, ...] = ()
+    missing_variables: tuple[str, ...] = ()
+    selector_confidence: float | None = None
+    selector_notes: tuple[str, ...] = ()
 
 
 def canonicalize_formula_ids(
@@ -51,7 +57,7 @@ def retrieve_formula_context(
     settings: Settings | None = None,
 ) -> RetrievedFormulaContext:
     executable = [_executable_summary(formula) for formula in FORMULAS]
-    knowledge = _load_json_formula_summaries()
+    knowledge = _load_json_formula_summaries() if settings is None or settings.type2_use_formula_bank else []
     all_summaries = executable + knowledge
 
     query = " ".join(
@@ -73,12 +79,16 @@ def retrieve_formula_context(
         ),
         reverse=True,
     )
+    ranked, selection = _rerank_with_llm(question, extraction, ranked, settings=settings)
     selected = ranked[:limit]
-    selected = _rerank_with_llm(question, extraction, selected, settings=settings)
     return RetrievedFormulaContext(
         formula_ids=tuple(str(item["id"]) for item in selected),
-        context=_format_context(selected),
+        context=_format_context(selected, selection=selection),
         summaries=selected,
+        solution_plan=tuple(selection.solution_plan) if selection is not None else (),
+        missing_variables=tuple(selection.missing_variables) if selection is not None else (),
+        selector_confidence=selection.confidence if selection is not None else None,
+        selector_notes=tuple(selection.notes) if selection is not None else (),
     )
 
 
@@ -157,8 +167,12 @@ def _load_json_formula_summaries() -> list[dict[str, Any]]:
     return summaries
 
 
-def _format_context(summaries: list[dict[str, Any]]) -> str:
+def _format_context(summaries: list[dict[str, Any]], selection=None) -> str:
     lines: list[str] = []
+    if selection is not None and selection.solution_plan:
+        lines.append("Selector solution plan:")
+        lines.extend(f"- {step}" for step in selection.solution_plan)
+        lines.append("")
     for item in summaries:
         variables = _compact_mapping(item.get("variables") or {})
         conditions = _compact_sequence(item.get("conditions") or ())
@@ -193,9 +207,13 @@ def _rerank_with_llm(
     extraction: Extraction | None,
     ranked: list[dict[str, Any]],
     settings: Settings | None = None,
-) -> list[dict[str, Any]]:
-    if settings is None or settings.mock_llm or len(ranked) < 3:
-        return ranked
+) -> tuple[list[dict[str, Any]], Any | None]:
+    if settings is None or not has_json_llm_client_config(settings) or len(ranked) < 3:
+        return ranked, None
+    if not settings.type2_use_llm_formula_selection:
+        return ranked, None
+    if extraction is not None and extraction.kind.value == "conceptual":
+        return ranked, None
 
     top_score = _score_summary(
         ranked[0],
@@ -209,10 +227,11 @@ def _rerank_with_llm(
         target=extraction.target if extraction else None,
         known=set(extraction.quantities) if extraction else set(),
     )
-    if extraction is not None and extraction.target is not None and top_score[0] >= 6 and top_score > second_score:
-        return ranked
-    if top_score[0] >= 10 and top_score > second_score:
-        return ranked
+    if not settings.type2_force_llm_formula_selection:
+        if extraction is not None and extraction.target is not None and top_score[0] >= 6 and top_score > second_score:
+            return ranked, None
+        if top_score[0] >= 10 and top_score > second_score:
+            return ranked, None
 
     rerank_limit = settings.type2_rerank_limit if settings else 12
     candidate_summaries = ranked[:rerank_limit]
@@ -223,14 +242,14 @@ def _rerank_with_llm(
         settings=settings,
     )
     if selection is None or not selection.formula_ids:
-        return ranked
+        return ranked, None
 
     selected_ids = [str(formula_id) for formula_id in selection.formula_ids]
     selected_lookup = {formula_id: index for index, formula_id in enumerate(selected_ids)}
     promoted = [item for item in ranked if item.get("id") in selected_lookup]
     promoted.sort(key=lambda item: selected_lookup[str(item.get("id"))])
     remainder = [item for item in ranked if item not in promoted]
-    return promoted + remainder
+    return promoted + remainder, selection
 
 
 def _build_extraction_summary(extraction: Extraction | None) -> str:

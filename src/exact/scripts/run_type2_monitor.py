@@ -16,8 +16,10 @@ if __package__ in {None, ""}:
 
 from exact.datasets.dataset import ExactDataset, LoadedExample
 from exact.datasets.schemas import PredictionResponse, QuestionType, TaskType
+from exact.llm_client import has_json_llm_client_config
 from exact.scripts.config_utils import build_settings_from_config, load_toml_config
 from exact.scripts.evaluate_type2_predictions import evaluate_prediction
+from exact.type2.extraction.extractor import extract_type2
 from exact.type2.pipeline import run_type2_pipeline, set_generate_final_explanation
 
 
@@ -31,12 +33,13 @@ class MonitorStats:
     wrong: int = 0
     pipeline_errors: int = 0
     missing_gold: int = 0
+    conceptual_only: int = 0
     numeric_total: int = 0
     numeric_correct: int = 0
 
     @property
     def accuracy(self) -> float:
-        denominator = self.total - self.missing_gold
+        denominator = self.total - self.missing_gold - self.conceptual_only
         return self.correct / denominator if denominator > 0 else 0.0
 
     @property
@@ -60,6 +63,7 @@ def main() -> None:
     examples = _slice_examples(examples, offset=offset, limit=limit)
 
     settings = build_settings_from_config(config)
+    _require_real_llm_settings(settings)
     set_generate_final_explanation(bool(type2_cfg.get("generate_final_explanation", False)))
     relative_tolerance = float(eval_cfg.get("relative_tolerance", 0.02))
     absolute_tolerance = float(eval_cfg.get("absolute_tolerance", 1e-9))
@@ -107,6 +111,7 @@ def main() -> None:
 
 
 def _predict(example: LoadedExample, settings) -> dict[str, Any]:
+    type2_kind = extract_type2(example.request.question).kind.value
     try:
         response = run_type2_pipeline(example.request, settings=settings)
     except Exception as exc:
@@ -124,9 +129,17 @@ def _predict(example: LoadedExample, settings) -> dict[str, Any]:
             error=str(exc),
         )
     prediction = response.model_dump(mode="json")
+    prediction["type2_kind"] = type2_kind
     prediction["gold_answer"] = example.gold_answer
     prediction["gold_unit"] = example.gold_unit
     return prediction
+
+
+def _require_real_llm_settings(settings) -> None:
+    if not has_json_llm_client_config(settings):
+        raise ValueError(
+            "Type 2 runtime requires a real LLM backend. Configure [llm].backend, model, and credentials."
+        )
 
 
 def _update_stats(stats: MonitorStats, status: str, numeric_ok: bool | None) -> None:
@@ -135,6 +148,8 @@ def _update_stats(stats: MonitorStats, status: str, numeric_ok: bool | None) -> 
         stats.correct += 1
     elif status == "missing_gold":
         stats.missing_gold += 1
+    elif status == "conceptual_only":
+        stats.conceptual_only += 1
     else:
         stats.wrong += 1
     if status == "pipeline_error":

@@ -22,13 +22,13 @@ def load_toml_config(path: str | Path) -> dict[str, Any]:
 def build_settings_from_config(config: dict[str, Any]) -> Settings:
     settings = get_settings()
     llm = config.get("llm", {})
-    pipeline = config.get("pipeline", {})
     type2_pipeline = config.get("type2_pipeline", {})
+    type2_updates = _type2_settings_updates(type2_pipeline, settings)
 
     backend = str(llm.get("backend", "none")).strip().lower()
     enabled = bool(llm.get("enabled", backend != "none"))
     if not enabled or backend == "none":
-        return _settings_without_llm(settings)
+        return _settings_without_llm(settings).model_copy(update=type2_updates)
 
     base_url = str(llm.get("base_url") or "").strip() or None
     api_key = _resolve_api_key(llm)
@@ -70,23 +70,68 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
         "llm_torch_dtype": str(llm.get("torch_dtype", settings.llm_torch_dtype)),
         "llm_local_files_only": bool(llm.get("local_files_only", settings.llm_local_files_only)),
         "llm_trust_remote_code": bool(llm.get("trust_remote_code", settings.llm_trust_remote_code)),
-        "mock_llm": False,
-        "type1_enable_cot_fallback": bool(
-            pipeline.get("type1_enable_cot_fallback", settings.type1_enable_cot_fallback)
-        ),
-        "type2_pot_max_retries": int(type2_pipeline.get("pot_max_retries", settings.type2_pot_max_retries)),
-        "type2_formula_limit": int(type2_pipeline.get("formula_limit", settings.type2_formula_limit)),
-        "type2_rerank_limit": int(type2_pipeline.get("rerank_limit", settings.type2_rerank_limit)),
-        "type2_generate_explanation": bool(type2_pipeline.get("generate_final_explanation", settings.type2_generate_explanation)),
-        "type2_pot_timeout": float(type2_pipeline.get("pot_timeout", settings.type2_pot_timeout)),
+        **type2_updates,
     }
 
-    if not bool(pipeline.get("use_type1_llm", True)) and not bool(
-        pipeline.get("use_type2_llm_fallback", True)
-    ):
-        updates["mock_llm"] = True
-
     return settings.model_copy(update=updates)
+
+
+def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) -> dict[str, Any]:
+    extraction_mode = str(
+        type2_pipeline.get("extraction_mode", settings.type2_extraction_mode)
+    ).strip().lower()
+    if extraction_mode == "llm_preferred":
+        extraction_mode = "merge"
+    if extraction_mode not in {"merge", "llm_only", "heuristic_only"}:
+        raise ValueError(
+            "type2_pipeline.extraction_mode must be one of: merge, llm_only, heuristic_only"
+        )
+
+    return {
+        "type2_extraction_mode": extraction_mode,
+        "type2_use_extraction_verifier": bool(
+            type2_pipeline.get("use_extraction_verifier", settings.type2_use_extraction_verifier)
+        ),
+        "type2_use_llm_formula_selection": bool(
+            type2_pipeline.get("use_llm_formula_selection", settings.type2_use_llm_formula_selection)
+        ),
+        "type2_use_formula_bank": bool(
+            type2_pipeline.get("use_formula_bank", settings.type2_use_formula_bank)
+        ),
+        "type2_use_unit_verifier": bool(
+            type2_pipeline.get("use_unit_verifier", settings.type2_use_unit_verifier)
+        ),
+        "type2_force_llm_formula_selection": bool(
+            type2_pipeline.get("force_llm_formula_selection", settings.type2_force_llm_formula_selection)
+        ),
+        "type2_use_concept_bank": bool(
+            type2_pipeline.get("use_concept_bank", settings.type2_use_concept_bank)
+        ),
+        "type2_use_pot_solver": bool(
+            type2_pipeline.get("use_pot_solver", settings.type2_use_pot_solver)
+        ),
+        "type2_deterministic_first": bool(
+            type2_pipeline.get("deterministic_first", settings.type2_deterministic_first)
+        ),
+        "type2_use_executable_fallback": bool(
+            type2_pipeline.get("use_executable_fallback", settings.type2_use_executable_fallback)
+        ),
+        "type2_pot_max_retries": int(
+            type2_pipeline.get("pot_max_retries", settings.type2_pot_max_retries)
+        ),
+        "type2_formula_limit": int(
+            type2_pipeline.get("formula_limit", settings.type2_formula_limit)
+        ),
+        "type2_rerank_limit": int(
+            type2_pipeline.get("rerank_limit", settings.type2_rerank_limit)
+        ),
+        "type2_generate_explanation": bool(
+            type2_pipeline.get("generate_final_explanation", settings.type2_generate_explanation)
+        ),
+        "type2_pot_timeout": float(
+            type2_pipeline.get("pot_timeout", settings.type2_pot_timeout)
+        ),
+    }
 
 
 def settings_for_disabled_llm(settings: Settings | None = None) -> Settings:
@@ -99,7 +144,6 @@ def _settings_without_llm(settings: Settings) -> Settings:
             "llm_provider": "openai",
             "llm_base_url": None,
             "llm_api_key": None,
-            "mock_llm": True,
         }
     )
 

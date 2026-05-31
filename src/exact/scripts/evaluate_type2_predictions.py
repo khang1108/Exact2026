@@ -95,6 +95,9 @@ def evaluate_prediction(
     gold_answer = _clean_text(pred.get("gold_answer"))
     gold_unit = _clean_unit(pred.get("gold_unit"))
     runtime_error = _clean_text(pred.get("error"))
+    if _is_conceptual_prediction(pred):
+        status = "pipeline_error" if runtime_error else "conceptual_only"
+        return _row(pred, answer, unit, gold_answer, gold_unit, status, None, None, None, None)
 
     if gold_answer is None or gold_answer == "":
         return _row(pred, answer, unit, gold_answer, gold_unit, "missing_gold", None, None, None, None)
@@ -187,16 +190,19 @@ def summarize(
     numeric_rows = [row for row in rows if row.numeric_ok is not None]
     numeric_correct = sum(row.numeric_ok and row.unit_ok is not False for row in numeric_rows)
     pipeline_errors = sum(row.status == "pipeline_error" for row in rows)
+    conceptual_only = sum(row.status == "conceptual_only" for row in rows)
     unit_mismatches = sum(row.status == "unit_mismatch" for row in rows)
     missing_gold = sum(row.status == "missing_gold" for row in rows)
-    wrong = total - correct - missing_gold
+    scored_total = total - missing_gold - conceptual_only
+    wrong = total - correct - missing_gold - conceptual_only
 
     return {
         "total": total,
         "correct": correct,
         "wrong": wrong,
         "missing_gold": missing_gold,
-        "accuracy": _safe_ratio(correct, total - missing_gold),
+        "conceptual_only": conceptual_only,
+        "accuracy": _safe_ratio(correct, scored_total),
         "numeric_total": len(numeric_rows),
         "numeric_correct": numeric_correct,
         "numeric_accuracy": _safe_ratio(numeric_correct, len(numeric_rows)),
@@ -250,6 +256,7 @@ def print_summary(summary: dict[str, Any]) -> None:
     print(f"accuracy: {summary['accuracy']:.3f}")
     print(f"numeric_accuracy: {summary['numeric_accuracy']:.3f}")
     print(f"pipeline_errors: {summary['pipeline_errors']}")
+    print(f"conceptual_only: {summary['conceptual_only']}")
     print(f"unit_mismatches: {summary['unit_mismatches']}")
     print(f"by_status: {summary['by_status']}")
 
@@ -292,6 +299,19 @@ def _clean_unit(value: Any) -> str | None:
     if not text or text in {"-", "—"}:
         return None
     return text.replace("μ", "u")
+
+
+def _is_conceptual_prediction(pred: dict[str, Any]) -> bool:
+    question_type = _clean_text(pred.get("question_type"))
+    type2_kind = _clean_text(pred.get("type2_kind"))
+    if question_type == "open_ended" or type2_kind == "conceptual":
+        return True
+    if type2_kind != "mixed":
+        return False
+
+    answer = _clean_text(pred.get("answer")) or ""
+    gold_answer = _clean_text(pred.get("gold_answer")) or ""
+    return parse_number(answer) is None or parse_number(gold_answer) is None
 
 
 def _safe_ratio(numerator: int, denominator: int) -> float:

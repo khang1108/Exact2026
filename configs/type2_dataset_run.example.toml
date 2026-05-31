@@ -2,7 +2,7 @@
 # Copy to configs/type2_local.toml and edit backend/model values for each run.
 
 [dataset]
-input = "src/exact/datasets/exact/Physics_Problems_Text_Only.csv"
+input = "src/exact/datasets/exact/type2_physics_questions.csv"
 limit = 10
 skip_invalid = true
 task_filter = "type2"
@@ -14,13 +14,9 @@ include_raw = false
 progress_every = 1
 
 [llm]
-# transformers | ollama | openai_compatible | huggingface | groq
-#
-# Type 2 is PoT-first: retrieve formulas, ask the LLM to generate Pint code,
-# execute in the sandbox, verify answer/unit/formula IDs, then generate final
-# evidence. A real LLM backend is required.
+# backend: transformers | ollama | openai_compatible | huggingface | groq
+# This config is for real Type 2 runs. Do not set backend = "none".
 backend = "groq"
-enabled = true
 model = "llama-3.1-8b-instant"
 api_key = ""
 api_key_env = "GROQ_API_KEY"
@@ -31,72 +27,45 @@ top_p = 1.0
 timeout_seconds = 60.0
 max_retries = 2
 
-
-# For ollama:
-# backend = "ollama"
-# enabled = true
-# model = "qwen2.5:0.5b"
-# base_url = "http://127.0.0.1:11434/v1"
-
-# For Groq:
-# backend = "groq"
-# enabled = true
-# model = "llama-3.1-8b-instant"
-# api_key_env = ""
-
-# For transformers CPU:
-# backend = "transformers"
-# enabled = true
-# model = "Qwen/Qwen2.5-0.5B-Instruct"
-# device_map = "cpu"
-# torch_dtype = "float32"
+# Only needed for local/hosted backends that use them.
+# - `base_url` is required for `openai_compatible`
+# - `device_map`, `torch_dtype`, `local_files_only`, `trust_remote_code`
+#   matter only for `transformers`
+# - `api_key_env` is usually enough for Groq/HuggingFace/OpenAI-compatible
+base_url = ""
 device_map = "cpu"
 torch_dtype = "float32"
 local_files_only = false
 trust_remote_code = false
 
-[pipeline]
-# PoT-first Type 2 requires LLM extraction/code/explanation calls.
-use_type2_llm_fallback = true
-
-fail_fast = false
-
 [type2_pipeline]
-# Documented knobs for Type 2 experiments.
-# Current code uses PoT-first solving:
-#   extraction for formula retrieval support
-#   executable + JSON formula context retrieval
-#   LLM-generated Pint code
-#   sandbox execution
-#   PoT verifier
-#   LLM final explanation/evidence
-solver_mode = "pot_first"
-deterministic_first = false
-extraction_mode = "llm_preferred"
+# Runtime knobs read by `build_settings_from_config()`.
+# `extraction_mode`: merge | llm_only | heuristic_only
+extraction_mode = "merge"
+use_extraction_verifier = true
+
+# Retrieval / reranking
 use_formula_bank = true
+use_llm_formula_selection = true
+force_llm_formula_selection = false
+
+# Solving
+use_pot_solver = true
+deterministic_first = false
+use_executable_fallback = true
 use_unit_verifier = true
 use_concept_bank = true
-use_extraction_verifier = true
-use_llm_formula_selection = false
-use_pot_solver = true
-# false skips the final LLM explanation/evidence call after verified code execution.
-# The output still includes answer, unit, confidence, and a compact code explanation.
+
+# Skip the final explanation LLM call when false.
 generate_final_explanation = true
-
-# Maximum repair attempts for LLM-generated Pint code when execution fails
 pot_max_retries = 3
-
-# Number of formulas to retrieve in the initial lookup
 formula_limit = 24
-
-# Number of candidate formulas to send to LLM for reranking
 rerank_limit = 12
-
-# Execution timeout in seconds for running the code in the Pint sandbox
 pot_timeout = 10.0
 
 [evaluation]
-# Numerical answers are compared after unit conversion when possible.
+# Numeric-only evaluation with unit conversion when possible.
+# Conceptual-only outputs are reported but excluded from accuracy.
 relative_tolerance = 0.02
 absolute_tolerance = 1e-9
 case_sensitive_text = false
@@ -104,6 +73,8 @@ report_path = "artifacts/reports/type2_eval_report.json"
 errors_path = "artifacts/reports/type2_eval_errors.csv"
 
 [model_pull]
+# Optional helper for `src/exact/scripts/pull_model.py`.
+# Use it only when you want to pre-download a Hugging Face model locally.
 enabled = false
 revision = "main"
 cache_dir = ""

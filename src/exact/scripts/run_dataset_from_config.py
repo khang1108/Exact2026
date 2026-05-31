@@ -14,6 +14,7 @@ if __package__ in {None, ""}:
 
 from exact.datasets.dataset import ExactDataset, LoadedExample
 from exact.datasets.schemas import PredictionResponse, TaskType, to_official_response
+from exact.llm_client import has_json_llm_client_config
 from exact.llm_client import build_json_client_from_settings
 from exact.logic.llm_translator import JsonLLMClient
 from exact.logic.pipeline import run_type1_pipeline
@@ -52,6 +53,8 @@ def main() -> None:
         examples = examples[: int(limit)]
 
     settings = build_settings_from_config(config)
+    if task_filter != "type1":
+        _require_real_type2_llm(settings)
     disabled_settings = settings_for_disabled_llm(settings)
     use_type1_llm = bool(pipeline_cfg.get("use_type1_llm", True))
     use_type2_llm_fallback = bool(pipeline_cfg.get("use_type2_llm_fallback", True))
@@ -165,6 +168,13 @@ def _error_response(
         confidence=0.0,
         error=str(exc),
     )
+
+
+def _require_real_type2_llm(settings) -> None:
+    if not has_json_llm_client_config(settings):
+        raise ValueError(
+            "Type 2 runtime requires a real LLM backend. Configure [llm].backend, model, and credentials."
+        )
 
 
 def parse_args() -> argparse.Namespace:
