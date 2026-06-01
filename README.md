@@ -230,6 +230,116 @@ Use the unified runner to choose the client/backend from the script and keep
   --timeout-seconds 90
 ```
 
+Common `run_type2.py` args:
+
+| Arg | Meaning | Default |
+| --- | --- | --- |
+| `--backend` | Choose the LLM client preset for this run | Required |
+| `--config` | Type 2 pipeline config file | `configs/type2_dataset_run.example.toml` |
+| `--limit` | Number of Type 2 examples to process | `1` |
+| `--offset` | Start index inside the filtered Type 2 dataset | `0` |
+| `--output` | Output JSON path | `artifacts/predictions/type2/type2_run.json` |
+| `--input` | Override the Type 2 dataset input file | `src/exact/datasets/exact/type2_physics_questions.csv` |
+| `--model` | Override the model id/name for the selected client | Preset-dependent |
+| `--base-url` | Override the OpenAI-compatible endpoint URL when the client uses one | Preset-dependent |
+| `--api-key` | Override the API key when the client uses one | Preset-dependent |
+| `--api-key-env` | Read the API key from a named environment variable | Unset |
+| `--max-tokens` | LLM generation cap per call | `512` |
+| `--temperature` | Sampling temperature | `0.0` |
+| `--top-p` | Sampling top-p | `1.0` |
+| `--timeout-seconds` | HTTP timeout per LLM call | `60.0` |
+| `--max-retries` | Retry count for failed LLM calls | `2` |
+| `--device-map` | Device placement for `transformers` backend | Preset-dependent |
+| `--torch-dtype` | Torch dtype for `transformers` backend | Preset-dependent |
+| `--local-files-only` | Do not download model artifacts for `transformers` | Off |
+| `--trust-remote-code` | Allow custom model code for `transformers` | Off |
+| `--skip-final-explanation` | Skip the last explanation/evidence generation step | Off |
+
+### Backend Presets
+
+Each backend uses the same runner and the same pipeline config file:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend <preset> \
+  --config configs/type2_local.toml \
+  --limit 1
+```
+
+#### Cloudflare
+
+Reads defaults from `.env` if present:
+
+- `EXACT_CLOUDFLARE_LLM_BASE_URL`
+- `EXACT_CLOUDFLARE_LLM_MODEL`
+- `EXACT_CLOUDFLARE_LLM_API_KEY`
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend cloudflare \
+  --config configs/type2_local.toml \
+  --limit 1 \
+  --skip-final-explanation
+```
+
+#### Groq
+
+Usually paired with `GROQ_API_KEY` in `.env` or shell env:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend groq \
+  --config configs/type2_local.toml \
+  --model llama-3.1-8b-instant \
+  --api-key-env GROQ_API_KEY
+```
+
+#### Ollama
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend ollama \
+  --config configs/type2_local.toml \
+  --model qwen2.5:0.5b \
+  --base-url http://127.0.0.1:11434/v1
+```
+
+#### Transformers
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend transformers \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --device-map cpu \
+  --torch-dtype float32
+```
+
+#### Hugging Face Router
+
+Usually paired with `HF_TOKEN` in `.env` or shell env:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend huggingface \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --api-key-env HF_TOKEN
+```
+
+#### OpenAI-Compatible
+
+Use this for vLLM or any other OpenAI-compatible endpoint:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend openai_compatible \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --base-url http://YOUR_SERVER:8000/v1 \
+  --api-key EMPTY
+```
+
 Useful settings in `configs/type2_local.toml`:
 
 - `type2_pipeline.extraction_mode = "merge"` keeps both heuristic and LLM extraction in play.
@@ -240,49 +350,10 @@ Useful settings in `configs/type2_local.toml`:
 - `type2_pipeline.pot_timeout`, `pot_max_retries`, `formula_limit`, and `rerank_limit`
   are the main runtime knobs for Type 2 behavior.
 
-For CPU smoke tests with transformers, keep the TOML unchanged and choose the
-client from the script:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend transformers \
-  --model Qwen/Qwen2.5-0.5B-Instruct \
-  --device-map cpu \
-  --torch-dtype float32
-```
-
 To download/cache the configured Hugging Face model first:
 
 ```bash
 PYTHONPATH=src python -m exact.scripts.pull_model \
   --config configs/type2_local.toml \
   --model Qwen/Qwen2.5-0.5B-Instruct
-```
-
-For Ollama:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend ollama \
-  --model qwen2.5:0.5b \
-  --base-url http://127.0.0.1:11434/v1
-```
-
-For a cloud or LAN GPU server exposing an OpenAI-compatible API:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend openai_compatible \
-  --model Qwen/Qwen2.5-7B-Instruct \
-  --base-url http://YOUR_SERVER:8000/v1 \
-  --api-key EMPTY
-```
-
-For Groq:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend groq \
-  --model llama-3.1-8b-instant \
-  --api-key-env GROQ_API_KEY
 ```
