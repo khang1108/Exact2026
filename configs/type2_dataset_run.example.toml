@@ -25,7 +25,7 @@ use_formula_bank = true
 use_llm_formula_selection = true
 force_llm_formula_selection = false
 
-# Solving
+# Solving: executable formulas run before LLM PoT code generation.
 use_pot_solver = true
 deterministic_first = false
 use_executable_fallback = true
@@ -36,16 +36,16 @@ use_concept_bank = true
 generate_final_explanation = true
 
 # Per-task LLM output budgets
-extraction_max_tokens = 768
-formula_selection_max_tokens = 768
+extraction_max_tokens = 512
+formula_selection_max_tokens = 1024
 conceptual_max_tokens = 1024
 pot_code_max_tokens = 3072
 pot_repair_max_tokens = 2048
-final_explanation_max_tokens = 768
+final_explanation_max_tokens = 1024
 
 pot_max_retries = 3
 formula_limit = 24
-rerank_limit = 12
+rerank_limit = 8
 pot_timeout = 10.0
 
 [evaluation]

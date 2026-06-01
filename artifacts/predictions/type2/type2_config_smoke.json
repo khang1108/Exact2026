@@ -1,88 +1,92 @@
 {
-  "config": "configs/type2_dataset_run.example.toml",
-  "source": "src/exact/datasets/exact/Physics_Problems_Text_Only.csv",
-  "count": 2,
+  "config": "configs/type2_local.toml",
+  "source": "src/exact/datasets/exact/type2_physics_questions.csv",
+  "count": 3,
   "format": "exact_predictions",
   "predictions": [
     {
-      "answer": "0.045",
-      "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2. Substituting the extracted values gives energy = 0.045 J.",
-      "fol": "W = 1/2 * C * U^2",
+      "answer": "",
+      "explanation": "Prediction failed: cannot assign to field 'kind'",
+      "fol": null,
       "cot": [
-        "Normalized the physics question and extracted known quantities.",
-        "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
-        "Computed `energy` and converted the result to `J`."
+        "The configured dataset runner caught an exception for this item."
       ],
-      "premises": [
-        "The energy stored in a capacitor is W = 1/2 * C * U^2.",
-        "C = 100 uF",
-        "U = 30 V"
-      ],
-      "confidence": 0.82,
+      "premises": [],
+      "confidence": 0.0,
       "id": "physics_TD401",
       "task_type": "type2_physics",
-      "question_type": "numerical",
-      "unit": "J",
-      "error": null,
+      "question_type": "unknown",
+      "unit": null,
+      "error": "cannot assign to field 'kind'",
       "route_reason": "premises_nl absent",
       "official": {
-        "answer": "0.045",
-        "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2. Substituting the extracted values gives energy = 0.045 J.",
-        "fol": "W = 1/2 * C * U^2",
+        "answer": "",
+        "explanation": "Prediction failed: cannot assign to field 'kind'",
+        "fol": null,
         "cot": [
-          "Normalized the physics question and extracted known quantities.",
-          "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
-          "Computed `energy` and converted the result to `J`."
+          "The configured dataset runner caught an exception for this item."
         ],
-        "premises": [
-          "The energy stored in a capacitor is W = 1/2 * C * U^2.",
-          "C = 100 uF",
-          "U = 30 V"
-        ],
-        "confidence": 0.82
+        "premises": [],
+        "confidence": 0.0
       },
       "gold_answer": "0.045",
       "gold_unit": "J"
     },
     {
-      "answer": "0.0001",
-      "explanation": "Capacitance is charge divided by voltage: C = Q / U. Substituting the extracted values gives capacitance = 0.0001 F.",
-      "fol": "C = Q / U",
+      "answer": "",
+      "explanation": "Prediction failed: cannot assign to field 'kind'",
+      "fol": null,
       "cot": [
-        "Normalized the physics question and extracted known quantities.",
-        "Selected formula `C = Q / U` from the capacitance formula bank.",
-        "Computed `capacitance` and converted the result to `F`."
+        "The configured dataset runner caught an exception for this item."
       ],
-      "premises": [
-        "Capacitance is charge divided by voltage: C = Q / U.",
-        "Q = 3 mC",
-        "U = 30 V"
-      ],
-      "confidence": 0.82,
+      "premises": [],
+      "confidence": 0.0,
       "id": "physics_TD402",
       "task_type": "type2_physics",
-      "question_type": "numerical",
-      "unit": "F",
-      "error": null,
+      "question_type": "unknown",
+      "unit": null,
+      "error": "cannot assign to field 'kind'",
       "route_reason": "premises_nl absent",
       "official": {
-        "answer": "0.0001",
-        "explanation": "Capacitance is charge divided by voltage: C = Q / U. Substituting the extracted values gives capacitance = 0.0001 F.",
-        "fol": "C = Q / U",
+        "answer": "",
+        "explanation": "Prediction failed: cannot assign to field 'kind'",
+        "fol": null,
         "cot": [
-          "Normalized the physics question and extracted known quantities.",
-          "Selected formula `C = Q / U` from the capacitance formula bank.",
-          "Computed `capacitance` and converted the result to `F`."
+          "The configured dataset runner caught an exception for this item."
         ],
-        "premises": [
-          "Capacitance is charge divided by voltage: C = Q / U.",
-          "Q = 3 mC",
-          "U = 30 V"
-        ],
-        "confidence": 0.82
+        "premises": [],
+        "confidence": 0.0
       },
       "gold_answer": "100",
       "gold_unit": "μF"
+    },
+    {
+      "answer": "",
+      "explanation": "Prediction failed: cannot assign to field 'kind'",
+      "fol": null,
+      "cot": [
+        "The configured dataset runner caught an exception for this item."
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "physics_LD001",
+      "task_type": "type2_physics",
+      "question_type": "unknown",
+      "unit": null,
+      "error": "cannot assign to field 'kind'",
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "",
+        "explanation": "Prediction failed: cannot assign to field 'kind'",
+        "fol": null,
+        "cot": [
+          "The configured dataset runner caught an exception for this item."
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "gold_answer": "0.05",
+      "gold_unit": "N"
     }
   ]
 }

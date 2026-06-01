@@ -4,7 +4,7 @@ import re
 import unicodedata
 
 from exact.type2.schemas import Extraction, Quantity, Type2QuestionKind
-from exact.type2.solving.units import parse_quantity
+from exact.type2.solving.units import parse_quantity, ureg
 
 
 UNIT_REPLACEMENTS = {
@@ -16,6 +16,7 @@ UNIT_REPLACEMENTS = {
     "℃": "degC",
     "°C": "degC",
     "°": " degree",
+    "Ω": "ohm",
     "·": "*",
     "⋅": "*",
 }
@@ -62,6 +63,8 @@ def normalize_unit(unit: str) -> str:
         "ohms": "ohm",
         "F": "farad",
         "H": "henry",
+        "turns": "dimensionless",
+        "turns/m": "1 / meter",
     }
     return replacements.get(unit, unit)
 
@@ -96,6 +99,8 @@ NUMERICAL_MARKERS = (
     "calculate",
     "determine",
     "find",
+    "what is the",
+    "what is the average",
     "what is the value",
     "magnitude",
     "round",
@@ -132,6 +137,23 @@ QUALITATIVE_QUESTION_MARKERS = (
 
 def classify_type2_question(question: str) -> Type2QuestionKind:
     lower = question.lower()
+    if "what is the unit" in lower or "unit of" in lower:
+        return Type2QuestionKind.CONCEPTUAL
+    if "circuit's characteristic" in lower or "circuit characteristic" in lower:
+        return Type2QuestionKind.CONCEPTUAL
+    if "shape of the graph" in lower:
+        return Type2QuestionKind.CONCEPTUAL
+    if "resonance" in lower and any(
+        phrase in lower
+        for phrase in (
+            "does resonance occur",
+            "does the circuit experience electrical resonance",
+            "determine if resonance occurs",
+            "is it in resonance",
+            "will resonance occur",
+        )
+    ):
+        return Type2QuestionKind.CONCEPTUAL
     has_concept = any(marker in lower for marker in CONCEPTUAL_MARKERS)
     has_number = any(char.isdigit() for char in question)
     has_numeric_intent = any(marker in lower for marker in NUMERICAL_MARKERS)
@@ -170,6 +192,7 @@ SYMBOL_TO_NAME = {
     "l": "inductance",
     "f": "frequency",
     "z": "impedance",
+    "n": "turn_density",
     "m": "mass",
     "rho": "density",
     "lambda": "length",
@@ -211,6 +234,10 @@ UNIT_TO_NAME = {
     "s": "time",
     "min": "time",
     "m^2": "area",
+    "cm^2": "area",
+    "mm^2": "area",
+    "turns/m": "turn_density",
+    "turns": "turns",
     "m^3": "volume",
     "l": "volume",
     "kg": "mass",
@@ -244,6 +271,9 @@ NAME_PATTERNS = (
     ("specific heat capacity", "specific_heat_capacity"),
     ("calorific value", "heat_of_combustion"),
     ("heat value", "heat_of_combustion"),
+    ("turn density", "turn_density"),
+    ("number of turns per unit length", "turn_density"),
+    ("turns per meter", "turn_density"),
     ("density", "density"),
     ("pressure", "pressure"),
     ("mass", "mass"),
@@ -272,8 +302,6 @@ NAME_PATTERNS = (
     ("angular frequency", "angular_frequency"),
     ("magnetic field", "magnetic_field"),
     ("magnetic flux", "magnetic_flux"),
-    ("turn density", "turn_density"),
-    ("number of turns per unit length", "turn_density"),
     ("surface charge density", "surface_charge_density"),
     ("linear charge density", "linear_charge_density"),
     ("relative permittivity", "relative_permittivity"),
@@ -289,6 +317,27 @@ NAME_PATTERNS = (
 )
 
 TARGET_PATTERNS = (
+    ("magnetic field energy density", "energy_density"),
+    ("energy density", "energy_density"),
+    ("flux linkage", "magnetic_flux"),
+    ("natural period", "time"),
+    ("oscillation period", "time"),
+    ("period of oscillation", "time"),
+    ("period", "time"),
+    ("angular frequency", "angular_frequency"),
+    ("rms current", "current"),
+    ("effective current", "current"),
+    ("induced electromotive force", "voltage"),
+    ("electromotive force", "voltage"),
+    ("emf", "voltage"),
+    ("turn density", "turn_density"),
+    ("number of turns per unit length", "turn_density"),
+    ("inductive reactance", "impedance"),
+    ("capacitive reactance", "impedance"),
+    ("total impedance", "impedance"),
+    ("power factor", "power_factor"),
+    ("circuit's characteristic", "circuit_characteristic"),
+    ("circuit characteristic", "circuit_characteristic"),
     ("magnetic field energy", "energy"),
     ("electric field energy", "energy"),
     ("stored energy", "energy"),
@@ -313,10 +362,10 @@ TARGET_PATTERNS = (
     ("electric field strength", "electric_field"),
     ("magnitude of the electric field", "electric_field"),
     ("electric field", "electric_field"),
+    ("magnetic field strength", "magnetic_field"),
     ("field strength", "electric_field"),
     ("charge", "charge"),
     ("frequency", "frequency"),
-    ("angular frequency", "angular_frequency"),
     ("inductance", "inductance"),
     ("magnetic field", "magnetic_field"),
     ("magnetic flux", "magnetic_flux"),
@@ -352,7 +401,7 @@ TARGET_PATTERNS = (
 )
 
 NUMBER = r"[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?"
-UNIT = r"(?:J/\(kg\*degC\)|J/\(kg\*degree\)|kg/m\^3|kg/m³|m/s\^2|m/s²|rad/s|V/m|N/C|m\^3|km/h|uF|nF|pF|mF|uC|nC|pC|mC|mA|kV|mV|kohm|mW|kW|mJ|uJ|nJ|mH|uWb|mN|mT|m\^2|degC|degree|degrees|kg|cm|mm|mm|m|s|h|min|%|F|C|A|V|W|J|H|Hz|N|T|Wb|g|L|ohm|°)"
+UNIT = r"(?:J/\(kg\*degC\)|J/\(kg\*degree\)|kg/m\^3|kg/m³|J/m\^3|J/m³|m/s\^2|m/s²|rad/s|turns/m|V/m|N/C|m\^3|km/h|cm\^2|mm\^2|m\^2|uF|nF|pF|mF|uC|nC|pC|mC|mA|kV|mV|kohm|mW|kW|mJ|uJ|nJ|mH|uWb|mN|mT|degC|degree|degrees|kg|cm|mm|mm|m|s|h|min|%|F|C|A|V|W|J|H|Hz|N|T|Wb|g|L|ohm|turns|°)"
 
 SYMBOL_VALUE_RE = re.compile(
     rf"\b(?P<symbol>[A-Za-z][A-Za-z0-9_]*)\s*=\s*(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b",
@@ -381,6 +430,7 @@ def extract_type2(question: str) -> Extraction:
             continue
         _add_quantity(quantities, name, match, consumed_spans)
 
+    _add_dimensionless_quantities(quantities, normalized)
     _add_implicit_duplicate_quantities(quantities, lower)
 
     target = detect_target(normalized)
@@ -434,6 +484,13 @@ def _name_from_context(match: re.Match[str], question: str) -> str | None:
 
 
 def _name_from_unit(unit: str) -> str | None:
+    if unit == "H":
+        return "inductance"
+    if unit == "F":
+        return "capacitance"
+    raw_key = unit.strip().lower()
+    if raw_key in UNIT_TO_NAME:
+        return UNIT_TO_NAME[raw_key]
     key = normalize_unit(unit).lower()
     if key in {"degrees", "°"}:
         key = "degree"
@@ -488,6 +545,28 @@ def _add_quantity(
         confidence=0.9,
     )
     consumed_spans.append(match.span())
+
+
+def _add_dimensionless_quantities(quantities: dict[str, Quantity], question: str) -> None:
+    patterns = (
+        r"(?:turn density|turns per meter|number of turns per meter)\s*(?:of\s*)?(?:n)?\s*(?:=|is|of)?\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+))",
+        r"(?:dielectric constant|relative permittivity)\s*(?:of\s*)?(?:epsilon(?:_r)?|eps(?:ilon)?(?:_r)?|ε(?:_r)?)?\s*(?:=|is|of)?\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+))",
+        r"(?:epsilon(?:_r)?|eps(?:ilon)?(?:_r)?|ε(?:_r)?)\s*=\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+))",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, question, flags=re.IGNORECASE)
+        if match is None:
+            continue
+        if "relative_permittivity" in quantities:
+            return
+        value = float(match.group("value"))
+        quantities["relative_permittivity"] = Quantity(
+            name="relative_permittivity",
+            value=value * ureg.dimensionless,
+            evidence=match.group(0),
+            confidence=0.85,
+        )
+        return
 
 
 def _add_implicit_duplicate_quantities(quantities: dict[str, Quantity], question: str) -> None:

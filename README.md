@@ -160,9 +160,9 @@ is to keep vLLM private and expose only the EXACT FastAPI `/predict` endpoint.
 Type 1 is LLM-only: if no JSON LLM client is configured, the request fails with
 a clear error instead of substituting a local parser.
 
-Type 2 uses a PoT-first physics pipeline: formula retrieval, LLM-generated Pint
-code, sandbox execution, answer/unit/formula verification, and evidence
-generation.
+Type 2 uses a formula-grounded physics pipeline: extraction, formula retrieval,
+executable formula solving, and optional LLM PoT fallback when formulas cannot
+solve directly.
 
 Example Type 1 request:
 
@@ -353,7 +353,7 @@ Useful settings in `configs/type2_local.toml`:
 
 - `dataset.input`, `dataset.limit`, `output.path`, and `evaluation.*` stay in the TOML.
 - `type2_pipeline.extraction_mode = "merge"` keeps both heuristic and LLM extraction in play.
-- `type2_pipeline.use_pot_solver = true` enables the PoT-first numerical solver path.
+- `type2_pipeline.use_pot_solver = true` enables the LLM PoT fallback when executable formulas cannot solve directly.
 - `type2_pipeline.use_llm_formula_selection = true` enables LLM reranking over retrieved formulas.
 - `type2_pipeline.generate_final_explanation = false` skips the final
   explanation/evidence LLM call for faster smoke runs.

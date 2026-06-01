@@ -58,17 +58,16 @@ def _retrieve_theory_context(question: str) -> str:
         scored_entries.append((overlap, entry))
 
     scored_entries.sort(key=lambda x: x[0], reverse=True)
-    top_entries = [item[1] for item in scored_entries[:2] if item[0] > 0]
+    top_entries = [item[1] for item in scored_entries[:1] if item[0] > 0]
     if not top_entries:
-        top_entries = [entry for entry in kb[:2]]
+        top_entries = [entry for entry in kb[:1]]
 
     formatted = []
     for idx, entry in enumerate(top_entries, start=1):
         formatted.append(
             f"Theory Ref {idx} [{entry.get('subtopic_name')} - {entry.get('topic_name')}]:\n"
-            f"- Concept: {entry.get('description_subtopic')}\n"
-            f"- Misconceptions: {'; '.join(entry.get('misconceptions') or [])}\n"
-            f"- Analogies: {'; '.join(entry.get('analogies') or [])}"
+            f"- Concept: {_clip_context(str(entry.get('description_subtopic') or ''), 700)}\n"
+            f"- Misconceptions: {_clip_context('; '.join(entry.get('misconceptions') or []), 250)}"
         )
     return "\n\n".join(formatted)
 
@@ -95,10 +94,11 @@ def _solve_conceptual(
             "role": "system",
             "content": (
                 "You are an expert physics solver. Answer the conceptual physics question directly and concisely. "
-                "Return JSON only with keys explanation, answer, premises, cot. "
-                "The `answer` field must be the short direct answer (e.g. 'all energy is entirely stored in the magnetic field of the inductor'). "
-                "The `cot` field must be a list of reasoning steps. "
-                "Keep the answer and explanation grounded in standard physics principles and the provided theoretical context."
+                "Return exactly one JSON object and nothing else. The first character must be { and the last must be }. "
+                "Use exactly these keys: answer, explanation, premises, cot. "
+                "answer must be a short direct phrase. explanation must be one concise sentence. "
+                "premises must contain at most 2 short strings. cot must be an empty list or at most 2 short public trace strings. "
+                "Do not use markdown, code fences, LaTeX, or prose outside JSON."
             )
         },
         {
@@ -106,7 +106,10 @@ def _solve_conceptual(
             "content": (
                 f"Question:\n{extraction.normalized_question}\n\n"
                 f"Theoretical Reference Context:\n{theory_context}\n\n"
-                f"Formula context:\n{formula_context.context}"
+                f"Formula context:\n{_compact_formula_context(formula_context.context)}\n\n"
+                "Return shape: "
+                "{\"answer\":\"short answer\",\"explanation\":\"one sentence\","
+                "\"premises\":[\"short premise\"],\"cot\":[]}"
             )
         }
     ]
@@ -115,7 +118,7 @@ def _solve_conceptual(
         raw = client.complete_json_sync(
             messages=messages,
             temperature=settings.llm_temperature,
-            max_tokens=settings.type2_conceptual_max_tokens,
+            max_tokens=min(settings.type2_conceptual_max_tokens, 512),
         )
         answer = str(raw.get("answer") or "").strip()
         explanation = str(raw.get("explanation") or "").strip()
@@ -141,6 +144,19 @@ def _solve_conceptual(
         )
     except Exception as exc:
         return _failed_result(extraction, f"Conceptual LLM solver failed: {exc}")
+
+
+def _clip_context(text: str, limit: int) -> str:
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + "..."
+
+
+def _compact_formula_context(context: str, limit: int = 900) -> str:
+    lines = [line for line in context.splitlines() if line.strip()]
+    compact = "\n".join(lines[:4])
+    return _clip_context(compact or "No formula context available.", limit)
 
 
 def solve_with_pot(
@@ -186,7 +202,11 @@ def solve_with_pot(
             settings=settings,
         )
     except Exception as exc:
-        return _failed_result(extraction, f"LLM code generation returned invalid output: {exc}")
+        reason = f"LLM code generation returned invalid output: {exc}"
+        fallback = _try_executable_formula_fallback(extraction, formula_context, reason, settings)
+        if fallback is not None:
+            return fallback
+        return _failed_result(extraction, reason)
     if code_spec is None:
         return _unconfigured_result(extraction)
 

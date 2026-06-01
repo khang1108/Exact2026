@@ -561,6 +561,17 @@ def _unwrap_chat_completion_response(data: dict[str, Any]) -> dict[str, Any]:
         if "choices" in result:
             return result
         response = result.get("response")
+        if isinstance(response, str):
+            return {
+                "choices": [
+                    {
+                        "message": {
+                            "content": response,
+                        },
+                        "finish_reason": result.get("finish_reason") or "stop",
+                    }
+                ]
+            }
         if isinstance(response, dict):
             return {
                 "choices": [

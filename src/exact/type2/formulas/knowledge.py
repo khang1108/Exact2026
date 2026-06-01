@@ -235,12 +235,15 @@ def _rerank_with_llm(
 
     rerank_limit = settings.type2_rerank_limit if settings else 12
     candidate_summaries = ranked[:rerank_limit]
-    selection = select_formula_ids(
-        question,
-        _build_extraction_summary(extraction),
-        candidate_summaries,
-        settings=settings,
-    )
+    try:
+        selection = select_formula_ids(
+            question,
+            _build_extraction_summary(extraction),
+            candidate_summaries,
+            settings=settings,
+        )
+    except Exception:
+        return ranked, None
     if selection is None or not selection.formula_ids:
         return ranked, None
 

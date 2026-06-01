@@ -173,7 +173,7 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_USE_POT_SOLVER",
     )
     type2_deterministic_first: bool = Field(
-        default=False,
+        default=True,
         validation_alias="EXACT_TYPE2_DETERMINISTIC_FIRST",
     )
     type2_use_executable_fallback: bool = Field(
