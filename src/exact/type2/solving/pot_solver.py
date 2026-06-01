@@ -115,7 +115,7 @@ def _solve_conceptual(
         raw = client.complete_json_sync(
             messages=messages,
             temperature=settings.llm_temperature,
-            max_tokens=settings.llm_max_tokens,
+            max_tokens=settings.type2_conceptual_max_tokens,
         )
         answer = str(raw.get("answer") or "").strip()
         explanation = str(raw.get("explanation") or "").strip()

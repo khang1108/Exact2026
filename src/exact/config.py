@@ -185,6 +185,36 @@ class Settings(BaseSettings):
     type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
     type2_generate_explanation: bool = Field(default=True, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION")
     type2_pot_timeout: float = Field(default=10.0, gt=0.0, validation_alias="EXACT_TYPE2_POT_TIMEOUT")
+    type2_extraction_max_tokens: int = Field(
+        default=768,
+        ge=1,
+        validation_alias="EXACT_TYPE2_EXTRACTION_MAX_TOKENS",
+    )
+    type2_formula_selection_max_tokens: int = Field(
+        default=768,
+        ge=1,
+        validation_alias="EXACT_TYPE2_FORMULA_SELECTION_MAX_TOKENS",
+    )
+    type2_conceptual_max_tokens: int = Field(
+        default=1024,
+        ge=1,
+        validation_alias="EXACT_TYPE2_CONCEPTUAL_MAX_TOKENS",
+    )
+    type2_pot_code_max_tokens: int = Field(
+        default=3072,
+        ge=1,
+        validation_alias="EXACT_TYPE2_POT_CODE_MAX_TOKENS",
+    )
+    type2_pot_repair_max_tokens: int = Field(
+        default=2048,
+        ge=1,
+        validation_alias="EXACT_TYPE2_POT_REPAIR_MAX_TOKENS",
+    )
+    type2_final_explanation_max_tokens: int = Field(
+        default=768,
+        ge=1,
+        validation_alias="EXACT_TYPE2_FINAL_EXPLANATION_MAX_TOKENS",
+    )
 
     api_host: str = "0.0.0.0"
     api_port: int = Field(default=8080, ge=1, le=65535)

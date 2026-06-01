@@ -131,6 +131,30 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
         "type2_pot_timeout": float(
             type2_pipeline.get("pot_timeout", settings.type2_pot_timeout)
         ),
+        "type2_extraction_max_tokens": int(
+            type2_pipeline.get("extraction_max_tokens", settings.type2_extraction_max_tokens)
+        ),
+        "type2_formula_selection_max_tokens": int(
+            type2_pipeline.get(
+                "formula_selection_max_tokens",
+                settings.type2_formula_selection_max_tokens,
+            )
+        ),
+        "type2_conceptual_max_tokens": int(
+            type2_pipeline.get("conceptual_max_tokens", settings.type2_conceptual_max_tokens)
+        ),
+        "type2_pot_code_max_tokens": int(
+            type2_pipeline.get("pot_code_max_tokens", settings.type2_pot_code_max_tokens)
+        ),
+        "type2_pot_repair_max_tokens": int(
+            type2_pipeline.get("pot_repair_max_tokens", settings.type2_pot_repair_max_tokens)
+        ),
+        "type2_final_explanation_max_tokens": int(
+            type2_pipeline.get(
+                "final_explanation_max_tokens",
+                settings.type2_final_explanation_max_tokens,
+            )
+        ),
     }
 
 

@@ -202,6 +202,7 @@ pytest
 ```bash
 cp configs/type2_dataset_run.example.toml configs/type2_local.toml
 # edit dataset/output/type2_pipeline/evaluation in configs/type2_local.toml
+# choose the LLM client from the script, not from the TOML
 ./venv/bin/python scripts/type2/run_type2.py --backend groq --config configs/type2_local.toml
 ```
 
@@ -214,23 +215,34 @@ PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
   --config configs/type2_local.toml
 ```
 
-Use the unified runner to choose the client/backend from the script and keep
-`configs/type2_local.toml` focused on pipeline behavior:
+`scripts/type2/run_type2.py` is responsible for:
+
+- selecting the LLM client/backend
+- overriding client-level settings such as model, endpoint, auth, timeout, and transformer device
+- choosing `limit` / `offset` for a run
+
+`configs/type2_local.toml` is responsible for:
+
+- dataset and output defaults
+- all Type 2 pipeline behavior
+- all per-task Type 2 token budgets
+- evaluation settings
+
+Example runs:
 
 ```bash
 ./venv/bin/python scripts/type2/run_type2.py --backend groq --limit 1
-./venv/bin/python scripts/type2/run_type2.py --backend cloudflare --limit 1 --skip-final-explanation
+./venv/bin/python scripts/type2/run_type2.py --backend cloudflare --limit 1
 ./venv/bin/python scripts/type2/run_type2.py --backend transformers --model Qwen/Qwen2.5-Math-1.5B-Instruct
 ./venv/bin/python scripts/type2/run_type2.py \
   --backend openai_compatible \
   --base-url https://your-endpoint/v1 \
   --api-key your-token \
   --model your-model \
-  --max-tokens 1024 \
   --timeout-seconds 90
 ```
 
-Common `run_type2.py` args:
+Runner and client args for `run_type2.py`:
 
 | Arg | Meaning | Default |
 | --- | --- | --- |
@@ -238,13 +250,12 @@ Common `run_type2.py` args:
 | `--config` | Type 2 pipeline config file | `configs/type2_dataset_run.example.toml` |
 | `--limit` | Number of Type 2 examples to process | `1` |
 | `--offset` | Start index inside the filtered Type 2 dataset | `0` |
-| `--output` | Output JSON path | `artifacts/predictions/type2/type2_run.json` |
-| `--input` | Override the Type 2 dataset input file | `src/exact/datasets/exact/type2_physics_questions.csv` |
+| `--output` | Override the output JSON path from the config | `artifacts/predictions/type2/type2_run.json` |
+| `--input` | Override the dataset input path from the config | `src/exact/datasets/exact/type2_physics_questions.csv` |
 | `--model` | Override the model id/name for the selected client | Preset-dependent |
 | `--base-url` | Override the OpenAI-compatible endpoint URL when the client uses one | Preset-dependent |
 | `--api-key` | Override the API key when the client uses one | Preset-dependent |
 | `--api-key-env` | Read the API key from a named environment variable | Unset |
-| `--max-tokens` | LLM generation cap per call | `512` |
 | `--temperature` | Sampling temperature | `0.0` |
 | `--top-p` | Sampling top-p | `1.0` |
 | `--timeout-seconds` | HTTP timeout per LLM call | `60.0` |
@@ -253,7 +264,6 @@ Common `run_type2.py` args:
 | `--torch-dtype` | Torch dtype for `transformers` backend | Preset-dependent |
 | `--local-files-only` | Do not download model artifacts for `transformers` | Off |
 | `--trust-remote-code` | Allow custom model code for `transformers` | Off |
-| `--skip-final-explanation` | Skip the last explanation/evidence generation step | Off |
 
 ### Backend Presets
 
@@ -278,8 +288,7 @@ Reads defaults from `.env` if present:
 ./venv/bin/python scripts/type2/run_type2.py \
   --backend cloudflare \
   --config configs/type2_local.toml \
-  --limit 1 \
-  --skip-final-explanation
+  --limit 1
 ```
 
 #### Groq
@@ -342,6 +351,7 @@ Use this for vLLM or any other OpenAI-compatible endpoint:
 
 Useful settings in `configs/type2_local.toml`:
 
+- `dataset.input`, `dataset.limit`, `output.path`, and `evaluation.*` stay in the TOML.
 - `type2_pipeline.extraction_mode = "merge"` keeps both heuristic and LLM extraction in play.
 - `type2_pipeline.use_pot_solver = true` enables the PoT-first numerical solver path.
 - `type2_pipeline.use_llm_formula_selection = true` enables LLM reranking over retrieved formulas.
@@ -349,6 +359,13 @@ Useful settings in `configs/type2_local.toml`:
   explanation/evidence LLM call for faster smoke runs.
 - `type2_pipeline.pot_timeout`, `pot_max_retries`, `formula_limit`, and `rerank_limit`
   are the main runtime knobs for Type 2 behavior.
+- LLM output budgets per task now live in the config, not in script args.
+- `type2_pipeline.extraction_max_tokens` controls the LLM budget for extraction.
+- `type2_pipeline.formula_selection_max_tokens` controls the LLM budget for formula reranking.
+- `type2_pipeline.conceptual_max_tokens` controls the LLM budget for conceptual-only answers.
+- `type2_pipeline.pot_code_max_tokens` controls the LLM budget for first-pass PoT code generation.
+- `type2_pipeline.pot_repair_max_tokens` controls the LLM budget for PoT repair calls.
+- `type2_pipeline.final_explanation_max_tokens` controls the LLM budget for the final explanation call.
 
 To download/cache the configured Hugging Face model first:
 

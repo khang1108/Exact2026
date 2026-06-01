@@ -16,7 +16,6 @@ from typing import Any
 DEFAULT_CLOUDFLARE_BASE_URL = "https://exact-llm-api.duchoaiduong100.workers.dev/v1"
 DEFAULT_CLOUDFLARE_MODEL = "@cf/openai/gpt-oss-120b"
 DEFAULT_CLOUDFLARE_API_KEY = "exact2026"
-DEFAULT_MAX_TOKENS = 512
 DEFAULT_TEMPERATURE = 0.0
 DEFAULT_TOP_P = 1.0
 DEFAULT_TIMEOUT_SECONDS = 60.0
@@ -52,7 +51,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--base-url", default=None)
     parser.add_argument("--api-key", default=None)
     parser.add_argument("--api-key-env", default=None)
-    parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     parser.add_argument("--top-p", type=float, default=DEFAULT_TOP_P)
     parser.add_argument("--timeout-seconds", type=float, default=DEFAULT_TIMEOUT_SECONDS)
@@ -61,7 +59,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default=None)
     parser.add_argument("--local-files-only", action="store_true")
     parser.add_argument("--trust-remote-code", action="store_true")
-    parser.add_argument("--skip-final-explanation", action="store_true")
     parser.add_argument(
         "--python-exe",
         type=Path,
@@ -133,15 +130,11 @@ def build_config_text(args: argparse.Namespace) -> str:
     llm_cfg = apply_cli_overrides(llm_cfg, args)
     validate_llm_config(llm_cfg)
 
-    type2_cfg = dict(config.get("type2_pipeline", {}))
-    if args.skip_final_explanation:
-        type2_cfg["generate_final_explanation"] = False
-
     sections: dict[str, dict[str, Any]] = {
         "dataset": dataset_cfg,
         "output": output_cfg,
         "llm": llm_cfg,
-        "type2_pipeline": type2_cfg,
+        "type2_pipeline": dict(config.get("type2_pipeline", {})),
         "evaluation": dict(config.get("evaluation", {})),
     }
     if "model_pull" in config:
@@ -153,7 +146,6 @@ def build_llm_config(backend: str) -> dict[str, Any]:
     preset: dict[str, Any] = {
         "enabled": True,
         "backend": backend,
-        "max_tokens": DEFAULT_MAX_TOKENS,
         "temperature": DEFAULT_TEMPERATURE,
         "top_p": DEFAULT_TOP_P,
         "timeout_seconds": DEFAULT_TIMEOUT_SECONDS,
@@ -200,7 +192,6 @@ def apply_cli_overrides(llm_cfg: dict[str, Any], args: argparse.Namespace) -> di
     if args.api_key_env is not None:
         updated["api_key_env"] = args.api_key_env
         updated.pop("api_key", None)
-    updated["max_tokens"] = args.max_tokens
     updated["temperature"] = args.temperature
     updated["top_p"] = args.top_p
     updated["timeout_seconds"] = args.timeout_seconds

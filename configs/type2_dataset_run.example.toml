@@ -34,6 +34,15 @@ use_concept_bank = true
 
 # Skip the final explanation LLM call when false.
 generate_final_explanation = true
+
+# Per-task LLM output budgets
+extraction_max_tokens = 768
+formula_selection_max_tokens = 768
+conceptual_max_tokens = 1024
+pot_code_max_tokens = 3072
+pot_repair_max_tokens = 2048
+final_explanation_max_tokens = 768
+
 pot_max_retries = 3
 formula_limit = 24
 rerank_limit = 12

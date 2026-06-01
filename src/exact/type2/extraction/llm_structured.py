@@ -104,7 +104,7 @@ def parse_with_llm(
     raw = client.complete_json_sync(
         messages=_build_extraction_messages(question),
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=settings.type2_extraction_max_tokens,
     )
     spec = Type2ExtractionSpec.model_validate(raw)
     spec.notes.append(f"normalized_question={normalize_question(question)}")
@@ -126,7 +126,7 @@ def generate_pot_code(
     raw = client.complete_json_sync(
         messages=_build_pot_messages(question, explanation, formula_context),
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=settings.type2_pot_code_max_tokens,
     )
     return _validate_pot_code_spec(raw)
 
@@ -146,7 +146,7 @@ def select_formula_ids(
     raw = client.complete_json_sync(
         messages=_build_formula_selection_messages(question, extraction_summary, formula_summaries),
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=settings.type2_formula_selection_max_tokens,
     )
     return FormulaChoiceSpec.model_validate(raw)
 
@@ -166,7 +166,7 @@ def repair_pot_code(
     raw = client.complete_json_sync(
         messages=_build_repair_messages(question, original_code, error_message),
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=settings.type2_pot_repair_max_tokens,
     )
     return _validate_pot_code_spec(raw)
 
@@ -196,7 +196,7 @@ def generate_final_explanation(
             formula_ids_used,
         ),
         temperature=settings.llm_temperature,
-        max_tokens=settings.llm_max_tokens,
+        max_tokens=settings.type2_final_explanation_max_tokens,
     )
     return _validate_final_explanation_spec(raw)
 
