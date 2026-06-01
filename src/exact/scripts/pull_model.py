@@ -23,15 +23,15 @@ def main() -> None:
     llm = config.get("llm", {})
     pull = config.get("model_pull", {})
 
-    model_id = args.model or str(llm.get("model") or "").strip()
+    model_id = args.model or str(pull.get("model") or llm.get("model") or "").strip()
     if not model_id:
-        raise ValueError("No model set. Configure llm.model or pass --model.")
+        raise ValueError("No model set. Configure model_pull.model or pass --model.")
 
-    backend = str(llm.get("backend", "none")).strip().lower()
+    backend = str(pull.get("backend") or llm.get("backend") or "none").strip().lower()
     if backend not in {"transformers", "huggingface"} and not args.force:
         raise ValueError(
             "Model pull is intended for Hugging Face model ids. "
-            "Use --force if you still want to download this llm.model."
+            "Use --force if you still want to download this model id."
         )
 
     try:

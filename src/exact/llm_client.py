@@ -198,6 +198,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
                         continue
                     resp.raise_for_status()
                 data = resp.json()
+                data = _unwrap_chat_completion_response(data)
                 choice = data["choices"][0]
                 text = choice["message"]["content"] or ""
                 finish_reason = choice.get("finish_reason", "")
@@ -550,6 +551,28 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise ValueError("LLM JSON output must be an object")
     return parsed
+
+
+def _unwrap_chat_completion_response(data: dict[str, Any]) -> dict[str, Any]:
+    """Normalize Cloudflare Workers AI wrappers to OpenAI chat completion shape."""
+
+    result = data.get("result")
+    if data.get("success") is True and isinstance(result, dict):
+        if "choices" in result:
+            return result
+        response = result.get("response")
+        if isinstance(response, dict):
+            return {
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(response, ensure_ascii=False),
+                        },
+                        "finish_reason": "stop",
+                    }
+                ]
+            }
+    return data
 
 
 def _find_first_json_object_span(text: str) -> tuple[int, int] | None:

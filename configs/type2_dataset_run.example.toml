@@ -1,5 +1,6 @@
-# Type 2 only dataset run config.
-# Copy to configs/type2_local.toml and edit backend/model values for each run.
+# Unified Type 2 pipeline config.
+# Copy to configs/type2_local.toml and tune dataset/output/type2_pipeline/evaluation.
+# The LLM client/backend is chosen from scripts/type2/run_type2.py, not in this TOML.
 
 [dataset]
 input = "src/exact/datasets/exact/type2_physics_questions.csv"
@@ -12,31 +13,6 @@ path = "artifacts/predictions/type2/type2_config_smoke.json"
 include_gold = true
 include_raw = false
 progress_every = 1
-
-[llm]
-# backend: transformers | ollama | openai_compatible | huggingface | groq
-# This config is for real Type 2 runs. Do not set backend = "none".
-backend = "groq"
-model = "llama-3.1-8b-instant"
-api_key = ""
-api_key_env = "GROQ_API_KEY"
-
-max_tokens = 512
-temperature = 0.0
-top_p = 1.0
-timeout_seconds = 60.0
-max_retries = 2
-
-# Only needed for local/hosted backends that use them.
-# - `base_url` is required for `openai_compatible`
-# - `device_map`, `torch_dtype`, `local_files_only`, `trust_remote_code`
-#   matter only for `transformers`
-# - `api_key_env` is usually enough for Groq/HuggingFace/OpenAI-compatible
-base_url = ""
-device_map = "cpu"
-torch_dtype = "float32"
-local_files_only = false
-trust_remote_code = false
 
 [type2_pipeline]
 # Runtime knobs read by `build_settings_from_config()`.
@@ -71,13 +47,3 @@ absolute_tolerance = 1e-9
 case_sensitive_text = false
 report_path = "artifacts/reports/type2_eval_report.json"
 errors_path = "artifacts/reports/type2_eval_errors.csv"
-
-[model_pull]
-# Optional helper for `src/exact/scripts/pull_model.py`.
-# Use it only when you want to pre-download a Hugging Face model locally.
-enabled = false
-revision = "main"
-cache_dir = ""
-local_dir = ""
-allow_patterns = []
-ignore_patterns = []

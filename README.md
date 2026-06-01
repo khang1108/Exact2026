@@ -201,7 +201,8 @@ pytest
 
 ```bash
 cp configs/type2_dataset_run.example.toml configs/type2_local.toml
-PYTHONPATH=src python -m exact.scripts.run_dataset_from_config --config configs/type2_local.toml
+# edit dataset/output/type2_pipeline/evaluation in configs/type2_local.toml
+./venv/bin/python scripts/type2/run_type2.py --backend groq --config configs/type2_local.toml
 ```
 
 Evaluate a Type 2 prediction file with the tolerances configured in the same
@@ -213,74 +214,75 @@ PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
   --config configs/type2_local.toml
 ```
 
-Monitor a Type 2 run with live correct/wrong/error counters:
+Use the unified runner to choose the client/backend from the script and keep
+`configs/type2_local.toml` focused on pipeline behavior:
 
 ```bash
-PYTHONPATH=src python -m exact.scripts.run_type2_monitor \
-  --config configs/type2_local.toml
+./venv/bin/python scripts/type2/run_type2.py --backend groq --limit 1
+./venv/bin/python scripts/type2/run_type2.py --backend cloudflare --limit 1 --skip-final-explanation
+./venv/bin/python scripts/type2/run_type2.py --backend transformers --model Qwen/Qwen2.5-Math-1.5B-Instruct
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend openai_compatible \
+  --base-url https://your-endpoint/v1 \
+  --api-key your-token \
+  --model your-model \
+  --max-tokens 1024 \
+  --timeout-seconds 90
 ```
 
 Useful settings in `configs/type2_local.toml`:
 
-- `llm.backend = "transformers"` loads a Hugging Face model directly.
-- `llm.backend = "ollama"` calls an Ollama OpenAI-compatible endpoint.
-- `llm.backend = "groq"` calls Groq's OpenAI-compatible API.
-- `llm.backend = "openai_compatible"` calls a local/cloud GPU server such as vLLM.
-- `llm.backend = "huggingface"` calls Hugging Face's OpenAI-compatible router.
-- `pipeline.use_type2_llm_fallback = true` enables Type 2 PoT-first solving:
-  formula retrieval, LLM-generated Pint code, sandbox execution, PoT
-  verification, and final LLM evidence generation.
+- `type2_pipeline.extraction_mode = "merge"` keeps both heuristic and LLM extraction in play.
+- `type2_pipeline.use_pot_solver = true` enables the PoT-first numerical solver path.
+- `type2_pipeline.use_llm_formula_selection = true` enables LLM reranking over retrieved formulas.
 - `type2_pipeline.generate_final_explanation = false` skips the final
   explanation/evidence LLM call for faster smoke runs.
+- `type2_pipeline.pot_timeout`, `pot_max_retries`, `formula_limit`, and `rerank_limit`
+  are the main runtime knobs for Type 2 behavior.
 
-For CPU smoke tests with transformers, start with a small model:
+For CPU smoke tests with transformers, keep the TOML unchanged and choose the
+client from the script:
 
-```toml
-[llm]
-enabled = true
-backend = "transformers"
-model = "Qwen/Qwen2.5-0.5B-Instruct"
-device_map = "cpu"
-torch_dtype = "float32"
-
-[pipeline]
-use_type1_llm = true
-use_type2_llm_fallback = true
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend transformers \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --device-map cpu \
+  --torch-dtype float32
 ```
 
 To download/cache the configured Hugging Face model first:
 
 ```bash
-PYTHONPATH=src python -m exact.scripts.pull_model --config configs/type2_local.toml
+PYTHONPATH=src python -m exact.scripts.pull_model \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-0.5B-Instruct
 ```
 
 For Ollama:
 
-```toml
-[llm]
-enabled = true
-backend = "ollama"
-model = "qwen2.5:0.5b"
-base_url = "http://127.0.0.1:11434/v1"
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend ollama \
+  --model qwen2.5:0.5b \
+  --base-url http://127.0.0.1:11434/v1
 ```
 
 For a cloud or LAN GPU server exposing an OpenAI-compatible API:
 
-```toml
-[llm]
-enabled = true
-backend = "openai_compatible"
-model = "Qwen/Qwen2.5-7B-Instruct"
-base_url = "http://YOUR_SERVER:8000/v1"
-api_key = "EMPTY"
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend openai_compatible \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --base-url http://YOUR_SERVER:8000/v1 \
+  --api-key EMPTY
 ```
 
 For Groq:
 
-```toml
-[llm]
-enabled = true
-backend = "groq"
-model = "llama-3.1-8b-instant"
-api_key_env = "GROQ_API_KEY"
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend groq \
+  --model llama-3.1-8b-instant \
+  --api-key-env GROQ_API_KEY
 ```
