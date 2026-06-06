@@ -271,11 +271,18 @@ def run_pipeline(args: argparse.Namespace, settings: Any) -> RunResult:
     run_started = time.perf_counter()
 
     # Optionally lazy-import evaluator
+    eval_cfg = {}
     try:
+        from exact.scripts.config_utils import load_toml_config
         from exact.scripts.evaluate_type2_predictions import evaluate_prediction
+
+        eval_cfg = load_toml_config(args.config).get("evaluation", {}) if args.config.exists() else {}
         has_evaluator = True
     except ImportError:
         has_evaluator = False
+    relative_tolerance = float(eval_cfg.get("relative_tolerance", 0.02))
+    absolute_tolerance = float(eval_cfg.get("absolute_tolerance", 1e-9))
+    case_sensitive_text = bool(eval_cfg.get("case_sensitive_text", False))
 
     print(f"\n🚀 Starting pipeline run ({len(examples)} questions)...\n")
     print("-" * 90)
@@ -318,7 +325,12 @@ def run_pipeline(args: argparse.Namespace, settings: Any) -> RunResult:
         status = "unknown"
         if has_evaluator and not pred.get("error"):
             try:
-                row = evaluate_prediction(pred)
+                row = evaluate_prediction(
+                    pred,
+                    relative_tolerance=relative_tolerance,
+                    absolute_tolerance=absolute_tolerance,
+                    case_sensitive_text=case_sensitive_text,
+                )
                 status = row.status
                 if status.startswith("correct"):
                     result.correct += 1

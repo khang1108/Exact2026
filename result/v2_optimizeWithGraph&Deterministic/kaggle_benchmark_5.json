@@ -1,0 +1,164 @@
+{
+  "config": "/tmp/exact_type2_run_1ga38k46.toml",
+  "source": "/kaggle/working/EXACT_2026/src/exact/datasets/exact/type2_physics_questions.csv",
+  "count": 5,
+  "requested_count": 5,
+  "offset": 0,
+  "interrupted": false,
+  "run_elapsed_seconds": 400.574571,
+  "format": "exact_type2_monitor_predictions",
+  "summary": {
+    "total": 5,
+    "correct": 3,
+    "wrong": 2,
+    "pipeline_errors": 0,
+    "missing_gold": 0,
+    "conceptual_only": 0,
+    "numeric_total": 5,
+    "numeric_correct": 3,
+    "accuracy": 0.6,
+    "numeric_accuracy": 0.6,
+    "average_elapsed_seconds": 80.114518
+  },
+  "predictions": [
+    {
+      "answer": "0.045",
+      "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed.",
+        "PoT solver failed; executable formula fallback was used. Reason: Traceback (most recent call last):\n  File \"<string>\", line 43, in <module>\n  File \"/tmp/exact_type2_j_2bswgd/program.py\", line 7, in <module>\n    ans = E.to('J').magnitude\n          ^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/quantity.py\", line 537, in to\n    magnitude = self._convert_magnitude_not_inplace(other, *contexts, **ctx_kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/quantity.py\", line 480, in _convert_magnitude_not_inplace\n    return self._REGISTRY.convert(self._magnitude, self._units, other, **ctx_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/registry.py\", line 1121, in convert\n    return self._convert(value, src, dst, inplace, **ctx_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/context/registry.py\", line 410, in _convert\n    return super()._convert(value, src, dst, inplace, **ctx_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/nonmultiplicative/registry.py\", line 264, in _convert\n    return super()._convert(value, src, dst, inplace)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/registry.py\", line 1156, in _convert\n    raise factor\npint.errors.DimensionalityError: Cannot convert from 'coulomb * volt ** 2' ([mass] ** 2 * [length] ** 4 / [current] / [time] ** 5) to 'joule' ([mass] * [length] ** 2 / [time] ** 2)",
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
+        "Computed `energy` and converted the result to `J`."
+      ],
+      "premises": [
+        "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+        "C = 100 uF",
+        "U = 30 V"
+      ],
+      "confidence": 0.82,
+      "id": "physics_TD401",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "J",
+      "error": null,
+      "type2_kind": "mixed",
+      "gold_answer": "0.045",
+      "gold_unit": "J",
+      "elapsed_seconds": 145.069632
+    },
+    {
+      "answer": "0.0001",
+      "explanation": "capacitance_from_charge_voltage: C = Q / U",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed.",
+        "Retrieved formula context for the question.",
+        "Generated a Pint-based Python program with the LLM.",
+        "Executed the program in the sandbox.",
+        "Verified the numeric answer, unit, and formula IDs.",
+        "No LLM final explanation was available; used a concise verified fallback."
+      ],
+      "premises": [
+        "capacitance_from_charge_voltage: C = Q / U"
+      ],
+      "confidence": 0.72,
+      "id": "physics_TD402",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "F",
+      "error": null,
+      "type2_kind": "mixed",
+      "gold_answer": "100",
+      "gold_unit": "μF",
+      "elapsed_seconds": 64.653187
+    },
+    {
+      "answer": "0.048892",
+      "explanation": "layout=three_side_triangle",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `q3` at point C as the target charge.",
+        "Added force from q1 at A to q3: r=0.05000000000000001 meter, sign=repulsive.",
+        "Added force from q2 at B to q3: r=0.029999999999999992 meter, sign=attractive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=three_side_triangle",
+        "q1@A=6e-08 coulomb",
+        "q2@B=-6e-08 coulomb",
+        "q3@C=6e-08 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD001",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "type2_kind": "numerical",
+      "gold_answer": "0.05",
+      "gold_unit": "N",
+      "elapsed_seconds": 19.012767
+    },
+    {
+      "answer": "0.024415",
+      "explanation": "layout=right_angle_at_a",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `qa` at point A as the target charge.",
+        "Added force from qb at B to qa: r=4.0 meter, sign=attractive.",
+        "Added force from qc at C to qa: r=3.0 meter, sign=repulsive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=right_angle_at_a",
+        "qa@A=4.9999999999999996e-06 coulomb",
+        "qb@B=-4.9999999999999996e-06 coulomb",
+        "qc@C=4e-06 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD002",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "type2_kind": "mixed",
+      "gold_answer": "24.45 × 10^-3",
+      "gold_unit": "N",
+      "elapsed_seconds": 22.517293
+    },
+    {
+      "answer": "6.751058",
+      "explanation": "net_force_three_charges_triangle_on_q3: F_net = |F13 + F23| using Coulomb forces and the law of cosines",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Retrieved formula context for the question.",
+        "Generated a Pint-based Python program with the LLM.",
+        "Executed the program in the sandbox.",
+        "Verified the numeric answer, unit, and formula IDs.",
+        "No LLM final explanation was available; used a concise verified fallback."
+      ],
+      "premises": [
+        "net_force_three_charges_triangle_on_q3: F_net = |F13 + F23| using Coulomb forces and the law of cosines"
+      ],
+      "confidence": 0.72,
+      "id": "physics_LD003",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "type2_kind": "numerical",
+      "gold_answer": "6.76",
+      "gold_unit": "N",
+      "elapsed_seconds": 149.319711
+    }
+  ]
+}

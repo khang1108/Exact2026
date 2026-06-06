@@ -16,7 +16,6 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from exact.scripts.config_utils import load_toml_config
 from exact.type2.solving.units import parse_quantity
 
 
@@ -39,6 +38,8 @@ class EvalRow:
 
 
 def main() -> None:
+    from exact.scripts.config_utils import load_toml_config
+
     args = parse_args()
     config = load_toml_config(args.config) if args.config.exists() else {}
     eval_cfg = config.get("evaluation", {})
@@ -72,6 +73,7 @@ def main() -> None:
         "absolute_tolerance": absolute_tolerance,
         "summary": summary,
         "rows": [asdict(row) for row in rows],
+        "routing_logs": _build_routing_logs(predictions, rows),
     }
 
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -154,7 +156,11 @@ def evaluate_numeric(
     absolute_error = abs(pred_value - gold_value)
     denominator = max(abs(gold_value), absolute_tolerance)
     relative_error = absolute_error / denominator
-    numeric_ok = absolute_error <= absolute_tolerance or relative_error <= relative_tolerance
+    numeric_ok = (
+        absolute_error <= absolute_tolerance
+        or relative_error <= relative_tolerance
+        or _rounded_to_gold_precision_ok(gold_answer, pred_value, gold_value)
+    )
     ok = numeric_ok and unit_ok is not False
 
     if ok:
@@ -214,6 +220,19 @@ def summarize(
     }
 
 
+def _build_routing_logs(predictions: list[dict[str, Any]], rows: list[EvalRow]) -> list[dict[str, Any]]:
+    logs: list[dict[str, Any]] = []
+    for pred, row in zip(predictions, rows, strict=False):
+        routing = pred.get("routing_log") or pred.get("routing_diagnostics")
+        if not isinstance(routing, dict):
+            continue
+        log = dict(routing)
+        log["correct"] = row.status.startswith("correct")
+        log["evaluation_status"] = row.status
+        logs.append(log)
+    return logs
+
+
 def write_errors_csv(path: Path, rows: list[EvalRow]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as file:
@@ -225,19 +244,18 @@ def write_errors_csv(path: Path, rows: list[EvalRow]) -> None:
 
 
 def parse_number(text: str) -> float | None:
-    text = text.strip()
-    if not text:
+    normalized = _normalize_numeric_text(text)
+    if not normalized:
         return None
-    normalized = (
-        text.replace(",", ".")
-        .replace("×", "x")
-        .replace("−", "-")
-        .replace("^", "**")
-        .replace(" ", "")
-    )
-    normalized = re.sub(r"(?P<base>[-+]?\d+(?:\.\d+)?)x10\\*\\*(?P<exp>[-+]?\d+)", r"\g<base>e\g<exp>", normalized)
-    normalized = re.sub(r"(?P<base>[-+]?\d+(?:\.\d+)?)x10(?P<exp>[-+]?\d+)", r"\g<base>e\g<exp>", normalized)
-    normalized = re.sub(r"(?P<base>[-+]?\d+(?:\.\d+)?)e(?P<exp>[-+]?\d+)", r"\g<base>e\g<exp>", normalized)
+
+    expression = _numeric_expression(normalized)
+    if expression is not None:
+        try:
+            value = float(eval(expression, {"__builtins__": {}}, {"sqrt": math.sqrt}))
+        except (ArithmeticError, NameError, SyntaxError, TypeError, ValueError):
+            value = None
+        if value is not None and math.isfinite(value):
+            return value
 
     match = re.search(r"[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?", normalized, re.IGNORECASE)
     if not match:
@@ -249,6 +267,66 @@ def parse_number(text: str) -> float | None:
     if not math.isfinite(value):
         return None
     return value
+
+
+def _normalize_numeric_text(text: str) -> str:
+    normalized = (
+        text.strip()
+        .replace(",", ".")
+        .replace("×", "x")
+        .replace("Ã—", "x")
+        .replace("−", "-")
+        .replace("âˆ’", "-")
+        .replace("\\sqrt", "sqrt")
+        .replace("^", "**")
+        .replace(" ", "")
+    )
+    normalized = re.sub(r"sqrt\{([^{}]+)\}", r"sqrt(\1)", normalized)
+    normalized = re.sub(r"sqrt([0-9.]+)", r"sqrt(\1)", normalized)
+    normalized = re.sub(r"(?<=\d)(?=sqrt\()", "*", normalized)
+    return normalized
+
+
+def _numeric_expression(normalized: str) -> str | None:
+    expression = re.sub(
+        r"x10(?:\*\*)?(?P<exp>[-+]?\d+)",
+        r"*10**\g<exp>",
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    expression = re.sub(
+        r"(?P<base>(?:\d+(?:\.\d+)?|\.\d+))e(?P<exp>[-+]?\d+)",
+        r"\g<base>*10**\g<exp>",
+        expression,
+        flags=re.IGNORECASE,
+    )
+    if not re.fullmatch(r"[-+*/().0-9sqrt]+", expression):
+        return None
+    if not re.search(r"\d", expression):
+        return None
+    return expression
+
+
+def _rounded_to_gold_precision_ok(gold_answer: str, pred_value: float, gold_value: float) -> bool:
+    """Accept values that round to the explicit decimal precision shown in gold."""
+    normalized = (
+        _normalize_numeric_text(gold_answer)
+        .replace("Ã—", "x")
+        .replace("âˆ’", "-")
+    )
+    match = re.search(
+        r"[-+]?\d+\.(?P<decimals>\d+)(?P<scientific>x10(?:\*\*)?(?P<x_exp>[-+]?\d+)|e(?P<e_exp>[-+]?\d+))?",
+        normalized,
+        re.IGNORECASE,
+    )
+    if not match:
+        return False
+    decimal_places = len(match.group("decimals"))
+    if match.group("scientific"):
+        exponent = int(match.group("x_exp") or match.group("e_exp"))
+        scale = 10**exponent
+        return round(pred_value / scale, decimal_places) == round(gold_value / scale, decimal_places)
+    return round(pred_value, decimal_places) == round(gold_value, decimal_places)
 
 
 def print_summary(summary: dict[str, Any]) -> None:

@@ -1,0 +1,226 @@
+id,question
+LD335,"Three identical charges, q = 1.2 × 10^-6 C, are placed at the three vertices of an isosceles right triangle with legs of 5.2 cm. Calculate the net electric field strength at the right-angle vertex. Give your answer rounded two decimal places."
+LD342,"Two point charges, q1 = 3.6 × 10^-6 C and q2 = 3.0 × 10^-6 C, are separated by a distance of 9.2 cm. Point M lies on the line connecting A and B, but outside the segment AB, and is 14.2 cm from A(M is to the right side of A and B). Calculate the net electric field strength at M. Give your answer rounded two decimal places."
+LD343,"Two charges, q1 = -2.4 × 10^-6 C and q2 = -2.1 × 10^-6 C, are separated by 7.5 cm. Point M lies on the line connecting the two charges but outside the segment between them, and is located 11.9 cm to the left of charge q1. Calculate the net electric field at M. Give your answer rounded three decimal places."
+LD345,Two charges q1 = -2.4 × 10^-6 C and q2 = 1.2 × 10^-6 C are placed at two points separated by 9.2 cm. A point M is located 2.0 cm from q1 and 7.2 cm from q2. Calculate the total electric field intensity at M. Give your answer rounded three decimal places.
+LD352,"Two electric charges, q1 = 5.3 × 10^-6 C and q2 = 3.0 × 10^-6 C, are placed such that each is 5.0 cm from point M. The angle formed by the two charges at point M is 60°. Calculate the resultant electric field strength at M. Give your answer rounded two decimal places. Give your answer rounded two decimal places."
+LD356,Two charges q1 = 3.6 × 10^-6 C and q2 = 3.0 × 10^-6 C are placed 9.2 cm apart. A point M is 3.3 cm from q1 and 5.9 cm from q2. Calculate the net electric field strength at M. Give your answer rounded two decimal places.
+LD357,"Two electric charges q1 = 3.6 × 10^-6 C and q2 = -3.0 × 10^-6 C are placed at points A and B, respectively, separated by 9.2 cm. Point M lies on the line connecting A and B, and is 4.4 cm from A. Calculate the resultant electric field strength at M. Give your answer rounded two decimal places."
+LD359,"Two charges, q1 = -2.4 × 10^-6 C and q2 = -3.0 × 10^-6 C, are separated by 6.0 cm. M is the midpoint of the line segment connecting q1 and q2. Calculate the resultant electric field strength at point M. Give your answer rounded to the nearest interger."
+LD361,"Two charges, q1 = 4.98 × 10^-6 C and q2 = 4.74 × 10^-6 C, are located such that each is 4.56 cm away from point M. The electric fields they produce at M are at a 90° angle to each other. Calculate the magnitude of the resultant electric field at M. Give your answer rounded two decimal places."
+LD366,"Two charges, q1 = 3.90 × 10^-6 C and q2 = 2.21 × 10^-6 C, are both located 5.47 cm away from point M. The electric fields they produce at M are perpendicular to each other. Calculate the magnitude of the resultant electric field at M. GIve your answer rounded two decimal places."
+LD375,"Two charges, q1 = 3.13 × 10^-6 C and q2 = 4.76 × 10^-6 C, are each located 2.74 cm from point M. The electric fields they produce at point M form an angle of 60° with each other. Calculate the magnitude of the resultant electric field at M. Give your answer rounded to two decimal places."
+LD376,"Two electric charges, q1 = 2.16 × 10^-6 C and q2 = 2.03 × 10^-6 C, are placed at the ends of a 9.29 cm long line segment. Calculate the electric field strength at the midpoint of that segment. Give your answer rounded to two decimal places."
+LD381,"Two electric charges, q1 = 1.48 × 10^-6 C and q2 = 2.27 × 10^-6 C, are placed at the two ends of a straight line segment 6.44 cm long. Calculate the electric field strength at the midpoint of that segment (on the connecting line). Give your answer rounded to two decimal places."
+LD382,"Two point charges, q1 = 2.24 × 10^-6 C and q2 = 1.24 × 10^-6 C, are placed at the two ends of a straight line segment 8.25 cm long. Calculate the electric field strength at the midpoint of the line segment. Give your answer rounded to two decimal places."
+LD385,Three charges q1 = q2 = 2.15 × 10^-6 C and q3 = 4.76 × 10^-6 C are placed at the three vertices of an equilateral triangle with a side length of 9.78 cm. Calculate the net electric field strength at the position of q3. Give your answer rounded to two decimal places.
+LD387,"Two electric charges, q1 = 2.96 × 10^-6 C and q2 = 3.84 × 10^-6 C, are placed at two points 5.9 cm apart. Calculate the electric field strength at a point on the perpendicular bisector, equidistant from both charges at 2.95 cm. Give your answer rounded to one decimal places."
+LD391,"Two charges q1 = 1.41 × 10^-6 C and q2 = 3.48 × 10^-6 C are placed at two points separated by 5.08 cm. Calculate the electric field strength at a point on the perpendicular bisector, equidistant from both charges by 2.54 cm. Give your answer rounded to two decimal places."
+LD393,"Two charges, q1 = 4.09 × 10^-6 C and q2 = 4.00 × 10^-6 C, are placed at the ends of a 7.58 cm long line segment. Calculate the electric field strength at the midpoint of the segment. Give your answer rounded to two decimal places."
+LD394,"Three electric charges, q1 = q2 = 3.98 × 10^-6 C and q3 = 1.15 × 10^-6 C, are placed at the three vertices of an equilateral triangle with a side length of 6.65 cm. Calculate the net electric field acting on q3. Give your answer rounded to two decimal places."
+LD398,"Two electric charges, q1 = 4.64 × 10^-6 C and q2 = 2.36 × 10^-6 C, are placed at the ends of a straight line segment of length 8.48 cm. Calculate the electric field strength at the midpoint of that line segment (on the connecting line). Give your answer rounded to two decimal places."
+TD101,"A parallel-plate capacitor has circular plates with a radius of 10 cm. The plate separation is 1 cm, and the potential difference across the plates is 108 V. Air is between the plates. Find the charge of the capacitor."
+TD162,An air parallel-plate capacitor has a plate area of 29.8 cm² and a plate separation of 0.88 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.
+TD165,An air parallel-plate capacitor has a plate area of 38.2 cm² and a plate separation of 1.22 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.
+TD166,A parallel-plate capacitor has a capacitance of 27.62 pF and is charged to a voltage of 108.8 V. Calculate the charge on the capacitor. Give your answer rounded to three decimal places.
+TD167,A parallel-plate air capacitor has a capacitance of 27.62 pF and is charged to a potential difference of 108.8 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to onedecimal places.
+TD168,An air parallel-plate capacitor has a plate area of 20.3 cm² and a plate separation of 0.61 mm. Calculate its capacitance. Give your answer rounded to two decimal places.
+TD170,An air-filled capacitor has a capacitance of 29.42 pF and is charged to a potential difference of 96.3 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to one decimal places.
+TD175,A parallel-plate capacitor with a capacitance of 23.22 pF is charged to a voltage of 77.7 V. Calculate the charge stored by the capacitor Give your answer rounded to three decimal places.
+TD361,A capacitor has a charge of 40 μC and a voltage of 8 V. Calculate the energy stored in the capacitor.
+TD365,A capacitor with a capacitance of 3 μF is charged to a voltage of 15 V. Calculate the charge on the capacitor.
+TD369,A capacitor with a capacitance of 5 μF is charged to a voltage of 20 V and then disconnected from the power source. Calculate the charge on the capacitor after it is disconnected.
+TD370,A capacitor has an energy of 180 μJ when U = 6 V. Calculate the capacitance of the capacitor.
+TD373,"A capacitor has a voltage of 10 V and a capacitance of 8 μF. If it's replaced by another capacitor with a capacitance of 4 μF, while maintaining the same voltage, what is the reduction in energy?"
+TD374,"A capacitor C = 3 μF, is charged at 12 V, then its two plates are short-circuited. Calculate the charge and energy after short-circuiting."
+TD377,"A capacitor has a charge Q = 50 μC and a capacitance C = 5 μF. If it's replaced with another capacitor having a capacitance of 10 μF, but the charge Q is kept constant, how does the voltage change?"
+TD381,"Capacitor C = 5 μF, charged at 10 V. If the capacitor is cut from the source and connected with another uncharged 5 μF capacitor, calculate the energy after connection."
+TD384,"A parallel-plate capacitor has a plate area S = 100 cm² and a plate separation d = 1 mm, placed in a medium with a dielectric constant ε = 5. Calculate the capacitance."
+TD385,"A parallel-plate capacitor with a capacitance of 100 pF is charged to 200 V. The power source is then disconnected, and the distance between its plates is doubled. Calculate the electrical energy stored in the capacitor after this change."
+TD386,"A parallel-plate capacitor is placed in a dielectric (ε = 4), with plate area S = 300 cm² and separation d = 1 mm. If the dielectric is replaced with one where ε = 2, how does the capacitance change?"
+TD391,A parallel plate capacitor has a plate separation `d = 1 mm` and is charged to `U = 200 V`. The plate area is `S = 100 cm^2`. The plate separation is then doubled while still connected to the source. Calculate the additional work supplied by the source.
+TD393,A capacitor C = 10 μF is charged to U = 100 V. The capacitor plates are then split in half without any charge leakage. Calculate the new capacitance.
+TD394,"A parallel plate capacitor has a capacitance C = 5 pF and a plate separation d = 1 mm. If the plate separation d is changed to 0.2 mm and the dielectric medium is replaced by one with a dielectric constant of ε_r = 3, what is the new capacitance?"
+TD396,"A capacitor has an energy of 2 mJ and a capacitance of 1 μF. If it is connected in series with another 1 μF uncharged capacitor, calculate the new total energy of the system."
+TD397,"A parallel plate capacitor has an area S = 400 cm², a plate separation d = 2 mm, and a dielectric constant ε = 1.5. If a voltage U = 100 V is applied, calculate the charge on each plate."
+TD399,"A parallel-plate capacitor is fully charged and then disconnected from its power source. Subsequently, it is placed in an environment where the permittivity (ε) increases by a factor of 3. Calculate the new energy stored in the capacitor if the initial energy was 1 μJ."
+THCB001,"An ammeter has a measuring range of 2 A and a least count of 0.1 A. When measuring the current through a light bulb, the reading is 1.2 A. What is the absolute error?"
+THCB004,"When measuring the current through a resistor, a value of 0.25 A was obtained with an uncertainty of ±0.01 A. What is the maximum possible current?"
+THCB005,"In an experiment, the measured voltage was 9.5 ± 0.2 V, and the measured current was 0.95 ± 0.02 A. What is the relative error in the power?"
+THCB006,"If the actual resistance is 10.2 Ω but the measured value is 9.8 Ω, what is the absolute error?"
+THCB008,"When measuring voltage with a voltmeter, the result is 6.3 ± 0.1 V. If this is used to calculate power with a current of 0.6 ± 0.02 A, what is the absolute error of the power?"
+THCB009,"In a series circuit, resistance R1 = 10 ± 0.5 Ω, R2 = 20 ± 1 Ω. What is the absolute error of the total resistance?"
+THCB010,"If the actual resistance is 10.2 Ω but the measured value is 9.8 Ω, what is the relative error?"
+THCB067,"In a parallel circuit with two lamps, the current through D₁ is 0.4 A, and the total current is 1.0 A. Calculate the current through D₂."
+THCB068,An 8Ω lamp is connected in parallel with a 16Ω lamp. A voltage of 8V is applied across them. Calculate the total current in the circuit.
+THCB069,"If both lamps glow brightly and are identical, with a supply voltage U = 6V, calculate the current through each lamp, given R = 6Ω."
+THCB071,"In an electrical circuit, if the resistance of branch D₂ decreases, how will the current through D₂ change?"
+THCB072,"Resistor D1 has a resistance of 10Ω, and Resistor D2 has a resistance of 5Ω. They are connected in parallel to a 10V power source. Calculate the total current flowing through the circuit."
+THCB073,"If the total current increases when the resistance of the variable resistor is decreased, what happens to the light bulbs?"
+THCB074,What is the total resistance of two 10Ω and 30Ω branches connected in parallel?
+THCB075,A 24V source supplies 2 A of current to a circuit with two parallel lamps. Calculate the total power consumption of the circuit.
+THCB076,Two light bulbs with resistances R₁ = 20Ω and R₂ = 10Ω are connected in parallel. A voltage of U = 10V is applied across the combination. Calculate the current flowing through each bulb.
+THCB077,"The power consumption of lamps D₁ and D₂ is 10W and 20W, respectively. Calculate the total power of the circuit."
+THCB078,"A parallel circuit has R₁ = 30Ω, R₂ = 60Ω. U = 12V. Calculate the equivalent resistance."
+THCB082,Two identical lamps are connected in parallel and consume a total of 18W. Calculate the power of each lamp.
+THCB083,"If two bulbs are connected in parallel, both at the same voltage, how bright will the bulb with lower resistance be?"
+THCB084,A light bulb consumes 12W of power under a voltage of 6V. Calculate the current through the bulb.
+THCB085,"If the current through A₁ is 1.8 A and A₂ is 1.2 A, calculate the current in the third branch."
+THCB088,"An object was measured three times, yielding the results: 10.1 cm, 10.3 cm, and 10.2 cm. Calculate the mean value and the mean absolute error."
+THCB089,The measured length is 12.0 ± 0.1 cm. Calculate the percentage relative error.
+THCB095,The measured voltage is 6.0 ± 0.2 V. Calculate the percentage relative error.
+THCB099,A student measured the temperature as 36.5 ± 0.2 °C. Calculate the percentage relative error.
+THCB102,A pressure gauge has a least count of 0.2 atm. It measures a pressure of 2.0 atm. Calculate the percentage relative error.
+THCB104,Mass was measured three times: 50.0 g; 49.8 g; 50.2 g. Calculate the average mass and the average absolute error.
+THCB105,The measured voltage is 4.0 ± 0.1 V. Calculate the percentage relative uncertainty.
+THCB106,A student measures the volume of water as 500 ± 5 ml. Calculate the percentage relative error.
+THCB107,"The true value of the temperature is 100°C, and the student measured 98.5°C. Calculate the absolute error and the relative error."
+THCB109,Mass measurement result: 200.0 ± 1.0 g. Calculate the percentage relative uncertainty.
+THCB114,Three voltage readings: 9.9V; 10.1V; 10.0V. Calculate the average voltage and the average absolute error.
+THCB118,Three temperature measurements: 36.6°C; 36.8°C; 36.7°C. Calculate the mean and the mean absolute error.
+THCB120,"The actual weight is 65.0 kg, and a student measured 64.5 kg. Calculate the absolute error and the relative error."
+THCB124,The measured voltage is 5.00 ± 0.10 V. Calculate the percentage relative error.
+THCB127,The measured value is 39.5 cm while the true value is 40.0 cm. Calculate the absolute error and the percentage relative error.
+THCB129,Voltage measurement result: 220.0 ± 1.0 V. Calculate the percentage relative error.
+THCB133,Three temperature measurements: 20.1°C; 20.0°C; 19.9°C. Calculate the average temperature and the average absolute error.
+THCB135,A student measured the time as 120.0 ± 0.5 s. Calculate the percentage relative uncertainty.
+NL002,"A capacitor has a capacitance C = 50 μF, and the voltage across its plates is 60 V. Calculate the energy (mJ) stored in the electric field."
+NL011,A capacitor has a capacitance C = 30 μF and a voltage U = 120 V. Calculate the energy (mJ) stored in the electric field.
+NL017,A capacitor has a capacitance C = 12 μF and stores 1.8 mJ of energy. Calculate the voltage U (V) across it (round the result to two decimal places).
+NL018,"A capacitor stores 0.75 mJ of energy when the voltage across it is 150 V. Calculate its capacitance (unit: μF, round the result to two decimal places)."
+NL023,"An inductor has a magnetic field energy of 2.0 mJ. If the current is halved, what is the remaining energy (mJ)?"
+NL030,"An LC circuit is oscillating. When the electric field energy equals the magnetic field energy, what percentage () of the peak current is the instantaneous current (round the result to one decimal place)?"
+NL031,A capacitor with capacitance C = 60 μF is charged to U = 150 V. Calculate the electric field energy (mJ) in the capacitor.
+NL037,An inductor has a magnetic field energy of 0.2 mJ when the current is 0.2 A. Calculate the inductance (H).
+NL039,"In an oscillating LC circuit, when the electric field energy is 1/4 of the total energy, what percentage (%) of the maximum current is the instantaneous current (round the result to one decimal place)?"
+NL090,"An inductor has an inductance (L) of 0.2 H, and the magnetic energy stored is 1.6 mJ. Calculate the current (A) through the inductor (round the result to two decimal places)."
+NL091,A capacitor with a capacitance of 10 μF is charged to 200 V and then isolated. The voltage then decreases to 100 V. What percentage (%) of the initial energy remains?
+NL092,"A capacitor has an initial energy of 1.6 mJ. After a period of LC oscillation, its energy is reduced to 0.4 mJ. What is the percentage loss (%)?"
+NL094,A capacitor with C = 50 μF is charged to 100 V. It is then connected to an inductor. Calculate the total energy (mJ) of oscillation.
+NL095,"An LC circuit oscillates with current i(t) = I₀cos(ωt). When i = 0, where is the energy stored?"
+NL097,A capacitor has C = 40 μF and U = 150 V. Calculate the energy (mJ) of the electric field.
+NL099,A capacitor stores 3.6 mJ of electrical energy when the voltage across it is 120 V. Calculate its capacitance C (μF).
+NL119,"An LC circuit is oscillating, and the current is zero. What form of energy is present at this moment?"
+NL120,"An LC circuit is oscillating, and the electric field energy is zero. Calculate the instantaneous current."
+NL127,"A capacitor has a capacitance of 10 μF. When the voltage (or potential difference) doubles, how many times does the energy increase?"
+NL301,A capacitor with a capacitance of 5 µF is charged to a voltage of 200 V. What is the energy (J) stored in the capacitor?
+NL302,The electric field energy in a capacitor is directly proportional to which of the following quantities?
+NL306,What is the shape of the graph of magnetic field energy versus current I?
+NL312,"In an ideal LC oscillation circuit, when the electric field energy reaches its maximum, what is the value of the magnetic field energy?"
+NL315,What is the shape of the graph representing the electrostatic energy as a function of capacitance C (keeping voltage U constant)?
+NL317,"If the current through a coil is halved, how will the magnetic field energy change?"
+NL320,What is the SI unit of electric field energy?
+NL321,"HeIn an ideal LC circuit, the total energy is 0.08 J. When the electric field energy is 0.02 J, what is the magnetic field energy (J)?"
+NL322,An inductor has an inductance of 0.5 H. The current flowing through it is given by the expression I(t) = 2sin(100πt). What is the maximum magnetic field energy (J) of the inductor?
+NL326,"In an experiment, the dissipated electrical energy was measured to be 0.1 J, and the maximum magnetic energy in the coil was 0.9 J. What is the efficiency of the circuit?"
+NL328,"A parallel-plate capacitor is charged and then disconnected from the source. If the distance between the plates is tripled, how will the electric field energy change?"
+NL329,The magnetic field energy in an ideal LC circuit is described by the expression: W_L = W₀cos²(ωt). What is the expression for the electric field energy?
+NL335,"A capacitor with a capacitance of 2 µF is charged and then disconnected from the source. If the distance between the plates is quadrupled, how many times the initial energy is the new electric field energy?"
+NL338,A coil has an inductance of 0.2 H. The current varies according to I = 3sin(50πt). Calculate the maximum magnetic field energy (J).
+NL343,A charged capacitor has a charge of 900 µC and a capacitance of 3 µF. What is the energy (J) stored in the capacitor?
+NL348,A capacitor has a capacitance of 10 µF. The voltage changes according to U = 100 sin(1000t). What is the maximum electric field energy (J)?
+NL350,"A parallel-plate capacitor has a constant charge. When the distance between the two plates increases from 2 mm to 6 mm, how does the electric field energy change?"
+NL351,A capacitor has a capacitance of 12 µF and a voltage of 100 V. Calculate the electric field energy (J).
+NL353,A charged capacitor has an electric field energy of 0.72 J when the voltage across it is 120 V. Calculate the capacitance (µF).
+NL354,A coil has a magnetic field energy of 0.25 J when the current is 1 A. What is the inductance (H)?
+NL357,"A coil has a current changing according to I(t) = 4sin(100πt), and an inductance L = 0.3 H. What is the maximum magnetic field energy (J)?"
+NL364,"An LC circuit oscillates with a total energy of 0.8 J. At the moment the electric field energy is 0.2 J, what is the magnetic field energy?"
+NL372,"An inductor has an inductance of 0.25 H. When the current reaches its maximum value of 2√2 A, what is the maximum magnetic field energy?"
+NL379,"An ideal LC circuit has L = 0.3 H and C = 12 µF. When the voltage across the capacitor is 200 V, what is the magnetic field energy? (Given that the total energy is 0.24 J)"
+NL386,A capacitor has a time-dependent voltage U(t) = 120sin(2000t) and a capacitance C = 10 µF. Calculate the maximum electric field energy.
+NL393,A capacitor has a capacitance of 6 µF. The voltage at time t is V(t) = 100 × cos(2000t) V. Calculate the energy stored in the electric field at t = 0.0015 s.
+DDT132,"A solenoid is 1 m long, has 2000 turns of wire, and a current of 3 A flows through it. Calculate the magnetic field inside the solenoid."
+DDT134,"A solenoid has an inductance L = 0.05 H, and a current of 0.2 A flows through it. Calculate the magnetic field energy stored in the solenoid."
+DDT136,The magnetic field inside a solenoid is directly proportional to which of the following quantities?
+DDT137,"If you double the number of turns of a solenoid, but keep its length and current the same, how does the magnetic field change?"
+DDT149,"When the current through the solenoid increases rapidly, what happens to the induced electromotive force?"
+DDT150,"A solenoid has a magnetic flux of 0.004 Wb. If the magnetic flux decreases to 0 in 0.02 s, what is the average induced electromotive force?"
+DDT154,"A solenoid has an inductance of 0.1 H. If the current increases from 0 to 4 A in 0.02 s, what is the average induced electromotive force?"
+DDT156,What is the unit of inductance?
+DDT160,The magnetic flux through a solenoid decreases from 0.006 Wb to 0 in 0.01 s. Calculate the average induced electromotive force.
+DDT203,A solenoid has L = 0.1 H. The current increases from 0 to 3 A in 0.01 s. Calculate the induced electromotive force.
+DDT206,What is the unit of induced electromotive force?
+DDT214,A solenoid has L = 0.2 H. The current decreases uniformly from 2 A to 0 in 0.02 s. Calculate the induced electromotive force.
+DDT218,"A solenoid has a magnetic field of 0.002 T, a cross-sectional area of 5 cm². Calculate the magnetic flux through each turn of wire."
+DDT219,"If the magnetic field in a solenoid increases, how does the magnetic field energy increase?"
+DDT325,"Given a circuit with C = 50 μF and f = 60 Hz, determine the capacitive reactance Z_C."
+DDT326,"For a resonant circuit with an RMS current of 3 A and a resistance (R) of 15 Ω, calculate the power dissipated."
+DDT334,"An inductor L = 0.1 H is connected in series with a resistor R = 20 Ω. If the frequency is 60 Hz, what is the inductive reactance?"
+DDT335,A circuit consists of a capacitor C = 100 μF in series with a resistor R = 25 Ω. The frequency f = 50 Hz. Calculate the capacitive reactance of the capacitor.
+DDT337,"An RLC series circuit has R = 18 Ω and Z = 30 Ω. Calculate the power factor, cosφ."
+DDT338,"Given R = 10 Ω and L = 0.2 H connected in series in a circuit operating at f = 50 Hz, determine the RMS voltage if the current is I = 1 A."
+DDT342,"An RLC series circuit has an impedance Z = 45 Ω, and a voltage U = 90 V is applied across it. Calculate the RMS current."
+DDT348,"A circuit has a resistance R = 18 Ω and an impedance Z = 36 Ω. If a voltage of 108 V is applied, calculate the power consumed (or dissipated)."
+DDT349,Given a series circuit where the voltage U = 100 V and the current I = 2 A. Calculate the total impedance Z.
+DDT352,When does the electric field energy stored in an LC circuit reach its maximum?
+DDT357,What is the voltage across the capacitor when the current in an LC circuit is at its maximum?
+DDT359,What is the unit of inductance L?
+DDT362,Calculate the natural period of oscillation for a circuit with L = 0.1 H and C = 10⁻⁶ F.
+DDT364,"An oscillating circuit has a capacitance C = 2 µF, and the maximum voltage across the capacitor is 100 V. Calculate the maximum electric field energy (or maximum energy stored in the capacitor)."
+DDT365,"L = 4 mH, C = 250 µF. Calculate the angular frequency of oscillation."
+DDT366,The current in an LC circuit is given by the expression i = I₀cos(ωt). Given I₀ = 0.5 A and L = 0.2 H. Calculate the maximum magnetic energy.
+DDT367,"Given C = 5 µF, the maximum charge on the capacitor is 2×10⁻⁴ C. Calculate the maximum voltage across the capacitor plates."
+DDT369,"Given L = 0.5 H, C = 20 µF. Calculate the natural period of oscillation."
+DDT370,A capacitor with a capacitance of 10 µF is charged to 50 V. Calculate the electric field energy in the capacitor.
+DDT376,A solenoid has 2000 turns. The current decreases from 3 A to 0 in 0.01 s. Given that the magnetic flux per turn is 2×10⁻⁶ Wb. Calculate the induced electromotive force.
+DDT380,"The current through a solenoid increases uniformly from 0 to 5 A over a period of 0.2 s. Given that the induced electromotive force is 0.5 V, determine the self-inductance."
+DDT386,A solenoid has a cross-sectional area of 8 cm² and a magnetic field strength of 1.5×10⁻³ T. Calculate the magnetic energy density.
+DDT389,"The current increases uniformly from 0 to 6 A in 0.03 s, producing an induced electromotive force of 1.2 V. Calculate the self-inductance."
+DDT395,A solenoid has a magnetic field B = 5×10⁻³ T and a cross-sectional area of 6 cm². Calculate the magnetic flux through the cross-section.
+DDT396,"A capacitor is placed in a solenoid's magnetic field, which has B = 3×10⁻³ T. The area of the loop is 5 cm². Calculate the magnetic flux."
+DDT400,A solenoid has n = 3000 turns/m and I = 2 A. Calculate the magnetic field B inside the solenoid.
+CHLT003,A pure inductor with an inductance of 0.2 H is connected in series with a resistor R=25 Ω and a capacitor C=10 μF. Determine if resonance occurs at a frequency of f=112 Hz?
+CHLT004,"Given an RLC series circuit with R=40 Ω, L=0.318 H, and C=25 μF, will resonance occur if the AC current has a frequency of 56.4 Hz?"
+CHLT005,"An RLC series circuit has a resistor R=60 Ω, an inductor L=0.8 H, and a capacitor C=5 μF. When the power source supplies a frequency of 50 Hz, does electrical resonance occur?"
+CHLT008,"For an RLC AC circuit with R = 45 Ω, L = 1 H, and C = 4 μF, does resonance occur in the circuit at a frequency of 79.6 Hz?"
+CHLT009,"A series circuit consists of a capacitor C=100 μF, an inductor L=0.01 H, and a resistor R=8 Ω. Does resonance occur at f=100 Hz?"
+CHLT012,"An RLC circuit has R=20 Ω, L=0.159 H, and C=10 μF. Is the circuit in resonance at f=126 Hz?"
+CHLT014,"A series RLC circuit has R=75 Ω, L=0.2 H, C=40 μF. Is 56.3 Hz the resonant frequency?"
+CHLT015,"A circuit consists of an inductor L=0.3 H, a capacitor C=5 μF, and a resistor R=12 Ω. When operating at f=100 Hz, does the circuit resonate?"
+CHLT019,"Does a series RLC circuit with R=20 Ω, L=0.1 H, C=50 μF resonate at f=71 Hz?"
+CHLT020,"An AC circuit consists of R=10 Ω, L=0.05 H, C=100 μF. When the frequency is 225 Hz, does resonance occur?"
+CH018,A resonant circuit has a total impedance of 115 Ω. What is the value of the pure resistance R?
+CH019,The impedance of an RLC circuit at resonance is measured to be 90 Ω. Calculate R?
+CH020,"At resonance, the total impedance of the circuit is measured to be Z = 300 Ω. What is the value of the pure resistance R?"
+CH037,What is the resonant frequency for L = 0.05 H and C = 10 μF connected in series?
+CH039,L = 0.01 H connected in series with C = 250 μF. What is the resonant frequency?
+CH043,An RLC series circuit is at resonance with an applied voltage of 220 V and a resistance R = 220 Ω. Determine the power consumption.
+CH067,What value of inductor L is needed to resonate with C=10 μF at 50 Hz?
+CH068,What L is needed for a circuit with C = 20 μF to resonate at 60 Hz?
+CH086,"If a capacitor C = 2 μF resonates at 200 Hz, what is the inductance L?"
+CH103,"In a circuit with a resistance R = 40Ω, resonance occurs at 50Hz, and the current at resonance is I = 1A. If the frequency is doubled, the current becomes I = 0.8A. What is the inductive reactance (ZL) at the resonant frequency?"
+CH106,"Given R=10Ω. At resonance, f=200Hz. When f increases to 400Hz, the current (I) decreases to 1/2. What is ZL?"
+CH108,"Given an RLC series circuit with a resistance R=30Ω. At its resonant frequency f=50Hz, the current flowing through the circuit is I=2A. If the frequency is then changed to f=100Hz, the current becomes I=1.6A. Calculate the inductive reactance (ZL)."
+CH155,"A voltage u = 200√2 cos 100πt (V) is applied to a series RLC circuit with R = 100 Ω, L = 1/π H, C = 10⁻⁴/(2π) F. Calculate the RMS voltage across the capacitor, $U_C$."
+CH159,An RMS voltage U = 112 V is applied to a series RLC circuit with R = 75 Ω which is currently at resonance. Calculate the maximum effective current Imax.
+CH179,"When resonance occurs (φ = 0), what is cosφ?"
+CH191,"Consider an RLC series circuit with fixed components. When the angular frequency is ω0, the inductive reactance XL = 50 Ω and the capacitive reactance XC = 200 Ω. By what factor must the angular frequency be adjusted (relative to ω0) for the circuit to resonate?"
+CH201,"Given an RLC series circuit with fixed components. When the angular frequency is ω0, the inductive reactance X_L = 22 Ω and the capacitive reactance X_C = 198 Ω. To what multiple of ω0 must the angular frequency be adjusted for the circuit to resonate?"
+CH219,Circuit AB comprises two segments connected in series: AM and MB. Segment AM consists of resistor R1 = 40 Ω in series with capacitor C. Segment MB consists of resistor R2 = 80 Ω in series with inductor L. Given LCω² = 1 and that the voltage across AM (u_AM) is 90° out of phase with the voltage across MB (u_MB). An RMS voltage U = 90 V is applied across the terminals AB. Calculate the total power consumed by circuit AB.
+CH230,"Circuit AB consists of a resistor R1 = 25 Ω connected in series with a segment MB. Segment MB contains a resistor R2 and an inductor L. The circuit satisfies the condition LCω² = 1, and the voltage across segment AM (uAM) is 90 degrees out of phase with the voltage across segment MB (uMB). When an RMS voltage U = 100 V is applied across AB, the total power consumed by the circuit is 125.0 W. What is the value of R2?"
+CH233,"The circuit AB consists of segment MB, where R2 = 90 Ω is connected in series with an inductor L. We are given LCω² = 1, and the voltage U_AM is 90 degrees out of phase with U_MB. When a voltage U = 120 V is applied across AB, the total power dissipated is 96.0 W. Determine R1."
+CH236,"Consider a circuit segment AB. It consists of two parts in series: segment AM contains R1 = 25 Ω in series with C, and segment MB contains R2 = 40 Ω in series with L. The condition LCω² = 1 is given. An RMS voltage U_AB = 80 V is applied across AB. Given that the voltage across AM (uAM) is 90 degrees out of phase with the voltage across MB (uMB). Calculate the RMS voltage across MB (U_MB)."
+CH239,A circuit segment AB is composed of two series parts. The first part (AM) consists of R1 = 30 Ω in series with a capacitor C. The second part (MB) consists of R2 = 70 Ω in series with an inductor L. The circuit satisfies the condition LCω² = 1. An RMS voltage U = 100 V is applied across AB. Given that the voltage uAM is 90 degrees out of phase with the voltage uMB. What is the RMS voltage across segment MB?
+CH250,Circuit AB satisfies LCω² = 1. Voltages uAM and uMB are 90° out of phase. Given R1 = 80 Ω and R2 = 90 Ω. Calculate the power factor of the entire circuit.
+CH251,"A series circuit consists of a pure inductor (XL = 25 Ω), a capacitor (XC = 100 Ω), and a resistor R. An RMS voltage of 120 V is applied to the circuit. If only the frequency is doubled, what will be the RMS voltage across the resistor R?"
+CH255,"A circuit has XL = 15 Ω, XC = 135 Ω, and a source voltage U = 90 V. If the frequency is tripled, what is the RMS voltage across the resistor R?"
+CH258,"An RLC circuit has XL = 12 Ω, XC = 108 Ω, and a total (RMS) voltage U = 75 V. When the frequency is tripled (increased by a factor of three), what is the RMS voltage across the resistor?"
+CH262,"In an RLC circuit, XL = 10 Ω, XC = 160 Ω, and the source voltage U = 120 V. If the frequency is increased by 4 times, what is the RMS voltage across the resistor R?"
+CH267,"A circuit has XL = 30 Ω, XC = 270 Ω, R = 50 Ω, U = 200 V. If the frequency is increased by a factor of 3, what will be the RMS current in the circuit?"
+CH269,"In a series circuit, XL = 15 Ω, XC = 135 Ω, R = 25 Ω, and the applied voltage U = 100 V. If the frequency is tripled, what will be the RMS current?"
+CH274,"Given an AC circuit with inductive reactance XL = 30 Ω, capacitive reactance XC = 270 Ω, resistance R = 90 Ω, and an applied RMS voltage U = 270 V. If the frequency f is increased by 3 times, what will be the RMS current in the circuit?"
+CH275,"An AC circuit has XL = 25 Ω, XC = 100 Ω, R = 40 Ω, and U = 120 V. If the frequency is doubled, what is the power consumed by resistor R?"
+CH277,"In an AC circuit, XL = 20 Ω, XC = 80 Ω, R = 30 Ω, and the applied voltage U = 150 V. If the frequency is doubled, what is the power dissipated by R?"
+CH280,"In an AC circuit, the inductive reactance XL = 40 Ω, the capacitive reactance XC = 160 Ω, the resistance R = 80 Ω, and the applied voltage U = 160 V. If the frequency is doubled, what will be the power dissipated by the resistor R?"
+CH342,"Given L = 0.20 H, C = 80 µF. Determine the resonant frequency f0."
+CH343,L = 0.05 H and C = 40 µF. Calculate the resonant frequency (f0) of the circuit.
+CH345,"L = 0.15 H, C = 60 µF. Calculate the resonant frequency."
+CH346,An inductor of 0.12 H is connected in series with a capacitor of 30 µF. Calculate f0.
+CH349,What capacitance should be chosen for the capacitor so that a circuit with L = 0.10 H resonates at f = 60 Hz?
+CH355,"L = 0.25 H. If it resonates at 25 Hz, what is C?"
+CH358,"Given U = 150 V, R = 50 Ω at resonance. Calculate I."
+CH360,"At resonance with U = 100 V, R = 25 Ω, what is I?"
+CH366,"Given: U = 150 V, R = 50 Ω, L = 0.20 H, C = 80 µF (at resonance). What is the value of U_L?"
+CH368,"A series RLC circuit is in resonance with a source voltage U = 100 V, resistance R = 25 Ω, inductance L = 0.08 H, and capacitance C = 100 µF. Calculate the voltage across the inductor (UL)."
+CH369,"U = 180 V, R = 30 Ω, L = 0.12 H, C = 30 µF, resonance. UL?"
+CH377,"At resonance, with U = 200 V and R = 25 Ω, calculate the power P."

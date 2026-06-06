@@ -45,6 +45,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input", type=Path, default=default_input)
     parser.add_argument("--output", type=Path, default=default_output)
+    parser.add_argument("--routing-log", type=Path, default=None)
     parser.add_argument("--limit", type=int, default=1)
     parser.add_argument("--offset", type=int, default=0)
     parser.add_argument("--model", default=None)
@@ -87,9 +88,14 @@ def main() -> None:
     try:
         env = os.environ.copy()
         env["PYTHONPATH"] = str(root_dir / "src")
+        env["PYTHONUNBUFFERED"] = "1"
+        env.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "0")
+        env.setdefault("TQDM_DISABLE", "0")
+        env.setdefault("TRANSFORMERS_VERBOSITY", "info")
         python_exe = args.python_exe or python_executable(root_dir)
         cmd = [
             str(python_exe),
+            "-u",
             "-m",
             "exact.scripts.run_type2_monitor",
             "--config",
@@ -103,9 +109,11 @@ def main() -> None:
             "--output",
             str(args.output),
         ]
-        print(f"Type 2 backend:          {args.backend}")
-        print(f"Temporary config:        {config_path}")
-        print(f"Output:                  {args.output}")
+        print(f"Type 2 backend:          {args.backend}", flush=True)
+        print(f"Temporary config:        {config_path}", flush=True)
+        print(f"Output:                  {args.output}", flush=True)
+        if args.routing_log is not None:
+            print(f"Routing log:             {args.routing_log}", flush=True)
         subprocess.run(cmd, env=env, check=True)
     finally:
         try:
@@ -125,6 +133,8 @@ def build_config_text(args: argparse.Namespace) -> str:
 
     output_cfg = dict(config.get("output", {}))
     output_cfg["path"] = str(args.output)
+    if args.routing_log is not None:
+        output_cfg["routing_log_path"] = str(args.routing_log)
 
     llm_cfg = build_llm_config(args.backend)
     llm_cfg = apply_cli_overrides(llm_cfg, args)

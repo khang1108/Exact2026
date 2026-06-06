@@ -1,0 +1,52 @@
+{
+  "config": "/tmp/exact_type2_run_uq1visr8.toml",
+  "source": "/kaggle/working/EXACT_2026/src/exact/datasets/exact/type2_physics_questions.csv",
+  "count": 1,
+  "requested_count": 1,
+  "offset": 0,
+  "interrupted": false,
+  "run_elapsed_seconds": 2316.869927,
+  "format": "exact_type2_monitor_predictions",
+  "summary": {
+    "total": 1,
+    "correct": 1,
+    "wrong": 0,
+    "pipeline_errors": 0,
+    "missing_gold": 0,
+    "conceptual_only": 0,
+    "numeric_total": 1,
+    "numeric_correct": 1,
+    "accuracy": 1.0,
+    "numeric_accuracy": 1.0,
+    "average_elapsed_seconds": 2316.868488
+  },
+  "predictions": [
+    {
+      "answer": "0.045",
+      "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed.",
+        "PoT solver failed; executable formula fallback was used. Reason: LLM code generation returned invalid output: LLM output contained incomplete JSON; reduce prompt/output size or increase EXACT_MAX_NEW_TOKENS. Output snippet: The final answer is \\boxed{0.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 ... <truncated 1892 chars> ... 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
+        "Computed `energy` and converted the result to `J`."
+      ],
+      "premises": [
+        "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+        "C = 100 uF",
+        "U = 30 V"
+      ],
+      "confidence": 0.82,
+      "id": "physics_TD401",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "J",
+      "error": null,
+      "type2_kind": "mixed",
+      "gold_answer": "0.045",
+      "gold_unit": "J",
+      "elapsed_seconds": 2316.868488
+    }
+  ]
+}
