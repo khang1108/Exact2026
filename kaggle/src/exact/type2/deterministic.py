@@ -229,6 +229,7 @@ def _adapters() -> tuple[_DomainAdapter, ...]:
             validator=validate_em_contract,
             runner=lambda contract, _validated: solve_electromagnetism_contract(contract),
             supported_system_types=(
+                "inductor_energy",
                 "ideal_lc_oscillator",
                 "series_rlc_circuit",
                 "ac_reactance",

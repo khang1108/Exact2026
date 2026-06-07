@@ -11,7 +11,10 @@ def extract_circuit_contract(extraction: Extraction) -> CircuitContract | None:
     lower = text.lower()
     if "transformer" in lower or ("primary" in lower and "secondary" in lower):
         return _transformer(extraction)
-    if any(token in lower for token in ("kwh", "for 30 minutes", "for 2 hours", "energy", "joule heat")):
+    if (
+        any(token in lower for token in ("kwh", "for 30 minutes", "for 2 hours", "energy", "joule heat"))
+        and not any(token in lower for token in ("magnetic field energy", "magnetic energy", "stored in the inductor"))
+    ):
         return _energy(extraction)
     if "rlc" in lower or ("ac" in lower and any(x in lower for x in ("impedance", "phase", "power factor", "lead", "lag", "reactance"))):
         return _ac(extraction)
@@ -200,4 +203,3 @@ def _find_component_id(lower: str, components: list[CircuitComponent]) -> str | 
         if component.id.lower() in lower:
             return component.id
     return components[0].id if len(components) == 1 else None
-

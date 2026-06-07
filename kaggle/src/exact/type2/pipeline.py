@@ -30,6 +30,29 @@ def run_type2_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
 ) -> PredictionResponse:
+    """Route the request to a domain-specific pipeline or fallback to generic."""
+    from exact.type2.domains.router import route_domain
+    domain = route_domain(request.id, request.question)
+    
+    if domain == "LD":
+        from exact.type2.domains.ld.pipeline import run_ld_pipeline
+        return run_ld_pipeline(request, settings)
+    elif domain == "TD":
+        from exact.type2.domains.td.pipeline import run_td_pipeline
+        return run_td_pipeline(request, settings)
+    elif domain == "NL_ENERGY":
+        from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
+        nl_result, fallback = run_nl_energy_pipeline(request, settings)
+        if not fallback and nl_result is not None:
+            return nl_result
+            
+    return run_generic_pipeline(request, settings)
+
+
+def run_generic_pipeline(
+    request: PredictionRequest,
+    settings: Settings | None = None,
+) -> PredictionResponse:
     """Run the Type 2 physics pipeline with deterministic routing before PoT.
 
     Flow:

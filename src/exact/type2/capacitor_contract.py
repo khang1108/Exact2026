@@ -269,13 +269,19 @@ def _solve_validated_capacitor(
                 return None
             numerator += sign * capacitance * voltage
             denominator += capacitance
+        if float(denominator.magnitude) == 0:
+            return None
         value = (numerator / denominator).to("V")
         chain = ["U_f = sum(connection_sign_i * C_i * U_i) / sum(C_i)"]
         return _solved(value, "V", selected_rule, chain, validated)
 
     if target == "voltage_across_capacitor":
         total_voltage = k["total_voltage"]
+        if not validated.capacitors:
+            return None
         reciprocal_sum = sum((1 / cap[1] for cap in validated.capacitors), 0 / ureg.farad)
+        if float(reciprocal_sum.magnitude) == 0:
+            return None
         c_eq = (1 / reciprocal_sum).to("F")
         charge = (c_eq * total_voltage).to("C")
         cap_id = contract.target.capacitor_id
@@ -287,7 +293,11 @@ def _solve_validated_capacitor(
         return None
 
     if target == "equivalent_capacitance" and contract.system_type == "series_capacitors":
+        if not validated.capacitors:
+            return None
         reciprocal_sum = sum((1 / cap[1] for cap in validated.capacitors), 0 / ureg.farad)
+        if float(reciprocal_sum.magnitude) == 0:
+            return None
         value = (1 / reciprocal_sum).to("F")
         return _solved(value, "F", "series_equivalent_capacitance", ["1 / C_eq = sum(1 / C_i)"], validated)
 

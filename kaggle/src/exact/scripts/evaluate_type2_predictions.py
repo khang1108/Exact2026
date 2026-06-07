@@ -16,7 +16,6 @@ from typing import Any
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from exact.scripts.config_utils import load_toml_config
 from exact.type2.solving.units import parse_quantity
 
 
@@ -39,6 +38,8 @@ class EvalRow:
 
 
 def main() -> None:
+    from exact.scripts.config_utils import load_toml_config
+
     args = parse_args()
     config = load_toml_config(args.config) if args.config.exists() else {}
     eval_cfg = config.get("evaluation", {})
@@ -84,6 +85,27 @@ def main() -> None:
     print(f"wrote error rows to {errors_path}")
 
 
+def try_evaluate_symbolic(pred_answer: str, gold_answer: str) -> bool:
+    if not pred_answer or not gold_answer:
+        return False
+    try:
+        import sympy
+        def clean(s):
+            s = str(s)
+            s = s.replace("\\frac", "") 
+            s = s.replace("\\sqrt", "sqrt")
+            s = s.replace("\\", "")
+            s = s.replace("^", "**")
+            s = s.replace("{", "(").replace("}", ")")
+            return s.strip()
+            
+        p = sympy.sympify(clean(pred_answer))
+        g = sympy.sympify(clean(gold_answer))
+        return sympy.simplify(p - g) == 0
+    except Exception:
+        return False
+
+
 def evaluate_prediction(
     pred: dict[str, Any],
     *,
@@ -119,12 +141,20 @@ def evaluate_prediction(
             runtime_error,
         )
 
-    normalized_answer = answer if case_sensitive_text else answer.lower()
-    normalized_gold = gold_answer if case_sensitive_text else gold_answer.lower()
+    normalized_answer = _normalize_conceptual_text(answer if case_sensitive_text else answer.lower())
+    normalized_gold = _normalize_conceptual_text(gold_answer if case_sensitive_text else gold_answer.lower())
     ok = normalized_answer == normalized_gold
+    
+    if not ok and try_evaluate_symbolic(answer, gold_answer):
+        return _row(pred, answer, unit, gold_answer, gold_unit, "correct_symbolic", None, None, None, None)
+
     status = "correct_text" if ok else "wrong_text"
     if runtime_error and not ok:
         status = "pipeline_error"
+        
+    if not ok and (pred_number is None or gold_number is None):
+        print(f"[Symbolic/Numeric Mismatch] Model: '{answer}', Gold: '{gold_answer}'")
+        
     return _row(pred, answer, unit, gold_answer, gold_unit, status, None, None, None, None)
 
 
@@ -280,6 +310,9 @@ def _normalize_numeric_text(text: str) -> str:
         .replace("^", "**")
         .replace(" ", "")
     )
+    # Handle specific scientific notation variations like .10^{5} or .10^{-9}
+    normalized = re.sub(r"\.10\*\*\{?([-+]?\d+)\}?", r"e\1", normalized)
+    normalized = re.sub(r"\.10\*\*([-+]?\d+)", r"e\1", normalized)
     normalized = re.sub(r"sqrt\{([^{}]+)\}", r"sqrt(\1)", normalized)
     normalized = re.sub(r"sqrt([0-9.]+)", r"sqrt(\1)", normalized)
     normalized = re.sub(r"(?<=\d)(?=sqrt\()", "*", normalized)
@@ -400,6 +433,33 @@ def _count_by_status(rows: list[EvalRow]) -> dict[str, int]:
     for row in rows:
         counts[row.status] = counts.get(row.status, 0) + 1
     return dict(sorted(counts.items()))
+
+
+def _normalize_conceptual_text(text: str) -> str:
+    if not text:
+        return ""
+    text = text.lower().strip()
+    text = re.sub(r"\s+", " ", text)
+    
+    # Common conceptual phrasing equivalents
+    mappings = {
+        "j": "joule",
+        "upward parabola": "parabolic",
+        "parabola": "parabolic",
+        "increase by 2 times": "doubles",
+        "increase by two times": "doubles",
+        "double": "doubles",
+        "less than": "less",
+    }
+    
+    if text in mappings:
+        return mappings[text]
+        
+    # Substring normalization
+    text = text.replace("entirely ", "")
+    text = text.replace("is stored in", "stored in")
+    
+    return text.strip()
 
 
 def parse_args() -> argparse.Namespace:

@@ -12,6 +12,8 @@ def solve(contract: CircuitContract) -> dict:
     omega = 2 * math.pi * f
     r = sum(prop(c, "resistance", "ohm") for c in contract.components if c.kind == "resistor")
     xl = sum(omega * prop(c, "inductance", "H") for c in contract.components if c.kind == "inductor")
+    if omega == 0 and any(c.kind == "capacitor" for c in contract.components):
+        return unsolved("ac_phasor_solver", "frequency is zero with capacitors present")
     xc = sum(1 / (omega * prop(c, "capacitance", "F")) for c in contract.components if c.kind == "capacitor")
     x = xl - xc
     z = math.sqrt(r**2 + x**2)
@@ -47,6 +49,8 @@ def solve(contract: CircuitContract) -> dict:
         return solved("ac_phasor_solver", "series_ac_voltage_current_relation", {"value": relation, "unit": "categorical", "circuit_character": character}, intermediate_values=inter)
     if target in {"current_rms", "active_power"}:
         voltage = source(contract, "voltage_rms", "V")
+        if z == 0:
+            return unsolved("ac_phasor_solver", "impedance is zero")
         current = voltage / z
         inter["current_rms"] = q(current, "A")
         if target == "current_rms":

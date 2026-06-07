@@ -89,6 +89,13 @@ def _validate_system_requirements(contract: ElectromagnetismContract) -> EMValid
             _state(contract, "phase_fraction") or _state(contract, "time_reference")
         ):
             return EMValidationIssue("LC state target is missing phase/state reference", ("state.phase_fraction",))
+    if st == "inductor_energy":
+        if not _component_value(contract, "inductor", "inductance") and q != "inductance":
+            return EMValidationIssue("inductor energy target is missing inductance", ("components.inductor.inductance",))
+        if not _known(contract, "current") and q != "current":
+            return EMValidationIssue("inductor energy target is missing current", ("knowns.current",))
+        if not _known(contract, "inductor_energy") and q != "inductor_energy":
+            return EMValidationIssue("inductor energy target is missing energy", ("knowns.inductor_energy",))
     if st == "series_rlc_circuit":
         if not _component_value(contract, "inductor", "inductance"):
             return EMValidationIssue("series RLC contract is missing inductance", ("components.inductor.inductance",))

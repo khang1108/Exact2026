@@ -91,6 +91,25 @@ def _extract_edges(text: str) -> list[GeometryEdge]:
         )
         seen.add(key)
 
+    for match in re.finditer(
+        r"\bpoints?\s+(?P<a>[A-Z])\s+and\s+(?P<b>[A-Z])\b.*?"
+        r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>cm|mm|m)\s+apart\b",
+        text,
+        flags=re.IGNORECASE,
+    ):
+        key = frozenset((match.group("a").upper(), match.group("b").upper()))
+        if key in seen:
+            continue
+        edges.append(
+            GeometryEdge(
+                match.group("a").upper(),
+                match.group("b").upper(),
+                parse_quantity(float(match.group("value")), match.group("unit")).to("m"),
+                match.group(0),
+            )
+        )
+        seen.add(key)
+
     apart = re.search(
         r"(?:points?\s+(?P<a>[A-Z])\s+and\s+(?P<b>[A-Z]).*?|(?P<c>[A-Z])\s+and\s+(?P<d>[A-Z]).*?|(?P<edge>[A-Z]{2})\s+is|separated by)\s*"
         r"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>cm|mm|m)\s+(?:apart|long)",
@@ -242,6 +261,17 @@ def _target_body(text: str, bodies: dict[str, Body]) -> str | None:
         if body.role == "target":
             return body_id
     lower = text.lower()
+    point_match = re.search(
+        r"(?:force|net force|electric force|resultant force).*?(?:acting on|exerted on|on)\s+"
+        r"(?:the\s+)?charge\s+at\s+(?:point\s+)?(?P<point>[A-Z])\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if point_match:
+        point = point_match.group("point").upper()
+        for body_id, body in bodies.items():
+            if body.point == point:
+                return body_id
     match = re.search(
         r"(?:force|net force|electric force|resultant force).*?(?:acting on|exerted on|on)\s+(?:charge\s+)?(?P<name>q0|q1|q2|q3|q)",
         lower,

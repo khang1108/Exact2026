@@ -26,6 +26,8 @@ def extract_electromagnetism_contract(extraction: Extraction) -> Electromagnetis
         return _faraday_contract(extraction)
     if _is_solenoid(lower):
         return _solenoid_contract(extraction)
+    if _is_single_inductor_energy(lower):
+        return _single_inductor_energy_contract(extraction)
     if _is_rlc(lower):
         return _rlc_contract(extraction)
     if _is_lc(lower):
@@ -166,6 +168,31 @@ def _solenoid_contract(extraction: Extraction) -> ElectromagnetismContract:
     )
 
 
+def _single_inductor_energy_contract(extraction: Extraction) -> ElectromagnetismContract:
+    lower = extraction.normalized_question.lower()
+    target = _target(
+        lower,
+        {
+            "inductor_energy": ("magnetic field energy", "magnetic energy", "stored energy", "energy stored"),
+            "current": ("calculate the current", "find the current", "current through", "current flowing", "current"),
+            "inductance": ("calculate the inductance", "find the inductance", "inductance"),
+        },
+        extraction.target or "inductor_energy",
+    )
+    knowns = {}
+    _copy_quantity(extraction, knowns, "current", "current")
+    _copy_quantity(extraction, knowns, "energy", "inductor_energy")
+    return ElectromagnetismContract(
+        system_type="inductor_energy",
+        target=EMTarget(target, _unit_for(target), _output_for(target)),
+        components=tuple(_components(extraction, include_resistor=False)),
+        knowns=knowns,
+        assumptions={"linear_inductor": True},
+        parse_confidence=0.82,
+        evidence=(EMEvidence("single inductor energy relation", {"system_type": "inductor_energy"}),),
+    )
+
+
 def _faraday_contract(extraction: Extraction) -> ElectromagnetismContract:
     lower = extraction.normalized_question.lower()
     target = _target(
@@ -271,6 +298,7 @@ def _unit_for(target: str) -> str | None:
         "total_energy": "J",
         "capacitor_energy": "J",
         "inductor_energy": "J",
+        "current": "A",
         "frequency": "Hz",
         "period": "s",
         "angular_frequency": "rad/s",
@@ -314,11 +342,11 @@ def _output_for(target: str):
 
 
 def _is_lc(lower: str) -> bool:
-    return "lc" in lower and "rlc" not in lower
+    return bool(re.search(r"\bLC\b", lower, flags=re.IGNORECASE)) and not _is_rlc(lower)
 
 
 def _is_rlc(lower: str) -> bool:
-    return "rlc" in lower or "series rlc" in lower
+    return bool(re.search(r"\bRLC\b", lower, flags=re.IGNORECASE)) or "series rlc" in lower
 
 
 def _is_reactance(lower: str) -> bool:
@@ -327,6 +355,18 @@ def _is_reactance(lower: str) -> bool:
 
 def _is_solenoid(lower: str) -> bool:
     return "solenoid" in lower and "toroid" not in lower and "single loop" not in lower
+
+
+def _is_single_inductor_energy(lower: str) -> bool:
+    if "solenoid" in lower or _is_lc(lower) or _is_rlc(lower):
+        return False
+    return "inductor" in lower and (
+        "magnetic field energy" in lower
+        or "magnetic energy" in lower
+        or "stored energy" in lower
+        or "stores" in lower
+        or "stored in the inductor" in lower
+    )
 
 
 def _is_faraday(lower: str) -> bool:

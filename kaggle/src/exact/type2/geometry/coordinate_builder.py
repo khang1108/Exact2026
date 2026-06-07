@@ -70,17 +70,24 @@ def build_contract_coordinates(scene: ValidatedPhysicsScene) -> ContractCoordina
         if target_point in equilateral_result.coordinates:
             return equilateral_result
 
-    triangle_result = _build_three_side(points, target_point, distances)
-    if triangle_result is not None:
-        _resolve_midpoints(contract.constraints, triangle_result.coordinates)
-        _apply_aliases(triangle_result.coordinates, aliases)
-        return triangle_result
+    right_angle_result = _build_right_angle_at_a(contract.constraints, distances)
+    if right_angle_result is not None:
+        _resolve_midpoints(contract.constraints, right_angle_result.coordinates)
+        _apply_aliases(right_angle_result.coordinates, aliases)
+        if target_point in right_angle_result.coordinates:
+            return right_angle_result
 
     line_result = _build_collinear(points, distances)
     if line_result is not None and target_point in line_result.coordinates:
         _resolve_midpoints(contract.constraints, line_result.coordinates)
         _apply_aliases(line_result.coordinates, aliases)
         return line_result
+
+    triangle_result = _build_three_side(points, target_point, distances)
+    if triangle_result is not None:
+        _resolve_midpoints(contract.constraints, triangle_result.coordinates)
+        _apply_aliases(triangle_result.coordinates, aliases)
+        return triangle_result
 
     unknown_line_result = _build_known_line_for_unknown(contract.constraints, distances)
     if unknown_line_result is not None:
@@ -263,6 +270,36 @@ def _build_equilateral(constraints, distances, points: set[str]) -> ContractCoor
             c: ((side / 2).to("m"), (math.sqrt(3) * side / 2).to("m")),
         },
         "equilateral",
+    )
+
+
+def _build_right_angle_at_a(constraints, distances) -> ContractCoordinateResult | None:
+    has_right_angle_at_a = any(
+        constraint.type == "right_triangle"
+        and constraint.original
+        and "right angle at a" in constraint.original.lower()
+        for constraint in constraints
+    )
+    if not has_right_angle_at_a:
+        return None
+    ab = distances.get(frozenset(("A", "B")))
+    ac = distances.get(frozenset(("A", "C")))
+    bc = distances.get(frozenset(("B", "C")))
+    if ab is None or (ac is None and bc is None):
+        return None
+    if ac is None:
+        value = bc**2 - ab**2
+        value_m2 = float(value.to("m^2").magnitude)
+        if value_m2 < -1e-12:
+            return None
+        ac = max(0.0, value_m2) ** 0.5 * ureg.meter
+    return ContractCoordinateResult(
+        {
+            "A": (0 * ureg.meter, 0 * ureg.meter),
+            "B": (ab.to("m"), 0 * ureg.meter),
+            "C": (0 * ureg.meter, ac.to("m")),
+        },
+        "right_angle_at_a",
     )
 
 

@@ -1,0 +1,317 @@
+id,question,cot,answer,unit
+THCB001,"An ammeter has a measuring range of 2 A and a least count of 0.1 A. When measuring the current through a light bulb, the reading is 1.2 A. What is the absolute error?","Step 1: Identify the given least count of the ammeter.
+ Step 2: The least count of a measuring instrument represents the smallest division it can accurately read, and for aStep 1: Identify the least count of the instrument, which is given as 0.1 A.
+Step 2: In measurement theory, when a specific absolute error is not otherwise provided, the absolute error (ΔI) is taken to be equal to the least count of the instrument.
+Step 3: Note the reading of 1.2 A.
+Step 4: Determine the absolute error: ΔI = 0.1 A. single measurement, this value is typically considered the absolute error or uncertainty associated with the instrument's precision.
+ Step 3: The least count of the ammeter is given as 0.1 A.
+ Step 4: Therefore, the absolute error is 0.1 A.",0.1,A
+THCB002,A voltmeter with a least count of 0.2 V reads 5.6 V. What is the relative error of the measurement?,"Step 1: Identify the measured value V = 5.6 V.
+Step 2: Identify the absolute error (ΔV), which is equal to the least count of 0.2 V.
+Step 3: Apply the formula for relative error: δV = ΔV / V.
+Step 4: Calculate the value: δV = 0.2 / 5.6 ≈ 0.0357 (or 3.57%).",3.57,%
+THCB003,"Resistance R is calculated using the formula R = U/I, where U = 6.0 ± 0.1 V and I = 0.3 ± 0.01 A. What is the absolute error of R?","Step 1: Identify given values: U = 6.0 V, ΔU = 0.1 V, I = 0.3 A, and ΔI = 0.01 A.
+Step 2: Calculate the nominal resistance: R = U / I = 6.0 / 0.3 = 20 Ω.
+Step 3: Calculate the total relative error for a quotient (R = U/I): δR = δU + δI = (ΔU / U) + (ΔI / I).
+Step 4: Substitute values: δR = (0.1 / 6.0) + (0.01 / 0.3) ≈ 0.0167 + 0.0333 = 0.05.
+Step 5: Calculate absolute error of R: ΔR = R ⋅ δR = 20 ⋅ 0.05 = 1.0 Ω.",1.0,Ω
+THCB004,"When measuring the current through a resistor, a value of 0.25 A was obtained with an uncertainty of ±0.01 A. What is the maximum possible current?","Step 1: Identify the measured current value as 0.25 A.
+Step 2: Identify the uncertainty (absolute error) as ±0.01 A.
+Step 3: Determine the upper bound of the measurement range by adding the uncertainty to the measured value.
+Step 4: Calculate the maximum current: I_max = 0.25 + 0.01 = 0.26 A.",0.26,A
+THCB005,"In an experiment, the measured voltage was 9.5 ± 0.2 V, and the measured current was 0.95 ± 0.02 A. What is the relative error in the power?","Step 1: Identify given values: Voltage V = 9.5 V, ΔV = 0.2 V; Current I = 0.95 A, ΔI = 0.02 A.
+Step 2: Since Power P = V ⋅ I, the relative error of a product is the sum of the relative errors of its components.
+Step 3: Calculate relative error of Voltage: δV = ΔV / V = 0.2 / 9.5 ≈ 0.02105.
+Step 4: Calculate relative error of Current: δI = ΔI / I = 0.02 / 0.95 ≈ 0.02105.
+Step 5: Calculate total relative error in Power: δP = δV + δI = 0.02105 + 0.02105 ≈ 0.0421 (or 4.21%).",4.21,%
+THCB006,"If the actual resistance is 10.2 Ω but the measured value is 9.8 Ω, what is the absolute error?","Step 1: Identify Actual Value = 10.2 Ω and Measured Value = 9.8 Ω.
+Step 2: Use the formula for absolute error: ΔR = |Actual Value - Measured Value|.
+Step 3: Substitute the values: ΔR = |10.2 - 9.8|.
+Step 4: Final calculation: ΔR = 0.4 Ω.",0.4,Ω
+THCB007,"A student measures the current 3 times and obtains the values: 1.8 A, 2.0 A, 2.2 A. What is the random error?","Step 1: List the measurements: 1.8 A, 2.0 A, 2.2 A.
+Step 2: Calculate the mean value (I_avg): (1.8 + 2.0 + 2.2) / 3 = 6.0 / 3 = 2.0 A.
+Step 3: Find the maximum absolute deviation from the mean: ΔI1 = |1.8 - 2.0| = 0.2 A; ΔI2 = |2.0 - 2.0| = 0 A; ΔI3 = |2.2 - 2.0| = 0.2 A.
+Step 4: The random error (often represented by the average or maximum deviation) is ΔI = 0.2 A.",0.2,A
+THCB008,"When measuring voltage with a voltmeter, the result is 6.3 ± 0.1 V. If this is used to calculate power with a current of 0.6 ± 0.02 A, what is the absolute error of the power?","Step 1: Identify values: V = 6.3 V, ΔV = 0.1 V, I = 0.6 A, ΔI = 0.02 A.
+Step 2: Use the absolute error propagation formula for a product P = V ⋅ I: ΔP = V ⋅ ΔI + I ⋅ ΔV.
+Step 3: Calculate the first term: 6.3 ⋅ 0.02 = 0.126.
+Step 4: Calculate the second term: 0.6 ⋅ 0.1 = 0.06.
+Step 5: Sum the terms: ΔP = 0.126 + 0.06 = 0.186 W.",0.19,W
+THCB009,"In a series circuit, resistance R1 = 10 ± 0.5 Ω, R2 = 20 ± 1 Ω. What is the absolute error of the total resistance?","Step 1: Identify resistances and errors: R1 = 10 Ω, ΔR1 = 0.5 Ω; R2 = 20 Ω, ΔR2 = 1 Ω.
+Step 2: For a sum (R_total = R1 + R2), the absolute error is the sum of the individual absolute errors.
+Step 3: Apply the formula: ΔR_total = ΔR1 + ΔR2.
+Step 4: Calculate the total: ΔR_total = 0.5 + 1 = 1.5 Ω.",1.5,Ω
+THCB010,"If the actual resistance is 10.2 Ω but the measured value is 9.8 Ω, what is the relative error?","Step 1: Identify the Actual Value = 10.2 Ω and the Measured Value = 9.8 Ω.
+Step 2: Calculate the Absolute Error (ΔR) using the formula: ΔR = |Actual Value - Measured Value|.
+Step 3: Substitute the values: ΔR = |10.2 - 9.8| = 0.4 Ω.
+Step 4: Calculate the Relative Error (δR) using the formula: δR = (Absolute Error / Actual Value) ⋅ 100%.
+Step 5: Final calculation: δR = (0.4 / 10.2) ⋅ 100% ≈ 3.92%.",3.92,%
+THCB066,"A voltage source of U = 9V. Two lamps are connected in parallel, and each lamp has a resistance R = 9Ω. Calculate the current through each lamp and the total current.","Step 1: Identify that lamps are in parallel. If the series variable resistor is set to 0 Ohms, each lamp receives the full 9V.
+Step 2: Calculate the current through lamp 1: I1 = V / R = 9V / 9Ω = 1.0 A.
+Step 3: Calculate the current through lamp 2: I2 = V / R = 9V / 9Ω = 1.0 A.
+Step 4: Calculate total current (reading on A1): I_total = I1 + I2 = 1.0 A + 1.0 A = 2.0 A.",I_D₁ = 1.0; I_D₂ = 1.0; I_total = 2.0,A; A; A
+THCB067,"In a parallel circuit with two lamps, the current through D₁ is 0.4 A, and the total current is 1.0 A. Calculate the current through D₂.","Step 1: Use Kirchhoff's Current Law for parallel circuits: Total Current (A1) = I1 + I2.
+Step 2: Identify the given values: I_total (A1) = 1.0 A and I1 = 0.4 A.
+Step 3: Solve for the current through D2 (measured by A2): I2 = I_total - I1.
+Step 4: Calculation: I2 = 1.0 A - 0.4 A = 0.6 A.",I_D₂ = 0.6,A
+THCB068,An 8Ω lamp is connected in parallel with a 16Ω lamp. A voltage of 8V is applied across them. Calculate the total current in the circuit.,"Step 1: Calculate parallel resistance (Rp): (8 × 16) / (8 + 16) = 128 / 24 = 5.33 Ω.
+Step 2: Assuming the series variable resistor is 0 Ω, the total current (A1) is I = V / Rp.
+Step 3: Calculation: I_total = 8V / 5.33Ω = 1.5 A.",I_total = 1.5,A
+THCB069,"If both lamps glow brightly and are identical, with a supply voltage U = 6V, calculate the current through each lamp, given R = 6Ω.","Step 1: In a parallel circuit, each lamp receives the source voltage (if series resistance is negligible).
+Step 2: Use Ohm's Law for one lamp: I = V / R = 6V / 6Ω = 1.0 A.
+Step 3: Since lamps are identical, both branches draw 1.0 A",I_D = 1.0,A
+THCB070,"Two lamps are connected in parallel, with a total current of 1.2 A. If lamp D₁ is removed, what will be the total current (given that lamp D₂ draws 0.5 A)?","Step 1: In a parallel circuit, removing one lamp stops the current in that specific branch.
+Step 2: The current through the remaining functional branch (D2) remains 0.5 A.
+Step 3: Therefore, the new total current (A1) will simply be equal to the current of the remaining branch.
+Step 4: Final calculation: Total current = 0.5 A.",I_total_new = 0.5,A
+THCB071,"In an electrical circuit, if the resistance of branch D₂ decreases, how will the current through D₂ change?","Step 1: According to Ohm's Law (I = V / R), current is inversely proportional to resistance.
+Step 2: As the resistance of branch D2 decreases, the current flowing through that branch (A2) will increase.
+Step 3: This will also lead to an increase in the total current measured at A1.",Resistance decreases → current increases.,—
+THCB072,"Resistor D1 has a resistance of 10Ω, and Resistor D2 has a resistance of 5Ω. They are connected in parallel to a 10V power source. Calculate the total current flowing through the circuit.","Step 1: Calculate current for D1: I1 = 10V / 10Ω = 1.0 A.
+Step 2: Calculate current for D2: I2 = 10V / 5Ω = 2.0 A.
+Step 3: Calculate total current (A1): I_total = I1 + I2 = 1.0 A + 2.0 A = 3.0 A.",I_total = 3.0,A
+THCB073,"If the total current increases when the resistance of the variable resistor is decreased, what happens to the light bulbs?","Step 1: Total current increases when the series variable resistor's resistance is decreased.
+Step 2: This reduces the voltage drop across the variable resistor, leaving more voltage for the parallel lamps.
+Step 3: Since more voltage is applied to the lamps, the current through each branch increases.
+Step 4: Conclusion: The light bulbs will shine brighter.",The lamp shines brighter because the current through it increases.,—
+THCB074,What is the total resistance of two 10Ω and 30Ω branches connected in parallel?,"Step 1: Apply the parallel resistance formula: (R1 × R2) / (R1 + R2).
+Step 2: Calculation: (10 × 30) / (10 + 30) = 300 / 40.
+Step 3: Result: 7.5 Ω.",Rtd = 7.5,Ω
+THCB075,A 24V source supplies 2 A of current to a circuit with two parallel lamps. Calculate the total power consumption of the circuit.,"Step 1: Identify total voltage (24V) and total current from ammeter A1 (2A).
+Step 2: Use the power formula: P = V × I.
+Step 3: Calculation: P = 24 × 2 = 48 W.",P = 48.0,W
+THCB076,Two light bulbs with resistances R₁ = 20Ω and R₂ = 10Ω are connected in parallel. A voltage of U = 10V is applied across the combination. Calculate the current flowing through each bulb.,"Step 1: Current through D1: I1 = 10V / 20Ω = 0.5 A.
+Step 2: Current through D2 (measured by A2): I2 = 10V / 10Ω = 1.0 A.",I₁ = 0.5; I₂ = 1.0,A; A
+THCB077,"The power consumption of lamps D₁ and D₂ is 10W and 20W, respectively. Calculate the total power of the circuit.","Step 1: The total power in any circuit is the sum of power used by all components.
+Step 2: Identify power for D1 (10W) and D2 (20W).
+Step 3: Total circuit power = P1 + P2 = 10W + 20W = 30 W.",P_total = 30,W
+THCB078,"A parallel circuit has R₁ = 30Ω, R₂ = 60Ω. U = 12V. Calculate the equivalent resistance.","Step 1: Apply the parallel formula: (30 × 60) / (30 + 60) = 1800 / 90.
+Step 2: Result: 20 Ω.",Rtd = 20.0,Ω
+THCB079,"The current through lamp D₁ is 1.2 A, and the current through lamp D₂ is 0.8 A. Calculate the total current.","Step 1: Identify that Đ1 and Đ2 are connected in parallel.
+Step 2: Apply Kirchhoff's Current Law: The total current (A1) is the sum of the currents in each branch.
+Step 3: Identify given branch currents: I1 = 1.2 A and I2 = 0.8 A.
+Step 4: Calculate total current: I_total = 1.2 A + 0.8 A = 2.0 A.",I_total = 2.0,A
+THCB080,A 15V source is connected to two parallel branches/resistors: R₁ = 15Ω and R₂ = 30Ω. Calculate the total current.,"Step 1: Calculate the parallel equivalent resistance (Rp): (15 × 30) / (15 + 30) = 450 / 45 = 10 Ohm.
+Step 2: Identify the total circuit structure: The parallel section is in series with a variable resistor.
+Step 3: Assuming the series variable resistor is set to 0 Ohm, use Ohm's Law: I_total = V / Rp = 15 V / 10 Ohm.
+Step 4: Final calculation: I_total = 1.5 A.",I_total = 1.5,A
+THCB081,"If the current through one lamp in a parallel circuit increases, how will the total current change?","Step 1: In a parallel circuit, total current (A1) is the sum of all branch currents.
+Step 2: If the current through one branch increases while others stay constant, the sum must increase.
+Step 3: This typically happens if the resistance of a branch decreases or the source voltage increases.
+Step 4: Conclusion: The total current will increase.",Total current increases.,—
+THCB082,Two identical lamps are connected in parallel and consume a total of 18W. Calculate the power of each lamp.,"Step 1: Total power in a circuit is the sum of individual component powers: P_total = P1 + P2.
+Step 2: Identify given total power: 18 W.
+Step 3: Since the lamps are identical and in parallel, they operate under the same conditions and consume equal power.
+Step 4: Calculation: Power per lamp = 18 W / 2 = 9 W.",P = 9.0,W
+THCB083,"If two bulbs are connected in parallel, both at the same voltage, how bright will the bulb with lower resistance be?","Step 1: In parallel, both bulbs share the same voltage (V).
+Step 2: Power (brightness) is calculated as P = V^2 / R.
+Step 3: Because voltage is constant, a lower resistance (R) results in a higher power (P).
+Step 4: Conclusion: The bulb with lower resistance will be brighter.",Brighter because the current is higher.,—
+THCB084,A light bulb consumes 12W of power under a voltage of 6V. Calculate the current through the bulb.,"Step 1: Identify given values: P = 12 W, V = 6 V.
+Step 2: Use the power formula: P = V × I.
+Step 3: Rearrange to solve for current: I = P / V.
+Step 4: Calculation: I = 12 W / 6 V = 2.0 A.",I = 2.0,A
+THCB085,"If the current through A₁ is 1.8 A and A₂ is 1.2 A, calculate the current in the third branch.","Step 1: Observe ammeter positions in image 284.png. A1 is total current (1.8 A) and A2 is branch current (1.2 A).
+Step 2: Use Kirchhoff's Current Law: I_total (A1) = I_branch1 + I_branch2 (A2).
+Step 3: Set up the equation: 1.8 A = I_branch1 + 1.2 A.
+Step 4: Calculation: I_branch1 = 1.8 A - 1.2 A = 0.6 A.",I₃ = 0.6,A
+THCB086,A student measures the length of a wooden rod as 25.0 ± 0.2 cm. Calculate the percentage relative error.,"Step 1: Identify Measured Value (L) = 25.0 cm and Absolute Error (delta L) = 0.2 cm.
+Step 2: Formula for percentage relative error: (delta L / L) × 100%.
+Step 3: Substitute values: (0.2 / 25.0) × 100%.
+Step 4: Final calculation: 0.8%.",0.8,%
+THCB087,The true value of the object is 50.0 cm. The student measured 49.4 cm. Calculate the absolute error and the relative error.,"Step 1: Calculate absolute error: |Measured - True| = |49.4 - 50.0| = 0.6 cm.
+Step 2: Formula for relative error: Absolute Error / True Value.
+Step 3: Substitute values: 0.6 / 50.0.
+Step 4: Final calculation: 0.012 (or 1.2%).",0.6; 1.2,cm; %
+THCB088,"An object was measured three times, yielding the results: 10.1 cm, 10.3 cm, and 10.2 cm. Calculate the mean value and the mean absolute error.","Step 1: Identify measurements: 10.1, 10.3, 10.2 cm.
+Step 2: Calculate mean (average): (10.1 + 10.3 + 10.2) / 3 = 10.2 cm.
+Step 3: Calculate individual deviations from the mean: |10.1 - 10.2| = 0.1; |10.3 - 10.2| = 0.1; |10.2 - 10.2| = 0.
+Step 4: Calculate mean absolute error: (0.1 + 0.1 + 0) / 3 = 0.2 / 3 ≈ 0.067 cm.",10.2; 0.067,cm; cm
+THCB089,The measured length is 12.0 ± 0.1 cm. Calculate the percentage relative error.,"Step 1: Identify the measured value L = 12.0 cm and absolute uncertainty delta L = 0.1 cm.
+Step 2: Use the formula for percentage relative error: (delta L / L) × 100%.
+Step 3: Substitute the values: (0.1 / 12.0) × 100%.
+Step 4: Final calculation: 0.83%.",0.83,%
+THCB090,"A student measured a height of 1.65 m, whereas the actual value is 1.70 m. Calculate the absolute error and the relative error.","Step 1: Identify actual value = 1.70 m and measured value = 1.65 m.
+Step 2: Calculate absolute error: |1.65 - 1.70| = 0.05 m.
+Step 3: Calculate relative error: Absolute Error / Actual Value = 0.05 / 1.70.
+Step 4: Final calculation: 0.029 (or 2.9%).",0.05; 2.94,m; %
+THCB091,The measured value is 8.00 ± 0.05 cm. Calculate the percentage relative error.,"Step 1: Identify measured value = 8.00 cm and absolute error = 0.05 cm.
+Step 2: Calculate relative error: 0.05 / 8.00 = 0.00625.
+Step 3: Convert to percentage: 0.00625 × 100%.
+Step 4: Final calculation: 0.625%.",0.63,%
+THCB092,The instrument has a least count of 0.1 cm. The measured value is 5.0 cm. Calculate the percentage relative error.,"Step 1: Identify the least count (LC) = 0.1 cm and measured value = 5.0 cm.
+Step 2: Determine absolute error for a single reading (half-least-count rule): 0.1 / 2 = 0.05 cm.
+Step 3: Calculate percentage relative error: (0.05 / 5.0) × 100%.
+Step 4: Final calculation: 1.0%.",1.0,%
+THCB093,"The true value is 30.0 cm, the measured result is 29.7 cm. Calculate the absolute error and the relative error.","Step 1: Identify true value = 30.0 cm and measured result = 29.7 cm.
+Step 2: Calculate absolute error: |29.7 - 30.0| = 0.3 cm.
+Step 3: Calculate relative error: 0.3 / 30.0.
+Step 4: Final calculation: 0.01 (or 1.0%).",0.3; 1.0,cm; %
+THCB094,Three mass measurements were taken: 100.2 g; 100.0 g; 100.4 g. Calculate the average mass and the average absolute error.,"Step 1: Identify measurements: 100.2 g, 100.0 g, 100.4 g.
+Step 2: Calculate average mass: (100.2 + 100.0 + 100.4) / 3 = 100.2 g.
+Step 3: Calculate individual deviations: |100.2 - 100.2| = 0; |100.0 - 100.2| = 0.2; |100.4 - 100.2| = 0.2.
+Step 4: Calculate average absolute error: (0 + 0.2 + 0.2) / 3 ≈ 0.133 g.",100.2; 0.133,g; g
+THCB095,The measured voltage is 6.0 ± 0.2 V. Calculate the percentage relative error.,"Step 1: Identify measured voltage = 6.0 V and absolute error = 0.2 V.
+Step 2: Calculate relative error: 0.2 / 6.0 ≈ 0.0333.
+Step 3: Convert to percentage: 0.0333 × 100%.
+Step 4: Final calculation: 3.33%.",3.33,%
+THCB096,The length of an object is measured as 45.0 ± 0.5 cm. Calculate the percentage relative error.,"Step 1: Identify measured length = 45.0 cm and absolute error = 0.5 cm.
+Step 2: Calculate relative error: 0.5 / 45.0 ≈ 0.0111.
+Step 3: Convert to percentage: 0.0111 × 100%.
+Step 4: Final calculation: 1.11%.",1.11,%
+THCB097,"The measured value is 20.3 cm, while the true value is 20.0 cm. Calculate the absolute error and the relative error.","Step 1: Identify values: Measured = 20.3 cm, True = 20.0 cm.
+Step 2: Calculate absolute error: |20.3 - 20.0| = 0.3 cm.
+Step 3: Calculate relative error: 0.3 / 20.0.
+Step 4: Final calculation: 0.015 (or 1.5%).",0.3; 1.5,cm; %
+THCB098,Three length measurements: 14.0 cm; 14.1 cm; 13.9 cm. Calculate the mean value and the average absolute error.,"Step 1: Identify measurements: 14.0, 14.1, 13.9 cm.
+Step 2: Calculate mean value: (14.0 + 14.1 + 13.9) / 3 = 14.0 cm.
+Step 3: Calculate individual deviations: |14.0 - 14.0| = 0; |14.1 - 14.0| = 0.1; |13.9 - 14.0| = 0.1.
+Step 4: Calculate average absolute error: (0 + 0.1 + 0.1) / 3 ≈ 0.067 cm.",14.0; 0.067,cm; cm
+THCB099,A student measured the temperature as 36.5 ± 0.2 °C. Calculate the percentage relative error.,"Step 1: Identify the measured value T = 36.5 °C and the absolute uncertainty ΔT = 0.2 °C.
+Step 2: Apply the formula for percentage relative error: (ΔT / T) × 100%.
+Step 3: Substitute the values: (0.2 / 36.5) × 100%.
+Step 4: Final calculation: ≈ 0.55%.",0.55,%
+THCB100,"The actual weight is 75.0 kg, and a student measured 74.2 kg. Calculate the absolute error and the percentage relative error.","Step 1: Calculate absolute error: |74.2 - 75.0| = 0.8 kg.
+Step 2: Calculate relative error using the actual value as the reference: 0.8 / 75.0.
+Step 3: Convert to percentage: (0.8 / 75.0) × 100%.
+Step 4: Final calculation: ≈ 1.07%.",0.8; 1.07,kg; %
+THCB101,The length is measured as 60.0 ± 0.3 cm. Calculate the percentage relative uncertainty (or percentage relative error).,"Step 1: Identify measured length L = 60.0 cm and absolute uncertainty ΔL = 0.3 cm.
+Step 2: Calculate relative uncertainty: 0.3 / 60.0 = 0.005.
+Step 3: Convert to percentage: 0.005 × 100%.
+Step 4: Final calculation: 0.5%.",0.5,%
+THCB102,A pressure gauge has a least count of 0.2 atm. It measures a pressure of 2.0 atm. Calculate the percentage relative error.,"Step 1: Identify measured pressure P = 2.0 atm. Use the least count as the absolute uncertainty for a single reading: ΔP = 0.2 .
+Step 2: Calculate relative error: ΔP / P = 0.1 / 2.0.
+Step 3: Convert to percentage: (0.2 / 2.0) × 100%.
+Step 4: Final calculation: 10.0%.",10.0,%
+THCB103,"The measured value is 100.0 cm, and the absolute error is 0.5 cm. Calculate the percentage relative error.","Step 1: Identify values: Measured value x = 100.0 cm, Absolute error Δx = 0.5 cm.
+Step 2: Calculate relative error: 0.5 / 100.0 = 0.005.
+Step 3: Convert to percentage: 0.005 × 100%.
+Step 4: Final calculation: 0.5%.",0.5,%
+THCB104,Mass was measured three times: 50.0 g; 49.8 g; 50.2 g. Calculate the average mass and the average absolute error.,"Step 1: Calculate the average mass: (50.0 + 49.8 + 50.2) / 3 = 50.0 g.
+Step 2: Calculate individual absolute deviations: |50.0 - 50.0| = 0.0 g; |49.8 - 50.0| = 0.2 g; |50.2 - 50.0| = 0.2 g.
+Step 3: Calculate average absolute error: (0.0 + 0.2 + 0.2) / 3.
+Step 4: Final calculation: ≈ 0.133 g.",50.0; 0.133,g; g
+THCB105,The measured voltage is 4.0 ± 0.1 V. Calculate the percentage relative uncertainty.,"Step 1: Identify measured voltage V = 4.0 V and absolute uncertainty ΔV = 0.1 V.
+Step 2: Calculate relative uncertainty: 0.1 / 4.0 = 0.025.
+Step 3: Convert to percentage: 0.025 × 100%.
+Step 4: Final calculation: 2.5%.",2.5,%
+THCB106,A student measures the volume of water as 500 ± 5 ml. Calculate the percentage relative error.,"Step 1: Identify measured volume V = 500 ml and absolute error ΔV = 5 ml.
+Step 2: Calculate relative error: 5 / 500 = 0.01.
+Step 3: Convert to percentage: 0.01 × 100%.
+Step 4: Final calculation: 1.0%",1.0,%
+THCB107,"The true value of the temperature is 100°C, and the student measured 98.5°C. Calculate the absolute error and the relative error.","Step 1: Calculate absolute error: |98.5 - 100| = 1.5 °C.
+Step 2: Calculate relative error: 1.5 / 100.
+Step 3: Convert to percentage: (1.5 / 100) × 100%.
+Step 4: Final calculation: 1.5%.",1.5; 1.5,°C; %
+THCB108,"Three height measurements were taken: 120.0 cm, 119.8 cm, 120.2 cm. Calculate the mean value and the mean absolute error.","Step 1: Calculate mean height: (120.0 + 119.8 + 120.2) / 3 = 120.0 cm.
+Step 2: Calculate individual deviations: |120.0 - 120.0| = 0.0; |119.8 - 120.0| = 0.2; |120.2 - 120.0| = 0.2.
+Step 3: Calculate mean absolute error: (0.0 + 0.2 + 0.2) / 3.
+Step 4: Final calculation: ≈ 0.133 cm.",120.0; 0.133,cm; cm
+THCB109,Mass measurement result: 200.0 ± 1.0 g. Calculate the percentage relative uncertainty.,"Step 1: Identify the measured value M = 200.0 g and absolute uncertainty ΔM = 1.0 g.
+Step 2: Use the formula for percentage relative uncertainty: (ΔM / M) × 100%.
+Step 3: Substitute the values: (1.0 / 200.0) × 100%.
+Step 4: Final calculation: 0.5%.",0.5,%
+THCB110,An object has an **actual length** of 150.0 cm. A student measured it as 149.2 cm. Calculate the **absolute error** and **relative error.,"Step 1: Calculate the absolute error: |149.2 - 150.0| = 0.8 cm.
+Step 2: Calculate the relative error using the actual length as the reference: 0.8 / 150.0.
+Step 3: Convert to a percentage for clarity: (0.8 / 150.0) × 100%.
+Step 4: Final calculation: ≈ 0.53%.",0.8; 0.53,cm; %
+THCB111,The measured value is 30.0 ± 0.2 cm. Calculate the percentage relative error.,"Step 1: Identify measured value L = 30.0 cm and absolute uncertainty ΔL = 0.2 cm.
+Step 2: Calculate relative uncertainty: 0.2 / 30.0 ≈ 0.00667.
+Step 3: Convert to percentage: 0.00667 × 100%.
+Step 4: Final calculation: ≈ 0.67%.",0.67,%
+THCB112,An instrument has a least count of 0.5°C and measured 25°C. Calculate the percentage relative error.,"Step 1: Identify the least count as 0.5°C. For a single measurement, the absolute uncertainty is typically taken as the least count itself or half of it depending on the convention; here we use the least count: ΔT = 0.5°C.
+Step 2: Identify the measured value T = 25°C.
+Step 3: Calculate the percentage relative error: (0.5 / 25) × 100%.
+Step 4: Final calculation: 2.0%.",2.0,%
+THCB113,"The measured value is 80.0 cm, and the absolute error is 0.4 cm. Calculate the percent relative error.","Step 1: Identify the least count as 0.5°C. For a single measurement, the absolute uncertainty is typically taken as the least count itself or half of it depending on the convention; here we use the least count: ΔT = 0.5°C.
+Step 2: Identify the measured value T = 25°C.
+Step 3: Calculate the percentage relative error: (0.5 / 25) × 100%.
+Step 4: Final calculation: 2.0%.",0.5,%
+THCB114,Three voltage readings: 9.9V; 10.1V; 10.0V. Calculate the average voltage and the average absolute error.,"Step 1: Calculate the average voltage: (9.9 + 10.1 + 10.0) / 3 = 10.0 V.
+Step 2: Calculate individual absolute deviations: |9.9 - 10.0| = 0.1 V; |10.1 - 10.0| = 0.1 V; |10.0 - 10.0| = 0.0 V.
+Step 3: Calculate the average absolute error: (0.1 + 0.1 + 0.0) / 3.
+Step 4: Final calculation: ≈ 0.067 V.",10.0; 0.067,V; V
+THCB115,The force measurement result: 15.0 ± 0.3 N. Calculate the percentage relative error.,"Step 1: Identify measured force F = 15.0 N and absolute uncertainty ΔF = 0.3 N.
+Step 2: Calculate relative error: 0.3 / 15.0 = 0.02.
+Step 3: Convert to percentage: 0.02 × 100%.
+Step 4: Final calculation: 2.0%.",2.0,%
+THCB116,A student measured the length as 100.0 ± 0.5 cm. Calculate the percentage relative error.,"Step 1: Identify measured value 100.0 cm and absolute error 0.5 cm.
+Step 2: Calculate the relative error: 0.5 / 100.0 = 0.005.
+Step 3: Convert to a percentage: 0.005 × 100%.
+Step 4: Final calculation: 0.5%.",0.5,%
+THCB117,"The measured value is 60.2 cm, and the true value is 60.0 cm. Calculate the absolute error and the relative error.","Step 1: Calculate the absolute error: |60.2 - 60.0| = 0.2 cm.
+Step 2: Calculate the relative error using the true value: 0.2 / 60.0.
+Step 3: Convert to a percentage: (0.2 / 60.0) × 100%.
+Step 4: Final calculation: ≈ 0.33%.",0.2; 0.33,cm; %
+THCB118,Three temperature measurements: 36.6°C; 36.8°C; 36.7°C. Calculate the mean and the mean absolute error.,"Step 1: Calculate the mean temperature: (36.6 + 36.8 + 36.7) / 3 = 36.7 °C.
+Step 2: Calculate individual deviations: |36.6 - 36.7| = 0.1; |36.8 - 36.7| = 0.1; |36.7 - 36.7| = 0.
+Step 3: Calculate the mean absolute error: (0.1 + 0.1 + 0) / 3.
+Step 4: Final calculation: ≈ 0.067 °C.",36.7; 0.067,°C; °C
+THCB119,The resistance measurement result is: 12.0 ± 0.2 Ω. Calculate the percentage relative uncertainty.,"Step 1: Identify the measured resistance R = 12.0 Ω and absolute uncertainty ΔR = 0.2 Ω.
+Step 2: Calculate the relative uncertainty: 0.2 / 12.0 ≈ 0.0167.
+Step 3: Convert to percentage: 0.0167 × 100%.
+Step 4: Final calculation: 1.67%.",1.67,%
+THCB120,"The actual weight is 65.0 kg, and a student measured 64.5 kg. Calculate the absolute error and the relative error.","Step 1: Calculate the absolute error: |64.5 - 65.0| = 0.5 kg.
+Step 2: Calculate the relative error using the actual weight: 0.5 / 65.0.
+Step 3: Convert to percentage: (0.5 / 65.0) × 100%.
+Step 4: Final calculation: ≈ 0.77%.",0.5; 0.77,kg; %
+THCB121,A ruler has a least count of 0.2 cm and is used to measure a length of 8.0 cm. Calculate the percentage relative error.,"Step 1: Identify the least count as 0.2 cm. For a standard measurement, the absolute uncertainty is the least count: ΔL = 0.2 cm.
+Step 2: Identify the measured length L = 8.0 cm.
+Step 3: Calculate the percentage relative error: (0.2 / 8.0) × 100%.
+Step 4: Final calculation: 2.5%.",2.5,%
+THCB122,"The measured value is 150.0 cm, and the absolute error is 0.3 cm. Calculate the percentage relative error.","Step 1: Identify measured value 150.0 cm and absolute error 0.3 cm.
+Step 2: Calculate the relative error: 0.3 / 150.0 = 0.002.
+Step 3: Convert to percentage: 0.002 × 100%.
+Step 4: Final calculation: 0.2%.",0.2,%
+THCB123,"Three current measurements were taken: 1.9 A, 2.0 A, 2.1 A. Calculate the average current and the mean absolute error.","Step 1: Calculate the average current: (1.9 + 2.0 + 2.1) / 3 = 2.0 A.
+Step 2: Calculate individual deviations: |1.9 - 2.0| = 0.1 A; |2.0 - 2.0| = 0.0 A; |2.1 - 2.0| = 0.1 A.
+Step 3: Calculate the mean absolute error: (0.1 + 0.0 + 0.1) / 3.
+Step 4: Final calculation: ≈ 0.067 A.",2.0; 0.067,A; A
+THCB124,The measured voltage is 5.00 ± 0.10 V. Calculate the percentage relative error.,"Step 1: Identify measured voltage 5.00 V and absolute error 0.10 V.
+Step 2: Calculate the relative error: 0.10 / 5.00 = 0.02.
+Step 3: Convert to percentage: 0.02 × 100%.
+Step 4: Final calculation: 2.0%.",2.0,%
+THCB125,A student measures the length of a table as 1.20 m using a ruler with a least count (or smallest division) of 0.01 m. Calculate the percentage relative error.,"Step 1: Identify measured length L = 1.20 m and least count ΔL = 0.01 m.
+Step 2: Calculate the relative error: 0.01 / 1.20 ≈ 0.00833.
+Step 3: Convert to percentage: 0.00833 × 100%.
+Step 4: Final calculation: ≈ 0.83%.",0.83,%
+THCB126,The measured length is 70.0 ± 0.2 cm. Calculate the percentage relative uncertainty.,"Step 1: Identify measured value 70.0 cm and absolute uncertainty 0.2 cm.
+Step 2: Calculate the relative uncertainty: 0.2 / 70.0 ≈ 0.00286.
+Step 3: Convert to percentage: 0.00286 × 100%.
+Step 4: Final calculation: ≈ 0.29%.",0.29,%
+THCB127,The measured value is 39.5 cm while the true value is 40.0 cm. Calculate the absolute error and the percentage relative error.,"Step 1: Calculate the absolute error: |39.5 - 40.0| = 0.5 cm.
+Step 2: Calculate the relative error using the true value: 0.5 / 40.0.
+Step 3: Convert to percentage: (0.5 / 40.0) × 100%.
+Step 4: Final calculation: 1.25%",0.5; 1.25,cm; %
+THCB128,"Three mass measurements were taken: 200.5 g, 200.3 g, and 200.2 g. Calculate the average mass and the average absolute error.","Step 1: Calculate the mean mass: (200.5 + 200.3 + 200.2) / 3 = 200.33 g.
+Step 2: Calculate deviations from mean: |200.5 - 200.33| = 0.17; |200.3 - 200.33| = 0.03; |200.2 - 200.33| = 0.13.
+Step 3: Calculate the average absolute error: (0.17 + 0.03 + 0.13) / 3.
+Step 4: Final calculation: 0.11 g.",200.3; 0.133,g; g
+THCB129,Voltage measurement result: 220.0 ± 1.0 V. Calculate the percentage relative error.,"Step 1: Identify measured voltage V = 220.0 V and absolute uncertainty delta V = 1.0 V.
+Step 2: Apply the formula for percentage relative error: (delta V / V) × 100%.
+Step 3: Substitute the values: (1.0 / 220.0) × 100%.
+Step 4: Final calculation: ≈ 0.45%.",0.45,%
+THCB130,"he student's true height is 165.0 cm, and the student measured it as 164.0 cm. Calculate the absolute error and the relative percentage error.","Step 1: Calculate the absolute error: |164.0 - 165.0| = 1.0 cm.
+Step 2: Calculate the relative error using the true height as the reference: 1.0 / 165.0.
+Step 3: Convert to a percentage: (1.0 / 165.0) × 100%.
+Step 4: Final calculation: ≈ 0.61%.",1.0; 0.61,cm; %
+THCB131,The measuring instrument has a least count of 0.1 cm. The measured value is 10.0 cm. Calculate the percentage relative error.,"Step 1: Identify the least count as 0.1 cm. In standard measurement practice, the absolute error is taken as the least count: delta L = 0.1 cm.
+Step 2: Identify the measured value L = 10.0 cm.
+Step 3: Calculate the percentage relative error: (0.1 / 10.0) × 100%.
+Step 4: Final calculation: 1.0%.",1.0,%
+THCB132,The measured value is 75.0 cm with an absolute error of 0.3 cm. Calculate the percentage relative error.,"Step 1: Identify measured value 75.0 cm and absolute error 0.3 cm.
+Step 2: Calculate the relative error: 0.3 / 75.0 = 0.004.
+Step 3: Convert the relative error to a percentage: 0.004 × 100%.
+Step 4: Final calculation: 0.4%.",0.4,%
+THCB133,Three temperature measurements: 20.1°C; 20.0°C; 19.9°C. Calculate the average temperature and the average absolute error.,"Step 1: Calculate average temperature: (20.1 + 20.0 + 19.9) / 3 = 20.0 °C.
+Step 2: Calculate individual deviations: |20.1 - 20.0| = 0.1; |20.0 - 20.0| = 0.0; |19.9 - 20.0| = 0.1.
+Step 3: Calculate the average absolute error: (0.1 + 0.0 + 0.1) / 3.
+Step 4: Final calculation: ≈ 0.067 °C.",20.0; 0.067,°C; °C
+THCB134,The measured current is 3.00 ± 0.05 A. Calculate the percent relative uncertainty.,"Step 1: Identify measured current I = 3.00 A and absolute uncertainty delta I = 0.05 A.
+Step 2: Calculate the relative uncertainty: 0.05 / 3.00 ≈ 0.0167.
+Step 3: Convert to percentage: 0.0167 × 100%.
+Step 4: Final calculation: ≈ 1.67%.",1.67,%
+THCB135,A student measured the time as 120.0 ± 0.5 s. Calculate the percentage relative uncertainty.,"Step 1: Identify measured time t = 120.0 s and absolute uncertainty delta t = 0.5 s.
+Step 2: Calculate the relative uncertainty: 0.5 / 120.0 ≈ 0.00417.
+Step 3: Convert to percentage: 0.00417 × 100%.
+Step 4: Final calculation: ≈ 0.42%.",0.42,%

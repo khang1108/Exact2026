@@ -88,9 +88,14 @@ def main() -> None:
     try:
         env = os.environ.copy()
         env["PYTHONPATH"] = str(root_dir / "src")
+        env["PYTHONUNBUFFERED"] = "1"
+        env.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "0")
+        env.setdefault("TQDM_DISABLE", "0")
+        env.setdefault("TRANSFORMERS_VERBOSITY", "info")
         python_exe = args.python_exe or python_executable(root_dir)
         cmd = [
             str(python_exe),
+            "-u",
             "-m",
             "exact.scripts.run_type2_monitor",
             "--config",
@@ -104,11 +109,11 @@ def main() -> None:
             "--output",
             str(args.output),
         ]
-        print(f"Type 2 backend:          {args.backend}")
-        print(f"Temporary config:        {config_path}")
-        print(f"Output:                  {args.output}")
+        print(f"Type 2 backend:          {args.backend}", flush=True)
+        print(f"Temporary config:        {config_path}", flush=True)
+        print(f"Output:                  {args.output}", flush=True)
         if args.routing_log is not None:
-            print(f"Routing log:             {args.routing_log}")
+            print(f"Routing log:             {args.routing_log}", flush=True)
         subprocess.run(cmd, env=env, check=True)
     finally:
         try:

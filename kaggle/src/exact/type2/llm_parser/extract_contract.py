@@ -30,7 +30,13 @@ def extract_contract(extraction: Extraction) -> PhysicsSceneContract | None:
 
 def contract_from_geometry_spec(spec: GeometrySpec, extraction: Extraction) -> PhysicsSceneContract:
     bodies = tuple(_contract_body(body_id, body) for body_id, body in spec.bodies.items())
-    points = tuple(sorted(spec.points | {body.point for body in spec.bodies.values() if body.point}))
+    referenced_points = set(spec.points)
+    referenced_points.update(body.point for body in spec.bodies.values() if body.point)
+    for edge in spec.edges:
+        referenced_points.update((edge.a, edge.b))
+    for constraint in spec.constraints:
+        referenced_points.update(constraint.points)
+    points = tuple(sorted(referenced_points))
     constraints = tuple(_contract_constraint(constraint) for constraint in spec.constraints)
     distance_constraints = tuple(
         ContractConstraint(

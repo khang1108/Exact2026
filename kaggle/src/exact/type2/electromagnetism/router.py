@@ -5,6 +5,7 @@ from exact.type2.electromagnetism.schemas import ElectromagnetismContract
 from exact.type2.electromagnetism.validator import validate_contract
 from exact.type2.electromagnetism.solvers import (
     faraday_lenz_solver,
+    inductor_energy_solver,
     lc_energy_state_solver,
     phasor_ac_solver,
     reactance_solver,
@@ -20,6 +21,8 @@ def solve_electromagnetism_contract(contract: ElectromagnetismContract) -> dict:
         return unsolved("electromagnetism_router", issue.reason if issue else "validation failed", missing=list(issue.missing) if issue else [])
     system_type = validated.contract.system_type
     target = validated.contract.target.quantity
+    if system_type == "inductor_energy":
+        return inductor_energy_solver.solve(validated.contract)
     if system_type == "ideal_lc_oscillator":
         return lc_energy_state_solver.solve(validated.contract)
     if system_type == "series_rlc_circuit":

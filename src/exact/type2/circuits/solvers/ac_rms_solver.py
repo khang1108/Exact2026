@@ -17,6 +17,8 @@ def solve(contract: CircuitContract) -> dict:
         if target == "inductive_reactance" and component.kind == "inductor":
             return solved("ac_rms_solver", "inductive_reactance", q(omega * prop(component, "inductance", "H"), "ohm"))
         if target == "capacitive_reactance" and component.kind == "capacitor":
+            if omega == 0 or prop(component, "capacitance", "F") == 0:
+                return unsolved("ac_rms_solver", "frequency or capacitance is zero")
             return solved("ac_rms_solver", "capacitive_reactance", q(1 / (omega * prop(component, "capacitance", "F")), "ohm"))
     return unsolved("ac_rms_solver", f"reactance target `{target}` could not be resolved")
 

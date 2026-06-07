@@ -1,0 +1,116 @@
+72.1s	26	processed 1/100 id=physics_NL386 status=correct_numeric answer=0.072 unit=J gold=0.072 J elapsed=0.02s correct=1 wrong=0 errors=0 acc=1.000
+72.1s	27	processed 2/100 id=physics_NL391 status=correct_numeric answer=0.2 unit=J gold=0.2 J elapsed=0.00s correct=2 wrong=0 errors=0 acc=1.000
+72.1s	28	processed 3/100 id=physics_NL322 status=correct_numeric answer=1 unit=J gold=1 J elapsed=0.00s correct=3 wrong=0 errors=0 acc=1.000
+107.9s	270	processed 4/100 id=physics_NL106 status=correct_numeric answer=9e-07 unit=F gold=0.90 μF elapsed=35.80s correct=4 wrong=0 errors=0 acc=1.000
+107.9s	271	processed 5/100 id=physics_NL312 status=conceptual_only answer=0 unit=J gold=0 J elapsed=0.00s correct=4 wrong=0 errors=0 acc=1.000
+107.9s	272	processed 6/100 id=physics_NL016 status=wrong_numeric answer=2 unit=H gold=0.002 H elapsed=0.02s correct=4 wrong=1 errors=0 acc=0.800
+108.0s	273	processed 7/100 id=physics_NL010 status=wrong_numeric answer=0.4 unit=H gold=0.0004 H elapsed=0.02s correct=4 wrong=2 errors=0 acc=0.667
+108.0s	274	[Symbolic/Numeric Mismatch] Model: '', Gold: '17.32'
+108.0s	275	processed 8/100 id=physics_NL017 status=pipeline_error answer= unit=None gold=17.32 V elapsed=0.02s correct=4 wrong=3 errors=1 acc=0.571
+108.0s	276	processed 9/100 id=physics_NL352 status=correct_numeric answer=1.2 unit=J gold=1.2 J elapsed=0.00s correct=5 wrong=3 errors=1 acc=0.625
+108.0s	277	processed 10/100 id=physics_NL335 status=correct_numeric answer=4 unit= gold=4 - elapsed=0.00s correct=6 wrong=3 errors=1 acc=0.667
+108.0s	278	processed 11/100 id=physics_NL320 status=conceptual_only answer=J unit= gold=Joule J elapsed=0.00s correct=6 wrong=3 errors=1 acc=0.667
+108.0s	279	processed 12/100 id=physics_NL306 status=conceptual_only answer=upward parabola unit= gold=upward parabola - elapsed=0.00s correct=6 wrong=3 errors=1 acc=0.667
+108.0s	280	processed 13/100 id=physics_NL019 status=wrong_numeric answer=0.25 unit=H gold=0.25 mH elapsed=0.02s correct=6 wrong=4 errors=1 acc=0.600
+108.0s	281	processed 14/100 id=physics_NL375 status=correct_numeric answer=0.1875 unit=J gold=0.1875 J elapsed=0.00s correct=7 wrong=4 errors=1 acc=0.636
+108.0s	282	processed 15/100 id=physics_NL126 status=wrong_numeric answer=0.9 unit=H gold=0.0009 H elapsed=0.02s correct=7 wrong=5 errors=1 acc=0.583
+108.0s	283	processed 16/100 id=physics_NL331 status=correct_numeric answer=0.25 unit=J gold=0.25 J elapsed=0.00s correct=8 wrong=5 errors=1 acc=0.615
+108.1s	284	processed 17/100 id=physics_NL315 status=pipeline_error answer= unit=None gold=Upward straight line - elapsed=0.03s correct=8 wrong=6 errors=2 acc=0.571
+108.1s	285	processed 18/100 id=physics_NL107 status=correct_numeric answer=0.32 unit=J gold=320.00 mJ elapsed=0.00s correct=9 wrong=6 errors=2 acc=0.600
+108.1s	286	processed 19/100 id=physics_NL097 status=correct_numeric answer=0.45 unit=J gold=450.00 mJ elapsed=0.02s correct=10 wrong=6 errors=2 acc=0.625
+108.1s	287	processed 20/100 id=physics_NL083 status=correct_numeric answer=4e-06 unit=F gold=4.00 μF elapsed=0.02s correct=11 wrong=6 errors=2 acc=0.647
+108.1s	288	processed 21/100 id=physics_NL031 status=correct_numeric answer=0.675 unit=J gold=675.00 mJ elapsed=0.00s correct=12 wrong=6 errors=2 acc=0.667
+108.1s	289	processed 22/100 id=physics_NL025 status=conceptual_only answer=all energy is stored in the magnetic field of the inductor unit=None gold=all energy is entirely stored in the magnetic field of the inductor — elapsed=0.02s correct=12 wrong=6 errors=2 acc=0.667
+108.2s	290	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.117'
+108.2s	291	processed 23/100 id=physics_NL366 status=pipeline_error answer= unit=None gold=0.117 J elapsed=0.05s correct=12 wrong=7 errors=3 acc=0.632
+108.2s	292	processed 24/100 id=physics_NL308 status=pipeline_error answer= unit=None gold=When the current is zero - elapsed=0.02s correct=12 wrong=8 errors=4 acc=0.600
+108.2s	293	processed 25/100 id=physics_NL109 status=correct_numeric answer=5e-06 unit=F gold=5.00 μF elapsed=0.02s correct=13 wrong=8 errors=4 acc=0.619
+108.2s	294	processed 26/100 id=physics_NL338 status=pipeline_error answer= unit=None gold=0.9 J elapsed=0.03s correct=13 wrong=9 errors=5 acc=0.591
+108.3s	295	processed 27/100 id=physics_NL334 status=correct_numeric answer=0.1 unit=H gold=0.1 H elapsed=0.02s correct=14 wrong=9 errors=5 acc=0.609
+108.3s	296	processed 28/100 id=physics_NL020 status=correct_numeric answer=0.675 unit=J gold=675.00 mJ elapsed=0.00s correct=15 wrong=9 errors=5 acc=0.625
+108.3s	297	processed 29/100 id=physics_NL086 status=correct_numeric answer=2.828427 unit=A gold=2.83 A elapsed=0.03s correct=16 wrong=9 errors=5 acc=0.640
+108.3s	298	processed 30/100 id=physics_NL116 status=wrong_numeric answer=0.5 unit=H gold=0.0005 H elapsed=0.02s correct=16 wrong=10 errors=5 acc=0.615
+108.3s	299	processed 31/100 id=physics_NL379 status=wrong_numeric answer=0.24 unit=J gold=0 J elapsed=0.03s correct=16 wrong=11 errors=5 acc=0.593
+108.3s	300	processed 32/100 id=physics_NL108 status=correct_numeric answer=0.0294 unit=J gold=29.40 mJ elapsed=0.00s correct=17 wrong=11 errors=5 acc=0.607
+108.4s	301	[Symbolic/Numeric Mismatch] Model: '', Gold: '10.00'
+108.4s	302	processed 33/100 id=physics_NL006 status=pipeline_error answer= unit=None gold=10.00 V elapsed=0.02s correct=17 wrong=12 errors=6 acc=0.586
+108.4s	303	processed 34/100 id=physics_NL343 status=correct_numeric answer=0.135 unit=J gold=0.135 J elapsed=0.02s correct=18 wrong=12 errors=6 acc=0.600
+108.4s	304	processed 35/100 id=physics_NL380 status=correct_numeric answer=0.0216 unit=J gold=0.0216 J elapsed=0.00s correct=19 wrong=12 errors=6 acc=0.613
+108.4s	305	processed 36/100 id=physics_NL374 status=correct_numeric answer=0.2069 unit=J gold=0.21 J elapsed=0.00s correct=20 wrong=12 errors=6 acc=0.625
+108.4s	306	processed 37/100 id=physics_NL119 status=conceptual_only answer=all energy is stored in the electric field of the capacitor unit=None gold=all the energy is stored in the electric field of the capacitor — elapsed=0.02s correct=20 wrong=12 errors=6 acc=0.625
+108.4s	307	processed 38/100 id=physics_NL323 status=pipeline_error answer= unit=None gold=Doubled - elapsed=0.02s correct=20 wrong=13 errors=7 acc=0.606
+108.5s	308	[Symbolic/Numeric Mismatch] Model: '', Gold: '75'
+108.5s	309	processed 39/100 id=physics_NL092 status=pipeline_error answer= unit=None gold=75 % elapsed=0.03s correct=20 wrong=14 errors=8 acc=0.588
+108.5s	310	processed 40/100 id=physics_NL036 status=correct_numeric answer=0.081 unit=J gold=81.00 mJ elapsed=0.00s correct=21 wrong=14 errors=8 acc=0.600
+108.5s	311	[Symbolic/Numeric Mismatch] Model: '', Gold: 'W_C = W₀sin²(ωt)'
+108.5s	312	processed 41/100 id=physics_NL329 status=pipeline_error answer= unit=None gold=W_C = W₀sin²(ωt) J elapsed=0.04s correct=21 wrong=15 errors=9 acc=0.583
+108.5s	313	processed 42/100 id=physics_NL101 status=correct_numeric answer=0.144 unit=J gold=144.00 mJ elapsed=0.02s correct=22 wrong=15 errors=9 acc=0.595
+108.5s	314	processed 43/100 id=physics_NL372 status=wrong_numeric answer=0.5 unit=J gold=1 J elapsed=0.00s correct=22 wrong=16 errors=9 acc=0.579
+108.5s	315	processed 44/100 id=physics_NL117 status=correct_numeric answer=0.027 unit=J gold=27.00 mJ elapsed=0.00s correct=23 wrong=16 errors=9 acc=0.590
+108.5s	316	processed 45/100 id=physics_NL110 status=wrong_numeric answer=2 unit=H gold=0.002 H elapsed=0.02s correct=23 wrong=17 errors=9 acc=0.575
+108.6s	317	processed 46/100 id=physics_NL030 status=pipeline_error answer= unit=None gold=70.7 % elapsed=0.03s correct=23 wrong=18 errors=10 acc=0.561
+108.6s	318	processed 47/100 id=physics_NL339 status=correct_numeric answer=0.12 unit=J gold=0.12 J elapsed=0.00s correct=24 wrong=18 errors=10 acc=0.571
+108.6s	319	processed 48/100 id=physics_NL363 status=wrong_numeric answer=1 unit=J gold=2 J elapsed=0.03s correct=24 wrong=19 errors=10 acc=0.558
+108.6s	320	processed 49/100 id=physics_NL376 status=pipeline_error answer= unit=None gold=126.49 V elapsed=0.03s correct=24 wrong=20 errors=11 acc=0.545
+108.7s	321	[Symbolic/Numeric Mismatch] Model: '', Gold: '14.14'
+108.7s	322	processed 50/100 id=physics_NL032 status=pipeline_error answer= unit=None gold=14.14 V elapsed=0.02s correct=24 wrong=21 errors=12 acc=0.533
+108.7s	323	processed 51/100 id=physics_NL364 status=correct_numeric answer=0.6 unit=J gold=0.6 J elapsed=0.00s correct=25 wrong=21 errors=12 acc=0.543
+108.7s	324	[Symbolic/Numeric Mismatch] Model: '', Gold: '14.83'
+108.7s	325	processed 52/100 id=physics_NL013 status=pipeline_error answer= unit=None gold=14.83 V elapsed=0.02s correct=25 wrong=22 errors=13 acc=0.532
+108.7s	326	processed 53/100 id=physics_NL082 status=correct_numeric answer=0.8 unit=J gold=800.00 mJ elapsed=0.02s correct=26 wrong=22 errors=13 acc=0.542
+108.7s	327	processed 54/100 id=physics_NL389 status=correct_numeric answer=0.375 unit=J gold=0.375 J elapsed=0.00s correct=27 wrong=22 errors=13 acc=0.551
+108.7s	328	processed 55/100 id=physics_NL096 status=correct_numeric answer=86.6025 unit=% gold=86.6 % elapsed=0.00s correct=28 wrong=22 errors=13 acc=0.560
+108.7s	329	processed 56/100 id=physics_NL309 status=conceptual_only answer=increase by 4 times unit=None gold=Increase by 4 times - elapsed=0.02s correct=28 wrong=22 errors=13 acc=0.560
+108.7s	330	processed 57/100 id=physics_NL304 status=correct_numeric answer=0.9 unit=J gold=0.9 J elapsed=0.00s correct=29 wrong=22 errors=13 acc=0.569
+108.7s	331	[Symbolic/Numeric Mismatch] Model: '', Gold: '22.36'
+108.7s	332	processed 58/100 id=physics_NL027 status=pipeline_error answer= unit=None gold=22.36 V elapsed=0.02s correct=29 wrong=23 errors=14 acc=0.558
+108.8s	333	processed 59/100 id=physics_NL039 status=pipeline_error answer= unit=None gold=86.6 % elapsed=0.04s correct=29 wrong=24 errors=15 acc=0.547
+108.8s	334	processed 60/100 id=physics_NL328 status=pipeline_error answer= unit=None gold=triple - elapsed=0.03s correct=29 wrong=25 errors=16 acc=0.537
+108.8s	335	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.131'
+108.8s	336	processed 61/100 id=physics_NL367 status=pipeline_error answer= unit=None gold=0.131 J elapsed=0.03s correct=29 wrong=26 errors=17 acc=0.527
+108.9s	337	processed 62/100 id=physics_NL344 status=correct_numeric answer=6.4e-06 unit=F gold=6.4 µF elapsed=0.02s correct=30 wrong=26 errors=17 acc=0.536
+108.9s	338	processed 63/100 id=physics_NL396 status=correct_numeric answer=0.16 unit=H gold=0.16 H elapsed=0.02s correct=31 wrong=26 errors=17 acc=0.544
+108.9s	339	processed 64/100 id=physics_NL350 status=pipeline_error answer= unit=None gold=increase 3 times - elapsed=0.03s correct=31 wrong=27 errors=18 acc=0.534
+108.9s	340	processed 65/100 id=physics_NL003 status=correct_numeric answer=0.9 unit=J gold=900.00 mJ elapsed=0.00s correct=32 wrong=27 errors=18 acc=0.542
+108.9s	341	processed 66/100 id=physics_NL087 status=correct_numeric answer=0.0891 unit=J gold=89.10 mJ elapsed=0.00s correct=33 wrong=27 errors=18 acc=0.550
+109.0s	342	processed 67/100 id=physics_NL307 status=pipeline_error answer= unit=None gold=less than - elapsed=0.03s correct=33 wrong=28 errors=19 acc=0.541
+109.0s	343	processed 68/100 id=physics_NL351 status=correct_numeric answer=0.06 unit=J gold=0.06 J elapsed=0.00s correct=34 wrong=28 errors=19 acc=0.548
+109.0s	344	processed 69/100 id=physics_NL333 status=correct_numeric answer=5e-05 unit=F gold=50 µF elapsed=0.02s correct=35 wrong=28 errors=19 acc=0.556
+109.0s	345	processed 70/100 id=physics_NL037 status=wrong_numeric answer=10 unit=H gold=0.01 H elapsed=0.02s correct=35 wrong=29 errors=19 acc=0.547
+109.0s	346	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.4'
+109.0s	347	processed 71/100 id=physics_NL349 status=pipeline_error answer= unit=None gold=0.4 J elapsed=0.03s correct=35 wrong=30 errors=20 acc=0.538
+109.1s	348	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.50'
+109.1s	349	processed 72/100 id=physics_NL023 status=pipeline_error answer= unit=None gold=0.50 mJ elapsed=0.03s correct=35 wrong=31 errors=21 acc=0.530
+109.1s	350	processed 73/100 id=physics_NL326 status=wrong_numeric answer=0.111111 unit=dimensionless gold=90 % elapsed=0.02s correct=35 wrong=32 errors=21 acc=0.522
+109.1s	351	processed 74/100 id=physics_NL123 status=correct_numeric answer=6.66667e-07 unit=F gold=0.67 μF elapsed=0.02s correct=36 wrong=32 errors=21 acc=0.529
+109.1s	352	processed 75/100 id=physics_NL392 status=correct_numeric answer=2.25 unit=J gold=2.25 J elapsed=0.00s correct=37 wrong=32 errors=21 acc=0.536
+109.1s	353	processed 76/100 id=physics_NL012 status=correct_numeric answer=4e-07 unit=F gold=0.40 μF elapsed=0.02s correct=38 wrong=32 errors=21 acc=0.543
+109.2s	354	processed 77/100 id=physics_NL324 status=pipeline_error answer= unit=None gold=Linear function increases - elapsed=0.03s correct=38 wrong=33 errors=22 acc=0.535
+109.2s	355	processed 78/100 id=physics_NL361 status=wrong_numeric answer=2e-05 unit=J gold=0.1 J elapsed=0.03s correct=38 wrong=34 errors=22 acc=0.528
+109.2s	356	processed 79/100 id=physics_NL007 status=wrong_numeric answer=3.464102 unit=A gold=0.11 A elapsed=0.03s correct=38 wrong=35 errors=22 acc=0.521
+109.2s	357	processed 80/100 id=physics_NL028 status=wrong_numeric answer=2.5 unit=H gold=0.0025 H elapsed=0.02s correct=38 wrong=36 errors=22 acc=0.514
+109.3s	358	processed 81/100 id=physics_NL311 status=pipeline_error answer= unit=None gold=Increase by 2 times - elapsed=0.03s correct=38 wrong=37 errors=23 acc=0.507
+109.3s	359	[Symbolic/Numeric Mismatch] Model: '', Gold: '9.49'
+109.3s	360	processed 82/100 id=physics_NL005 status=pipeline_error answer= unit=None gold=9.49 V elapsed=0.03s correct=38 wrong=38 errors=24 acc=0.500
+109.3s	361	processed 83/100 id=physics_NL033 status=correct_numeric answer=0.4688 unit=J gold=468.75 mJ elapsed=0.00s correct=39 wrong=38 errors=24 acc=0.506
+109.3s	362	processed 84/100 id=physics_NL319 status=correct_numeric answer=4e-05 unit=F gold=40 µF elapsed=0.02s correct=40 wrong=38 errors=24 acc=0.513
+109.3s	363	processed 85/100 id=physics_NL347 status=correct_numeric answer=0.04 unit=H gold=0.04 H elapsed=0.02s correct=41 wrong=38 errors=24 acc=0.519
+109.3s	364	processed 86/100 id=physics_NL301 status=correct_numeric answer=0.1 unit=J gold=0.1 J elapsed=0.02s correct=42 wrong=38 errors=24 acc=0.525
+109.4s	365	processed 87/100 id=physics_NL346 status=pipeline_error answer= unit=None gold=0.002 mC elapsed=0.04s correct=42 wrong=39 errors=25 acc=0.519
+109.4s	366	processed 88/100 id=physics_NL011 status=correct_numeric answer=0.216 unit=J gold=216.00 mJ elapsed=0.02s correct=43 wrong=39 errors=25 acc=0.524
+109.4s	367	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.5'
+109.4s	368	processed 89/100 id=physics_NL336 status=pipeline_error answer= unit=None gold=0.5 J elapsed=0.03s correct=43 wrong=40 errors=26 acc=0.518
+109.4s	369	processed 90/100 id=physics_NL337 status=correct_numeric answer=0.9 unit=J gold=0.9 J elapsed=0.00s correct=44 wrong=40 errors=26 acc=0.524
+109.5s	370	processed 91/100 id=physics_NL348 status=pipeline_error answer= unit=None gold=0.05 J elapsed=0.04s correct=44 wrong=41 errors=27 acc=0.518
+109.5s	371	processed 92/100 id=physics_NL001 status=correct_numeric answer=0.1 unit=J gold=100.00 mJ elapsed=0.02s correct=45 wrong=41 errors=27 acc=0.523
+109.5s	372	processed 93/100 id=physics_NL381 status=correct_numeric answer=0.081 unit=J gold=0.081 J elapsed=0.00s correct=46 wrong=41 errors=27 acc=0.529
+109.5s	373	processed 94/100 id=physics_NL355 status=correct_numeric answer=0.18 unit=J gold=0.18 J elapsed=0.02s correct=47 wrong=41 errors=27 acc=0.534
+109.5s	374	processed 95/100 id=physics_NL111 status=correct_numeric answer=0.32 unit=J gold=320.00 mJ elapsed=0.00s correct=48 wrong=41 errors=27 acc=0.539
+109.6s	375	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.0294'
+109.6s	376	processed 96/100 id=physics_NL393 status=pipeline_error answer= unit=None gold=0.0294 J elapsed=0.04s correct=48 wrong=42 errors=28 acc=0.533
+109.6s	377	processed 97/100 id=physics_NL105 status=pipeline_error answer= unit=None gold=the magnetic energy stored in the inductor will also be at its maximum — elapsed=0.03s correct=48 wrong=43 errors=29 acc=0.527
+109.6s	378	[Symbolic/Numeric Mismatch] Model: '', Gold: '6.32'
+109.6s	379	processed 98/100 id=physics_NL085 status=pipeline_error answer= unit=None gold=6.32 V elapsed=0.02s correct=48 wrong=44 errors=30 acc=0.522
+109.6s	380	[Symbolic/Numeric Mismatch] Model: '', Gold: '1/4'
+109.6s	381	processed 99/100 id=physics_NL325 status=pipeline_error answer= unit=None gold=1/4 - elapsed=0.03s correct=48 wrong=45 errors=31 acc=0.516
+109.6s	382	processed 100/100 id=physics_NL029 status=correct_numeric answer=0.1215 unit=J gold=121.50 mJ elapsed=0.00s correct=49 wrong=45 errors=31 acc=0.521

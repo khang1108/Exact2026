@@ -485,22 +485,9 @@ def _looks_like_point_pair(symbol: str) -> bool:
 
 def _name_from_context(match: re.Match[str], question: str) -> str | None:
     unit_name = _name_from_unit(match.group("unit"))
-    if unit_name == "force" and _is_stated_resultant_force(match, question):
-        return "resultant_force"
     window = question[max(0, match.start() - 80) : min(len(question), match.end() + 80)]
     nearby_name = _name_from_nearby_text(window)
     return unit_name or nearby_name
-
-
-def _is_stated_resultant_force(match: re.Match[str], question: str) -> bool:
-    prefix = question[max(0, match.start() - 55) : match.start()]
-    return bool(
-        re.search(
-            r"\b(?:resultant|net)\s+force\s+(?:is|=|of|also|magnitude\s+of)?\s*$",
-            prefix,
-            flags=re.IGNORECASE,
-        )
-    )
 
 
 def _name_from_unit(unit: str) -> str | None:

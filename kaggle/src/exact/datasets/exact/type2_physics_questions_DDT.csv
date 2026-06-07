@@ -1,0 +1,935 @@
+id,question,cot,answer,unit
+DDT131,"A solenoid is 0.5 m long, has 1000 turns, and a current of 2 A flows through it. Calculate the magnitude of the magnetic field inside the solenoid.","Step 1: Identify the given physical quantities from the question.
+Step 2: The length of the solenoid is L = 0.5 m.
+Step 3: The number of turns in the solenoid is N = 1000.
+Step 4: The current flowing through the solenoid is I = 2 A.
+Step 5: Recall the formula for the magnetic field inside a long solenoid: B = mu_0 × (N / L) × I, where mu_0 = 4 × pi × 10^-7 T.m/A.
+Step 6: Substitute the given values into the formula: B = (4 × 3.14159 × 10^-7) × (1000 / 0.5) × 2.
+Step 7: Perform the calculation: B = (12.566 × 10^-7) × 2000 × 2 = (12.566 × 10^-7) × 4000 = 0.005 T.",0.005,T
+DDT132,"A solenoid is 1 m long, has 2000 turns of wire, and a current of 3 A flows through it. Calculate the magnetic field inside the solenoid.","Step 1: Identify the given values from the question: Length (L) = 1 m, Number of turns (N) = 2000, Current (I) = 3 A, and the permeability of free space (μ₀) = 4π × 10⁻⁷ T×m/A.
+Step 2: Calculate the number of turns per unit length (n) using the formula n = N / L.
+Step 3: Substitute the values: n = 2000 turns / 1 m = 2000 turns/m.
+Step 4: Use the formula for the magnetic field inside a solenoid: B = μ₀ × n × I.
+Step 5: Substitute the numerical values into the formula: B = (4 × π × 10⁻⁷) × 2000 × 3.
+Step 6: Perform the calculation: B = 24000 × π × 10⁻⁷ = 0.00754 T.",0.00754,T
+DDT133,A 0.6 m long solenoid has 1200 turns and a cross-sectional area of 5 cm². Calculate the inductance of the solenoid.,"Step 1: Identify the given values from the question: length (l) = 0.6 m, number of turns (N) = 1200, cross-sectional area (A) = 5 cm².
+Step 2: Recall the formula for the inductance of a solenoid: L = (μ₀ × N² × A) / l, where μ₀ is the permeability of free space (4π × 10⁻⁷ H/m).
+Step 3: Convert the cross-sectional area from cm² to m²: A = 5 cm² = 5 × (10⁻² m)² = 5 × 10⁻⁴ m².
+Step 4: Substitute the values into the formula: L = (4π × 10⁻⁷ H/m × (1200)² × 5 × 10⁻⁴ m²) / 0.6 m.
+Step 5: Calculate the square of the number of turns: (1200)² = 1,440,000.
+Step 6: Perform the multiplication in the numerator: 4 × π × 10⁻⁷ × 1,440,000 × 5 × 10⁻⁴ = 4 × 3.14159 × 1.44 × 5 × 10⁻⁵ = 0.00090478 H.
+Step 7: Divide by the length and find the final result: L = 0.00090478 / 0.6 = 0.00150796 H.
+Step 8: Express the final result in millihenries (mH): L ≈ 1.508 mH.",1.508,mH
+DDT134,"A solenoid has an inductance L = 0.05 H, and a current of 0.2 A flows through it. Calculate the magnetic field energy stored in the solenoid.","Step 1: Identify the given values from the question: inductance L = 0.05 H and current I = 0.2 A.
+Step 2: Recall the formula for the magnetic energy (U) stored in an inductor (solenoid): U = (1/2)LI².
+Step 3: Substitute the given values into the formula and calculate the energy: U = (1/2) × (0.05 H) × (0.2 A)² = 0.001 J.",0.001,J
+DDT135,A solenoid has 1500 turns and a length of 0.75 m. Calculate the number of turns per meter length.,"Step 1: Identify the given number of turns (N) for the solenoid, which is 1500 turns.
+Step 2: Identify the given length (L) of the solenoid, which is 0.75 m.
+Step 3: To find the number of turns per meter length (n), divide the total number of turns (N) by the total length (L).
+Step 4: Calculate n = 1500 turns / 0.75 m.
+Step 5: Perform the division to find the result: n = 2000 turns/m.",2000,turns/m
+DDT136,The magnetic field inside a solenoid is directly proportional to which of the following quantities?,"Step 1: The formula for the magnetic field (B) inside a solenoid is B = μ₀ × n × I.
+Step 2: In this formula, μ₀ is the permeability of free space (a constant), n is the number of turns per unit length, and I is the current flowing through the solenoid.
+Step 3: The magnetic field (B) is directly proportional to the quantities that multiply it in the formula, excluding constants.
+Step 4: Therefore, the magnetic field inside a solenoid is directly proportional to the number of turns per unit length (n) and the current (I).
+Step 5: Additionally, since n = N / L, the magnetic field is also directly proportional to the total number of turns (N) and inversely proportional to the length of the solenoid (L).
+Step 6: Conclude that the key quantities for direct proportionality are the current (I) and the number of turns per unit length (n).",Number of turns density and current intensity,—
+DDT137,"If you double the number of turns of a solenoid, but keep its length and current the same, how does the magnetic field change?","Step 1: The magnetic field (B) inside a solenoid is given by the formula B = μ₀ × (N/L) × I, where μ₀ is the permeability of free space, N is the number of turns, L is the length of the solenoid, and I is the current.
+Step 2: Initially, let the number of turns be N₁, the length be L₁, and the current be I₁. The initial magnetic field is B₁ = μ₀ × (N₁/L₁) × I₁.
+Step 3: The question states that the number of turns is doubled (N₂ = 2 × N₁), while the length (L₂ = L₁) and current (I₂ = I₁) are kept the same.
+Step 4: The new magnetic field B₂ can be calculated using the formula with the new values: B₂ = μ₀ × (N₂/L₂) × I₂ = μ₀ × (2 × N₁ / L₁) × I₁.
+Step 5: Compare the new magnetic field to the initial one: B₂ = 2 × (μ₀ × (N₁ / L₁) × I₁) = 2 × B₁.
+Step 6: Conclude that when the number of turns is doubled while maintaining the same length and current, the magnetic field also doubles.",Doubled,—
+DDT138,A long solenoid has a turn density of 3000 turns/m and carries a current of 1.5 A. Calculate the magnetic field inside the solenoid.,"Step 1: Identify the given values from the question. The turn density (n) is 3000 turns/m, and the current (I) is 1.5 A.
+Step 2: Recall the formula for the magnetic field (B) inside a long solenoid, which is B = μ₀ × n × I, where μ₀ is the permeability of free space.
+Step 3: State the value of the constant μ₀, which is 4π × 10⁻⁷ T×m/A.
+Step 4: Substitute the given values and the constant into the formula: B = (4π × 10⁻⁷ T×m/A) × (3000 turns/m) × (1.5 A).
+Step 5: Perform the numerical calculation: B = 4 × 3.14159 × 10⁻⁷ × 3000 × 1.5.
+Step 6: Simplify the expression: B = 12.56637 × 10⁻⁷ × 4500 = 0.00565487 T.
+Step 7: Convert the result to millitesla (mT): B ≈ 5.654 mT.",5.654,mT
+DDT139,"A solenoid has a cross-sectional area of 4 cm², a turn density of 1000 turns/m, and carries a current of 2 A. Calculate the magnetic field energy density inside the solenoid.","Step 1: Identify the given values for the solenoid: turn density (n) = 1000 turns/m and current (I) = 2 A.
+Step 2: State the formula for the magnetic field (B) inside a solenoid: B = μ₀ × n × I, where μ₀ is the permeability of free space (4π × 10⁻⁷ T×m/A).
+Step 3: Calculate the magnetic field (B): B = (4π × 10⁻⁷ T×m/A) × (1000 turns/m) × (2 A) = 8π × 10⁻⁴ T.
+Step 4: State the formula for the magnetic field energy density (u_B) inside a solenoid: u_B = B² / (2μ₀).
+Step 5: Substitute the expression for B into the energy density formula: u_B = (μ₀ × n × I)² / (2μ₀) = (1/2) × μ₀ × n² × I².
+Step 6: Substitute the numerical values: u_B = 0.5 × (4 × π × 10⁻⁷) × (1000)² × (2)².
+Step 7: Perform the calculation: u_B = 0.5 × (12.566 × 10⁻⁷) × 1,000,000 × 4 = 2.51 J/m³.",2.51,J/m³
+DDT140,"In an ideal solenoid, what are the characteristics of the external magnetic field?","Step 1: The question asks about the external magnetic field of an ideal solenoid.
+Step 2: An ideal solenoid is a theoretical construct often assumed to be infinitely long.
+Step 3: For an infinitely long ideal solenoid, the magnetic field is confined entirely to its interior.
+Step 4: Therefore, the magnetic field outside an ideal solenoid is considered to be zero.
+Step 5: This occurs because the magnetic field lines produced by each loop of the solenoid cancel each other out completely in the region outside the coils.
+Step 6: Conclude that for a perfect, infinitely long solenoid, the external magnetic field is zero (B_ext = 0).",Approximately zero,—
+DDT141,"A solenoid has 1000 turns, the area of each turn is 6 cm², and the uniform magnetic field is 0.005 T. Calculate the magnetic flux through the entire solenoid.","Step 1: Identify the given values from the question. Number of turns (N) = 1000, area of each turn (A) = 6 cm², magnetic field (B) = 0.005 T.
+Step 2: Convert the area of each turn from cm² to m². A = 6 cm² = 6 × (10⁻² m)² = 6 × 10⁻⁴ m².
+Step 3: The formula for magnetic flux (Φ) through a single turn, assuming the magnetic field is perpendicular to the area, is Φ_single = B × A.
+Step 4: The total magnetic flux through the entire solenoid (Φ_total) is the flux through one turn multiplied by the number of turns: Φ_total = N × B × A.
+Step 5: Substitute the values into the formula: Φ_total = 1000 × 0.005 T × 6 × 10⁻⁴ m².
+Step 6: Perform the calculation: Φ_total = 5 × 6 × 10⁻⁴ = 30 × 10⁻⁴ Wb.
+Step 7: Simplify the final result: Φ_total = 0.003 Wb.",0.003,Wb
+DDT142,"If the current through the solenoid decreases uniformly from 3 A to 0 A in 0.01 s, and the self-inductance of the solenoid is 0.2 H, what is the induced electromotive force?","Step 1: Identify the given values: initial current I_initial = 3 A, final current I_final = 0 A, time interval dt = 0.01 s, and self-inductance L = 0.2 H.
+Step 2: Calculate the change in current, dI = I_final - I_initial.
+Step 3: dI = 0 A - 3 A = -3 A.
+Step 4: The rate of change of current is dI/dt.
+Step 5: Recall the formula for the induced electromotive force (EMF) in an inductor: E = -L × (dI/dt).
+Step 6: Substitute the values into the formula: E = -0.2 × (-3 / 0.01).
+Step 7: Perform the calculation: E = -0.2 × (-300) = 60 V.",60,V
+DDT143,What happens in an ideal solenoid when the current is suddenly disconnected?,"Step 1: Initially, current flows through the ideal solenoid, creating a magnetic field and storing magnetic energy within it.
+Step 2: When the current is suddenly disconnected, the electrical circuit path is abruptly broken.
+Step 3: Due to its inductance, the solenoid opposes this rapid change in current.
+Step 4: To oppose the sudden drop in current, the solenoid induces a very large electromotive force (EMF) across its terminals.
+Step 5: According to the formula E = -L × (di/dt), as the time interval dt approaches zero during an abrupt disconnection, the induced EMF becomes extremely large (theoretically approaching infinity in a perfectly ideal case).
+Step 6: This high voltage can lead to an electrical spark or arc across the switch or the point of disconnection as the stored magnetic energy seeks to dissipate.
+Step 7: Conclude that a large self-induced electromotive force is generated, often resulting in a spark.",An induced electromotive force (EMF) in the opposite direction appears,—
+DDT144,A solenoid has an inductance L = 0.3 H. The current increases uniformly from 0 to 5 A in 0.02 s. What is the induced electromotive force?,"Step 1: Identify the given inductance L = 0.3 H, the initial current I_initial = 0 A, the final current I_final = 5 A, and the time interval Δt = 0.02 s.
+Step 2: Calculate the change in current, ΔI = I_final - I_initial.
+Step 3: Calculate the rate of change of current, dI/dt = ΔI / Δt, because the current increases uniformly.
+Step 4: Use the formula for the magnitude of the induced electromotive force (ε) in a solenoid: ε = L × (dI/dt).
+Step 5: Substitute the values into the rate of change formula: dI/dt = (5 A - 0 A) / 0.02 s = 250 A/s.
+Step 6: Substitute the values into the EMF formula: ε = 0.3 H × 250 A/s = 75 V.",75.00,V
+DDT145,The self-inductance of a solenoid does not depend on which of the following quantities?,"Step 1: The self-inductance of a solenoid (L) is a physical property determined by its geometry and the material of its core.
+Step 2: The formula for the self-inductance of a solenoid is L = (μ × N² × A) / l, where μ is the permeability of the core, N is the number of turns, A is the cross-sectional area, and l is the length.
+Step 3: This formula shows that L depends on the number of turns, the length, the cross-sectional area, and the permeability of the core material.
+Step 4: The self-inductance, L, is defined as the ratio of magnetic flux (Φ) to the current (I) producing it (L = Φ/I).
+Step 5: Although L is defined as Φ/I, it is a constant of proportionality that remains unchanged when Φ or I changes (similar to how electrical resistance R = V/I does not depend on V or I).
+Step 6: Therefore, the self-inductance of a solenoid does not depend on the current (I) flowing through it or the magnetic flux (Φ) passing through it.",Current intensity,—
+DDT146,Which of the following applications is directly related to a solenoid?,"Step 1: A solenoid is a coil of wire that produces a magnetic field when electric current flows through it.
+Step 2: This magnetic field can be used to attract ferromagnetic materials or to induce an electromotive force.
+Step 3: A direct application of a solenoid is its use as an electromagnet.
+Step 4: Other applications directly related to solenoids include relays, solenoid valves, and inductors.
+Step 5: In an electric relay, a solenoid is used to create a magnetic force that pulls a switch to close or open a circuit.
+Step 6: In a solenoid valve, the magnetic field moves a plunger to control the flow of liquids or gases.
+Step 7: Conclude that devices utilizing controlled magnetic force or inductance are direct applications of solenoids: Electromagnets, relays, solenoid valves, and inductors.","electromagnet, and relay",—
+DDT147,"A solenoid has a cross-sectional area of 10 cm², an inductance of 0.1 H, and a current of 1.5 A flowing through it. Calculate the magnetic field energy stored in the solenoid.","Step 1: Identify the given inductance (L) and current (I) from the question.
+Step 2: The formula for the magnetic field energy (U) stored in a solenoid is U = (1/2) × L × I².
+Step 3: Substitute the given values L = 0.1 H and I = 1.5 A into the formula.
+Step 4: Calculate the square of the current: (1.5 A)² = 2.25 A².
+Step 5: Multiply the inductance by the squared current: 0.1 H × 2.25 A² = 0.225.
+Step 6: Multiply by 1/2 to find the final energy: U = 0.5 × 0.225 = 0.1125 J.
+Step 7: Convert the result to millijoules (mJ) for a more standard representation: 0.1125 J = 112.50 mJ.",112.50,mJ
+DDT148,A solenoid has an inductance L = 0.05 H. The current decreases uniformly from 2 A to 0 in 0.01 s. Calculate the induced electromotive force.,"Step 1: Identify the given inductance (L), initial current ($I_{initial}$), final current ($I_{final}$), and time interval ($\Delta t$).
+Step 2: Calculate the change in current ($\Delta I = I_{final} - I_{initial}$).
+Step 3: Calculate the rate of change of current ($\frac{dI}{dt} = \frac{\Delta I}{\Delta t}$).
+Step 4: Use the formula for induced electromotive force ($\mathcal{E} = -L \frac{dI}{dt}$) to find the induced EMF.
+Step 5: Substitute the values: $\Delta I$ = 0 A - 2 A = -2 A; $\Delta t$ = 0.01 s.
+Step 6: Calculate the rate: $\frac{dI}{dt}$ = -2 A / 0.01 s = -200 A/s.
+Step 7: Calculate the EMF: $\mathcal{E}$ = -0.05 H × (-200 A/s) = 10.00 V.",10.00,V
+DDT149,"When the current through the solenoid increases rapidly, what happens to the induced electromotive force?","Step 1: The question asks about the induced electromotive force (EMF) when the current through a solenoid increases rapidly.
+Step 2: According to Faraday's Law of Induction, an induced EMF is generated when there is a change in magnetic flux (Φ) through a coil or solenoid over time. The magnitude of the induced EMF is directly proportional to the rate of change of magnetic flux (ε ∝ dΦ/dt).
+Step 3: A current flowing through a solenoid creates a magnetic field and thus a magnetic flux through the solenoid.
+Step 4: If the current through the solenoid increases, the magnetic field it produces also increases, leading to an increase in the magnetic flux through the solenoid.
+Step 5: The self-induced EMF is specifically given by the formula ε = -L × (di/dt), where di/dt is the rate of change of current.
+Step 6: When the current increases ""rapidly,"" the time interval (dt) is very small, making the rate of change (di/dt) very large.
+Step 7: Since the induced EMF is directly proportional to the rate of change of current, a rapid increase in current results in a very large induced electromotive force.
+Step 8: According to Lenz's Law, the magnitude of the induced electromotive force increases significantly (becomes very large) and acts to oppose the increase in current.",Increase and the opposite current direction cause it,—
+DDT150,"A solenoid has a magnetic flux of 0.004 Wb. If the magnetic flux decreases to 0 in 0.02 s, what is the average induced electromotive force?","Step 1: Identify the initial magnetic flux (Φ_initial) from the question.
+Step 2: Identify the final magnetic flux (Φ_final) from the question.
+Step 3: Identify the time interval (Δt) over which the flux changes.
+Step 4: Calculate the change in magnetic flux (ΔΦ) using the formula ΔΦ = Φ_final - Φ_initial.
+Step 5: Identify the values: Φ_initial = 0.004 Wb, Φ_final = 0 Wb, and Δt = 0.02 s.
+Step 6: Calculate the change: ΔΦ = 0 - 0.004 = -0.004 Wb.
+Step 7: Recall the formula for the average induced electromotive force (ε) from Faraday's Law: ε = -ΔΦ / Δt.
+Step 8: Substitute the values and calculate the result: ε = -(-0.004) / 0.02 = 0.004 / 0.02 = 0.2 V.",0.2,V
+DDT151,A solenoid has an inductance L = 0.2 H and carries a current of 2 A. Calculate the magnetic field energy in the solenoid.,"Step 1: Identify the given values for inductance (L) and current (I).
+Step 2: The inductance L is given as 0.2 H.
+Step 3: The current I is given as 2 A.
+Step 4: Recall the formula for the magnetic field energy (U) stored in a solenoid: U = (1/2)LI^2.
+Step 5: Substitute the given values into the formula: U = 0.5 × 0.2 × (2)^2.
+Step 6: Calculate the square of the current: 2^2 = 4.
+Step 7: Perform the final multiplication: U = 0.5 × 0.2 × 4 = 0.4 J = 400.0 mJ.",400.0,mJ
+DDT152,What quantity does the magnetic field inside a solenoid depend linearly on?,"Step 1: The magnetic field inside a solenoid can be described by the formula B = μ₀ × n × I.
+Step 2: In this formula, B represents the magnetic field strength.
+Step 3: μ₀ is the permeability of free space, which is a constant.
+Step 4: n represents the number of turns per unit length of the solenoid.
+Step 5: Since B is directly proportional to I (B ∝ I), it depends linearly on the current. Therefore, the current flowing through the solenoid.",Current through the solenoid,—
+DDT153,"When the magnetic flux through a solenoid changes uniformly with time, what appears in the closed circuit?","Step 1: The question states that the magnetic flux through a solenoid changes uniformly with time.
+Step 2: According to Faraday's Law of Electromagnetic Induction, a changing magnetic flux through a closed circuit induces an electromotive force (EMF).
+Step 3: If an electromotive force is induced in a closed circuit, it will drive an electric current through that circuit.
+Step 4: Therefore, an induced electric current appears in the closed circuit.",Induced electromotive force (EMF),—
+DDT154,"A solenoid has an inductance of 0.1 H. If the current increases from 0 to 4 A in 0.02 s, what is the average induced electromotive force?","Step 1: Identify the given inductance (L) as 0.1 H.
+Step 2: Determine the change in current (ΔI) as the final current minus the initial current: ΔI = 4 A - 0 A = 4 A.
+Step 3: Identify the time interval (Δt) as 0.02 s.
+Step 4: Calculate the average rate of change of current (ΔI/Δt): ΔI/Δt = 4 A / 0.02 s = 200 A/s.
+Step 5: Apply the formula for the average induced electromotive force, ε = L × (ΔI/Δt), which gives ε = 0.1 H × 200 A/s, resulting in an average induced electromotive force of 20.0 V.",20.0,V
+DDT155,A solenoid is 0.3 m long and has 900 turns. What is the turn density?,"Step 1: Identify the given length of the solenoid, L.
+Step 2: Identify the given number of turns, N.
+Step 3: State the formula for turn density (n), which is the number of turns per unit length: n = N / L.
+Step 4: Substitute the given values into the formula: n = 900 turns / 0.3 m = 3000 turns/m.",3000,turns/m
+DDT156,What is the unit of inductance?,"Step 1: The question asks for the unit of inductance.
+Step 2: Inductance is a physical quantity that describes a conductor's opposition to a change in current.
+Step 3: The SI unit of inductance is the henry.
+Step 4: The unit of inductance is the henry (H).",Henry (H),—
+DDT157,In what form is the magnetic field energy stored in a solenoid?,"Step 1: A solenoid creates a magnetic field when current flows through it.
+Step 2: Energy is stored within this magnetic field.
+Step 3: The magnetic field energy in a solenoid is stored in the form of a magnetic field.",Magnetic field in the coil core,—
+DDT158,A solenoid has a magnetic flux density of 0.01 T and a cross-sectional area of 8 cm². Calculate the magnetic flux through one turn of the wire.,"Step 1: Identify the given magnetic flux density (B) as 0.01 T and the cross-sectional area (A) as 8 cm².
+Step 2: The quantity to be calculated is the magnetic flux (Φ) through one turn of the wire.
+Step 3: Convert the cross-sectional area from square centimeters to square meters: A = 8 cm² = 8 × (10⁻² m)² = 8 × 10⁻⁴ m².
+Step 4: Use the formula for magnetic flux, Φ = B × A, assuming the magnetic field is perpendicular to the area.
+Step 5: Substitute the values into the formula: Phi = 0.01 T × 8 × 10⁻⁴ m² = 8 × 10⁻⁶ Wb = 8 μWb.",8,μWb
+DDT159,A solenoid has an inductance L = 0.15 H. The current decreases uniformly from 3 A to 0 in 0.015 s. What is the induced electromotive force?,"Step 1: The inductance of the solenoid (L) is given as 0.15 H.
+Step 2: The current decreases from an initial value ($I_{initial}$) of 3 A to a final value ($I_{final}$) of 0 A.
+Step 3: The time interval ($\Delta t$) over which the current changes is 0.015 s.
+Step 4: Calculate the change in current ($\Delta I = I_{final} - I_{initial}$).
+Step 5: Calculate the rate of change of current (delta I / delta t): -3 A / 0.015 s = -200 A/s.
+Step 6: Apply the formula for the magnitude of induced electromotive force, e = L × |delta I / delta t| = 0.15 H × 200 A/s = 30.00 V.",30.00,V
+DDT160,The magnetic flux through a solenoid decreases from 0.006 Wb to 0 in 0.01 s. Calculate the average induced electromotive force.,"Step 1: Identify the initial magnetic flux as 0.006 Wb.
+Step 2: Identify the final magnetic flux as 0 Wb.
+Step 3: Identify the time interval as 0.01 s.
+Step 4: Recall Faraday's Law of Induction, which states that the average induced electromotive force (EMF) is given by EMF = -ΔΦ/Δt.
+Step 5: -ΔΦ = 0 - 0.006 = -0.006 Wb.
+Step 6: EMF = -(-0.006) / 0.01 = 0.6 V.",0.6,V
+DDT201,"A solenoid is 0.4 m long, has 1600 turns. Calculate the turn density.","Step 1: Identify the given length of the solenoid, L.
+Step 2: Identify the given number of turns, N.
+Step 3: Recall that turn density (n) is defined as the number of turns per unit length (n = N / L).
+Step 4: Substitute the given values (N = 1600 turns, L = 0.4 m) into the formula.
+Step 5: Calculate n = 1600 / 0.4 = 4000 turns/m",4000,turns/m
+DDT202,"A solenoid has a turn density of 2500 turns/m, an electric current of 2 A. Calculate the magnetic field inside the solenoid.","Step 1: Identify the given values from the question. The turn density (n) is 2500 turns/m and the current (I) is 2 A.
+Step 2: Recall the formula for the magnetic field (B) inside a long solenoid, which is B = μ₀ × n × I.
+Step 3: Recall the value of the permeability of free space (μ₀), which is 4π × 10^-7 T×m/A.
+Step 4: Substitute the given values into the formula: B = (4π × 10^-7 T×m/A) × (2500 turns/m) × (2 A).
+Step 5: Calculate B = 2π × 10^-3 T = 6.283 × 10^-3 T = 6.283 mT.",6.283,mT
+DDT203,A solenoid has L = 0.1 H. The current increases from 0 to 3 A in 0.01 s. Calculate the induced electromotive force.,"Step 1: Identify the given inductance (L), initial current (I_initial), final current (I_final), and time interval (Δt) from the question.
+Step 2: Calculate the change in current (ΔI) using the final and initial current values.
+Step 3: State the formula for the magnitude of the induced electromotive force (EMF) in a solenoid: EMF = L × (ΔI / Δt).
+Step 4: Substitute the given values into the formula: EMF = 0.1 H × (3 A / 0.01 s).
+Step 5: Calculate EMF = 0.1 × 300 = 30.0 V.",30.0,V
+DDT204,"A solenoid has a cross-sectional area of 6 cm², a turn density of 1000 turns/m, an electric current of 1.5 A. Calculate the magnetic flux through one turn.","Step 1: Identify the given values: cross-sectional area (A) = 6 cm², turn density (n) = 1000 turns/m, and current (I) = 1.5 A.
+Step 2: Convert the cross-sectional area from cm² to m²: A = 6 cm² = 6 × 10^-4 m².
+Step 3: Use the permeability of free space constant, μ₀ = 4π × 10^-7 T×m/A.
+Step 4: State the formula for the magnetic field (B) inside a solenoid: B = μ₀ × n × I.
+Step 5: Calculate B = 4π × 10^-7 × 1000 × 1.5 = 1.885 × 10^-3 T.
+Step 6: The magnetic flux through one turn is Φ = B × A.
+Step 7: Substitute the values: Φ = 1.885 × 10^-3 × 6 × 10^-4 Wb.
+Step 8: Calculate Φ ≈ 1.13 × 10^-6 Wb.",1.13 × 10^-6,Wb
+DDT205,What quantities does the self-inductance of a solenoid depend on?,"Step 1: The question asks about the factors affecting the self-inductance of a solenoid.
+Step 2: The self-inductance of a solenoid is described by the formula L = μ × N² × A / l.
+Step 3: From the formula, L depends on N, which is the number of turns in the solenoid.
+Step 4: L depends on l, which is the length of the solenoid.
+Step 5: L depends on A, which is the cross-sectional area of the solenoid.
+Step 6: L also depends on μ, which is the permeability of the core material.","Number of turns, length, cross-sectional area",—
+DDT206,What is the unit of induced electromotive force?,"Step 1: The question asks for the unit of induced electromotive force (EMF).
+Step 2: Electromotive force (EMF) is a measure of the energy provided per unit charge.
+Step 3: The standard international (SI) unit for electromotive force (EMF), whether induced or not, is the Volt.
+Step 4: The unit of induced electromotive force is the Volt (V).",Volt (V),—
+DDT207,"If a solenoid's cross-sectional area is increased, how does the its self-inductance change?","Step 1: The self-inductance (L) of a solenoid is given by the formula L = (μ × N^2 × A) / l, where μ is the permeability, N is the number of turns, A is the cross-sectional area, and l is the length of the solenoid.
+Step 2: From the formula, self-inductance (L) is directly proportional to the cross-sectional area (A), assuming all other factors (μ, N, l) remain constant.
+Step 3: If the cross-sectional area of a solenoid is increased, its self-inductance will also increase.
+Step 4: Therefore, the self-inductance increases proportionally.",increases in direct proportion,—
+DDT208,"A solenoid has an electric current of 1 A, L = 0.04 H. Calculate the stored magnetic energy.","Step 1: Identify the given values from the question: current (I) = 1 A and inductance (L) = 0.04 H.
+Step 2: Recall the formula for the magnetic energy (U_B) stored in an inductor: U_B = (1/2) × L × I^2.
+Step 3: Substitute the given values into the formula: U_B = (1/2) × (0.04 H) × (1 A)^2.
+Step 4: Calculate the square of the current: (1 A)^2 = 1 A^2.
+Step 5: Calculate U_B = 0.5 × 0.04 × 1 = 0.02 J.
+Step 6: Convert to millijoules: U_B = 20.0 mJ.",20.0,mJ
+DDT209,The magnetic field energy density in a solenoid is proportional to the square of which quantity?,"Step 1: The magnetic field energy density (u_B) in a solenoid is given by the formula u_B = B² / (2μ₀).
+Step 2: In this formula, B represents the magnetic field strength (or magnetic flux density) inside the solenoid, and μ₀ is the permeability of free space, which is a constant.
+Step 3: From the formula, it is evident that the magnetic field energy density (u_B) is directly proportional to the square of the magnetic field strength (B).
+Step 4: The magnetic field energy density in a solenoid is proportional to the square of the magnetic field strength.",Magnetic induction $B$,—
+DDT210,"In an idead solenoid, where is the magnetic field concentrated?","Step 1: The question asks about the concentration of the magnetic field in an ideal solenoid.
+Step 2: In an ideal solenoid, the magnetic field lines are closely packed inside the coil.
+Step 3: Outside an ideal solenoid, the magnetic field is considered negligible.
+Step 4: Therefore, the magnetic field is concentrated inside the coil of an ideal solenoid.",inside the solenoid,—
+DDT211,"A solenoid is 0.5 m long, has 2000 turns. Calculate the turn density.","Step 1: Identify the given number of turns (N) as 2000.
+Step 2: Identify the given length of the solenoid (L) as 0.5 m.
+Step 3: Recall the definition of turn density (n) as the number of turns per unit length, so n = N / L.
+Step 4: Substitute the values: n = 2000 turns / 0.5 m.
+Step 5: Calculate n = 4000 turns/m.",4000,turns/m
+DDT212,"A solenoid has a turn density of 3000 turns/m, an electric current of 1.2 A. Calculate the magnetic field inside the solenoid.","Step 1: Identify the given values for the solenoid.
+Step 2: The turn density (n) is 3000 turns/m.
+Step 3: The current (I) is 1.2 A.
+Step 4: The formula for the magnetic field (B) inside a long solenoid is B = μ₀ × n × I, where μ₀ is the permeability of free space.
+Step 5: Substitute the values: B = 4π × 10^-7 × 3000 × 1.2.
+Step 6: Calculate B = 4.524 × 10^-3 T = 4.524 mT.",4.524,mT
+DDT213,"A solenoid has a cross-sectional area of 10 cm², a turn density of 2000 turns/m, an electric current of 1.5 A. Calculate the magnetic flux through 1 turn.","Step 1: Convert the cross-sectional area from cm² to m².
+Step 2: Calculate the magnetic field (B) inside the solenoid using the formula B = μ₀ × n × I, where μ₀ = 4π × 10^-7 T×m/A, n = 2000 turns/m, and I = 1.5 A.
+Step 3: Calculate the magnetic flux (Φ) through one turn using the formula Φ = B × A. The magnetic flux through 1 turn is approximately 3.77 × 10^-6 Wb.
+Step 4: Therefore, the magnetic flux through 1 turn is 3.77 μWb",3.77,μWb
+DDT214,A solenoid has L = 0.2 H. The current decreases uniformly from 2 A to 0 in 0.02 s. Calculate the induced electromotive force.,"Step 1: Identify the given values from the question: Inductance L = 0.2 H, initial current I_initial = 2 A, final current I_final = 0 A, and time interval Δt = 0.02 s.
+Step 2: Calculate the change in current (ΔI) using ΔI = I_final - I_initial.
+Step 3: Calculate the rate of change of current (dI/dt or ΔI/Δt) by dividing the change in current by the time interval.
+Step 4: Use the formula for induced electromotive force in an inductor, ε = -L × (dI/dt).
+Step 5: Calculate ΔI = 0 - 2 = -2 A, so dI/dt = -2 / 0.02 = -100 A/s.
+Step 6: Substitute into the formula: ε = -0.2 × (-100) = 20.0 V.",20.00,V
+DDT215,"A solenoid has L = 0.05 H, electric current of 2 A. Calculate the stored magnetic field energy.","Step 1: Identify the given inductance (L) and current (I).
+Step 2: Recall the formula for the magnetic energy (U) stored in an inductor: U = (1/2) × L × I^2.
+Step 3: Substitute the given values L = 0.05 H and I = 2 A into the formula.
+Step 4: Calculate the square of the current: I^2 = (2 A)^2 = 4 A^2.
+Step 5: Calculate U = (1/2) × 0.05 × 4 = 0.1 J = 100.0 mJ.",100.0,mJ
+DDT216,"If the number of turns is increased and the length is kept constant, how does inductance change?","Step 1: The inductance (L) of a solenoid is directly proportional to the square of the number of turns (N²) and inversely proportional to its length (l).
+Step 2: The formula for the inductance of a solenoid is L = (μ × N^2 × A) / l, where μ is the permeability of the core material and A is the cross-sectional area.
+Step 3: The question states that the number of turns (N) is increased, and the length (l) is kept constant. The permeability (μ) and cross-sectional area (A) are not mentioned as changing, so they are assumed to be constant.
+Step 4: Since L is directly proportional to N² (L ∝ N²), if N increases while other parameters remain constant, L will increase.
+Step 5: Therefore, the inductance increases proportionally to the square of the number of turns.",Increases in proportion to the square of the number of turns,—
+DDT217,"In a solenoid, what factor does the magnetic field not depend on?","Step 1: The magnetic field (B) inside an ideal solenoid is given by the formula B = μ₀nI.
+Step 2: In this formula, μ₀ is the permeability of free space (a constant).
+Step 3: The variable 'n' represents the number of turns per unit length, and 'I' represents the current flowing through the solenoid.
+Step 4: The formula shows that the magnetic field strength depends on the current and the number of turns per unit length.
+Step 5: Therefore, the magnetic field in a solenoid does not depend on the cross-sectional area (S).",cross-sectional area (S),—
+DDT218,"A solenoid has a magnetic field of 0.002 T, a cross-sectional area of 5 cm². Calculate the magnetic flux through each turn of wire.","Step 1: Identify the given magnetic field strength (B) and cross-sectional area (A).
+Step 2: Convert the cross-sectional area from cm² to m².
+Step 3: Use the formula for magnetic flux, Φ = B × A, assuming the magnetic field is perpendicular to the area.
+Step 4: Substitute the converted area and the magnetic field strength into the formula.
+Step 5: Convert the area: 5 cm² = 5 × 10^-4 m².
+Step 6: Calculate Φ = 0.002 × 5 × 10^-4 = 1 × 10^-6 Wb.
+Step 7: Therefore, the magnetic flux through each turn is 1 μWb.",1,μWb
+DDT219,"If the magnetic field in a solenoid increases, how does the magnetic field energy increase?","Step 1: The energy stored in a magnetic field, such as inside a solenoid, depends on the strength of the magnetic field.
+Step 2: The magnetic field energy density (energy per unit volume) is given by the formula u = (1/2) × B^2 / μ, where B is the magnetic field strength and μ is the permeability of the material inside the solenoid.
+Step 3: The total magnetic field energy (E) in the solenoid is the energy density multiplied by the volume (V) of the solenoid, so E = u × V = (1/2) × (V/μ) × B^2.
+Step 4: From this formula, it is evident that the magnetic field energy (E) is directly proportional to the square of the magnetic field strength (B).
+Step 5: Therefore, the magnetic field energy increases proportionally to B².",the magnetic field energy increases proportionally to B²,—
+DDT220,When does an induced electromotive force appear in a solenoid?,"Step 1: An induced electromotive force (EMF) appears in a solenoid when there is a change in the magnetic flux passing through its coils.
+Step 2: Magnetic flux is a measure of the total magnetic field passing through a given area.
+Step 3: This change in magnetic flux can be caused by a change in the strength or direction of the magnetic field passing through the solenoid.
+Step 4: One common cause is a change in the current flowing through the solenoid itself, which alters its own magnetic field and thus the magnetic flux (self-induction).
+Step 5: Therefore, an induced electromotive force appears when the current changes with time.",the current changes with time,—
+DDT321,"An RLC circuit has a resistance R = 20 Ω, an inductance L = 0.5 H, a capacitance C = 100 μF, and a frequency f = 50 Hz. Calculate the total impedance Z of the circuit.","Step 1: Identify the given values from the problem. The circuit parameters are resistance R = 20 Ω, inductance L = 0.5 H, capacitance C = 100 μF, and frequency f = 50 Hz. The objective is to calculate the total impedance Z of the RLC circuit.
+Step 2: Convert the capacitance from microfarads to farads so that all quantities are in SI units. C = 100 μF = 100 × 10⁻⁶ F = 1 × 10⁻⁴ F.
+Step 3: Calculate the inductive reactance XL using the formula XL = 2πfL. Substitute the values f = 50 Hz and L = 0.5 H into the formula. XL = 2π × 50 × 0.5 = 2π × 25 = 50π ≈ 157.08 Ω.
+Step 4: Calculate the capacitive reactance XC using the formula XC = 1 / (2πfC). Substitute the values f = 50 Hz and C = 1 × 10⁻⁴ F. XC = 1 / (2π × 50 × 1 × 10⁻⁴). First calculate the denominator: 2π × 50 = 314.16 and 314.16 × 10⁻⁴ = 0.031416. Therefore XC = 1 / 0.031416 ≈ 31.83 Ω.
+Step 5: Determine the net reactance of the circuit. For a series RLC circuit, the total reactance X is the difference between inductive and capacitive reactance. X = XL − XC = 157.08 − 31.83 = 125.25 Ω.
+Step 6: Calculate the total impedance of the circuit using the formula Z = √(R² + X²). Substitute R = 20 Ω and X = 125.25 Ω. Z = √(20² + 125.25²) = √(400 + 15687.56) = √16087.56 ≈ 126.86 Ω.",126.86,Ω
+DDT322,What is the RMS current in an RLC circuit with a total impedance Z = 50 Ω and an RMS voltage of 100 V?,"Step 1: Identify the given values from the problem. The total impedance of the circuit is Z = 50 Ω and the RMS voltage is V_RMS = 100 V. The goal is to calculate the RMS current I_RMS.
+Step 2: Identify the relationship between RMS voltage, RMS current, and impedance in an AC circuit. The relationship follows the AC form of Ohm’s Law: V_{RMS} = I_{RMS} Z
+Step 3: Rearrange the formula to solve for the RMS current. Dividing both sides by Z gives I_RMS = V_RMS / Z.
+Step 4: Substitute the given values into the formula. I_RMS = 100 V / 50 Ω.
+Step 5: Perform the calculation. 100 V / 50 Ω = 2.0 A.
+Step 6: State the final conclusion. The RMS current in the circuit is I_RMS = 2.0 A.",2.0,A
+DDT323,A resonant RLC circuit has R = 10 Ω and U = 100 V. Calculate the effective current.,"Step 1: Identify the given values from the question: resistance R = 10 Ω and voltage U = 100 V, and the goal is to calculate the effective current in the circuit.
+Step 2: Recognize the condition of the circuit: the circuit is operating at resonance in a series RLC circuit, where the inductive reactance equals the capacitive reactance and they cancel each other, therefore the total impedance becomes equal to the resistance, so Z = R.
+Step 3: Use the AC form of Ohm’s Law to determine the effective current in the circuit: I_effective = U_effective / Z.
+Step 4: Substitute the resonance condition into the formula: since Z = R, the formula becomes I_effective = U / R.
+Step 5: Substitute the given values into the formula: I_effective = 100 V / 10 Ω.
+Step 6: Perform the calculation: 100 V / 10 Ω = 10.0 A.
+Step 7: State the final conclusion: the effective current in the circuit is I_effective = 10.0 A.",10.0,A
+DDT324,A circuit has L = 0.2 H and f = 60 Hz. Calculate the inductive reactance Z_L.,"Step 1: Identify the given values from the question: inductance L = 0.2 H and frequency f = 60 Hz.
+Step 2: State the formula for inductive reactance: Z_L = 2×pi*f*L.
+Step 3: Substitute the given values into the formula: Z_L = 2×pi*60 Hz*0.2 H.
+Step 4: Calculate step by step with units:
+2×pi ≈ 6.2832 (dimensionless constant)
+6.2832 × 60 Hz = 376.992 s⁻¹
+376.992 s⁻¹ × 0.2 H = 75.3984 Ω
+Step 5: State the final conclusion: the inductive reactance is Z_L = 75.40 Ω.",75.40,Ω
+DDT325,"Given a circuit with C = 50 μF and f = 60 Hz, determine the capacitive reactance Z_C.","Step 1: Identify the given values from the question: capacitance C = 50 μF and frequency f = 60 Hz.
+Step 2: State the formula for capacitive reactance: Z_C = 1 / (2×pi*f*C).
+Step 3: Convert the capacitance to farads: C = 50 μF = 50 × 10⁻⁶ F = 0.000050 F.
+Step 4: Substitute the given values into the formula: Z_C = 1 / (2×pi*60 Hz*0.000050 F).
+Step 5: Calculate the denominator step by step with units:
+2×pi ≈ 6.2832 (dimensionless constant)
+6.2832 × 60 Hz = 376.992 s⁻¹
+376.992 s⁻¹ × 0.000050 F = 0.0188496
+Step 6: Calculate the capacitive reactance:
+Z_C = 1 / 0.0188496 = 53.05 Ω.
+Step 7: State the final conclusion: the capacitive reactance is Z_C = 53.05 Ω.",53.05,Ω
+DDT326,"For a resonant circuit with an RMS current of 3 A and a resistance (R) of 15 Ω, calculate the power dissipated.","Step 1: Identify the given values from the question: the RMS current I = 3 A and the resistance R = 15 Ω, and the goal is to calculate the power dissipated in the circuit.
+Step 2: Recognize that in a resonant RLC circuit the inductive reactance and capacitive reactance cancel each other, so the circuit behaves like a purely resistive circuit and the power is dissipated only by the resistor.
+Step 3: Use the formula for electrical power in terms of current and resistance: P = I²*R.
+Step 4: Substitute the given values into the formula: P = (3 A)²*15 Ω.
+Step 5: Calculate step by step with units: (3 A)² = 9 A², then 9 A²*15 Ω = 135.0 W.
+Step 6: State the final conclusion: the power dissipated in the circuit is P = 135.0 W.",135.0,W
+DDT327,"For an RLC circuit with R = 12 Ω and Z = 20 Ω, calculate the power factor (cosφ).","Step 1: Identify the given values from the question: resistance R = 12 Ω and total impedance Z = 20 Ω, and the goal is to calculate the power factor cosφ.
+Step 2: Recall the formula for the power factor in an AC circuit: cosφ = R / Z.
+Step 3: Substitute the given values into the formula: cosφ = 12 Ω / 20 Ω.
+Step 4: Perform the calculation with units: 12 Ω / 20 Ω = 0.60.
+Step 5: State the final conclusion: the power factor of the circuit is cosφ = 0.60.",0.60,
+DDT328,"Calculate the power consumed by a circuit with U = 80 V, Z = 40 Ω, and R = 30 Ω.","Step 1: Identify the given values from the question: voltage U = 80 V, impedance Z = 40 Ω, and resistance R = 30 Ω.
+Step 2: Calculate the total current flowing through the circuit using the AC form of Ohm’s Law: I = U / Z.
+Step 3: Substitute the given values into the formula: I = 80 V / 40 Ω.
+Step 4: Perform the calculation with units: 80 V / 40 Ω = 2.0 A.
+Step 5: Calculate the power consumed by the circuit using the power formula for a resistive component: P = I²*R.
+Step 6: Substitute the calculated current and the resistance into the formula: P = (2.0 A)²*30 Ω.
+Step 7: Perform the calculation step by step with units: (2.0 A)² = 4.0 A², then 4.0 A²*30 Ω = 120.0 W.
+Step 8: State the final conclusion: the power consumed by the circuit is P = 120.0 W.",120.0,W
+DDT329,"In a resonant circuit, given a resistance R = 8 Ω and a voltage U = 64 V, what is the power consumed?","Step 1: Identify the given values from the question: resistance R = 8 Ω and voltage U = 64 V.
+Step 2: Recognize the circuit condition: the circuit is operating at resonance, where the inductive reactance and capacitive reactance cancel each other, so the total impedance becomes equal to the resistance, Z = R.
+Step 3: Use the formula for power in a resonant AC circuit: P = U² / R.
+Step 4: Substitute the given values into the formula: P = (64 V)² / 8 Ω.
+Step 5: Perform the calculation step by step with units: (64 V)² = 4096 V², then 4096 V² / 8 Ω = 512.0 W.
+Step 6: State the final conclusion: the power consumed by the circuit is P = 512.0 W.",512.0,W
+DDT330,"In an RLC circuit, Z_L = 70 Ω and Z_C = 50 Ω. What is the circuit's characteristic?","Step 1: Identify the given values from the problem: the inductive reactance is Z_L = 70 Ω and the capacitive reactance is Z_C = 50 Ω.
+Step 2: Recall the rule used to determine the characteristic of an RLC circuit: if Z_L > Z_C the circuit is inductive, if Z_L < Z_C the circuit is capacitive, and if Z_L = Z_C the circuit is at resonance.
+Step 3: Compare the given reactances: Z_L = 70 Ω and Z_C = 50 Ω, therefore 70 Ω > 50 Ω and Z_L > Z_C.
+Step 4: Determine the dominant reactance in the circuit: since the inductive reactance is greater than the capacitive reactance, the inductive effect dominates.
+Step 5: State the final conclusion: the circuit exhibits an inductive characteristic.",the circuit exhibits an inductive characteristic,—
+DDT331,"An RLC series circuit consists of R = 10 Ω, L = 0.2 H, C = 50 μF, and the frequency f = 50 Hz. Calculate the impedance of the circuit.","Step 1: Identify the given values from the question: resistance R = 10 Ω, inductance L = 0.2 H, capacitance C = 50 μF, and frequency f = 50 Hz.
+Step 2: Convert the capacitance to farads: C = 50 μF = 50 × 10⁻⁶ F = 0.000050 F.
+Step 3: Calculate the angular frequency using the relation between angular frequency and frequency: ω=2×pi*f
+Step 4: Substitute the given value of frequency: ω = 2×pi*50 Hz.
+Step 5: Perform the calculation: 2×pi ≈ 6.2832, therefore 6.2832 × 50 Hz = 314.16 rad/s.
+Step 6: Calculate the inductive reactance using Z_L = ωL: Z_L = 314.16 rad/s × 0.2 H = 62.832 Ω.
+Step 7: Calculate the capacitive reactance using Z_C = 1 / (ωC): Z_C = 1 / (314.16 rad/s × 0.000050 F) = 1 / 0.015708 = 63.66 Ω.
+Step 8: Calculate the impedance of the series RLC circuit using Z = sqrt(R² + (Z_L − Z_C)²): Z = sqrt((10 Ω)² + (62.832 Ω − 63.66 Ω)²).
+Step 9: Perform the calculation step by step: (10 Ω)² = 100 Ω², (62.832 Ω − 63.66 Ω) = −0.828 Ω, (−0.828 Ω)² = 0.686 Ω².
+Step 10: Calculate the final impedance: Z = sqrt(100 Ω² + 0.686 Ω²) = sqrt(100.686) = 10.03 Ω.
+Step 11: State the final conclusion: the impedance of the circuit is Z = 10.03 Ω.",10.03,Ω
+DDT332,"A series RLC circuit is supplied by an AC source of 120 V, with a total impedance Z of 40 Ω. Calculate the RMS current.","Step 1: Identify the given values from the question: the RMS voltage V_RMS = 120 V and the total impedance Z = 40 Ω.
+Step 2: Recall the formula for RMS current in an AC circuit based on Ohm’s Law: I_RMS = V_RMS / Z.
+Step 3: Substitute the given values into the formula: I_RMS = 120 V / 40 Ω.
+Step 4: Perform the calculation with units: 120 V / 40 Ω = 3.0 A.
+Step 5: State the final conclusion: the RMS current in the circuit is I_RMS = 3.0 A.",3.0,A
+DDT333,"Given a series RLC circuit with R = 15 Ω and an RMS current of 2 A, what is the total RMS voltage across the circuit when it is operating at resonance?","Step 1: Identify the given values from the question: resistance R = 15 Ω and RMS current I_rms = 2 A.
+Step 2: Recognize the circuit condition: the circuit is operating at resonance, where the inductive reactance and capacitive reactance cancel each other, so the total impedance becomes equal to the resistance, therefore Z = R.
+Step 3: Use Ohm’s Law for AC circuits to determine the total RMS voltage: V_rms = I_rms*Z.
+Step 4: Substitute the resonance condition into the formula: since Z = R, the formula becomes V_rms = I_rms*R.
+Step 5: Substitute the given values into the formula: V_rms = 2 A*15 Ω.
+Step 6: Perform the calculation with units: 2 A*15 Ω = 30.0 V.
+Step 7: State the final conclusion: the total RMS voltage across the circuit is V_rms = 30.0 V.",30.0,V
+DDT334,"An inductor L = 0.1 H is connected in series with a resistor R = 20 Ω. If the frequency is 60 Hz, what is the inductive reactance?","Step 1: Identify the given values from the question: inductance L = 0.1 H and frequency f = 60 Hz.
+Step 2: Recall the formula for inductive reactance in an AC circuit: X_L = 2×pi*f*L.
+Step 3: Substitute the given values into the formula: X_L = 2×pi*60 Hz*0.1 H.
+Step 4: Perform the calculation step by step with units:
+2×pi ≈ 6.2832 (dimensionless constant)
+6.2832 × 60 Hz = 376.992 s⁻¹
+376.992 s⁻¹ × 0.1 H = 37.6992 Ω
+Step 5: State the final conclusion: the inductive reactance is X_L = 37.70 Ω.",37.70,Ω
+DDT335,A circuit consists of a capacitor C = 100 μF in series with a resistor R = 25 Ω. The frequency f = 50 Hz. Calculate the capacitive reactance of the capacitor.,"Step 1: Identify the given values from the question: capacitance C = 100 μF and frequency f = 50 Hz.
+Step 2: Convert the capacitance to farads: C = 100 μF = 100 × 10⁻⁶ F = 0.000100 F.
+Step 3: Recall the formula for capacitive reactance in an AC circuit: X_C = 1 / (2×pi*f*C).
+Step 4: Substitute the given values into the formula: X_C = 1 / (2×pi*50 Hz*0.000100 F).
+Step 5: Calculate the denominator step by step with units:
+2×pi ≈ 6.2832 (dimensionless constant)
+6.2832 × 50 Hz = 314.16 s⁻¹
+314.16 s⁻¹ × 0.000100 F = 0.031416
+Step 6: Calculate the capacitive reactance:
+X_C = 1 / 0.031416 = 31.83 Ω.
+Step 7: State the final conclusion: the capacitive reactance is X_C = 31.83 Ω.",31.83,Ω
+DDT336,"For a series RLC circuit, with an applied voltage U = 100 V and a current I = 4 A, calculate the total impedance Z.","Step 1: Identify the given values from the question. The applied voltage of the AC source is U = 100 V and the current flowing through the series RLC circuit is I = 4 A. The objective of the problem is to determine the total impedance Z of the circuit.
+Step 2: Recall the relationship between voltage, current, and impedance in an AC circuit. Similar to Ohm’s Law in DC circuits, the impedance in an AC circuit is defined as the ratio of the applied voltage to the current flowing through the circuit. The mathematical relation is Z = U / I.
+Step 3: Substitute the given values into the impedance formula. Using the provided voltage and current, the expression becomes Z = 100 V / 4 A.
+Step 4: Perform the calculation with units. Dividing the voltage by the current gives 100 V / 4 A = 25.0 Ω.
+Step 5: Interpret the result. The impedance represents the total opposition to the alternating current in the circuit, including the effects of resistance, inductive reactance, and capacitive reactance.
+Step 6: State the final conclusion. The total impedance of the series RLC circuit is Z = 25.0 Ω.",25.0,Ω
+DDT337,"An RLC series circuit has R = 18 Ω and Z = 30 Ω. Calculate the power factor, cosφ.","Step 1: Identify the given values from the question. The resistance of the circuit is R = 18 Ω and the total impedance of the series RLC circuit is Z = 30 Ω. The objective of the problem is to calculate the power factor of the circuit, denoted as cosφ.
+Step 2: Recall the relationship between resistance, impedance, and power factor in a series RLC circuit. The power factor represents the ratio of real power to apparent power and is determined by the ratio of resistance to total impedance. The formula used is cosφ = R / Z.
+Step 3: Substitute the given values into the formula for power factor. Using the provided resistance and impedance, the expression becomes cosφ = 18 Ω / 30 Ω.
+Step 4: Perform the calculation with units. Dividing the resistance by the impedance gives 18 Ω / 30 Ω = 0.60.
+Step 5: Interpret the result. The value of cosφ indicates the phase relationship between voltage and current in the circuit. A value less than 1 means that the circuit contains reactive components such as inductance or capacitance.
+Step 6: State the final conclusion. The power factor of the circuit is cosφ = 0.60.",0.60,
+DDT338,"Given R = 10 Ω and L = 0.2 H connected in series in a circuit operating at f = 50 Hz, determine the RMS voltage if the current is I = 1 A.","Step 1: Identify the given values from the question: resistance R = 10 Ω, inductance L = 0.2 H, frequency f = 50 Hz, and RMS current I = 1 A. The objective is to determine the RMS voltage across the circuit.
+Step 2: Calculate the inductive reactance of the inductor using the formula for inductive reactance in an AC circuit: X_L = 2×pi*f*L.
+Step 3: Substitute the given values into the formula: X_L = 2×pi*50 Hz*0.2 H.
+Step 4: Perform the calculation step by step with units:
+2×pi ≈ 6.2832 (dimensionless constant)
+6.2832 × 50 Hz = 314.16 s⁻¹
+314.16 s⁻¹ × 0.2 H = 62.832 Ω.
+Therefore, the inductive reactance is X_L = 62.83 Ω.
+Step 5: Calculate the total impedance of the series R–L circuit using the relation Z = sqrt(R² + X_L²).
+Step 6: Substitute the values into the impedance formula: Z = sqrt((10 Ω)² + (62.83 Ω)²).
+Step 7: Perform the calculation step by step:
+(10 Ω)² = 100 Ω²
+(62.83 Ω)² ≈ 3947.61 Ω²
+100 Ω² + 3947.61 Ω² = 4047.61 Ω²
+Z = sqrt(4047.61 Ω²) = 63.62 Ω.
+Step 8: Use the AC form of Ohm’s Law to determine the RMS voltage: U = I*Z.
+Step 9: Substitute the given current and the calculated impedance: U = 1 A*63.62 Ω.
+Step 10: Perform the calculation with units: 1 A*63.62 Ω = 63.62 V.
+Step 11: State the final conclusion: the RMS voltage across the circuit is U = 63.62 V.",63.62,V
+DDT339,"An RLC series circuit has an impedance Z = 50 Ω, a resistance R = 30 Ω, and a source voltage of 150 V. Calculate the power consumed.","Step 1: Identify the given values from the question: the total impedance Z = 50 Ω, the resistance R = 30 Ω, and the source voltage U = 150 V. The objective is to calculate the power consumed in the circuit.
+Step 2: Use Ohm’s Law for AC circuits to calculate the RMS current flowing through the circuit: I = U / Z.
+Step 3: Substitute the given values into the formula: I = 150 V / 50 Ω.
+Step 4: Perform the calculation with units: 150 V / 50 Ω = 3.0 A. Therefore, the RMS current in the circuit is I = 3.0 A.
+Step 5: Recall that the real power consumed in an RLC circuit is dissipated only by the resistive component, and the formula for power using current and resistance is P = I²*R.
+Step 6: Substitute the calculated current and the given resistance into the formula: P = (3.0 A)²*30 Ω.
+Step 7: Perform the calculation step by step with units: (3.0 A)² = 9.0 A², then 9.0 A²*30 Ω = 270.0 W.
+Step 8: State the final conclusion: the power consumed in the circuit is P = 270.0 W.",270.0,W
+DDT340,"Given a series circuit with R = 12 Ω, C = 80 μF, and a frequency of 60 Hz, determine the capacitive reactance and the power factor if the impedance Z = 40 Ω.","Step 1: Identify the given values from the question: resistance R = 12 Ω, capacitance C = 80 μF, frequency f = 60 Hz, and total impedance Z = 40 Ω. The objective is to determine the capacitive reactance X_C and the power factor cosφ of the circuit.
+Step 2: Recall the relationship between impedance, resistance, and capacitive reactance in a series RC circuit: Z² = R² + X_C².
+Step 3: Rearrange the formula to determine the capacitive reactance: X_C = sqrt(Z² − R²).
+Step 4: Substitute the given values into the formula: X_C = sqrt((40 Ω)² − (12 Ω)²).
+Step 5: Perform the calculation step by step with units:
+(40 Ω)² = 1600 Ω²
+(12 Ω)² = 144 Ω²
+1600 Ω² − 144 Ω² = 1456 Ω²
+X_C = sqrt(1456 Ω²) = 38.16 Ω.
+Step 6: Recall the formula for the power factor in a series AC circuit: cosφ = R / Z.
+Step 7: Substitute the given values into the power factor formula: cosφ = 12 Ω / 40 Ω.
+Step 8: Perform the calculation with units: 12 Ω / 40 Ω = 0.30.
+Step 9: State the final conclusion: the capacitive reactance is X_C = 38.16 Ω and the power factor of the circuit is cosφ = 0.30.",38.16 Ω and 0.30,—
+DDT341,"Given an RLC series circuit with R = 20 Ω, L = 0.3 H, C = 60 μF, and a frequency of f = 50 Hz. Calculate the total impedance Z.","Step 1: Identify the given values from the question: resistance R = 20 Ω, inductance L = 0.3 H, capacitance C = 60 μF, and frequency f = 50 Hz.
+Step 2: Convert the capacitance to farads: C = 60 μF = 60 × 10⁻⁶ F = 0.000060 F.
+Step 3: Calculate the angular frequency using the relation between angular frequency and frequency: ω=2×pi*f
+Step 4: Substitute the given value of frequency: ω = 2×pi*50 Hz.
+Step 5: Perform the calculation: 2×pi ≈ 6.2832, therefore 6.2832 × 50 Hz = 314.16 rad/s.
+Step 6: Calculate the inductive reactance using the formula X_L = ωL: X_L = 314.16 rad/s × 0.3 H = 94.25 Ω.
+Step 7: Calculate the capacitive reactance using the formula X_C = 1 / (ωC): X_C = 1 / (314.16 rad/s × 0.000060 F).
+Step 8: Perform the calculation step by step:
+314.16 rad/s × 0.000060 F = 0.0188496
+X_C = 1 / 0.0188496 = 53.05 Ω.
+Step 9: Calculate the total impedance of the series RLC circuit using the formula Z = sqrt(R² + (X_L − X_C)²):
+Z = sqrt((20 Ω)² + (94.25 Ω − 53.05 Ω)²).
+Step 10: Perform the calculation step by step:
+(20 Ω)² = 400 Ω²
+94.25 Ω − 53.05 Ω = 41.20 Ω
+(41.20 Ω)² = 1697.44 Ω²
+400 Ω² + 1697.44 Ω² = 2097.44 Ω².
+Step 11: Calculate the final impedance:
+Z = sqrt(2097.44 Ω²) = 45.79 Ω.
+Step 12: State the final conclusion: the total impedance of the circuit is Z = 45.79 Ω.",45.79,Ω
+DDT342,"An RLC series circuit has an impedance Z = 45 Ω, and a voltage U = 90 V is applied across it. Calculate the RMS current.","Step 1: Identify the given values from the question. The total impedance of the RLC series circuit is Z = 45 Ω and the applied voltage across the circuit is U = 90 V. The objective of the problem is to determine the RMS current flowing through the circuit.
+Step 2: Recall the relationship between voltage, current, and impedance in an AC circuit. In alternating current circuits, Ohm’s Law relates the RMS voltage, RMS current, and total impedance. The relationship is expressed by the formula U = I × Z, where U is the RMS voltage, I is the RMS current, and Z is the total impedance.
+Step 3: Rearrange the formula to solve for the RMS current. Dividing both sides of the equation by Z gives the expression I = U / Z.
+Step 4: Substitute the given numerical values into the formula for current. Using the provided voltage and impedance, the expression becomes I = 90 V / 45 Ω.
+Step 5: Perform the calculation with units. Dividing the voltage by the impedance gives 90 V / 45 Ω = 2.0 A.
+Step 6: Interpret the result. The calculated value represents the effective or RMS current flowing through the entire series RLC circuit under the applied AC voltage.
+Step 7: State the final conclusion. The RMS current flowing through the circuit is I = 2.0 A.",2.0,A
+DDT343,"Given a series RLC circuit has R = 16 Ω, Z = 40 Ω, calculate the power factor cosφ.","Step 1: Identify the given values from the question: resistance R = 16 Ω and total impedance Z = 40 Ω. The objective is to determine the power factor of the circuit, represented by cosφ.
+Step 2: Recall the formula for the power factor in a series RLC circuit. The power factor represents the ratio between the resistive component of the circuit and the total impedance, and it is calculated using the relation cosφ = R / Z.
+Step 3: Substitute the given numerical values into the formula for the power factor: cosφ = 16 Ω / 40 Ω.
+Step 4: Perform the calculation with units: 16 Ω / 40 Ω = 0.40.
+Step 5: Interpret the result. The power factor indicates the phase relationship between voltage and current in the circuit and shows the fraction of the apparent power that is actually converted into real power.
+Step 6: State the final conclusion: the power factor of the circuit is cosφ = 0.40.",0.40,
+DDT344,"A circuit consists of an inductor L = 0.25 H in series with a resistor R = 10 Ω, at a frequency of 60 Hz. Calculate the inductive reactance Z_L.","Step 1: Identify the given values from the question: inductance L = 0.25 H and frequency f = 60 Hz. The objective is to calculate the inductive reactance Z_L of the inductor.
+Step 2: Recall the formula used to calculate inductive reactance in an AC circuit: Z_L = 2×pi*f*L.
+Step 3: Substitute the given values into the formula: Z_L = 2×pi*60 Hz*0.25 H.
+Step 4: Perform the calculation step by step with units. First calculate the constant term: 2×pi ≈ 6.2832 (dimensionless constant).
+Step 5: Multiply by the frequency: 6.2832 × 60 Hz = 376.992 s⁻¹.
+Step 6: Multiply by the inductance: 376.992 s⁻¹ × 0.25 H = 94.248 Ω.
+Step 7: Round the result to two decimal places for clarity: Z_L = 94.25 Ω.
+Step 8: State the final conclusion: the inductive reactance of the inductor is Z_L = 94.25 Ω.",94.25,Ω
+DDT345,"A circuit consists of a capacitor C = 75 μF in series with a resistor R = 10 Ω, at a frequency of 60 Hz. Calculate the capacitive reactance Z_C.","Step 1: Identify the given values from the question. The capacitance of the capacitor is C = 75 μF and the operating frequency of the AC source is f = 60 Hz. The objective is to determine the capacitive reactance Z_C of the capacitor in the circuit.
+Step 2: Recall the formula used to calculate capacitive reactance in an AC circuit. Capacitive reactance represents the opposition of a capacitor to alternating current and depends on both the capacitance and the frequency of the AC source. The formula is Z_C = 1 / (2×pi*f*C).
+Step 3: Convert the capacitance from microfarads to farads so that it is in standard SI units. Since 1 μF = 10⁻⁶ F, the capacitance becomes C = 75 μF = 75 × 10⁻⁶ F = 0.000075 F.
+Step 4: Substitute the given values into the capacitive reactance formula. The expression becomes Z_C = 1 / (2×pi*60 Hz*0.000075 F).
+Step 5: Calculate the denominator step by step. First calculate the constant term: 2×pi ≈ 6.2832.
+Step 6: Multiply by the frequency: 6.2832 × 60 Hz = 376.992 s⁻¹.
+Step 7: Multiply the result by the capacitance: 376.992 s⁻¹ × 0.000075 F = 0.0282744.
+Step 8: Calculate the capacitive reactance by taking the reciprocal of the denominator: Z_C = 1 / 0.0282744 = 35.37 Ω.
+Step 9: Interpret the result. The capacitive reactance represents the opposition offered by the capacitor to the alternating current at the given frequency.
+Step 10: State the final conclusion. The capacitive reactance of the capacitor is Z_C = 35.37 Ω.",35.37,Ω
+DDT346,"A series RLC circuit has an impedance Z = 50 Ω, a resistance R = 30 Ω, and a total voltage V = 150 V. Calculate the power consumed.","Step 1: Identify the given values from the question: the total voltage applied to the circuit is V = 150 V, the total impedance of the RLC circuit is Z = 50 Ω, and the resistance of the circuit is R = 30 Ω. The objective is to calculate the real power consumed by the circuit.
+Step 2: Recall Ohm’s Law for AC circuits, which relates voltage, current, and impedance. The RMS current flowing through the circuit is determined by the formula I = V / Z.
+Step 3: Substitute the given values into the current formula: I = 150 V / 50 Ω.
+Step 4: Perform the calculation with units: 150 V / 50 Ω = 3.0 A. Therefore, the RMS current flowing through the circuit is I = 3.0 A.
+Step 5: Recall the formula for real power consumed in an AC circuit. The real power is dissipated only by the resistive component of the circuit and is calculated using P = I²*R.
+Step 6: Substitute the calculated current and the given resistance into the power formula: P = (3.0 A)²*30 Ω.
+Step 7: Perform the calculation step by step with units. First square the current: (3.0 A)² = 9.0 A². Then multiply by the resistance: 9.0 A²*30 Ω = 270.0 W.
+Step 8: Interpret the result. This value represents the real electrical power converted into heat by the resistor in the circuit.
+Step 9: State the final conclusion: the power consumed by the circuit is P = 270.0 W.",270.0,W
+DDT347,"A series RLC circuit has R = 12 Ω, L = 0.2 H, and f = 50 Hz. Calculate Z if C = 50 μF.","Step 1: Identify the given values from the question: resistance R = 12 Ω, inductance L = 0.2 H, capacitance C = 50 μF, and frequency f = 50 Hz.
+Step 2: Convert the capacitance to farads so that it is in SI units: C = 50 μF = 50 × 10⁻⁶ F = 0.000050 F.
+Step 3: Calculate the angular frequency using the relation between angular frequency and frequency: ω = 2×pi*f
+Step 4: Substitute the value of frequency into the formula: ω = 2×pi*50 Hz.
+Step 5: Perform the calculation: 2×pi ≈ 6.2832, therefore 6.2832 × 50 Hz = 314.16 rad/s.
+Step 6: Calculate the inductive reactance using the formula X_L = ωL: X_L = 314.16 rad/s × 0.2 H = 62.83 Ω.
+Step 7: Calculate the capacitive reactance using the formula X_C = 1 / (ωC): X_C = 1 / (314.16 rad/s × 0.000050 F).
+Step 8: Perform the calculation step by step:
+314.16 × 0.000050 = 0.015708
+X_C = 1 / 0.015708 = 63.66 Ω.
+Step 9: Calculate the total impedance of the series RLC circuit using the formula Z = sqrt(R² + (X_L − X_C)²).
+Step 10: Substitute the values into the impedance formula: Z = sqrt((12 Ω)² + (62.83 Ω − 63.66 Ω)²).
+Step 11: Perform the calculation step by step:
+(12 Ω)² = 144 Ω²
+62.83 Ω − 63.66 Ω = −0.83 Ω
+(−0.83 Ω)² = 0.69 Ω²
+144 Ω² + 0.69 Ω² = 144.69 Ω².
+Step 12: Calculate the final impedance: Z = sqrt(144.69) = 12.03 Ω.
+Step 13: State the final conclusion: the total impedance of the circuit is Z = 12.03 Ω.",12.03,Ω
+DDT348,"A circuit has a resistance R = 18 Ω and an impedance Z = 36 Ω. If a voltage of 108 V is applied, calculate the power consumed (or dissipated).","Step 1: Identify the given values from the question. The applied voltage of the circuit is U = 108 V, the resistance of the circuit is R = 18 Ω, and the total impedance of the circuit is Z = 36 Ω. The objective is to determine the electrical power consumed (or dissipated) in the circuit.
+Step 2: Recall that the current flowing in an AC circuit can be determined using Ohm’s Law for AC circuits. The relationship between voltage, current, and impedance is given by the formula I = U / Z, where I is the RMS current, U is the RMS voltage, and Z is the total impedance.
+Step 3: Substitute the given values into the formula for current. The expression becomes I = 108 V / 36 Ω.
+Step 4: Perform the calculation with units. Dividing the voltage by the impedance gives 108 V / 36 Ω = 3.0 A. Therefore, the RMS current flowing through the circuit is I = 3.0 A.
+Step 5: Recall that the real power consumed in an AC circuit is dissipated only by the resistive component of the circuit. The formula for calculating the power using current and resistance is P = I²*R.
+Step 6: Substitute the calculated current and the given resistance into the power formula. The expression becomes P = (3.0 A)²*18 Ω.
+Step 7: Perform the calculation step by step. First square the current: (3.0 A)² = 9.0 A². Then multiply by the resistance: 9.0 A² × 18 Ω = 162.0 W.
+Step 8: Interpret the result. This value represents the real electrical power converted into heat in the resistor of the circuit.
+Step 9: State the final conclusion. The power consumed by the circuit is P = 162.0 W.",162.0,W
+DDT349,Given a series circuit where the voltage U = 100 V and the current I = 2 A. Calculate the total impedance Z.,"Step 1: Identify the given values from the question. The applied voltage in the circuit is U = 100 V and the current flowing through the circuit is I = 2 A. The objective is to determine the total impedance Z of the circuit.
+Step 2: Recall Ohm’s Law for AC circuits, which relates voltage, current, and impedance. In an AC circuit, the impedance represents the total opposition to current flow and is calculated using the relation Z = U / I.
+Step 3: Substitute the given numerical values into the impedance formula. The expression becomes Z = 100 V / 2 A.
+Step 4: Perform the calculation with units. Dividing the voltage by the current gives 100 V / 2 A = 50.0 Ω.
+Step 5: Interpret the result. The impedance represents the total opposition of the circuit to the alternating current, which may include resistance, inductive reactance, and capacitive reactance.
+Step 6: State the final conclusion. The total impedance of the circuit is Z = 50.0 Ω.",50.0,Ω
+DDT350,"Given a series RLC circuit with Z_L = 100 Ω and Z_C = 80 Ω, what characteristic does the circuit exhibit?","Step 1: Identify the given values from the question. The inductive reactance of the circuit is Z_L = 100 Ω and the capacitive reactance is Z_C = 80 Ω. The objective is to determine the electrical characteristic of the circuit.
+Step 2: Recall the rule used to determine the behavior of an RLC circuit. The characteristic of the circuit depends on the comparison between the inductive reactance and the capacitive reactance. If Z_L > Z_C the circuit behaves as an inductive circuit, if Z_L < Z_C the circuit behaves as a capacitive circuit, and if Z_L = Z_C the circuit is at resonance.
+Step 3: Compare the magnitudes of the given reactances. In this case Z_L = 100 Ω and Z_C = 80 Ω.
+Step 4: Perform the comparison. Since 100 Ω > 80 Ω, it follows that Z_L > Z_C.
+Step 5: Interpret the result. Because the inductive reactance is greater than the capacitive reactance, the inductive effect dominates the circuit behavior.
+Step 6: State the final conclusion. The circuit exhibits an inductive characteristic.",The circuit exhibits an inductive characteristic.,—
+DDT351,What is the current in an LC circuit when the capacitor is maximally charged?,"Step 1: Recall the behavior of an ideal LC circuit. In an LC circuit, energy continuously oscillates between the electric field of the capacitor and the magnetic field of the inductor.
+Step 2: Identify the condition described in the question. The capacitor is maximally charged, which means the voltage across the capacitor and the stored electric energy in the capacitor are at their maximum values.
+Step 3: Understand the energy distribution at this instant. When the capacitor stores the maximum electrical energy, the energy stored in the magnetic field of the inductor must be zero because the total energy in the circuit is conserved.
+Step 4: Recall the relationship between magnetic energy and current in the inductor. The magnetic energy stored in an inductor depends on the current through it. If the magnetic energy is zero, the current through the inductor must also be zero.
+Step 5: Interpret the physical meaning. At the moment when the capacitor is fully charged, there is no movement of charge in the circuit, so the current temporarily becomes zero before reversing direction.
+Step 6: State the final conclusion. The current in the LC circuit is I = 0 A when the capacitor is maximally charged.",0,A
+DDT352,When does the electric field energy stored in an LC circuit reach its maximum?,"Step 1: Recall the behavior of an ideal LC circuit. In an LC circuit, energy oscillates back and forth between the electric field of the capacitor and the magnetic field of the inductor.
+Step 2: Identify where the electric field energy is stored. The electric field energy is stored in the capacitor and depends on the amount of charge accumulated on the capacitor plates.
+Step 3: Recall the formula for the electric field energy stored in a capacitor: U_E = 0.5×Q²/C, where Q is the charge on the capacitor and C is the capacitance.
+Step 4: From this relation, the electric energy increases as the square of the charge on the capacitor. Therefore, the electric field energy becomes largest when the charge Q reaches its maximum value.",the charge Q reaches its maximum value,—
+DDT353,What is the expression for the energy of oscillation in an LC circuit?,"Step 1: Recall the structure of an LC circuit. An LC circuit consists of a capacitor with capacitance C and an inductor with inductance L connected together, allowing energy to oscillate between the electric field of the capacitor and the magnetic field of the inductor.
+Step 2: Identify the two forms of energy in the circuit. The capacitor stores electric field energy, while the inductor stores magnetic field energy. During oscillation, energy is continuously transferred between these two components.
+Step 3: Recall the expression for the electric energy stored in a capacitor. The electric field energy stored in the capacitor is U_E = Q² / (2C), where Q is the instantaneous charge on the capacitor and C is the capacitance.
+Step 4: Recall the expression for the magnetic energy stored in an inductor. The magnetic field energy stored in the inductor is U_B = 0.5×L*I², where L is the inductance and I is the instantaneous current in the circuit.
+Step 5: Determine the total energy of oscillation in the LC circuit. The total energy at any instant is the sum of the electric and magnetic energies, so U = Q² / (2C) + 0.5×L*I².
+Step 6: Consider the moment when the capacitor is maximally charged. At that instant the current is zero, so all the energy is stored in the capacitor. Therefore the total energy can be written as U = Q_max² / (2C).
+Step 7: Consider the moment when the current is maximum. At that instant the capacitor has zero charge and all the energy is stored in the inductor. Therefore the total energy can also be written as U = 0.5×L*I_max².
+Step 8: State the final expression for the oscillation energy. The total energy in an ideal LC circuit remains constant and can be expressed as
+U = Q_max² / (2C) = 0.5×L*I_max².",U = 0.5*L*I_max²,J
+DDT354,"In an ideal LC circuit, is the total electromagnetic energy lost?","Step 1: Identify the condition given in the question. The circuit is described as an ideal LC circuit, meaning it contains only an inductor (L) and a capacitor (C) with no resistance in the circuit.
+Step 2: Recall the assumption for ideal electrical components. In an ideal circuit, the inductor and capacitor are assumed to have no internal resistance, and therefore there is no mechanism for electrical energy to be converted into heat.
+Step 3: Recall how energy behaves in an LC circuit. The total electromagnetic energy continuously oscillates between two forms: electric field energy stored in the capacitor and magnetic field energy stored in the inductor.
+Step 4: Understand the consequence of having no resistance in the circuit. Since there is no resistance, no Joule heating occurs and therefore no energy is dissipated from the system.
+Step 5: Interpret the physical behavior of the circuit. The energy simply transfers back and forth between the capacitor and the inductor indefinitely while the total energy remains constant.
+Step 6: State the final conclusion. In an ideal LC circuit, the total electromagnetic energy is not lost; it remains constant and oscillates between the capacitor and the inductor.",No,—
+DDT355,What is the resonant angular frequency of an LC circuit?,"Step 1: Identify what the question asks. The problem asks for the resonant (natural) angular frequency of an LC circuit.
+Step 2: Recall the components of an LC circuit. An LC circuit contains an inductor with inductance L and a capacitor with capacitance C connected together, allowing energy to oscillate between the magnetic field of the inductor and the electric field of the capacitor.
+Step 3: Recall the formula for the resonant angular frequency of an ideal LC circuit:
+ω₀ = 1 / √(LC).
+Step 4: Explain the meaning of the variables. In this expression, ω₀ is the resonant angular frequency, L is the inductance measured in henries (H), and C is the capacitance measured in farads (F).
+Step 5: Interpret the physical meaning. This angular frequency represents the natural rate at which electrical energy oscillates between the capacitor and the inductor in an ideal LC circuit.
+Step 6: State the final conclusion. The resonant angular frequency of an LC circuit is given by ω₀ = 1 / √(LC).",ω = 1/√(LC),rad/s
+DDT356,How is the oscillation period of an LC circuit calculated?,"Step 1: Identify what the question asks. The problem asks for the oscillation period of an ideal LC circuit.
+Step 2: Recall the components involved in the oscillation. An LC circuit consists of an inductor with inductance L and a capacitor with capacitance C, where energy oscillates between the magnetic field of the inductor and the electric field of the capacitor.
+Step 3: Recall the formula used to determine the oscillation period of an LC circuit. This relation is known as Thomson’s formula: T = 2×pi*sqrt(LC).
+Step 4: Explain the meaning of the variables. In this formula, T is the oscillation period of the circuit, L is the inductance measured in henries (H), and C is the capacitance measured in farads (F).
+Step 5: Interpret the physical meaning. The oscillation period represents the time required for one complete cycle of energy transfer between the capacitor and the inductor.
+Step 6: State the final conclusion. The oscillation period of an ideal LC circuit is given by T = 2×pi*sqrt(LC).",T = 2π√(LC),s
+DDT357,What is the voltage across the capacitor when the current in an LC circuit is at its maximum?,"Step 1: Recall the behavior of an ideal LC circuit. In an LC circuit, electrical energy continuously oscillates between the electric field of the capacitor and the magnetic field of the inductor.
+Step 2: Identify the two forms of energy in the circuit. The capacitor stores electric field energy given by (1/2)CV², while the inductor stores magnetic field energy given by (1/2)LI².
+Step 3: Recall that the total electromagnetic energy in an ideal LC circuit remains constant. The energy simply transfers back and forth between the capacitor and the inductor during oscillation.
+Step 4: Consider the instant when the current in the circuit is at its maximum value. At this moment, the magnetic energy stored in the inductor is maximum because it depends on I².
+Step 5: Determine the energy stored in the capacitor at that instant. Since the total energy is conserved and the inductor holds all the energy when the current is maximum, the electric energy stored in the capacitor must be zero.
+Step 6: Interpret the physical condition of the capacitor. If the electric energy is zero, then the charge on the capacitor plates is zero, which means the voltage across the capacitor is also zero.
+Step 7: State the final conclusion. When the current in an LC circuit is maximum, the voltage across the capacitor is V = 0 V.",0,V
+DDT358,What kind of oscillation occurs in an LC circuit?,"Step 1: Identify the components of the circuit. An LC circuit consists of a capacitor with capacitance C and an inductor with inductance L connected together.
+Step 2: Recall the energy behavior in the circuit. In this circuit, energy alternates between the electric field stored in the capacitor and the magnetic field stored in the inductor.
+Step 3: Describe the process of energy exchange. When the capacitor discharges, current flows through the inductor and energy is stored in the magnetic field of the inductor. When the current decreases, the magnetic field collapses and charges the capacitor again with opposite polarity.
+Step 4: Recognize the nature of this repeated process. This continuous transfer of energy between the capacitor and the inductor produces an electrical oscillation in the circuit.
+Step 5: Consider the condition of an ideal LC circuit. In an ideal circuit there is no resistance, so no energy is lost as heat and the oscillations continue indefinitely.
+Step 6: State the final conclusion. The oscillation occurring in an ideal LC circuit is an undamped free oscillation.",Simple Harmonic Motion (SHM),—
+DDT359,What is the unit of inductance L?,"Step 1: Identify what the question asks. The problem asks for the unit of inductance, which is represented by the symbol L.
+Step 2: Recall the physical meaning of inductance. Inductance is a property of an inductor that measures its ability to store energy in a magnetic field when an electric current flows through it.
+Step 3: Recall the standard unit used in the International System of Units (SI). In SI units, inductance is measured in henries.
+Step 4: Identify the symbol used for this unit. The symbol for henry is H.
+Step 5: State the final conclusion. The unit of inductance L is the henry, written as H.",Henry,H
+DDT360,What is the shape of the graph representing the electric field energy and magnetic field energy in an LC circuit?,"Step 1: Recall the behavior of an ideal LC circuit. In an LC circuit, electrical energy oscillates between the electric field energy stored in the capacitor and the magnetic field energy stored in the inductor.
+Step 2: Recall the expressions for the two types of energy in the circuit. The electric field energy stored in the capacitor is U_E = Q²/(2C), and the magnetic field energy stored in the inductor is U_B = (1/2)LI².
+Step 3: Recall the behavior of charge and current in the circuit. In an LC circuit, the charge on the capacitor and the current through the inductor vary sinusoidally with time.
+Step 4: Determine the shape of the energy graphs. Since the energies depend on the square of the charge and the square of the current, the electric and magnetic energies vary as the square of sinusoidal functions.
+Step 5: Interpret the resulting waveform. Squaring a sinusoidal or cosine function produces a periodic curve that always remains positive and has the shape of a squared sine or squared cosine wave.
+Step 6: Describe the relationship between the two energies. The electric energy and magnetic energy oscillate out of phase with each other; when one reaches its maximum value, the other becomes zero.
+Step 7: State the final conclusion. The graphs representing electric field energy and magnetic field energy in an LC circuit have the shape of sinusoidal-squared curves (sin² or cos² functions).",Sinusoidal waves with a phase shift of π/2,—
+DDT361,Calculate the natural oscillation frequency for an LC circuit with L = 2 mH and C = 50 µF.,"Step 1: Identify the given values from the question: inductance L = 2 mH and capacitance C = 50 µF, and the objective is to calculate the natural oscillation frequency of the LC circuit.
+Step 2: Convert the given quantities into SI units: L = 2 mH = 2 × 10⁻³ H and C = 50 µF = 50 × 10⁻⁶ F.
+Step 3: Recall the formula for the natural oscillation frequency of an LC circuit: f = 1 / (2×pi*sqrt(LC)).
+Step 4: Substitute the converted values into the formula: f = 1 / (2×pi*sqrt((2 × 10⁻³ H)×(50 × 10⁻⁶ F))).
+Step 5: Calculate the product LC: (2 × 10⁻³ H)×(50 × 10⁻⁶ F) = 100 × 10⁻⁹ = 1.0 × 10⁻⁷.
+Step 6: Calculate the square root: sqrt(1.0 × 10⁻⁷) = 3.162 × 10⁻⁴.
+Step 7: Multiply by 2×pi: 2×pi ≈ 6.2832, therefore 6.2832×(3.162 × 10⁻⁴) = 1.986 × 10⁻³.
+Step 8: Calculate the frequency: f = 1 / (1.986 × 10⁻³) ≈ 503.4 Hz.
+Step 9: State the final conclusion: the natural oscillation frequency of the LC circuit is f = 503.3 Hz.",503.3,Hz
+DDT362,Calculate the natural period of oscillation for a circuit with L = 0.1 H and C = 10⁻⁶ F.,"Step 1: Identify the given values from the question. The inductance of the inductor is L = 0.1 H and the capacitance of the capacitor is C = 10⁻⁶ F. The objective is to determine the natural period of oscillation of the LC circuit.
+Step 2: Recall the formula used to calculate the natural oscillation period of an LC circuit. The oscillation period depends on the inductance and the capacitance and is given by Thomson’s formula: T = 2×pi*sqrt(LC).
+Step 3: Substitute the given values of L and C into the formula for the oscillation period. The expression becomes T = 2×pi*sqrt((0.1 H)×(10⁻⁶ F)).
+Step 4: Calculate the product of L and C. (0.1 H)×(10⁻⁶ F) = 1.0 × 10⁻⁷.
+Step 5: Calculate the square root of the result. sqrt(1.0 × 10⁻⁷) = 3.162 × 10⁻⁴.
+Step 6: Multiply the result by 2×pi.
+2×pi ≈ 6.2832.
+6.2832 × 3.162 × 10⁻⁴ = 1.986 × 10⁻³ s.
+Step 7: Interpret the result. This value represents the time required for one complete cycle of energy transfer between the capacitor and the inductor.
+Step 8: State the final conclusion. The natural period of oscillation of the LC circuit is T ≈ 1.99 × 10⁻³ s.",1.99 × 10⁻³,s
+DDT363,"In an LC circuit, if the total energy is 0.02 J and the maximum current is 0.2 A, what is the inductance L?","Step 1: Identify the given values from the question: the total energy in the LC circuit is E_total = 0.02 J and the maximum current is I_max = 0.2 A, and the objective is to determine the inductance L of the inductor.
+Step 2: Recall that in an ideal LC circuit the total energy is conserved, and when the current reaches its maximum value all the energy is stored in the magnetic field of the inductor.
+Step 3: Use the formula for the magnetic energy stored in an inductor: E = (1/2)×L*I².
+Step 4: Substitute the given values into the formula: 0.02 J = (1/2)×L*(0.2 A)².
+Step 5: Calculate the square of the current: (0.2 A)² = 0.04 A².
+Step 6: Substitute this value into the equation: 0.02 J = (1/2)×L*0.04 A².
+Step 7: Simplify the expression: (1/2)×0.04 = 0.02, therefore 0.02 J = 0.02×L.
+Step 8: Solve for the inductance: L = 0.02 / 0.02 = 1.0 H.
+Step 9: State the final conclusion: the inductance of the inductor is L = 1.0 H.",1,H
+DDT364,"An oscillating circuit has a capacitance C = 2 µF, and the maximum voltage across the capacitor is 100 V. Calculate the maximum electric field energy (or maximum energy stored in the capacitor).","Step 1: Identify the given values from the question: capacitance C = 2 µF and maximum voltage V_max = 100 V, and the objective is to calculate the maximum electric field energy stored in the capacitor.
+Step 2: Convert the capacitance to SI units: C = 2 µF = 2 × 10⁻⁶ F.
+Step 3: Recall the formula for the maximum energy stored in a capacitor: E_max = (1/2)×C*V_max².
+Step 4: Substitute the given values into the formula: E_max = (1/2)×(2 × 10⁻⁶ F)×(100 V)².
+Step 5: Calculate the square of the voltage: (100 V)² = 10000 V².
+Step 6: Substitute this value into the expression: E_max = (1/2)×(2 × 10⁻⁶ F)×(10000 V²).
+Step 7: Simplify the expression step by step: (1/2)×(2 × 10⁻⁶) = 1 × 10⁻⁶, therefore E_max = (1 × 10⁻⁶)×(10000).
+Step 8: Perform the final calculation: (1 × 10⁻⁶)×(10000) = 1 × 10⁻² J = 0.01 J.
+Step 9: State the final conclusion: the maximum electric field energy stored in the capacitor is E_max = 0.01 J.",0.01,J
+DDT365,"L = 4 mH, C = 250 µF. Calculate the angular frequency of oscillation.","Step 1: Identify the given values from the question: inductance L = 4 mH and capacitance C = 250 µF.
+Step 2: Convert the quantities to SI units: L = 4 mH = 4 × 10⁻³ H and C = 250 µF = 250 × 10⁻⁶ F.
+Step 3: Recall the formula for the angular frequency of oscillation in an LC circuit: ω = 1 / sqrt(LC).
+Step 4: Substitute the converted values into the formula: ω = 1 / sqrt((4 × 10⁻³ H)×(250 × 10⁻⁶ F)).
+Step 5: Calculate the product LC: (4 × 10⁻³)×(250 × 10⁻⁶) = 1000 × 10⁻⁹ = 1 × 10⁻⁶.
+Step 6: Calculate the square root: sqrt(1 × 10⁻⁶) = 1 × 10⁻³.
+Step 7: Calculate the angular frequency: ω = 1 / (1 × 10⁻³) = 1000 rad/s.
+Step 8: State the final conclusion: the angular frequency of oscillation is ω = 1000 rad/s.",1000,rad/s
+DDT366,The current in an LC circuit is given by the expression i = I₀cos(ωt). Given I₀ = 0.5 A and L = 0.2 H. Calculate the maximum magnetic energy.,"Step 1: Identify the given values from the question: the current is given by i = I₀cos(ωt), the maximum current I₀ = 0.5 A, and the inductance L = 0.2 H. The objective is to calculate the maximum magnetic energy stored in the inductor.
+Step 2: Recall that the magnetic energy stored in an inductor depends on the inductance and the square of the current flowing through it.
+Step 3: Use the formula for magnetic energy stored in an inductor: W_L = (1/2)×L*I².
+Step 4: Determine the maximum current in the circuit. From the current expression i = I₀cos(ωt), the maximum current occurs when cos(ωt) = 1, therefore I_max = I₀ = 0.5 A.
+Step 5: Substitute the values into the energy formula: W_L,max = (1/2)×(0.2 H)×(0.5 A)².
+Step 6: Calculate the square of the current: (0.5 A)² = 0.25 A².
+Step 7: Substitute this value into the expression: W_L,max = (1/2)×(0.2)×(0.25).
+Step 8: Perform the calculation step by step: (1/2)×0.2 = 0.1, and 0.1×0.25 = 0.025.
+Step 9: State the final conclusion: the maximum magnetic energy stored in the inductor is W_L,max = 0.025 J.",0.025,J
+DDT367,"Given C = 5 µF, the maximum charge on the capacitor is 2×10⁻⁴ C. Calculate the maximum voltage across the capacitor plates.","Step 1: Identify the given values from the question: the capacitance of the capacitor is C = 5 µF and the maximum charge stored on the capacitor plates is Q_max = 2 × 10⁻⁴ C. The objective is to determine the maximum voltage across the capacitor plates.
+Step 2: Recall the fundamental relationship between charge, capacitance, and voltage for a capacitor. The relation is given by the equation Q = C*V, where Q is the charge stored in the capacitor, C is the capacitance, and V is the voltage across the capacitor.
+Step 3: Rearrange the equation to solve for the voltage across the capacitor. Dividing both sides of the equation by C gives V = Q / C.
+Step 4: Convert the capacitance to SI units so that it can be used directly in the calculation. Since 1 µF = 10⁻⁶ F, the capacitance becomes C = 5 µF = 5 × 10⁻⁶ F.
+Step 5: Substitute the given values of charge and capacitance into the voltage formula. The expression becomes
+V_max = (2 × 10⁻⁴ C) / (5 × 10⁻⁶ F).
+Step 6: Simplify the numerical part of the fraction. First divide the coefficients: 2 / 5 = 0.4.
+Step 7: Simplify the powers of ten: 10⁻⁴ / 10⁻⁶ = 10² = 100.
+Step 8: Multiply the results: 0.4 × 100 = 40.
+Step 9: Interpret the result. This value represents the maximum voltage across the capacitor plates when the charge stored in the capacitor reaches its maximum value.
+Step 10: State the final conclusion: the maximum voltage across the capacitor plates is V_max = 40 V.",40,V
+DDT368,What is the oscillation frequency in an LC circuit if its period is 0.01 s?,"Step 1: Identify the given value from the question: the oscillation period of the LC circuit is T = 0.01 s, and the objective is to calculate the oscillation frequency f.
+Step 2: Recall the relationship between oscillation frequency and period. The frequency of oscillation is the reciprocal of the period, meaning the number of oscillations occurring in one second.
+Step 3: Use the formula relating frequency and period: f = 1 / T.
+Step 4: Substitute the given value of the period into the formula: f = 1 / 0.01 s.
+Step 5: Perform the calculation with units: 1 / 0.01 = 100.
+Step 6: Interpret the result. This means the circuit completes 100 oscillations every second.
+Step 7: State the final conclusion: the oscillation frequency of the LC circuit is f = 100 Hz.",100,Hz
+DDT369,"Given L = 0.5 H, C = 20 µF. Calculate the natural period of oscillation.","Step 1: Identify the given values from the question: the inductance of the inductor is L = 0.5 H and the capacitance of the capacitor is C = 20 µF, and the objective is to calculate the natural period of oscillation of the LC circuit.
+Step 2: Convert the capacitance into SI units so it can be used directly in the formula: C = 20 µF = 20 × 10⁻⁶ F = 2.0 × 10⁻⁵ F.
+Step 3: Recall the formula used to calculate the natural oscillation period of an LC circuit, known as Thomson’s formula: T = 2×pi*sqrt(LC).
+Step 4: Substitute the given values into the formula: T = 2×pi*sqrt((0.5 H)×(2.0 × 10⁻⁵ F)).
+Step 5: Calculate the product inside the square root with units: (0.5 H)×(2.0 × 10⁻⁵ F) = 1.0 × 10⁻⁵ HF.
+Step 6: Calculate the square root of the result: sqrt(1.0 × 10⁻⁵) = 3.162 × 10⁻³.
+Step 7: Multiply this result by the constant 2×pi to determine the oscillation period: 2×pi ≈ 6.2832, therefore T = 6.2832×(3.162 × 10⁻³).
+Step 8: Perform the multiplication to obtain the period: T ≈ 1.986 × 10⁻² s.
+Step 9: Interpret the result. This value represents the time required for the LC circuit to complete one full oscillation cycle, during which the energy transfers from the capacitor to the inductor and back again.
+Step 10: State the final conclusion: the natural period of oscillation of the circuit is T ≈ 1.99 × 10⁻² s, which is approximately T ≈ 0.020 s.",0.02,s
+DDT370,A capacitor with a capacitance of 10 µF is charged to 50 V. Calculate the electric field energy in the capacitor.,"Step 1: Identify the given values from the question: the capacitance of the capacitor is C = 10 µF and the voltage across the capacitor is V = 50 V, and the objective is to calculate the electric field energy stored in the capacitor.
+Step 2: Convert the capacitance into SI units so it can be used in the energy formula: C = 10 µF = 10 × 10⁻⁶ F = 1.0 × 10⁻⁵ F.
+Step 3: Recall the formula for the electric field energy stored in a capacitor: E = (1/2)×C*V².
+Step 4: Substitute the given values into the formula: E = (1/2)×(1.0 × 10⁻⁵ F)×(50 V)².
+Step 5: Calculate the square of the voltage: (50 V)² = 2500 V².
+Step 6: Substitute this result into the expression: E = (1/2)×(1.0 × 10⁻⁵)×(2500).
+Step 7: Simplify the constants step by step: (1/2)×2500 = 1250, therefore E = 1250 × 10⁻⁵.
+Step 8: Convert to standard scientific notation: 1250 × 10⁻⁵ = 1.25 × 10⁻² J.
+Step 9: Express the result in decimal form for clarity: 1.25 × 10⁻² J = 0.0125 J.
+Step 10: State the final conclusion: the electric field energy stored in the capacitor is E = 0.0125 J.",0.0125,J
+DDT371,A long solenoid has 1000 turns and is 0.5 m long. Calculate the number of turns per unit length.,"Step 1: Identify the given values from the question: the total number of turns of the solenoid is N = 1000 turns and the length of the solenoid is L = 0.5 m. The objective is to calculate the number of turns per unit length of the solenoid.
+Step 2: Recall the definition of turns per unit length. In a solenoid, the number of turns per unit length represents how many coil turns exist in each meter of the solenoid and is commonly denoted by n.
+Step 3: Recall the formula used to determine the number of turns per unit length of a solenoid: n = N / L.
+Step 4: Substitute the given values into the formula: n = 1000 turns / 0.5 m.
+Step 5: Perform the calculation step by step with units: 1000 / 0.5 = 2000.
+Step 6: Interpret the result. This means that for every meter of the solenoid’s length, there are 2000 turns of wire.
+Step 7: Express the unit correctly. Since the quantity represents turns per meter, the unit is turns/m.
+Step 8: State the final conclusion: the number of turns per unit length of the solenoid is n = 2000 turns/m.",2000,turns/m
+DDT372,"The current through the solenoid is 2 A, the number of turns per meter is 1500, and the permeability of free space is μ₀ = 4π×10⁻⁷. Calculate the magnetic field inside.","Step 1: Identify the given values from the question: the current through the solenoid is I = 2 A, the number of turns per unit length is n = 1500 turns/m, and the permeability of free space is μ₀ = 4×pi × 10⁻⁷ T×m/A. The objective is to calculate the magnetic field inside the solenoid.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*n*I.
+Step 3: Substitute the given values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(1500 turns/m)×(2 A).
+Step 4: Multiply the numerical factors step by step: 1500 × 2 = 3000, therefore B = 4×pi × 10⁻⁷ × 3000.
+Step 5: Express 3000 in scientific notation: 3000 = 3 × 10³, therefore B = 4×pi × 10⁻⁷ × 3 × 10³.
+Step 6: Combine the powers of ten: 10⁻⁷ × 10³ = 10⁻⁴, therefore B = 12×pi × 10⁻⁴.
+Step 7: Convert to decimal form: 12×pi ≈ 37.70, therefore B ≈ 37.70 × 10⁻⁴ T.
+Step 8: Express the result in standard scientific notation: 37.70 × 10⁻⁴ T = 3.77 × 10⁻³ T.
+Step 9: State the final conclusion: the magnetic field inside the solenoid is B ≈ 3.77 × 10⁻³ T.",3.77×10⁻³,T
+DDT373,"A solenoid with a length of 0.4 m, consisting of 800 turns, carries an electric current of 1.5 A. Determine the magnetic field inside the solenoid.","Step 1: Identify the given values from the question: the length of the solenoid is L = 0.4 m, the total number of turns is N = 800 turns, and the current through the solenoid is I = 1.5 A. The objective is to calculate the magnetic field inside the solenoid.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*n*I, where n is the number of turns per unit length and μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 3: Calculate the number of turns per unit length using the relation n = N/L: n = 800 turns / 0.4 m.
+Step 4: Perform the calculation: 800 / 0.4 = 2000 turns/m.
+Step 5: Substitute the values into the magnetic field formula: B = (4×pi × 10⁻⁷ T×m/A)×(2000 turns/m)×(1.5 A).
+Step 6: Multiply the numerical values step by step: 2000 × 1.5 = 3000, therefore B = 4×pi × 10⁻⁷ × 3000.
+Step 7: Express 3000 in scientific notation: 3000 = 3 × 10³, therefore B = 4×pi × 10⁻⁷ × 3 × 10³.
+Step 8: Combine the powers of ten: 10⁻⁷ × 10³ = 10⁻⁴, therefore B = 12×pi × 10⁻⁴.
+Step 9: Convert to decimal form: 12×pi ≈ 37.70, therefore B ≈ 37.70 × 10⁻⁴ T.
+Step 10: Express the result in standard scientific notation: 37.70 × 10⁻⁴ T = 3.77 × 10⁻³ T.
+Step 11: State the final conclusion: the magnetic field inside the solenoid is B ≈ 3.77 × 10⁻³ T.",3.77×10⁻³,T
+DDT374,"A solenoid is 0.6 m long, has 1200 turns, and a current of 2 A flows through it. Calculate the magnetic flux through a cross-sectional area of 4×10⁻⁴ m².","Step 1: Identify the given values from the question: the length of the solenoid is L = 0.6 m, the number of turns is N = 1200 turns, the current through the solenoid is I = 2 A, and the cross-sectional area is A = 4 × 10⁻⁴ m². The objective is to calculate the magnetic flux through the cross-sectional area of the solenoid.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*(N/L)×I, where μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 3: Calculate the number of turns per unit length: N/L = 1200 / 0.6 = 2000 turns/m.
+Step 4: Substitute the values into the magnetic field formula: B = (4×pi × 10⁻⁷ T×m/A)×(2000)×(2 A).
+Step 5: Multiply the numerical values: 2000 × 2 = 4000, therefore B = 4×pi × 10⁻⁷ × 4000.
+Step 6: Express 4000 in scientific notation: 4000 = 4 × 10³, therefore B = 4×pi × 10⁻⁷ × 4 × 10³ = 16×pi × 10⁻⁴.
+Step 7: Convert to decimal form: 16×pi ≈ 50.27, therefore B ≈ 50.27 × 10⁻⁴ T = 5.03 × 10⁻³ T.
+Step 8: Recall the formula for magnetic flux through an area: Φ = B*A.
+Step 9: Substitute the values into the magnetic flux formula: Φ = (5.03 × 10⁻³ T)×(4 × 10⁻⁴ m²).
+Step 10: Perform the multiplication: 5.03 × 4 = 20.12 and 10⁻³ × 10⁻⁴ = 10⁻⁷, therefore Φ = 20.12 × 10⁻⁷ Wb.
+Step 11: Express the result in standard scientific notation: Φ = 2.01 × 10⁻⁶ Wb.",2.01×10⁻⁶,Wb
+DDT375,"Given the cross-sectional area of a solenoid is 2 cm², and B = 2×10⁻³ T. Calculate the magnetic flux through this cross-section.","Step 1: Identify the given values from the question: the magnetic field strength is B = 2 × 10⁻³ T and the cross-sectional area of the solenoid is A = 2 cm², and the objective is to calculate the magnetic flux through the cross-section.
+Step 2: Convert the area into SI units so it can be used in the magnetic flux formula: 1 cm² = 10⁻⁴ m², therefore A = 2 cm² = 2 × 10⁻⁴ m².
+Step 3: Recall the formula for magnetic flux when the magnetic field is perpendicular to the surface: Φ = B*A.
+Step 4: Substitute the given values into the formula: Φ = (2 × 10⁻³ T)×(2 × 10⁻⁴ m²).
+Step 5: Multiply the numerical coefficients: 2 × 2 = 4.
+Step 6: Combine the powers of ten: 10⁻³ × 10⁻⁴ = 10⁻⁷.
+Step 7: Write the magnetic flux in scientific notation: Φ = 4 × 10⁻⁷ T×m².
+Step 8: Recall that the unit T×m² is equivalent to weber (Wb), which is the SI unit of magnetic flux.
+Step 9: State the final conclusion: the magnetic flux through the cross-sectional area is Φ = 4 × 10⁻⁷ Wb.",4×10⁻⁷,Wb
+DDT376,A solenoid has 2000 turns. The current decreases from 3 A to 0 in 0.01 s. Given that the magnetic flux per turn is 2×10⁻⁶ Wb. Calculate the induced electromotive force.,"Step 1: Identify the given values from the question: the number of turns of the solenoid is N = 2000 turns, the magnetic flux per turn is Φ_per_turn = 2 × 10⁻⁶ Wb, and the time interval for the current change is Δt = 0.01 s. The objective is to calculate the induced electromotive force (emf).
+Step 2: Recall Faraday’s law of electromagnetic induction. The induced emf in a coil is equal to the rate of change of magnetic flux linkage through the coil, given by the relation ε = −Δ(NΦ) / Δt.
+Step 3: Calculate the initial total magnetic flux linkage through the coil. Since the flux per turn is Φ_per_turn = 2 × 10⁻⁶ Wb and the coil has 2000 turns, the total initial flux linkage is NΦ_initial = 2000 × (2 × 10⁻⁶ Wb).
+Step 4: Perform the multiplication: 2000 × 2 × 10⁻⁶ = 4 × 10⁻³ Wb.
+Step 5: Determine the final magnetic flux linkage. When the current decreases to zero, the magnetic field disappears and the magnetic flux becomes Φ_final = 0, therefore NΦ_final = 0.
+Step 6: Calculate the change in flux linkage: Δ(NΦ) = NΦ_final − NΦ_initial = 0 − 4 × 10⁻³ = −4 × 10⁻³ Wb.
+Step 7: Substitute the values into Faraday’s law: ε = −(−4 × 10⁻³ Wb) / (0.01 s).
+Step 8: Perform the division: 4 × 10⁻³ / 0.01 = 4 × 10⁻¹ = 0.4.
+Step 9: State the final conclusion: the magnitude of the induced electromotive force is ε = 0.4 V.",0.4,V
+DDT377,"A solenoid has a length of 1 m, a cross-sectional area of 5 cm², 1000 turns, and carries a current of 2 A. Calculate the magnetic field energy.","Step 1: Identify the given values from the question: the length of the solenoid is l = 1 m, the cross-sectional area is A = 5 cm², the number of turns is N = 1000, and the current is I = 2 A.
+Step 2: Convert the cross-sectional area to SI units so it can be used in calculations: A = 5 cm² = 5 × 10⁻⁴ m².
+Step 3: Recall the formulas needed. The magnetic energy stored in a solenoid is U = (1/2)×L*I², and the inductance of a long solenoid is L = (μ₀*N²*A)/l, where μ₀ = 4×pi × 10⁻⁷ H/m.
+Step 4: Calculate the inductance of the solenoid by substituting the given values: L = (4×pi × 10⁻⁷)×(1000)²*(5 × 10⁻⁴)/1.
+Step 5: Simplify step by step: (1000)² = 10⁶, therefore L = (4×pi × 10⁻⁷)×(10⁶)×(5 × 10⁻⁴).
+Combine powers of ten: 10⁻⁷ × 10⁶ = 10⁻¹, giving L = 4×pi*(5 × 10⁻⁵) = 20×pi × 10⁻⁵ H ≈ 6.28 × 10⁻⁴ H.
+Step 6: Substitute the inductance into the magnetic energy formula: U = (1/2)×(6.28 × 10⁻⁴ H)×(2 A)².
+Step 7: Calculate the energy: (2 A)² = 4 A², therefore U = (1/2)×(6.28 × 10⁻⁴)×4 = 2×(6.28 × 10⁻⁴) = 1.26 × 10⁻³ J.
+Step 8: Final conclusion: the magnetic field energy stored in the solenoid is U ≈ 1.26 × 10⁻³ J.",1.26×10⁻³,J
+DDT378,A solenoid has a magnetic flux of 5×10⁻⁶ Wb per turn and consists of 500 turns. Calculate the total magnetic flux linkage.,"Step 1: Identify the given values from the question: the magnetic flux per turn is Φ = 5 × 10⁻⁶ Wb and the number of turns of the solenoid is N = 500. The objective is to calculate the total magnetic flux linkage.
+Step 2: Recall the formula for magnetic flux linkage. The total magnetic flux linkage Ψ of a coil is equal to the number of turns multiplied by the magnetic flux through each turn: Ψ = N*Φ.
+Step 3: Substitute the given values into the formula: Ψ = 500×(5 × 10⁻⁶ Wb).
+Step 4: Multiply the numerical coefficients: 500 × 5 = 2500.
+Step 5: Combine with the power of ten: Ψ = 2500 × 10⁻⁶ Wb.
+Step 6: Convert to standard scientific notation: 2500 × 10⁻⁶ = 2.5 × 10⁻³.
+Step 7: State the final conclusion: the total magnetic flux linkage is Ψ = 2.5 × 10⁻³ Wb.",2.5×10⁻³,Wb
+DDT379,"The magnetic field inside the solenoid is 1.26×10⁻³ T, and its cross-sectional area is 10 cm². Calculate the magnetic field energy density.","Step 1: Identify the given value from the question: the magnetic field strength is B = 1.26 × 10⁻³ T. The objective is to calculate the magnetic field energy density u_B. The cross-sectional area is given as 10 cm², but it is not required because energy density depends only on the magnetic field strength.
+Step 2: Recall the formula for magnetic field energy density: u_B = B² / (2*μ₀), where μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 3: Substitute the given value into the formula:
+u_B = (1.26 × 10⁻³ T)² / (2×(4×pi × 10⁻⁷)).
+Step 4: Calculate the numerator by squaring the magnetic field:
+(1.26 × 10⁻³)² = 1.5876 × 10⁻⁶.
+Step 5: Calculate the denominator:
+2×(4×pi × 10⁻⁷) = 8×pi × 10⁻⁷ ≈ 2.513 × 10⁻⁶.
+Step 6: Divide the numerator by the denominator:
+u_B = (1.5876 × 10⁻⁶) / (2.513 × 10⁻⁶) ≈ 0.63.
+Step 7: Final conclusion: the magnetic field energy density is u_B ≈ 0.63 J/m³.",0.63,J/m³
+DDT380,"The current through a solenoid increases uniformly from 0 to 5 A over a period of 0.2 s. Given that the induced electromotive force is 0.5 V, determine the self-inductance.","Step 1: Identify the given values from the question: the current increases from 0 A to 5 A, the time interval is Δt = 0.2 s, and the induced electromotive force is ε = 0.5 V.
+Step 2: Determine the change in current and recall the self-induction relation: ΔI = 5 A − 0 A = 5 A and the formula connecting induced emf and inductance is |ε| = L*(ΔI/Δt).
+Step 3: Rearrange the formula to find the inductance and substitute the known values:
+L = ε / (ΔI/Δt) = 0.5 V / (5 A / 0.2 s).
+Step 4: Calculate the rate of change of current and the inductance:
+5 A / 0.2 s = 25 A/s, therefore L = 0.5 / 25 = 0.02 H.
+Step 5: Final conclusion: the self-inductance of the solenoid is L = 0.02 H.",0.02,H
+DDT381,A solenoid is 0.5 m long and has 1500 turns. Calculate the number of turns per unit length.,"Step 1: Identify the given values from the question: the total number of turns of the solenoid is N = 1500 turns and the length of the solenoid is L = 0.5 m. The objective is to calculate the number of turns per unit length of the solenoid.
+Step 2: Recall the definition of turns per unit length. The number of turns per unit length represents how many coil turns are distributed along each meter of the solenoid and is commonly denoted by n.
+Step 3: Recall the formula used to determine the number of turns per unit length: n = N / L.
+Step 4: Substitute the given values into the formula: n = 1500 turns / 0.5 m.
+Step 5: Perform the calculation step by step: dividing 1500 by 0.5 is equivalent to multiplying 1500 by 2.
+Step 6: Calculate the result: 1500 × 2 = 3000.
+Step 7: Attach the correct unit to the result. Since the quantity represents the number of turns per meter, the unit is turns/m.
+Step 8: State the final conclusion: the number of turns per unit length of the solenoid is n = 3000 turns/m.",3000,turns/m
+DDT382,A solenoid has n = 2500 turns/m and carries a current of 3 A. Calculate the magnetic field inside.,"Step 1: Identify the given values from the question: the number of turns per unit length is n = 2500 turns/m and the current through the solenoid is I = 3 A.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*n*I, where μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 3: Substitute the given values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(2500 turns/m)×(3 A).
+Step 4: Multiply the quantities with units: 2500 turns/m × 3 A = 7500 A×turns/m, therefore B = (4×pi × 10⁻⁷ T×m/A)×(7500 A×turns/m).
+Step 5: Write 7500 A×turns/m = 7.5 × 10³ A×turns/m and combine the powers of ten: B = 4×pi × 10⁻⁷ × 7.5 × 10³ T = 30×pi × 10⁻⁴ T.
+Step 6: Convert to decimal form: 30×pi ≈ 94.25, therefore B ≈ 94.25 × 10⁻⁴ T = 9.42 × 10⁻³ T.
+Step 7: Final conclusion: the magnetic field inside the solenoid is B ≈ 9.42 × 10⁻³ T.",9.42×10⁻³,T
+DDT383,"Given a solenoid with a magnetic field B = 2×10⁻³ T and a cross-sectional area of 3 cm², determine the magnetic flux through this area.","Step 1: Identify the given values from the question: the magnetic field is B = 2 × 10⁻³ T and the cross-sectional area is A = 3 cm².
+Step 2: Convert the cross-sectional area to SI units: A = 3 cm² = 3 × (10⁻² m)² = 3 × 10⁻⁴ m².
+Step 3: Recall the formula for magnetic flux when the magnetic field is perpendicular to the surface: Φ = BA
+Step 4: Substitute the given values into the formula: Φ = (2 × 10⁻³ T)×(3 × 10⁻⁴ m²).
+Step 5: Multiply the numerical coefficients and combine the powers of ten: 2 × 3 = 6 and 10⁻³ × 10⁻⁴ = 10⁻⁷, therefore Φ = 6 × 10⁻⁷ T×m².
+Step 6: Express the unit correctly: T×m² is equivalent to weber (Wb), the SI unit of magnetic flux.
+Step 7: Final conclusion: the magnetic flux through the cross-sectional area is Φ = 6 × 10⁻⁷ Wb.",6×10⁻⁷,Wb
+DDT384,A coil has 600 turns. The magnetic flux through each turn is 4×10⁻⁶ Wb. Calculate the total flux linkage.,"Step 1: Identify the given values from the question: the number of turns of the coil is N = 600 turns and the magnetic flux through each turn is Φ = 4 × 10⁻⁶ Wb.
+Step 2: Recall the formula for total magnetic flux linkage: Ψ = N*Φ.
+Step 3: Substitute the given values into the formula: Ψ = (600 turns)×(4 × 10⁻⁶ Wb/turn).
+Step 4: Multiply the numerical values with units: 600 × 4 = 2400, therefore Ψ = 2400 × 10⁻⁶ Wb.
+Step 5: Convert to standard scientific notation: 2400 × 10⁻⁶ Wb = 2.4 × 10⁻³ Wb.
+Step 6: Final conclusion: the total magnetic flux linkage is Ψ = 2.4 × 10⁻³ Wb.",2.4×10⁻³,Wb
+DDT385,"Given that the induced electromotive force is 0.3 V, and the current decreases uniformly from 2 A to 0 A in 0.05 s. Calculate the self-inductance.","Step 1: Identify the given values from the question: the induced electromotive force is ε = 0.3 V, the initial current is I₁ = 2 A, the final current is I₂ = 0 A, and the time interval is Δt = 0.05 s.
+Step 2: Calculate the change in current: ΔI = I₂ − I₁ = 0 A − 2 A = −2 A.
+Step 3: Calculate the rate of change of current: ΔI/Δt = (−2 A) / (0.05 s) = −40 A/s.
+Step 4: Recall the relation between induced emf and self-inductance: |ε| = L*|ΔI/Δt|.
+Step 5: Rearrange the formula to solve for inductance: L = ε / |ΔI/Δt|.
+Step 6: Substitute the values into the formula: L = 0.3 V / 40 A/s.
+Step 7: Perform the calculation with units: L = 0.0075 H.
+Step 8: Final conclusion: the self-inductance of the coil is L = 7.5 × 10⁻³ H.",7.5 × 10⁻³,H
+DDT386,A solenoid has a cross-sectional area of 8 cm² and a magnetic field strength of 1.5×10⁻³ T. Calculate the magnetic energy density.,"Step 1: Identify the given values from the question: the magnetic field strength is B = 1.5 × 10⁻³ T. The cross-sectional area A = 8 cm² is also given but it is not required because magnetic energy density depends only on the magnetic field strength.
+Step 2: Recall the formula for magnetic energy density: u_B = B² / (2*μ₀), where μ₀ = 4×pi × 10⁻⁷ T×m/A
+Step 3: Substitute the given value into the formula: u_B = (1.5 × 10⁻³ T)² / (2×(4×pi × 10⁻⁷ T×m/A)).
+Step 4: Calculate the square of the magnetic field with units: (1.5 × 10⁻³ T)² = 2.25 × 10⁻⁶ T².
+Step 5: Calculate the denominator: 2×(4×pi × 10⁻⁷ T×m/A) = 8×pi × 10⁻⁷ T×m/A ≈ 2.513 × 10⁻⁶.
+Step 6: Divide the numerator by the denominator: u_B = (2.25 × 10⁻⁶ T²) / (2.513 × 10⁻⁶) ≈ 0.895.
+Step 7: Final conclusion: the magnetic energy density is u_B ≈ 0.895 J/m³.",0.895,J/m³
+DDT387,"Given an inductor with an inductance of 0.1 H and a maximum current of 2 A, determine the maximum magnetic field energy.","Step 1: Identify the given values from the question: the inductance of the inductor is L = 0.1 H and the maximum current is I_max = 2 A.
+Step 2: Recall the formula for the magnetic energy stored in an inductor: U = (1/2)×L*I².
+Step 3: Substitute the given values into the formula: U = (1/2)×(0.1 H)×(2 A)².
+Step 4: Calculate the square of the current: (2 A)² = 4 A².
+Step 5: Substitute this result into the expression: U = (1/2)×(0.1 H)×(4 A²).
+Step 6: Simplify step by step: (1/2)×0.1 H = 0.05 H, therefore U = 0.05 H*(4 A²).
+Step 7: Perform the multiplication: U = 0.20 J.
+Step 8: Final conclusion: the maximum magnetic field energy stored in the inductor is U = 0.20 J.",0.2,J
+DDT388,A solenoid has a length of 1.2 m and 2400 turns. The current is 1 A. Calculate the magnetic field strength.,"Step 1: Identify the given values from the question: the length of the solenoid is L = 1.2 m, the number of turns is N = 2400 turns, and the current flowing through the solenoid is I = 1 A.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*(N/L)×I, where μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 3: Calculate the number of turns per unit length: N/L = 2400 turns / 1.2 m = 2000 turns/m.
+Step 4: Substitute the values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(2000 turns/m)×(1 A).
+Step 5: Multiply the quantities with units: 2000 turns/m × 1 A = 2000 A×turns/m.
+Step 6: Express 2000 A×turns/m in scientific notation: 2000 = 2 × 10³, therefore B = 4×pi × 10⁻⁷ × 2 × 10³ T.
+Step 7: Combine the powers of ten: 10⁻⁷ × 10³ = 10⁻⁴, therefore B = 8×pi × 10⁻⁴ T.
+Step 8: Convert to decimal form: 8×pi ≈ 25.13, therefore B ≈ 25.13 × 10⁻⁴ T = 2.51 × 10⁻³ T.
+Step 9: Final conclusion: the magnetic field inside the solenoid is B ≈ 2.51 × 10⁻³ T.",2.51×10⁻³,T
+DDT389,"The current increases uniformly from 0 to 6 A in 0.03 s, producing an induced electromotive force of 1.2 V. Calculate the self-inductance.","Step 1: Identify the given values from the question: the current increases from 0 A to 6 A, the time interval is Δt = 0.03 s, and the induced electromotive force is ε = 1.2 V.
+Step 2: Calculate the change in current and the rate of change of current: ΔI = 6 A − 0 A = 6 A, therefore ΔI/Δt = 6 A / 0.03 s = 200 A/s.
+Step 3: Recall the formula for induced electromotive force in an inductor: ε = L*(ΔI/Δt).
+Step 4: Rearrange the formula to determine the inductance: L = ε / (ΔI/Δt).
+Step 5: Substitute the values into the formula: L = 1.2 V / (200 A/s).
+Step 6: Final conclusion: the self-inductance of the coil is L = 0.006 H.",0.006,H
+DDT390,"For a solenoid with a turn density of n = 2000 turns/m and a current of I = 0.5 A, calculate the magnetic field B inside a solenoid. (Given μ₀ = 4π×10⁻⁷).","Step 1: Identify the given values: the turn density is n = 2000 turns/m, the current is I = 0.5 A, and the permeability of free space is μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*n*I.
+Step 3: Substitute the given values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(2000 turns/m)×(0.5 A).
+Step 4: Multiply the numerical quantities with units: 2000 turns/m × 0.5 A = 1000 A×turns/m, therefore B = (4×pi × 10⁻⁷ T×m/A)×(1000 A×turns/m).
+Step 5: Express 1000 A×turns/m = 1 × 10³ A×turns/m and combine the powers of ten: B = 4×pi × 10⁻⁷ × 1 × 10³ T = 4×pi × 10⁻⁴ T.
+Step 6: Convert to decimal form: 4×pi ≈ 12.57, therefore B ≈ 12.57 × 10⁻⁴ T = 1.26 × 10⁻³ T.
+Step 7: Final conclusion: the magnetic field inside the solenoid is B ≈ 1.26 × 10⁻³ T.",1.26×10⁻³,T
+DDT391,A solenoid has 1600 turns and a length of 0.8 m. Calculate the number of turns per unit length.,"Step 1: Identify the given values from the question: the number of turns is N = 1600 turns and the length of the solenoid is L = 0.8 m.
+Step 2: Recall the formula for the number of turns per unit length: n = N / L.
+Step 3: Substitute the given values into the formula: n = 1600 turns / 0.8 m.
+Step 4: Final conclusion: the number of turns per unit length of the solenoid is n = 2000 turns/m.",2000,turns/m
+DDT392,"Given n = 2000 turns/m and I = 4 A, determine the magnetic flux density within the solenoid.","Step 1: Identify the given values from the question: the turn density is n = 2000 turns/m and the current through the solenoid is I = 4 A.
+Step 2: Recall the formula for the magnetic flux density inside a long solenoid: B = μ₀*n*I.
+Step 3: Recall the value of the permeability of free space: μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 4: Substitute the given values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(2000 turns/m)×(4 A).
+Step 5: Multiply the numerical quantities with units: 2000 turns/m × 4 A = 8000 A×turns/m, therefore B = (4×pi × 10⁻⁷ T×m/A)×(8000 A×turns/m).
+Step 6: Express 8000 A×turns/m = 8 × 10³ A×turns/m and combine the powers of ten: B = 4×pi × 10⁻⁷ × 8 × 10³ T = 32×pi × 10⁻⁴ T.
+Step 7: Convert to decimal form: 32×pi ≈ 100.53, therefore B ≈ 100.53 × 10⁻⁴ T = 1.01 × 10⁻² T.
+Step 8: Final conclusion: the magnetic flux density inside the solenoid is B ≈ 1.01 × 10⁻² T.",1.01×10⁻²,T
+DDT393,Given that the magnetic flux per turn is 6×10⁻⁶ Wb and there are 400 turns. Calculate the total magnetic flux linkage.,"Step 1: Identify the given values from the question: the magnetic flux per turn is Φ_turn = 6 × 10⁻⁶ Wb and the number of turns is N = 400.
+Step 2: Recall the formula for total magnetic flux linkage: Ψ = N*Φ_turn.
+Step 3: Substitute the given values into the formula: Ψ = 400×(6 × 10⁻⁶ Wb).
+Step 4: Perform the multiplication: Ψ = 2400 × 10⁻⁶ Wb.
+Step 5: Write the result in standard scientific notation: Ψ = 2.4 × 10⁻³ Wb.",2.4×10⁻³,Wb
+DDT394,"A solenoid is 1 m long, has a cross-sectional area of 4 cm², 1200 turns, and a current of 2.5 A. Calculate the magnetic field energy.","Step 1: Identify the given values from the question: the length of the solenoid is l = 1 m, the cross-sectional area is A = 4 cm², the number of turns is N = 1200, and the current is I = 2.5 A.
+Step 2: Convert the cross-sectional area to SI units: A = 4 cm² = 4 × 10⁻⁴ m².
+Step 3: Recall the formula for the inductance of a solenoid: L = (μ₀*N²*A)/l, where μ₀ = 4×pi × 10⁻⁷ H/m.
+Step 4: Substitute the given values into the formula: L = (4×pi × 10⁻⁷ H/m)×(1200)²*(4 × 10⁻⁴ m²)/1 m.
+Step 5: Calculate the square of the number of turns and simplify: (1200)² = 1.44 × 10⁶, therefore L = (4×pi × 10⁻⁷)×(1.44 × 10⁶)×(4 × 10⁻⁴).
+Step 6: Combine constants and powers of ten: 10⁻⁷ × 10⁶ = 10⁻¹, therefore L = 4×pi*(1.44)×(4 × 10⁻⁵) ≈ 7.238 × 10⁻⁴ H.
+Step 7: Recall the formula for magnetic field energy stored in an inductor: W = (1/2)×L*I².
+Step 8: Substitute the values into the formula: W = (1/2)×(7.238 × 10⁻⁴ H)×(2.5 A)².
+Step 9: Calculate the current squared and the energy: (2.5 A)² = 6.25 A², therefore W = (1/2)×(7.238 × 10⁻⁴)×(6.25) ≈ 2.26 × 10⁻³ J.
+Step 10: Final conclusion: the magnetic field energy stored in the solenoid is W ≈ 2.26 × 10⁻³ J.",2.26×10⁻³,J
+DDT395,A solenoid has a magnetic field B = 5×10⁻³ T and a cross-sectional area of 6 cm². Calculate the magnetic flux through the cross-section.,"Step 1: Identify the given values from the question: the magnetic field strength is B = 5 × 10⁻³ T and the cross-sectional area is A = 6 cm².
+Step 2: Convert the cross-sectional area to SI units: A = 6 cm² = 6 × 10⁻⁴ m².
+Step 3: Recall the formula for magnetic flux through a surface: Φ = B*A.
+Step 4: Substitute the given values into the formula: Φ = (5 × 10⁻³ T)×(6 × 10⁻⁴ m²).
+Step 5: Multiply the numerical coefficients and combine the powers of ten: 5 × 6 = 30 and 10⁻³ × 10⁻⁴ = 10⁻⁷, therefore Φ = 30 × 10⁻⁷ Wb.
+Step 6: Write the result in standard scientific notation: Φ = 3.0 × 10⁻⁶ Wb.",3×10⁻⁶,Wb
+DDT396,"A capacitor is placed in a solenoid's magnetic field, which has B = 3×10⁻³ T. The area of the loop is 5 cm². Calculate the magnetic flux.","Step 1: Identify the given values from the question: the magnetic field strength is B = 3 × 10⁻³ T and the loop area is A = 5 cm².
+Step 2: Convert the area to SI units: A = 5 cm² = 5 × 10⁻⁴ m².
+Step 3: Recall the formula for magnetic flux: Φ = B*A*cos(θ). For a magnetic field perpendicular to the surface, θ = 0° and cos(0°) = 1, therefore Φ = B*A.
+Step 4: Substitute the given values into the formula: Φ = (3 × 10⁻³ T)×(5 × 10⁻⁴ m²).
+Step 5: Multiply the numerical coefficients and combine the powers of ten: 3 × 5 = 15 and 10⁻³ × 10⁻⁴ = 10⁻⁷, therefore Φ = 15 × 10⁻⁷ Wb.
+Step 6: Write the result in standard scientific notation: Φ = 1.5 × 10⁻⁶ Wb.",1.5×10⁻⁶,Wb
+DDT397,The current increases from 0 A to 10 A in 0.05 s. The induced electromotive force (EMF) measured is 1 V. Calculate the inductance.,"Step 1: Identify the given values from the question: the current increases from 0 A to 10 A, the time interval is Δt = 0.05 s, and the induced electromotive force is ε = 1 V.
+Step 2: Calculate the change in current and the rate of change of current: ΔI = 10 A − 0 A = 10 A, therefore ΔI/Δt = 10 A / 0.05 s = 200 A/s.
+Step 3: Recall the formula relating induced EMF and inductance: ε = L*(ΔI/Δt).
+Step 4: Rearrange the formula to solve for inductance: L = ε / (ΔI/Δt).
+Step 5: Substitute the values into the formula: L = 1 V / (200 A/s).
+Step 6: Final conclusion: the inductance is L = 0.005 H.",0.005,H
+DDT398,"An inductor has an inductance of 0.05 H, and a current of 3 A flows through it. Calculate the magnetic energy.","Step 1: Identify the given values from the question: the inductance is L = 0.05 H and the current is I = 3 A.
+Step 2: Recall the formula for magnetic energy stored in an inductor: U = (1/2)×L*I².
+Step 3: Substitute the given values into the formula: U = (1/2)×(0.05 H)×(3 A)².
+Step 4: Calculate the square of the current: (3 A)² = 9 A².
+Step 5: Substitute and simplify: U = (1/2)×(0.05 H)×(9 A²) = 0.025×9 J.
+Step 6: Final conclusion: the magnetic energy stored in the inductor is U = 0.225 J.",0.225,J
+DDT399,"For a solenoid with a length of 0.5 m, 1000 turns, and a current of 3 A, calculate the magnetic field strength.","Step 1: Identify the given values from the question: the length of the solenoid is L = 0.5 m, the number of turns is N = 1000, and the current is I = 3 A.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*(N/L)×I, where μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 3: Substitute the given values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(1000 / 0.5 m)×(3 A).
+Step 4: Calculate the numerical part: (1000 / 0.5) = 2000 turns/m, therefore B = (4×pi × 10⁻⁷ T×m/A)×(2000 turns/m)×(3 A).
+Step 5: Multiply the quantities: 2000 turns/m × 3 A = 6000 A×turns/m.
+Step 6: Substitute and simplify: B = (4×pi × 10⁻⁷ T×m/A)×(6000 A×turns/m).
+Step 7: Express 6000 in scientific notation and combine powers of ten: 6000 = 6 × 10³, therefore B = 4×pi × 10⁻⁷ × 6 × 10³ T = 24×pi × 10⁻⁴ T.
+Step 8: Convert to decimal form: 24×pi ≈ 75.40, therefore B ≈ 75.40 × 10⁻⁴ T = 7.54 × 10⁻³ T.
+Step 9: Final conclusion: the magnetic field strength inside the solenoid is B ≈ 7.54 × 10⁻³ T.",7.54×10⁻³,T
+DDT400,A solenoid has n = 3000 turns/m and I = 2 A. Calculate the magnetic field B inside the solenoid.,"Step 1: Identify the given values from the question: the number of turns per unit length is n = 3000 turns/m and the current is I = 2 A.
+Step 2: Recall the formula for the magnetic field inside a long solenoid: B = μ₀*n*I.
+Step 3: Recall the value of the permeability of free space: μ₀ = 4×pi × 10⁻⁷ T×m/A.
+Step 4: Substitute the given values into the formula: B = (4×pi × 10⁻⁷ T×m/A)×(3000 turns/m)×(2 A).
+Step 5: Multiply the numerical quantities with units: 3000 turns/m × 2 A = 6000 A×turns/m.
+Step 6: Substitute and simplify: B = (4×pi × 10⁻⁷ T×m/A)×(6000 A×turns/m).
+Step 7: Express 6000 in scientific notation and combine powers of ten: 6000 = 6 × 10³, therefore B = 4×pi × 10⁻⁷ × 6 × 10³ T = 24×pi × 10⁻⁴ T.
+Step 8: Convert to decimal form: 24×pi ≈ 75.40, therefore B ≈ 75.40 × 10⁻⁴ T = 7.54 × 10⁻³ T.
+Step 9: Final conclusion: the magnetic field inside the solenoid is B ≈ 7.54 × 10⁻³ T.",7.54×10⁻³,T

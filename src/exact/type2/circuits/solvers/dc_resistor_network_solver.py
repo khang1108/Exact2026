@@ -9,8 +9,13 @@ from exact.type2.circuits.solvers._helpers import q, resistance, source
 
 def solve(contract: CircuitContract) -> dict:
     components = {component.id: component for component in contract.components}
-    total_r = _equivalent(contract.topology, components)
+    try:
+        total_r = _equivalent(contract.topology, components)
+    except ValueError as exc:
+        return unsolved("dc_resistor_network_solver", str(exc))
     total_v = source(contract, "voltage", "V")
+    if total_r == 0:
+        return unsolved("dc_resistor_network_solver", "total resistance is zero")
     state = {"total": {}, "components": {}, "branches": {}}
     _propagate(contract.topology, components, total_v, total_v / total_r, state)
     total_power = total_v * total_v / total_r
@@ -43,6 +48,8 @@ def _equivalent(node: dict[str, Any] | str, components: dict[str, CircuitCompone
     if node["type"] == "series":
         return sum(_equivalent(item, components) for item in node.get("items", ()))
     branch_rs = [sum(_equivalent(item, components) for item in branch.get("items", ())) for branch in node.get("branches", ())]
+    if not branch_rs or any(r == 0 for r in branch_rs):
+        raise ValueError("invalid resistor network topology: branch with 0 resistance or empty branches")
     return 1 / sum(1 / r for r in branch_rs)
 
 

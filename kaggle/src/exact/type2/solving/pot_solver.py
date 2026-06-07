@@ -680,7 +680,7 @@ def _build_solver_context(
         f"- {key}: {quantity.value} ({quantity.evidence})"
         for key, quantity in extraction.quantities.items()
     )
-    limited_formula_ids = _limited_formula_ids(formula_context, limit=6)
+    limited_formula_ids = _limited_formula_ids(formula_context)
     allowed_ids = "\n- ".join(limited_formula_ids) if limited_formula_ids else "None"
     solution_plan = "\n".join(f"- {step}" for step in formula_context.solution_plan)
     geometry_plan = "\n".join(f"- {step}" for step in _build_geometry_plan(extraction))
@@ -697,11 +697,11 @@ def _build_solver_context(
     )
 
 
-def _limited_formula_ids(formula_context: RetrievedFormulaContext, *, limit: int) -> tuple[str, ...]:
+def _limited_formula_ids(formula_context: RetrievedFormulaContext) -> tuple[str, ...]:
     if formula_context.formula_ids:
-        return tuple(formula_context.formula_ids[:limit])
+        return tuple(formula_context.formula_ids)
     ids = [str(summary.get("id")) for summary in formula_context.summaries if summary.get("id")]
-    return tuple(ids[:limit])
+    return tuple(ids)
 
 
 def _limited_formula_context(
