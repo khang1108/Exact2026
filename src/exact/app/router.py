@@ -2,21 +2,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Request
 
-from exact.common.schemas import (
-    BatchPredictionRequest,
-    BatchPredictionResponse,
-    OfficialBatchPredictionResponse,
-    OfficialPredictionResponse,
-    PredictionRequest,
-    PredictionResponse,
-    TaskType,
-    to_official_response,
-)
+from exact.common.schemas import PredictionRequest, PredictionResponse, TaskType
 from exact.logger import get_request_logger
 from exact.router.task_router import TaskRouter
 from exact.logic.pipeline import run_type1_pipeline
 from exact.type2.pipeline import run_type2_pipeline
-from exact.version import TYPE1_PIPELINE_BUILD
+from exact.config import TYPE1_PIPELINE_BUILD
 
 api_router = APIRouter()
 task_router = TaskRouter()
@@ -28,6 +19,16 @@ def health_check() -> dict[str, str]:
 
 
 def _predict_internal(payload: PredictionRequest, request: Request) -> PredictionResponse:
+    """
+    Internal prediction pipeline.
+
+    Args:
+        payload: Prediction request.
+        request: FastAPI request.
+
+    Returns:
+        Prediction response.
+    """
     route = task_router.route(payload)
     logger = get_request_logger(
         __name__,
@@ -57,33 +58,8 @@ def _predict_internal(payload: PredictionRequest, request: Request) -> Predictio
         )
 
 
-@api_router.post("/predict", response_model=OfficialPredictionResponse)
-def predict(payload: PredictionRequest, request: Request) -> dict:
-    """Run the full EXACT pipeline and return the official challenge shape."""
-
-    return to_official_response(_predict_internal(payload, request))
-
-
-@api_router.post("/debug/predict", response_model=PredictionResponse)
-def debug_predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
-    """Run prediction while preserving local metadata useful during development."""
+@api_router.post("/predict", response_model=PredictionResponse)
+def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
+    """Run the full EXACT pipeline and return the merged prediction payload."""
 
     return _predict_internal(payload, request)
-
-
-@api_router.post("/batch", response_model=OfficialBatchPredictionResponse)
-def batch_predict(
-    payload: BatchPredictionRequest,
-    request: Request,
-) -> dict:
-    predictions = [to_official_response(_predict_internal(item, request)) for item in payload.instances]
-    return {"predictions": predictions}
-
-
-@api_router.post("/debug/batch", response_model=BatchPredictionResponse)
-def debug_batch_predict(
-    payload: BatchPredictionRequest,
-    request: Request,
-) -> BatchPredictionResponse:
-    predictions = [_predict_internal(item, request) for item in payload.instances]
-    return BatchPredictionResponse(predictions=predictions)

@@ -6,11 +6,10 @@ from __future__ import annotations
 import asyncio
 import importlib.util
 import json
-import inspect
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
-from openai import APIStatusError, AsyncOpenAI
+from openai import APIStatusError
 from openai.types.chat import ChatCompletionMessageParam
 from pydantic import BaseModel, ValidationError
 
@@ -120,13 +119,6 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         self._api_key = api_key
         self._base_url = (base_url or "https://api.openai.com/v1").rstrip("/")
         self._timeout = timeout
-        # Keep AsyncOpenAI only for legacy _complete_json_and_close; actual calls use httpx.
-        self.client = AsyncOpenAI(
-            api_key=api_key,
-            base_url=base_url,
-            timeout=timeout,
-            max_retries=0,
-        )
 
     async def complete_json(
         self,
@@ -250,25 +242,6 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
         # that owns its own event loop so asyncio.run() works cleanly.
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
             return pool.submit(asyncio.run, coro).result()
-
-    async def _complete_json_and_close(
-        self,
-        messages: Iterable[ChatCompletionMessageParam],
-        temperature: float = 0.0,
-        max_tokens: int = 2048,
-    ) -> dict[str, Any]:
-        try:
-            return await self.complete_json(
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-        finally:
-            close = getattr(self.client, "close", None)
-            if close is not None:
-                result = close()
-                if inspect.isawaitable(result):
-                    await result
 
     @classmethod
     def from_settings(cls, settings: Settings | None = None) -> "LLMClient":

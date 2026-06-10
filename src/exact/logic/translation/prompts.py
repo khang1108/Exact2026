@@ -1,4 +1,8 @@
-"""Prompt builders for the Type 1 LLM autoformalizer."""
+"""Prompt builders for the Type 1 formula-level LLM autoformalizer (LINC path).
+
+All prompts here target the formula IR pipeline (Z3PropSolver). The legacy
+Horn/KB prompt builders have been removed.
+"""
 
 from __future__ import annotations
 

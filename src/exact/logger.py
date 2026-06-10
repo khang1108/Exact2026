@@ -159,14 +159,6 @@ def _quiet_noisy_loggers() -> None:
     for logger_name in noisy_loggers:
         logging.getLogger(logger_name).setLevel(logging.WARNING)
 
-def truncate_text(text: str | None, max_len: int = 300) -> str:
-    """Safely truncate long text before logging."""
-    if text is None:
-        return ""
-    if len(text) <= max_len:
-        return text
-    return text[:max_len] + "...[truncated]"
-
 def get_logger(name: str) -> logging.Logger:
     """
     Get a logger instance

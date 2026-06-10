@@ -290,6 +290,7 @@ VLLM_CMD=(
     --gpu-memory-utilization "$VLLM_GPU_MEM"
     --enable-prefix-caching
     --api-key "$VLLM_API_KEY"
+    --enforce-eager
 )
 
 # Thêm quantization nếu được set

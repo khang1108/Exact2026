@@ -46,8 +46,8 @@ from exact.logic.ir import (
     TranslatedProblem,
     term_to_text,
 )
-from exact.logic.parser import atom_from_text
-from exact.logic.prompts import (
+from exact.logic.parsing import atom_from_text
+from exact.logic.translation.prompts import (
     build_formula_goals_messages,
     build_formula_premises_only_messages,
     build_full_translation_messages,
@@ -62,7 +62,7 @@ from exact.logger import get_logger
 logger = get_logger(__name__)
 
 # Backward-compatible aliases for notebooks/debug scripts that imported these
-# private helpers before the prompt text moved to exact.logic.prompts.
+# private helpers before the prompt text moved to exact.logic.translation.prompts.
 _build_messages = build_full_translation_messages
 _build_mcq_options_messages = build_mcq_options_messages
 _build_premises_only_messages = build_premises_only_messages
@@ -631,34 +631,6 @@ def _problem_formula_json_schema() -> dict[str, Any]:
             },
         },
     }
-
-
-def translate_with_llm(
-    premises: list[str],
-    question: str,
-    llm_client: JsonLLMClient | None = None,
-    settings: Settings | None = None,
-) -> tuple[tuple[ParsedPremise, ...], Query]:
-    """Translate Type 1 text into IR while leaving reasoning to solvers."""
-
-    settings = settings or get_settings()
-    client = llm_client or LLMClient.from_settings(settings)
-    messages = build_full_translation_messages(premises, question)
-    logger.info(
-        "Starting LLM translation: premises=%s, question_chars=%s, max_tokens=%s",
-        len(premises),
-        len(question),
-        settings.llm_max_tokens,
-    )
-    raw = client.complete_json_sync(
-        messages=messages,
-        temperature=settings.llm_temperature,
-        max_tokens=_translation_token_budget(settings.llm_max_tokens, len(premises)),
-    )
-    logger.info("Validating LLM translation schema")
-    spec = TranslationSpec.model_validate(raw)
-    logger.info("Converting LLM translation to IR")
-    return _spec_to_ir(spec, premises, question)
 
 
 def translate_premises_only_with_llm(
@@ -1407,15 +1379,6 @@ def _coerce_atom_arg(raw_arg: Any) -> str:
     return str(raw_arg).strip()
 
 
-def _spec_to_ir(
-    spec: TranslationSpec,
-    raw_premises: list[str],
-    raw_question: str,
-) -> tuple[tuple[ParsedPremise, ...], Query]:
-    parsed = _premise_specs_to_parsed(spec.premises, raw_premises)
-    return parsed, Query(claim=_atom_from_spec(spec.query.claim), raw_question=raw_question)
-
-
 def _atom_from_spec(spec: AtomSpec) -> Atom:
     """Convert validated LLM atom JSON to the solver IR."""
 
@@ -1435,13 +1398,6 @@ def _atom_from_spec(spec: AtomSpec) -> Atom:
 def _format_atom_text(pred: str, args: list[str]) -> str:
     args_text = ", ".join(args)
     return f"{pred}({args_text})" if args_text else pred
-
-
-def _translation_token_budget(max_tokens: int, premise_count: int) -> int:
-    # Each premise can produce nested rule JSON; 280 tokens/premise is more realistic.
-    # Allow exceeding the global max_tokens cap when premises demand it.
-    needed = max(1024, 512 + 280 * premise_count)
-    return min(8192, max(needed, max_tokens))
 
 
 def _premise_token_budget(max_tokens: int, premise_count: int) -> int:

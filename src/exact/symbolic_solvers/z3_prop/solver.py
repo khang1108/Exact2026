@@ -318,25 +318,6 @@ def unsat_core_indices(
     return tuple(index for index, marker in enumerate(markers) if marker in core)
 
 
-def count_implied_siblings(
-    option: EncodedOption,
-    valid_options: list[EncodedOption],
-    constraints: list[Any],
-    timeout_ms: int = 5000,
-) -> int:
-    """Count how many other valid options follow from premises plus option."""
-
-    augmented = [*constraints, option.z3]
-    if theory_status(augmented, timeout_ms) != "sat":
-        return -1
-    return sum(
-        1
-        for sibling in valid_options
-        if sibling.label != option.label
-        and entails(augmented, sibling.z3, timeout_ms=timeout_ms)
-    )
-
-
 def _single_goal(problem: TranslatedProblem, role: str) -> FormulaItem | None:
     for item in problem.goals:
         if item.role == role:

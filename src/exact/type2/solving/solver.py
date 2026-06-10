@@ -7,66 +7,6 @@ from exact.type2.formulas.bank import retrieve_formulas
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification, Formula
 
 
-CONCEPTS = (
-    (
-        ("magnetic field", "inductor", "maximum"),
-        "maximum",
-        "In an ideal LC circuit, the magnetic-field energy in the inductor is maximum when the current is maximum.",
-    ),
-    (
-        ("current is maximum", "lc circuit"),
-        "all energy is stored in the magnetic field of the inductor",
-        "In an ideal LC circuit, maximum current corresponds to maximum magnetic energy in the inductor.",
-    ),
-    (
-        ("current is zero", "lc circuit"),
-        "all energy is stored in the electric field of the capacitor",
-        "In an ideal LC circuit, zero current corresponds to zero magnetic energy and maximum electric energy.",
-    ),
-    (
-        ("resistance", "decreases", "current"),
-        "current increases",
-        "For a fixed voltage, Ohm's law I = U/R shows that current increases when resistance decreases.",
-    ),
-    (
-        ("voltage", "doubles", "energy"),
-        "increase by 4 times",
-        "Capacitor energy is proportional to U^2 when capacitance is fixed.",
-    ),
-)
-
-
-def answer_conceptual(extraction: Extraction) -> Type2SolveResult:
-    lower = extraction.normalized_question.lower()
-    for keywords, answer, explanation in CONCEPTS:
-        if all(keyword in lower for keyword in keywords):
-            return Type2SolveResult(
-                answer=answer,
-                unit=None,
-                value=None,
-                formula=None,
-                extraction=extraction,
-                verification=Verification(True, "Concept matched curated concept bank."),
-                cot=["Matched the question against the curated electricity concept bank."],
-                premises=[explanation],
-                confidence=0.68,
-                error=None,
-            )
-
-    return Type2SolveResult(
-        answer="",
-        unit=None,
-        value=None,
-        formula=None,
-        extraction=extraction,
-        verification=Verification(False, "No curated conceptual rule matched."),
-        cot=["The question appears conceptual, but no supported concept matched."],
-        premises=[],
-        confidence=0.0,
-        error="type2_concept_not_supported",
-    )
-
-
 def verify_value(value: pint.Quantity, formula: Formula) -> tuple[Verification, pint.Quantity | None]:
     try:
         converted = value.to(formula.output_unit)

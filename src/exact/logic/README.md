@@ -15,21 +15,27 @@ For EXACT Type 1, the system should answer from the given premises only and expo
 
 ```text
 src/exact/logic/
-├── ir.py              # Core data model: Atom, Fact, Rule, Query, ProofStep, SolveResult
-├── parser.py          # Local parsing utilities for tests and MCQ option atoms
-├── llm_translator.py  # LLM semantic parser with schema validation
-├── kb.py              # KnowledgeBase construction, premise hashing, parser-version tracking
-├── explain.py         # Proof trace -> user-facing explanation, cot, cited premises, FOL text
-├── pipeline.py        # Type 1 orchestration from PredictionRequest to PredictionResponse
-└── solver.py          # Compatibility wrapper re-exporting symbolic solvers
+├── pipeline.py              # Type 1 orchestration: PredictionRequest → PredictionResponse
+├── ir/                      # Core formula IR (Atom, Formula, TranslatedProblem, …)
+├── parsing/                 # Deterministic atom/FOL parsers (tests, MCQ helpers)
+│   ├── parser.py
+│   └── fol_parser.py
+├── translation/             # LLM NL→logic autoformalizer
+│   ├── llm_translator.py
+│   └── prompts.py
+├── kb/                      # KnowledgeBase build + premise cache
+├── explain/                 # Proof trace → explanation / cot / FOL text
+└── README.md
 
 src/exact/symbolic_solvers/
 ├── base.py                         # Solver protocol
 ├── forward_chain/solver.py         # Default Horn forward-chain solver with unification
-└── z3_solver/                      # Experimental Boolean/Z3 entailment backend
+└── z3_prop/                        # Typed formula Z3 entailment backend
 ```
 
-`logic/` owns the representation and pipeline. `symbolic_solvers/` owns execution backends. This separation keeps the parser, solver, and explanation layers replaceable.
+`logic/` owns representation, translation, KB, explanation, and orchestration.
+`symbolic_solvers/` owns execution backends. This separation keeps parser,
+solver, and explanation layers replaceable.
 
 ## End-to-end algorithm
 
@@ -70,7 +76,7 @@ PredictionResponse
 
 ## Core IR
 
-The framework uses a compact Horn-style representation from `ir.py`.
+The framework uses a compact Horn-style representation from `ir/`.
 
 ### `Atom`
 
@@ -143,7 +149,7 @@ The solver stores grounded parent atoms, not schematic rule conditions, so later
 
 There is one runtime translation path: the LLM semantic parser.
 
-`llm_translator.py` treats the LLM as a parser, not as the final judge. It asks the model to return structured JSON:
+`translation/llm_translator.py` treats the LLM as a parser, not as the final judge. It asks the model to return structured JSON:
 
 ```json
 {
@@ -164,7 +170,7 @@ The output is validated by Pydantic models before conversion into `ParsedPremise
 
 ### Parser utilities
 
-`parser.py` is intentionally conservative and is not used as a runtime premise translator. It remains useful for unit tests and for converting already-isolated MCQ option text into solver atoms. It currently supports:
+`parsing/parser.py` is intentionally conservative and is not used as a runtime premise translator. It remains useful for unit tests and for converting already-isolated MCQ option text into solver atoms. It currently supports:
 
 - direct facts: `A.` -> `Fact(A)`;
 - simple conditionals: `If A then B.` -> `Rule(A -> B)`;
@@ -175,7 +181,7 @@ For competition accuracy, the LLM translator should handle richer educational wo
 
 ## Knowledge base layer
 
-`kb.py` builds a `KnowledgeBase`:
+`kb/kb.py` builds a `KnowledgeBase`:
 
 ```python
 KnowledgeBase(
@@ -261,7 +267,7 @@ This closed-world answer policy is intentionally conservative: absence of proof 
 
 ## Explanation layer
 
-`explain.py` converts `SolveResult` into the API-facing fields:
+`explain/explain.py` converts `SolveResult` into the API-facing fields:
 
 - `explanation`: short natural-language summary;
 - `cot`: symbolic proof trace from `ProofStep.natural_language`;
@@ -281,13 +287,13 @@ Current Z3 scope:
 - Horn rules as implications;
 - positive/negative atom exclusion.
 
-Future extensions can add numeric constraints, dates, credits, GPA comparisons, and typed first-order structures through `Theory` in `ir.py`.
+Future extensions can add numeric constraints, dates, credits, GPA comparisons, and typed first-order structures through `Theory` in `ir/`.
 
 ## Extension points
 
 ### Improve translation accuracy
 
-Most Type 1 gains will likely come from better `llm_translator.py` prompts/schema and post-processing. The solver can only prove what the translator represents correctly.
+Most Type 1 gains will likely come from better `translation/llm_translator.py` prompts/schema and post-processing. The solver can only prove what the translator represents correctly.
 
 Recommended direction:
 

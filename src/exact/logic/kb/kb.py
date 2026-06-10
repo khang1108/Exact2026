@@ -86,7 +86,7 @@ def build_kb_from_premises(
     the LLM-only contract. Translation failures are logged and raised.
     """
 
-    from exact.logic.llm_translator import translate_premises_only_with_llm
+    from exact.logic.translation.llm_translator import translate_premises_only_with_llm
 
     try:
         parsed_premises, warnings, predicate_names = translate_premises_only_with_llm(

@@ -49,7 +49,7 @@ src/exact/
 ├── logic/               # Type 1 educational logic QA pipeline
 ├── prompts/             # Prompt template dùng cho LLM translation/generation
 ├── router/              # Task/question router trước khi gọi pipeline cụ thể
-├── scripts/             # CLI/batch scripts để chạy prediction offline
+├── scripts/             # CLI eval/deployment helpers (không chạy batch inference)
 ├── symbolic_solvers/    # Solver backend dùng cho symbolic reasoning
 ├── type2/               # Type 2 physics pipeline boundary
 ├── config.py            # Runtime settings/env config dùng chung
@@ -78,10 +78,7 @@ common/
 - `QuestionType`: dạng câu hỏi (`mcq`, `yes_no_uncertain`, `open_ended`, `numerical`).
 - `PredictionRequest`: input chuẩn sau khi normalize.
 - `PredictionResponse`: output chuẩn nội bộ và gần với format nộp bài.
-- `BatchPredictionRequest`, `BatchPredictionResponse`: schema batch API.
-- `ProofStep`, `Type1Evidence`: evidence/proof contract cho Type 1.
-- `EquationStep`, `Type2Evidence`: evidence/equation contract cho Type 2.
-- `to_official_response()`: convert response nội bộ sang shape chính thức.
+- `to_official_response()`: convert response nội bộ sang shape chính thức (6 field nộp bài).
 
 Quy tắc:
 
@@ -203,13 +200,16 @@ Type 1 educational logic QA pipeline.
 
 ```text
 logic/
-├── ir.py              # Atom, Fact, Rule, Query, ProofStep, SolveResult
-├── parser.py          # Heuristic parser NL -> IR
-├── llm_translator.py  # LLM semantic parser -> IR
-├── kb.py              # KnowledgeBase construction/cache boundary
 ├── pipeline.py        # Type 1 orchestration, YNU + MCQ path
-├── explain.py         # Proof trace -> explanation/cot/premises
-├── solver.py          # Compatibility wrapper cho symbolic solvers
+├── ir/                # Atom, Fact, Rule, Query, ProofStep, SolveResult, formula IR
+├── parsing/           # Heuristic parser NL -> IR, FOL parser
+│   ├── parser.py
+│   └── fol_parser.py
+├── translation/       # LLM semantic parser -> IR
+│   ├── llm_translator.py
+│   └── prompts.py
+├── kb/                # KnowledgeBase construction/cache boundary
+├── explain/           # Proof trace -> explanation/cot/premises
 └── README.md          # Tài liệu riêng cho Type 1 logic framework
 ```
 
@@ -296,26 +296,21 @@ Rule:
 
 ### `scripts/`
 
-CLI/offline runner layer.
+Helper CLIs for offline evaluation and deployment prep. Production inference
+uses the FastAPI service (`POST /predict`), not batch runners.
 
 ```text
 scripts/
-└── run_predictions.py
+├── config_utils.py
+├── evaluate_type1_predictions.py
+├── evaluate_type2_predictions.py
+└── pull_model.py
 ```
 
 Vai trò:
 
-- load input batch;
-- validate thành `PredictionRequest`;
-- gọi router;
-- gọi pipeline tương ứng;
-- ghi prediction JSON.
-
-Không nên:
-
-- chứa reasoning logic;
-- duplicate Type 1/Type 2 behavior;
-- xử lý raw dataset phức tạp thay cho `datasets/loader.py`.
+- `evaluate_*_predictions.py`: chấm điểm file JSON đã lưu (sau khi gọi API).
+- `pull_model.py`: tải/cache model Hugging Face trước khi chạy vLLM.
 
 ### `baselines/`
 

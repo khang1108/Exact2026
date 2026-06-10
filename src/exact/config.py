@@ -11,6 +11,8 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 SRC_DIR = ROOT_DIR / "src"
 PACKAGE_DIR = SRC_DIR / "exact"
 
+# Build metadata exposed by health checks and evaluation tooling.
+TYPE1_PIPELINE_BUILD = "type1-typed-smt-v2"
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""

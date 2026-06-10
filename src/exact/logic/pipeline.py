@@ -34,7 +34,7 @@ from exact.logic.ir import (
     term_to_text,
 )
 from exact.logic.kb import KnowledgeBase
-from exact.logic.llm_translator import (
+from exact.logic.translation import (
     JsonLLMClient,
     translate_formula_goals_with_llm,
     translate_formula_premises_only_with_llm,
@@ -42,7 +42,7 @@ from exact.logic.llm_translator import (
     translate_problem_with_llm,
     translate_query_only_with_llm,
 )
-from exact.logic.parser import atom_from_text
+from exact.logic.parsing import atom_from_text
 from exact.logger import get_logger, get_request_logger
 
 logger = get_logger(__name__)
@@ -80,10 +80,6 @@ def strip_options_from_question(question: str) -> str:
     first_option = _OPTION_RE.search(question)
     stem = question[: first_option.start()] if first_option else question
     return " ".join(stem.split())
-
-
-def build_goals_for_mcq(options: list[tuple[str, str]]) -> list[tuple[str, Atom]]:
-    return [(label, atom_from_text(text)) for label, text in options]
 
 
 def _solve_with_z3_fallback(kb: KnowledgeBase, claim: Atom, use_z3: bool = True) -> SolveResult:
@@ -131,8 +127,25 @@ def decide_mcq_winner(results: dict[str, SolveResult], question_stem: str) -> st
     return min(candidates, key=score)
 
 
+_FALLBACK_MIN_BUDGET_S: float = 12.0  # skip optional LLM fallback if < this many seconds remain
+
+
+def _remaining_budget_s(deadline: float | None) -> float:
+    """Seconds left before the shared Type 1 soft deadline; inf when unbounded."""
+    if deadline is None:
+        return float("inf")
+    return deadline - time.monotonic()
+
+
+def _has_fallback_budget(deadline: float | None) -> bool:
+    """True when enough wall-clock budget remains for optional LLM fallback."""
+    return _remaining_budget_s(deadline) >= _FALLBACK_MIN_BUDGET_S
+
+
 def _deadline_expired(deadline: float | None) -> bool:
-    return deadline is not None and time.monotonic() >= deadline
+    if deadline is None:
+        return False
+    return _remaining_budget_s(deadline) <= 0
 
 
 def _deadline_exhausted_response(
@@ -481,9 +494,6 @@ def _run_formula_z3_pipeline(
     return response
 
 
-_FALLBACK_MIN_BUDGET_S: float = 12.0  # skip optional LLM fallback if < this many seconds remain
-
-
 def _run_formula_z3_query_path(
     *,
     request: PredictionRequest,
@@ -514,11 +524,11 @@ def _run_formula_z3_query_path(
     # Only run the optional CoT fallback when the symbolic solver returned Unknown
     # AND there is enough time budget remaining (>12s). Skip if low on budget to
     # guarantee we return the symbolic answer before the 60s hard cap.
-    remaining = (deadline - time.monotonic()) if deadline is not None else float("inf")
+    remaining = _remaining_budget_s(deadline)
     if (
         (internal_answer == "Unknown" or result.answer is None)
         and settings.type1_enable_cot_fallback
-        and remaining >= _FALLBACK_MIN_BUDGET_S
+        and _has_fallback_budget(deadline)
     ):
         return _run_cot_unknown_fallback(
             request=request,
@@ -528,7 +538,7 @@ def _run_formula_z3_query_path(
             logger=logger,
             deadline=deadline,
         )
-    if remaining < _FALLBACK_MIN_BUDGET_S and internal_answer == "Unknown":
+    if not _has_fallback_budget(deadline) and internal_answer == "Unknown":
         logger.info(
             "Skipping CoT fallback: only %.1fs remaining (threshold=%.1fs)",
             remaining, _FALLBACK_MIN_BUDGET_S,
@@ -550,10 +560,10 @@ def _run_formula_z3_mcq_path(
     stem = strip_options_from_question(request.question)
     result = solver.solve_mcq(translated, stem=stem)
 
-    remaining = (deadline - time.monotonic()) if deadline is not None else float("inf")
+    remaining = _remaining_budget_s(deadline)
     translation_warning = _mcq_translation_warning(translated)
     needs_fallback = result.answer is None or translation_warning is not None
-    if needs_fallback and settings.type1_enable_cot_fallback and remaining >= _FALLBACK_MIN_BUDGET_S:
+    if needs_fallback and settings.type1_enable_cot_fallback and _has_fallback_budget(deadline):
         fallback = _run_mcq_llm_fallback(
             request=request,
             options=options,
@@ -577,7 +587,7 @@ def _run_formula_z3_mcq_path(
                     ),
                 }
             )
-    if remaining < _FALLBACK_MIN_BUDGET_S and needs_fallback:
+    if not _has_fallback_budget(deadline) and needs_fallback:
         logger.info(
             "Skipping MCQ LLM fallback: only %.1fs remaining (threshold=%.1fs)",
             remaining, _FALLBACK_MIN_BUDGET_S,
@@ -906,7 +916,7 @@ def _complete_json_sync_with_deadline(
     """Pass a per-call timeout when the client supports the remaining-budget contract."""
 
     if deadline is not None:
-        remaining = deadline - time.monotonic() - 0.5
+        remaining = _remaining_budget_s(deadline) - 0.5
         if remaining <= 0:
             raise TimeoutError("Type 1 fallback deadline exhausted before LLM call")
         try:

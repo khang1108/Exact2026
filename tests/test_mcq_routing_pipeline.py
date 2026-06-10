@@ -8,7 +8,7 @@ import pytest
 from exact.config import Settings
 from exact.common.schemas import PredictionRequest, QuestionType, TaskType
 from exact.llm_client import OpenAICompatibleJsonClient
-from exact.logic.fol_parser import parse_fol
+from exact.logic.parsing import parse_fol
 from exact.logic.ir import (
     Atom,
     Compare,
@@ -26,7 +26,7 @@ from exact.logic.ir import (
     TranslatedProblem,
 )
 from exact.logic.kb import KnowledgeBase
-from exact.logic.llm_translator import (
+from exact.logic.translation.llm_translator import (
     _formula_item_from_raw,
     _formula_from_raw,
     clear_formula_premise_cache,

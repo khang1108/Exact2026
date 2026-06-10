@@ -1993,19 +1993,6 @@ def formula_summary(formula: Formula) -> dict[str, object]:
     }
 
 
-def format_formula_context(formulas: list[Formula]) -> str:
-    lines: list[str] = []
-    for formula in formulas:
-        conditions = "; ".join(formula.conditions) or "No special condition listed."
-        mistakes = "; ".join(formula.common_mistakes) or "No common mistake listed."
-        lines.append(
-            f"- {formula.id} [{formula.domain}/{formula.subfield}]: "
-            f"{formula.expression}; required={formula.required}; output={formula.output_unit}; "
-            f"conditions={conditions}; common_mistakes={mistakes}"
-        )
-    return "\n".join(lines)
-
-
 def _formula_score(
     formula: Formula,
     question: str,

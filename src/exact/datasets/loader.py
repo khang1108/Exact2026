@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import csv
 import json
-import random
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -83,12 +82,6 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
             )
 
     return records
-
-
-def load_exact_dataset(type1_path: str | Path, type2_path: str | Path) -> pd.DataFrame:
-    logic_df = load_logic_dataset(Path(type1_path))
-    physics_df = load_physics_dataset(Path(type2_path))
-    return pd.concat([logic_df, physics_df], ignore_index=True)
 
 
 def load_logic_dataset(path: str | Path) -> pd.DataFrame:
@@ -198,40 +191,6 @@ def physics_id_prefix(example_id: str) -> str:
         else:
             break
     return prefix or "unknown"
-
-
-def assign_group_splits(
-    df: pd.DataFrame,
-    group_col: str,
-    stratify_col: str,
-    ratios: dict[str, float],
-    seed: int,
-) -> pd.DataFrame:
-    if abs(sum(ratios.values()) - 1.0) >= 1e-9:
-        raise ValueError("Split ratios must sum to 1.0")
-
-    rng = random.Random(seed)
-    split_by_group: dict[str, str] = {}
-    group_table = df[[group_col, stratify_col]].drop_duplicates(subset=[group_col]).reset_index(drop=True)
-
-    for _, label_groups in group_table.groupby(stratify_col):
-        groups = label_groups[group_col].tolist()
-        rng.shuffle(groups)
-
-        n_groups = len(groups)
-        n_train = int(round(n_groups * ratios["train"]))
-        n_dev = int(round(n_groups * ratios["dev"]))
-
-        for group in groups[:n_train]:
-            split_by_group[group] = "train"
-        for group in groups[n_train : n_train + n_dev]:
-            split_by_group[group] = "dev"
-        for group in groups[n_train + n_dev :]:
-            split_by_group[group] = "test"
-
-    output = df.copy()
-    output["split"] = output[group_col].map(split_by_group)
-    return output
 
 
 def _flatten_logic_record(

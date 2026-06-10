@@ -1,7 +1,7 @@
-"""Shared request, response, routing, and evidence schemas for EXACT.
+"""Shared request, response, and routing schemas for EXACT.
 
 This module owns contracts that are used by both Type 1 logic and Type 2
-physics pipelines, plus the API router, task router, dataset loader, and batch
+physics pipelines, plus the API router, task router, dataset loader, and
 prediction runner. Dataset-specific parsing should live under `exact.datasets`;
 objects here describe the normalized boundary between the product surface and
 all task-specific implementations.
@@ -10,7 +10,7 @@ all task-specific implementations.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -28,8 +28,6 @@ class QuestionType(str, Enum):
 
     MCQ = "mcq"
     YES_NO_UNCERTAIN = "yes_no_uncertain"
-    OPEN_ENDED = "open_ended"
-    NUMERICAL = "numerical"
     UNKNOWN = "unknown"
 
 
@@ -74,69 +72,6 @@ class PredictionRequest(InboundBaseModel):
         return TaskType.TYPE2_PHYSICS
 
 
-class BatchPredictionRequest(InboundBaseModel):
-    """Batch API payload containing one or more normalized prediction requests."""
-
-    instances: list[PredictionRequest]
-
-    @field_validator("instances")
-    @classmethod
-    def instances_must_not_be_empty(
-        cls,
-        value: list[PredictionRequest],
-    ) -> list[PredictionRequest]:
-        if not value:
-            raise ValueError("instances must not be empty")
-        return value
-
-
-class ErrorInfo(AppBaseModel):
-    """Structured error payload for failures that can be surfaced to callers."""
-
-    code: str
-    message: str
-    recoverable: bool = False
-
-
-class ProofStep(AppBaseModel):
-    """Task-agnostic explanation step with optional rule and support links."""
-
-    step_id: str
-    derived: str
-    rule_id: str | None = None
-    support: list[str] = Field(default_factory=list)
-    natural_language: str | None = None
-
-
-class Type1Evidence(AppBaseModel):
-    """Symbolic proof evidence emitted by the Type 1 logic pipeline."""
-
-    solver: str
-    label: Literal["entailed", "contradicted", "unknown"]
-    premises_used: list[str] = Field(default_factory=list)
-    proof_trace: list[ProofStep] = Field(default_factory=list)
-
-
-class EquationStep(AppBaseModel):
-    """One trace step from a Type 2 numerical or formula-based solution."""
-
-    step_id: str
-    expression: str
-    result: str | None = None
-    unit: str | None = None
-    natural_language: str | None = None
-
-
-class Type2Evidence(AppBaseModel):
-    """Equation and unit-conversion evidence emitted by the Type 2 pipeline."""
-
-    executor: str
-    formula: str | None = None
-    given: dict[str, Any] = Field(default_factory=dict)
-    unit_conversions: list[str] = Field(default_factory=list)
-    equation_trace: list[EquationStep] = Field(default_factory=list)
-
-
 class PredictionResponse(AppBaseModel):
     """Competition-facing prediction plus local metadata for debugging."""
 
@@ -151,33 +86,6 @@ class PredictionResponse(AppBaseModel):
     question_type: QuestionType = QuestionType.UNKNOWN
     unit: str | None = None
     error: str | None = None
-
-
-class OfficialPredictionResponse(AppBaseModel):
-    """Official EXACT API response shape.
-
-    The challenge requires `answer` and `explanation`; the remaining fields are
-    optional evidence that can improve reasoning-depth review.
-    """
-
-    answer: str
-    explanation: str
-    fol: str | None = None
-    cot: list[str] | None = None
-    premises: list[str] | None = None
-    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
-
-
-class BatchPredictionResponse(AppBaseModel):
-    """Batch API response containing one prediction result per input instance."""
-
-    predictions: list[PredictionResponse]
-
-
-class OfficialBatchPredictionResponse(AppBaseModel):
-    """Batch wrapper using the official per-item response shape."""
-
-    predictions: list[OfficialPredictionResponse]
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
