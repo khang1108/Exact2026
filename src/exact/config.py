@@ -11,9 +11,6 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 SRC_DIR = ROOT_DIR / "src"
 PACKAGE_DIR = SRC_DIR / "exact"
 
-# Build metadata exposed by health checks and evaluation tooling.
-TYPE1_PIPELINE_BUILD = "type1-typed-smt-v2"
-
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
@@ -29,7 +26,6 @@ class Settings(BaseSettings):
 
     data_dir: Path = PACKAGE_DIR / "datasets"
     exact_dataset_dir: Path = PACKAGE_DIR / "datasets" / "exact"
-    type1_path: Path = exact_dataset_dir / "Logic_Based_Educational_Queries.json"
     type2_path: Path = exact_dataset_dir / "type2_physics_questions.csv"
 
     artifacts_dir: Path = ROOT_DIR / "artifacts"
@@ -64,73 +60,6 @@ class Settings(BaseSettings):
         le=1.0,
         validation_alias=AliasChoices("EXACT_LLM_TOP_P", "EXACT_TOP_P"),
     )
-    type1_translation_samples: int = Field(
-        # Changed from 3 → 1: the new one-shot formula translator (translate_problem_with_llm)
-        # covers premises + query + options in a single call, eliminating vocabulary drift.
-        # Sampling is only used in the repair/fallback path, not on every request.
-        default=1,
-        ge=1,
-        validation_alias="EXACT_TYPE1_TRANSLATION_SAMPLES",
-    )
-    type1_sampling_temperature: float = Field(
-        default=0.7,
-        ge=0.0,
-        le=2.0,
-        validation_alias="EXACT_TYPE1_SAMPLING_TEMPERATURE",
-    )
-    type1_enable_cot_fallback: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_ENABLE_COT_FALLBACK",
-    )
-    type1_add_contrapositives: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_ADD_CONTRAPOSITIVES",
-    )
-    type1_use_z3_fallback: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_USE_Z3_FALLBACK",
-    )
-    type1_use_formula_z3: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_USE_FORMULA_Z3",
-    )
-    type1_enable_legacy_fallback: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_ENABLE_LEGACY_FALLBACK",
-    )
-    # Guided JSON decoding passes the formula JSON schema to vLLM so the model
-    # is constrained to valid formula-tree JSON from the first token.  Requires
-    # vLLM >= 0.6.x with lm-format-enforcer.  Default True because the
-    # competition vLLM server is a custom build that supports guided_json.
-    type1_use_guided_json: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_USE_GUIDED_JSON",
-    )
-    # Split premise translation from goal translation and cache premise results.
-    # When True, each request makes two smaller LLM calls instead of one large call:
-    #   Call 1 (cached): premises only  → predicate dict + FormulaItems
-    #   Call 2 (fast):   query/options  → goal FormulaItems using predicate dict
-    # This eliminates vocabulary drift across calls (predicate dict is shared) and
-    # makes subsequent questions in the same premise group nearly free (cache hit).
-    # Expected impact: 14-premise groups go from ~55s to ~42s (first Q) / ~8s (later Qs).
-    type1_formula_cache_premises: bool = Field(
-        default=True,
-        validation_alias="EXACT_TYPE1_FORMULA_CACHE_PREMISES",
-    )
-    # Soft deadline for a single Type 1 request (seconds).  When the remaining
-    # time is less than this threshold the pipeline skips the LLM repair/fallback
-    # call and returns the best symbolic answer available, preventing ReadTimeout.
-    type1_soft_deadline_s: float = Field(
-        default=45.0,
-        gt=0.0,
-        validation_alias="EXACT_TYPE1_SOFT_DEADLINE_S",
-    )
-    # Per-call timeout for LLM requests. Set high enough that a large one-shot
-    # formula translation (14 premises + 4 options, ~2800 tokens) can complete.
-    # Retries are disabled (max_retries=0) because a retry after timeout wastes
-    # the remaining request budget: 2 × 55s = 110s > 60s hard cap.
-    # run_type1_pipeline propagates a shared deadline into each LLM call and
-    # returns a low-confidence fail-safe answer if the budget is exhausted.
     llm_timeout_seconds: float = Field(default=55.0, gt=0)
     llm_max_retries: int = Field(default=0, ge=0, validation_alias="EXACT_MAX_RETRIES")
     llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")

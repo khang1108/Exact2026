@@ -188,7 +188,7 @@ log_section "Kiểm tra package EXACT API"
 
 MISSING_API=0
 # Tên phải khớp với `pip show <name>` (tên PyPI, không phải tên import)
-for pkg in fastapi uvicorn openai httpx pydantic-settings z3-solver sympy; do
+for pkg in fastapi uvicorn openai httpx pydantic-settings sympy; do
     if ! pkg_installed "$API_PIP" "$pkg"; then
         log_warn "Thiếu package: $pkg"
         MISSING_API=1
@@ -351,12 +351,10 @@ log_info "Log: $TUNNEL_LOG"
 TUNNEL_URL=""
 
 if [[ -n "$CLOUDFLARE_TUNNEL_NAME" ]]; then
-    # Named tunnel — cần đã setup trước: cloudflared tunnel create <name>
-    # --url chỉ rõ origin để tunnel forward traffic vào, không có sẽ không forward gì cả
-    log_info "Dùng named tunnel: $CLOUDFLARE_TUNNEL_NAME → http://localhost:${API_PORT}"
-    "$CLOUDFLARED_BIN" tunnel run \
-        --url "http://localhost:${API_PORT}" \
-        "$CLOUDFLARE_TUNNEL_NAME" \
+    # Named tunnel — routing is defined in ~/.cloudflared/config.yml, NOT via --url.
+    # Setup: cloudflared tunnel create <name>, then create config.yml with ingress rules.
+    log_info "Dùng named tunnel: $CLOUDFLARE_TUNNEL_NAME (routing via ~/.cloudflared/config.yml)"
+    "$CLOUDFLARED_BIN" tunnel run "$CLOUDFLARE_TUNNEL_NAME" \
         >> "$TUNNEL_LOG" 2>&1 &
     TUNNEL_URL="(named tunnel: $CLOUDFLARE_TUNNEL_NAME)"
 else

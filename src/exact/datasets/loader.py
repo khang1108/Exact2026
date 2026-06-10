@@ -9,13 +9,6 @@ import pandas as pd
 
 SUPPORTED_RECORD_EXTENSIONS = {".json", ".jsonl"}
 
-PREMISES_KEYS = [
-    "premises-NL",
-    "premises_NL",
-    "premises_nl",
-    "premises",
-    "context",
-]
 QUESTION_KEYS = ["question", "query", "problem"]
 ANSWER_KEYS = ["answer", "answers", "gold_answer", "label"]
 UNIT_KEYS = ["unit", "gold_unit"]
@@ -84,17 +77,6 @@ def load_records(path: str | Path) -> list[dict[str, Any]]:
     return records
 
 
-def load_logic_dataset(path: str | Path) -> pd.DataFrame:
-    file_path = Path(path)
-    records = load_records(file_path)
-    rows: list[dict[str, Any]] = []
-
-    for group_index, record in enumerate(records):
-        rows.extend(_flatten_logic_record(record, group_index, file_path))
-
-    return pd.DataFrame(rows)
-
-
 def load_physics_dataset(path: str | Path) -> pd.DataFrame:
     file_path = Path(path)
     _ensure_file(file_path)
@@ -119,9 +101,6 @@ def load_physics_dataset(path: str | Path) -> pd.DataFrame:
                     "task_type": "physics",
                     "question_type": "physics",
                     "question": str(record.get("question", "")).strip(),
-                    "premises_nl": [],
-                    "premises_fol": [],
-                    "support_idx": [],
                     "gold_answer": answer,
                     "gold_unit": unit,
                     "gold_explanation": str(record.get("cot", "")).strip(),
@@ -142,7 +121,6 @@ def normalize_record(raw: dict[str, Any]) -> dict[str, Any]:
     record = dict(raw)
 
     question = _first_present(record, QUESTION_KEYS)
-    premises = _first_present(record, PREMISES_KEYS)
     answer = _first_present(record, ANSWER_KEYS)
     unit = _first_present(record, UNIT_KEYS)
 
@@ -151,8 +129,6 @@ def normalize_record(raw: dict[str, Any]) -> dict[str, Any]:
         "question": question,
     }
 
-    if premises is not None:
-        normalized["premises-NL"] = _normalize_premises(premises)
     if answer is not None:
         normalized["answer"] = _normalize_answer(answer)
     if unit is not None:
@@ -160,17 +136,6 @@ def normalize_record(raw: dict[str, Any]) -> dict[str, Any]:
 
     normalized["_raw"] = record
     return normalized
-
-
-def detect_logic_question_type(question: str, answer: str) -> str:
-    question = question or ""
-    answer = str(answer or "").strip()
-
-    if "\nA." in question or answer in {"A", "B", "C", "D"}:
-        return "multiple_choice"
-    if answer in {"Yes", "No", "Unknown", "Uncertain", "False"}:
-        return "yes_no_unknown"
-    return "other"
 
 
 def detect_physics_answer_type(answer: str, unit: str) -> str:
@@ -196,46 +161,6 @@ def physics_id_prefix(example_id: str) -> str:
     return prefix or "unknown"
 
 
-def _flatten_logic_record(
-    record: dict[str, Any],
-    group_index: int,
-    source_path: Path,
-) -> list[dict[str, Any]]:
-    premises_nl = record.get("premises-NL", [])
-    premises_fol = record.get("premises-FOL", [])
-    support_indices = record.get("idx", [])
-    questions = record.get("questions", [])
-    answers = record.get("answers", [])
-    explanations = record.get("explanation", [])
-    rows: list[dict[str, Any]] = []
-
-    for question_index, question in enumerate(questions):
-        answer = _get_indexed_value(answers, question_index, "")
-        explanation = _get_indexed_value(explanations, question_index, "")
-        support_idx = _get_indexed_value(support_indices, question_index, [])
-        question_type = detect_logic_question_type(question, answer)
-
-        rows.append(
-            {
-                "id": f"logic_{group_index:04d}_{question_index:02d}",
-                "group_id": f"logic_{group_index:04d}",
-                "task_type": "logic",
-                "question_type": question_type,
-                "question": question,
-                "premises_nl": premises_nl,
-                "premises_fol": premises_fol,
-                "support_idx": support_idx,
-                "gold_answer": str(answer).strip(),
-                "gold_unit": "",
-                "gold_explanation": explanation,
-                "source_path": str(source_path),
-                "stratify_label": f"logic::{question_type}",
-            }
-        )
-
-    return rows
-
-
 def _extract_records(data: Any, source_path: Path) -> list[dict[str, Any]]:
     if isinstance(data, list):
         return data
@@ -256,27 +181,10 @@ def _first_present(record: dict[str, Any], keys: list[str]) -> Any:
     return None
 
 
-def _normalize_premises(value: Any) -> list[str]:
-    if isinstance(value, list):
-        return [str(item) for item in value]
-    if isinstance(value, str):
-        return [value]
-
-    raise ValueError(
-        f"Invalid premises format: expected list[str] or str, got {type(value).__name__}"
-    )
-
-
 def _normalize_answer(value: Any) -> str:
     if isinstance(value, list):
         return str(value[0]) if value else ""
     return str(value)
-
-
-def _get_indexed_value(values: Any, index: int, default: Any) -> Any:
-    if isinstance(values, list) and index < len(values):
-        return values[index]
-    return default
 
 
 def _ensure_file(path: Path) -> None:

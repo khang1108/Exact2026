@@ -1,10 +1,7 @@
-"""Shared request, response, and routing schemas for EXACT.
+"""Shared request and response schemas for the Type 2 EXACT pipeline.
 
-This module owns contracts that are used by both Type 1 logic and Type 2
-physics pipelines, plus the API router, task router, dataset loader, and
-prediction runner. Dataset-specific parsing should live under `exact.datasets`;
-objects here describe the normalized boundary between the product surface and
-all task-specific implementations.
+Dataset-specific parsing should live under `exact.datasets`; objects here
+describe the normalized boundary between the product surface and Type 2.
 """
 
 from __future__ import annotations
@@ -16,18 +13,20 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TaskType(str, Enum):
-    """Top-level EXACT task family selected by the task router."""
-
+    """Task family currently implemented by the application."""
     TYPE1_LOGIC = "type1_logic"
     TYPE2_PHYSICS = "type2_physics"
     UNKNOWN = "unknown"
 
 
 class QuestionType(str, Enum):
-    """Question shape used to choose answer semantics within a task pipeline."""
+    """Question shape emitted by the Type 2 pipeline."""
 
-    MCQ = "mcq"
-    YES_NO_UNCERTAIN = "yes_no_uncertain"
+    # Type 1: MCQ, 
+
+
+    OPEN_ENDED = "open_ended"
+    NUMERICAL = "numerical"
     UNKNOWN = "unknown"
 
 
@@ -52,11 +51,10 @@ class InboundBaseModel(BaseModel):
 
 
 class PredictionRequest(InboundBaseModel):
-    """Normalized input sample for either Type 1 logic or Type 2 physics."""
+    """Normalized input sample for Type 2 physics."""
 
     id: str | None = None
     question: str
-    premises_nl: list[str] | None = Field(default=None, alias="premises-NL")
 
     @field_validator("question")
     @classmethod
@@ -64,13 +62,6 @@ class PredictionRequest(InboundBaseModel):
         if not value.strip():
             raise ValueError("question must not be empty")
         return value
-
-    @property
-    def inferred_task_type(self) -> TaskType:
-        if self.premises_nl:
-            return TaskType.TYPE1_LOGIC
-        return TaskType.TYPE2_PHYSICS
-
 
 class PredictionResponse(AppBaseModel):
     """Competition-facing prediction plus local metadata for debugging."""

@@ -1,2 +1,0 @@
-id,answer,unit,gold_answer,gold_unit,status,numeric_ok,unit_ok,relative_error,absolute_error,error
-physics_TD402,0.36,F,100,uF,wrong_numeric,False,True,3599.0,359900.0,

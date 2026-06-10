@@ -1,213 +1,52 @@
-# EXACT 2026 system
+# EXACT 2026 Type 2 Pipeline
 
-Hybrid neuro-symbolic pipeline for the [EXACT 2026](https://ura.hcmut.edu.vn/exact) challenge (transparent educational QA).
+This repository currently contains the Type 2 physics pipeline for the EXACT
+2026 challenge. The previous Type 1 logic implementation has been removed so it
+can be rebuilt from scratch.
 
----
+## Request Flow
 
-## Pipeline Overview
-
-### System topology
-
+```text
+POST /predict
+    -> PredictionRequest
+    -> Type 2 domain routing
+    -> deterministic solver when eligible
+    -> LLM Program-of-Thought fallback when needed
+    -> PredictionResponse
 ```
-Evaluator (BTC)
-    │  POST /predict
-    ▼
-Cloudflare Tunnel ──► EXACT FastAPI  :8080   (uvicorn)
-                           │
-                           │  OpenAI-compatible  HTTP
-                           ▼
-                       vLLM server   :8000   (Qwen 2.5-7B-AWQ)
-```
-
-### Request flow
-
-```mermaid
-flowchart TD
-    REQ["POST /predict\n{premises-NL, question}"]
-    REQ --> ROUTER{TaskRouter}
-
-    ROUTER -->|type1_logic| T1["Type 1 — Logic"]
-    ROUTER -->|type2_physics| T2["Type 2 — Physics"]
-w
-    T1 --> QTYPE{Question type}
-    QTYPE -->|"A/B/C/D options"| MCQ[MCQ path]
-    QTYPE -->|"Does / Is / Can…"| YNU[Yes / No / Uncertain path]
-    QTYPE -->|other| OE[Open-ended path]
-
-    MCQ & YNU --> TRANS
-
-    subgraph TRANS ["LLM Translation  (≤8B, vLLM)"]
-        direction TB
-        CHK{cache hit?}
-        CHK -->|yes| CACHE["Premise cache\nSHA-256 keyed"]
-        CHK -->|no| P1["Call 1 · premises only\n→ predicate dict + FormulaItems"]
-        P1 --> CACHE
-        CACHE --> P2["Call 2 · goals only\nuses predicate dict from Call 1"]
-        P2 --> TP[TranslatedProblem]
-        P1 -. "fallback if split fails" .-> OS["One-shot call\npremises + goals together"]
-        OS --> TP
-    end
-
-    TP --> Z3["Z3PropSolver\nfinite-domain propositional entailment\nT ⊨ φ  iff  T ∧ ¬φ  UNSAT"]
-
-    Z3 -->|"Yes / No"| ANS
-    Z3 -->|"Unknown + budget > 12 s"| FALLBACK["LLM CoT fallback\n(optional second call)"]
-    FALLBACK --> ANS
-
-    ANS["PredictionResponse\nanswer · explanation · fol · cot · premises · confidence"]
-
-    T2 --> POT["PoT pipeline\nformula retrieval → Pint code → sandbox"]
-    POT --> ANS
-```
-
-### Type 1 — key design decisions
-
-| Decision | Rationale |
-|---|---|
-| **Split translation (2 calls)** | Premise call cached by SHA-256 — 2nd question in same group reuses it (~0 LLM time vs ~40 s). |
-| **Shared predicate dict** | Goals call receives the predicate vocabulary from Call 1 → no vocabulary drift between premises and query. |
-| **Z3 propositional entailment** | Finite-domain grounding turns universally-quantified formulas into ground Boolean constraints. Sound and fast (ms). |
-| **Deadline guard** | Optional CoT / MCQ LLM fallback is skipped if remaining time < 12 s → always returns symbolic answer within 60 s cap. |
-| **Formula IR** | Recursive `Atom / Not / And / Or / Implies` tree replaces flat Horn atoms → handles MCQ options that are implications (contrapositives, conditionals). |
-
----
 
 ## Layout
 
-- `src/exact/` — core library (`exact.config`, pipelines, solvers)
-- `src/exact/app/` — FastAPI service (`uvicorn exact.app.main:app`)
-- `src/exact/datasets/` — datasets and normalized loaders
-- `artifacts/` — prediction and evaluation outputs
-- `docs/` — challenge notes and experiment logs
-- `papers/` — paper drafts and references
+- `src/exact/app/`: FastAPI service.
+- `src/exact/common/`: shared request and response schemas.
+- `src/exact/datasets/`: challenge dataset loading and normalization.
+- `src/exact/type2/`: Type 2 extraction, routing, deterministic solvers, and fallbacks.
+- `src/exact/scripts/`: Type 2 dataset and evaluation CLIs.
+- `scripts/type2/`: Type 2 execution entry points.
+- `artifacts/`: generated predictions and reports.
 
-## Quick start
+The preserved logic dataset files remain under `src/exact/datasets/exact/` for
+future Type 1 redevelopment, but there is no active Type 1 runtime or routing.
+
+## Quick Start
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-# or: pip install -e ".[api,dev]"
-cp .env.example .env
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[api,dev]"
 PYTHONPATH=src uvicorn exact.app.main:app --host 0.0.0.0 --port 8080
 ```
 
 Health check: `GET http://localhost:8080/health`
 
-The API exposes:
-
-- `GET /health`
-- `POST /predict` — official EXACT response shape
-- `POST /batch` — official EXACT response shape for multiple instances
-- `POST /debug/predict` — internal response with debug metadata
-- `POST /debug/batch` — internal response with debug metadata
-
-Official predictions return `answer` and `explanation`, plus optional `fol`,
-`cot`, `premises`, and `confidence`. Local metadata such as `id`, `task_type`,
-`question_type`, `unit`, and `error` is available from the `/debug/*` routes.
-
-Configure a local OpenAI-compatible LLM server for real predictions:
-
-```bash
-export EXACT_LLM_BASE_URL=http://127.0.0.1:8000/v1
-export EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct
-```
-
-## Docker with remote vLLM
-
-The Docker image runs only the EXACT API. Host vLLM separately on a VM or GPU
-machine that exposes an OpenAI-compatible endpoint.
-
-Build the API image:
-
-```bash
-docker build -t exact2026-api .
-```
-
-Run it against a vLLM server on another VM:
-
-```bash
-docker run --rm -p 8080:8080 \
-  -e EXACT_LLM_BASE_URL=http://VM_PRIVATE_IP_OR_DNS:8000/v1 \
-  -e EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct \
-  -e EXACT_LLM_API_KEY=EMPTY \
-  exact2026-api
-```
-
-If vLLM is running on the same host as Docker, use Docker's host gateway:
-
-```bash
-docker run --rm -p 8080:8080 \
-  --add-host=host.docker.internal:host-gateway \
-  -e EXACT_LLM_BASE_URL=http://host.docker.internal:8000/v1 \
-  -e EXACT_LLM_MODEL=Qwen/Qwen2.5-7B-Instruct \
-  -e EXACT_LLM_API_KEY=EMPTY \
-  exact2026-api
-```
-
-The vLLM side should listen on a reachable interface, for example:
-
-```bash
-vllm serve Qwen/Qwen2.5-7B-Instruct \
-  --host 0.0.0.0 \
-  --port 8000 \
-  --served-model-name Qwen/Qwen2.5-7B-Instruct
-```
-
-For the VM + Cloudflare Tunnel deployment path, see
-[`deployment/vllm-cloudflare.md`](deployment/vllm-cloudflare.md). The recommended topology
-is to keep vLLM private and expose only the EXACT FastAPI `/predict` endpoint.
-
-Type 1 is LLM-only: if no JSON LLM client is configured, the request fails with
-a clear error instead of substituting a local parser.
-
-Type 2 uses a formula-grounded physics pipeline: extraction, formula retrieval,
-executable formula solving, and optional LLM PoT fallback when formulas cannot
-solve directly.
-
-Example Type 1 request:
-
-```bash
-curl -X POST http://127.0.0.1:8080/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "id": "t1_001",
-    "premises-NL": [
-      "If a curriculum is well-structured and has exercises, it enhances student engagement.",
-      "The curriculum is well-structured.",
-      "The curriculum has exercises."
-    ],
-    "question": "Does the curriculum enhance student engagement?"
-  }'
-```
-
-Example Type 2 request:
-
-```bash
-curl -X POST http://127.0.0.1:8080/predict \
-  -H "Content-Type: application/json" \
-  -d '{
-    "id": "t2_001",
-    "question": "Calculate the current when U = 12 V and R = 6 ohm."
-  }'
-```
-
-## Tests
-
-```bash
-pytest
-```
-
 ## Type 2 Dataset Runs
 
 ```bash
 cp configs/type2_dataset_run.example.toml configs/type2_local.toml
-# edit dataset/output/type2_pipeline/evaluation in configs/type2_local.toml
-# choose the LLM client from the script, not from the TOML
 ./venv/bin/python scripts/type2/run_type2.py --backend groq --config configs/type2_local.toml
 ```
 
-Evaluate a Type 2 prediction file with the tolerances configured in the same
-TOML file:
+Evaluate predictions:
 
 ```bash
 PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
@@ -215,162 +54,8 @@ PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
   --config configs/type2_local.toml
 ```
 
-`scripts/type2/run_type2.py` is responsible for:
-
-- selecting the LLM client/backend
-- overriding client-level settings such as model, endpoint, auth, timeout, and transformer device
-- choosing `limit` / `offset` for a run
-
-`configs/type2_local.toml` is responsible for:
-
-- dataset and output defaults
-- all Type 2 pipeline behavior
-- all per-task Type 2 token budgets
-- evaluation settings
-
-Example runs:
+## Tests
 
 ```bash
-./venv/bin/python scripts/type2/run_type2.py --backend groq --limit 1
-./venv/bin/python scripts/type2/run_type2.py --backend cloudflare --limit 1
-./venv/bin/python scripts/type2/run_type2.py --backend transformers --model Qwen/Qwen2.5-Math-1.5B-Instruct
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend openai_compatible \
-  --base-url https://your-endpoint/v1 \
-  --api-key your-token \
-  --model your-model \
-  --timeout-seconds 90
-```
-
-Runner and client args for `run_type2.py`:
-
-| Arg | Meaning | Default |
-| --- | --- | --- |
-| `--backend` | Choose the LLM client preset for this run | Required |
-| `--config` | Type 2 pipeline config file | `configs/type2_dataset_run.example.toml` |
-| `--limit` | Number of Type 2 examples to process | `1` |
-| `--offset` | Start index inside the filtered Type 2 dataset | `0` |
-| `--output` | Override the output JSON path from the config | `artifacts/predictions/type2/type2_run.json` |
-| `--input` | Override the dataset input path from the config | `src/exact/datasets/exact/type2_physics_questions.csv` |
-| `--model` | Override the model id/name for the selected client | Preset-dependent |
-| `--base-url` | Override the OpenAI-compatible endpoint URL when the client uses one | Preset-dependent |
-| `--api-key` | Override the API key when the client uses one | Preset-dependent |
-| `--api-key-env` | Read the API key from a named environment variable | Unset |
-| `--temperature` | Sampling temperature | `0.0` |
-| `--top-p` | Sampling top-p | `1.0` |
-| `--timeout-seconds` | HTTP timeout per LLM call | `60.0` |
-| `--max-retries` | Retry count for failed LLM calls | `2` |
-| `--device-map` | Device placement for `transformers` backend | Preset-dependent |
-| `--torch-dtype` | Torch dtype for `transformers` backend | Preset-dependent |
-| `--local-files-only` | Do not download model artifacts for `transformers` | Off |
-| `--trust-remote-code` | Allow custom model code for `transformers` | Off |
-
-### Backend Presets
-
-Each backend uses the same runner and the same pipeline config file:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend <preset> \
-  --config configs/type2_local.toml \
-  --limit 1
-```
-
-#### Cloudflare
-
-Reads defaults from `.env` if present:
-
-- `EXACT_CLOUDFLARE_LLM_BASE_URL`
-- `EXACT_CLOUDFLARE_LLM_MODEL`
-- `EXACT_CLOUDFLARE_LLM_API_KEY`
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend cloudflare \
-  --config configs/type2_local.toml \
-  --limit 1
-```
-
-#### Groq
-
-Usually paired with `GROQ_API_KEY` in `.env` or shell env:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend groq \
-  --config configs/type2_local.toml \
-  --model llama-3.1-8b-instant \
-  --api-key-env GROQ_API_KEY
-```
-
-#### Ollama
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend ollama \
-  --config configs/type2_local.toml \
-  --model qwen2.5:0.5b \
-  --base-url http://127.0.0.1:11434/v1
-```
-
-#### Transformers
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend transformers \
-  --config configs/type2_local.toml \
-  --model Qwen/Qwen2.5-0.5B-Instruct \
-  --device-map cpu \
-  --torch-dtype float32
-```
-
-#### Hugging Face Router
-
-Usually paired with `HF_TOKEN` in `.env` or shell env:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend huggingface \
-  --config configs/type2_local.toml \
-  --model Qwen/Qwen2.5-7B-Instruct \
-  --api-key-env HF_TOKEN
-```
-
-#### OpenAI-Compatible
-
-Use this for vLLM or any other OpenAI-compatible endpoint:
-
-```bash
-./venv/bin/python scripts/type2/run_type2.py \
-  --backend openai_compatible \
-  --config configs/type2_local.toml \
-  --model Qwen/Qwen2.5-7B-Instruct \
-  --base-url http://YOUR_SERVER:8000/v1 \
-  --api-key EMPTY
-```
-
-Useful settings in `configs/type2_local.toml`:
-
-- `dataset.input`, `dataset.limit`, `output.path`, and `evaluation.*` stay in the TOML.
-- `type2_pipeline.extraction_mode = "merge"` keeps both heuristic and LLM extraction in play.
-- `type2_pipeline.use_pot_solver = true` enables the LLM PoT fallback when executable formulas cannot solve directly.
-- `type2_pipeline.use_llm_formula_selection = true` enables LLM reranking over retrieved formulas.
-- `type2_pipeline.generate_final_explanation = false` skips the final
-  explanation/evidence LLM call for faster smoke runs.
-- `type2_pipeline.pot_timeout`, `pot_max_retries`, `formula_limit`, and `rerank_limit`
-  are the main runtime knobs for Type 2 behavior.
-- LLM output budgets per task now live in the config, not in script args.
-- `type2_pipeline.extraction_max_tokens` controls the LLM budget for extraction.
-- `type2_pipeline.formula_selection_max_tokens` controls the LLM budget for formula reranking.
-- `type2_pipeline.conceptual_max_tokens` controls the LLM budget for conceptual-only answers.
-- `type2_pipeline.pot_code_max_tokens` controls the LLM budget for first-pass PoT code generation.
-- `type2_pipeline.pot_repair_max_tokens` controls the LLM budget for PoT repair calls.
-- `type2_pipeline.final_explanation_max_tokens` controls the LLM budget for the final explanation call.
-
-To download/cache the configured Hugging Face model first:
-
-```bash
-PYTHONPATH=src python -m exact.scripts.pull_model \
-  --config configs/type2_local.toml \
-  --model Qwen/Qwen2.5-0.5B-Instruct
+pytest
 ```

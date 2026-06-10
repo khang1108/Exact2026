@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "exact2026"
 version = "0.1.0"
-description = "EXACT 2026 — transparent educational QA (hybrid neuro-symbolic)"
+description = "EXACT 2026 Type 2 physics pipeline"
 readme = "README.md"
 authors = [
     { name = "Khang Phuc Nguyen", email = "phuckhang@gmail.com" },
@@ -13,7 +13,6 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0",
-    "z3-solver>=4.12",
     "sympy>=1.12",
     "pint>=0.23",
     "transformers>=4.40",

@@ -153,8 +153,8 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
             "response_format": {"type": "json_object"},
         }
         # guided_json constrains token sampling to only produce JSON matching the
-        # schema, effectively replacing the retry-on-bad-JSON loop with a one-shot
-        # guarantee.  Only sent when the caller opts in (settings.type1_use_guided_json).
+        # schema, effectively replacing retry-on-bad-JSON loops with a one-shot
+        # structural guarantee.
         if json_schema is not None:
             payload["guided_json"] = json_schema
         headers = {

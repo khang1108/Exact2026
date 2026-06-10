@@ -144,7 +144,7 @@ fi
 log_section "Kiểm tra package EXACT API"
 
 MISSING_API=0
-for pkg in fastapi uvicorn openai httpx pydantic-settings z3-solver sympy; do
+for pkg in fastapi uvicorn openai httpx pydantic-settings sympy; do
     if ! pkg_installed "$API_PIP" "$pkg"; then
         log_warn "Thiếu package: $pkg"
         MISSING_API=1
@@ -285,7 +285,8 @@ wait_for_http "EXACT API" "http://127.0.0.1:${API_PORT}/health" || {
 log_section "Khởi động Cloudflare Tunnel"
 
 if [[ -n "$CLOUDFLARE_TUNNEL_NAME" ]]; then
-    TUNNEL_CMD="$CLOUDFLARED_BIN tunnel run --url http://localhost:${API_PORT} $CLOUDFLARE_TUNNEL_NAME"
+    # Named tunnel routing is defined in ~/.cloudflared/config.yml — do NOT pass --url.
+    TUNNEL_CMD="$CLOUDFLARED_BIN tunnel run $CLOUDFLARE_TUNNEL_NAME"
 else
     TUNNEL_CMD="$CLOUDFLARED_BIN tunnel --url http://localhost:${API_PORT}"
 fi

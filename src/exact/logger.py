@@ -12,7 +12,7 @@ Example:
     logger = get_request_logger(
         __name__,
         request_id="q001",
-        task_type="type1_logic",
+        task_type="type2_physics",
     )
 
     logger.info("Start pipeline")
@@ -182,7 +182,7 @@ def get_request_logger(
         logger = get_request_logger(
         "__name__, 
         request_id="q001", 
-        task_type="type1_logic")
+        task_type="type2_physics")
     """
 
     context : dict[str, Any] = {

@@ -6,7 +6,7 @@ from typing import Any, Iterator
 
 from pydantic import ValidationError
 
-from exact.datasets.loader import load_logic_dataset, load_physics_dataset, load_records, normalize_record
+from exact.datasets.loader import load_physics_dataset, load_records, normalize_record
 from exact.common.schemas import PredictionRequest
 from exact.logger import get_logger
 
@@ -74,25 +74,13 @@ class ExactDataset:
     def head(self, n: int = 5) -> list[LoadedExample]:
         return self.examples[:n]
 
-    def filter_type1(self) -> "ExactDataset":
-        return ExactDataset(
-            examples=[ex for ex in self.examples if ex.request.inferred_task_type.value == "type1_logic"],
-            source_path=self.source_path,
-        )
-
     def filter_type2(self) -> "ExactDataset":
-        return ExactDataset(
-            examples=[ex for ex in self.examples if ex.request.inferred_task_type.value == "type2_physics"],
-            source_path=self.source_path,
-        )
+        return ExactDataset(examples=list(self.examples), source_path=self.source_path)
 
 
 def _load_rows(path: Path) -> list[dict[str, Any]]:
     if path.suffix == ".csv":
         return load_physics_dataset(path).to_dict(orient="records")
-
-    if path.name == "Logic_Based_Educational_Queries.json":
-        return load_logic_dataset(path).to_dict(orient="records")
 
     return [normalize_record(record) for record in load_records(path)]
 
@@ -102,10 +90,6 @@ def _to_prediction_payload(row: dict[str, Any]) -> dict[str, Any]:
         "id": row.get("id"),
         "question": row.get("question"),
     }
-
-    premises = row.get("premises_nl") or row.get("premises-NL")
-    if premises:
-        payload["premises-NL"] = premises
 
     for key in ("gold_solver_family", "gold_or_dataset_method", "gold_formula_family"):
         if row.get(key):

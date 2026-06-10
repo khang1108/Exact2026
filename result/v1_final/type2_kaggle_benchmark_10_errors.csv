@@ -1,8 +1,0 @@
-id,answer,unit,gold_answer,gold_unit,status,numeric_ok,unit_ok,relative_error,absolute_error,error
-physics_LD001,0.023008,N,0.05,N,wrong_numeric,False,True,0.53984,0.026992000000000002,
-physics_LD002,0.180299,N,24.45 × 10^-3,N,wrong_numeric,False,True,0.9926258077709611,24.269700999999998,
-physics_LD004,0.007365,N,5.234 × 10^-3,N,wrong_numeric,False,True,0.9985928544134505,5.226635,
-physics_LD005,8.98755e-27,N,9\sqrt{3} × 10^-27,N,wrong_numeric,False,True,1.0,9.0,
-physics_LD006,0.002304,N,1.23 × 10^-3,N,wrong_numeric,False,True,0.9981268292682927,1.227696,
-physics_LD007,34.512199,N,17.28,N,wrong_numeric,False,True,0.9972337384259259,17.232199,
-physics_LD008,5,N,7,N,wrong_numeric,False,True,0.2857142857142857,2.0,
