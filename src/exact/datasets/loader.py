@@ -129,6 +129,9 @@ def load_physics_dataset(path: str | Path) -> pd.DataFrame:
                     "id_prefix": prefix,
                     "answer_type": answer_type,
                     "stratify_label": f"physics::{prefix}::{answer_type}",
+                    "gold_solver_family": str(record.get("solver_family", "")).strip() or None,
+                    "gold_or_dataset_method": str(record.get("solve_method", "")).strip() or None,
+                    "gold_formula_family": str(record.get("question_type", "")).strip() or None,
                 }
             )
 

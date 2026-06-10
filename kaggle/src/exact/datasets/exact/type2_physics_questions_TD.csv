@@ -1,0 +1,763 @@
+id,question,cot,answer,unit
+TD401,Calculate the energy stored in capacitor C when C = 100 μF and U = 30 V.,"Step 1: Identify the given values for capacitance (C) and voltage (U).
+Step 2: Recall the formula for the energy (E) stored in a capacitor, which is E = 0.5 × C × U^2.
+Step 3: Convert the capacitance to Farads: C = 100 μF = 100 × 10^-6 F = 1 × 10^-4 F.
+Step 4: Substitute the values into the formula: E = 0.5 × (1 × 10^-4 F) × (30 V)^2.",0.045,J
+TD402,"Calculate the capacitance C of the capacitor, given that it stores Q = 3 mC when fully charged under U = 30 V.","Step 1: Identify the given values from the question: the charge Q = 3 mC and the voltage U = 30 V.
+Step 2: Recall the formula for capacitance, which is C = Q / U.
+Step 3: Convert the charge to the standard unit (Coulombs): Q = 3 mC = 3 × 10⁻³ C.
+Step 4: Substitute the values into the formula: C = (3 × 10⁻³ C) / (30 V).",100,μF
+TD001,An air-filled parallel-plate capacitor has a capacitance C = 500 pF and is charged to a potential difference U = 300 V. It is then disconnected from the source and immersed in a liquid dielectric with dielectric constant ε = 2. What is the potential difference between the plates of the capacitor?,"Step 1: Calculate the initial charge (Q) on the capacitor using its initial capacitance (C) and potential difference (U).
+Step 2: Recognize that when the capacitor is disconnected from the source, the charge (Q) on its plates remains constant.
+Step 3: Calculate the new capacitance (C') of the capacitor after the dielectric with dielectric constant (ε) is introduced.
+Step 4: Calculate the new potential difference (U') between the plates using the constant charge (Q) and the new capacitance (C').
+Step 5: The potential difference between the plates after being immersed in the dielectric is 150 V.",150,V
+TD002,"An air-filled parallel plate capacitor has a capacitance C = 500 pF and is charged to a voltage U = 300 V. While still connected to the source, it is immersed in a liquid dielectric with a dielectric constant ε = 2. What will be the potential difference between the capacitor plates?","Step 1: The initial potential difference across the capacitor plates is given as U = 300 V.
+Step 2: The problem states that the capacitor remains connected to the voltage source while it is immersed in the dielectric.
+Step 3: When a capacitor remains connected to a voltage source, the voltage source maintains a constant potential difference across the capacitor's plates.
+Step 4: Therefore, the potential difference between the capacitor plates will remain the same as the source voltage.
+Step 5: The potential difference between the capacitor plates remains 300 V.",300,V
+TD003,An air-filled parallel plate capacitor with capacitance C = 500 pF is charged to a voltage U = 300 V. The capacitor is then disconnected from the source and immersed in a liquid dielectric with a relative permittivity (dielectric constant) of ε_r = 2. What is the electric field energy stored between the plates of the capacitor?,"Step 1: Identify the initial capacitance (C) and initial voltage (U) of the air-filled capacitor.
+Step 2: Calculate the initial charge (Q) stored on the capacitor plates using the formula Q = C × U.
+Step 3: Recognize that since the capacitor is disconnected from the source, the charge (Q) on its plates remains constant when immersed in the dielectric.
+Step 4: Calculate the new capacitance (C_new) after the capacitor is immersed in the dielectric, using the formula C_new = ε_r × C, where ε_r is the relative permittivity (dielectric constant).
+Step 5: Calculate the new electric field energy (W_new) using the constant charge (Q) and new capacitance (C_new): W_new = Q^2 / (2 × C_new).
+Step 6: The electric field energy stored between the plates of the capacitor is 11.25 μJ.",11.25,μJ
+TD004,An air-filled parallel-plate capacitor has a capacitance C = 500 pF and is charged to a voltage U = 300 V. The capacitor remains connected to the voltage source while it is immersed in a liquid dielectric with a dielectric constant ε = 2. What is the electric field energy between the plates of the capacitor?,"Step 1: Identify the initial capacitance of the air-filled capacitor, C_air = 500 pF, and the voltage it is charged to, U = 300 V.
+Step 2: Note that the capacitor remains connected to the voltage source, meaning the voltage across its plates will stay constant at U = 300 V even after immersion.
+Step 3: Identify the dielectric constant of the liquid, ε = 2.
+Step 4: Calculate the new capacitance (C_liquid) after the capacitor is immersed in the liquid dielectric. The capacitance increases by a factor of the dielectric constant: C_liquid = ε × C_air = 2 × 500 pF = 1000 pF.
+Step 5: Calculate the new electric field energy (W_new) using the constant voltage (U): W_new = 1 / 2 × C_liquid × U^2.
+Step 7: The electric field energy stored between the plates of the capacitor is 45 μJ.",45,μJ
+TD005,An air-filled parallel-plate capacitor with capacitance C = 2 pF is charged to a voltage U = 600 V. Calculate the charge Q of the capacitor.,"Step 1: Identify the given values from the question.
+Step 2: Convert the capacitance from picofarads (pF) to farads (F): C = 2 pF = 2 × 10^-12 F.
+Step 3: Recall the formula relating charge (Q), capacitance (C), and voltage (U): Q = C × U.
+Step 4: The charge stored on the capacitor is 1.2 nC.",1.2,nC
+TD006,"An air-filled parallel-plate capacitor with capacitance C = 2 pF is charged to a voltage of U = 600 V. The capacitor is then disconnected from the source, and its plates are moved apart such that the distance between them is doubled. Calculate the new capacitance C1.","Step 1: The initial capacitance of the air-filled parallel-plate capacitor is given as C = 2 pF.
+Step 2: The capacitance of a parallel-plate capacitor is inversely proportional to the distance between its plates, meaning C is proportional to 1 / d.
+Step 3: The problem states that the plates are moved apart such that the distance between them is doubled, meaning the new distance d1 = 2d.
+Step 4: Since the capacitance is inversely proportional to the distance, doubling the distance will halve the capacitance, so the new capacitance C1 = C / 2.
+Step 5: The new capacitance C1 of the capacitor is 1 pF.",1,pF
+TD007,"A parallel-plate air capacitor with a capacitance of C = 2pF is charged to a potential difference of U = 600 V. The capacitor is then disconnected from the power source, and its plates are moved apart so that the distance between them doubles. Calculate the new potential difference, U1.","Step 1: The initial capacitance (C) is 2 pF and the initial potential difference (U) is 600 V.
+Step 2: When the capacitor is disconnected from the power source, the charge (Q) on its plates remains constant.
+Step 3: The capacitance of a parallel-plate capacitor is inversely proportional to the distance (d) between its plates (C = ε₀ × A / d).
+Step 4: If the plate separation doubles, the new capacitance (C1) will be half of the original capacitance (C), so C1 = C / 2.
+Step 5: Use the relation U = Q / C. Since Q is constant, the potential difference is inversely proportional to the capacitance (U is proportional to 1 / C).
+Step 6: The new potential difference U1 between the plates is 1200 V.",1200,V
+TD008,"An air-filled parallel plate capacitor with a capacitance C = 2 pF is charged to a potential difference U = 600 V. While still connected to the source, the plates are moved further apart so that the distance between them doubles. Calculate the new potential difference, U2.","Step 1: The initial potential difference across the capacitor is U1 = 600 V.
+Step 2: The problem states that the capacitor remains connected to the source while the plates are moved.
+Step 3: When a capacitor remains connected to a voltage source, the potential difference across its plates is held constant by the source.
+Step 4: Therefore, the new potential difference U2 across the capacitor plates remains 600 V.",600,V
+TD009,"A parallel-plate capacitor has circular plates with a radius of 10 cm. The distance between the plates and the potential difference across them are 1 cm and 108 V, respectively. The space between the plates is air. What is the charge on the capacitor?","Step 1: Identify the given values: plate radius (r) = 10 cm, plate separation (d) = 1 cm = 0.01 m, potential difference (V) = 108 V. The space between plates is air, for which the permittivity of free space (ε₀) is approximately 8.85 x 10⁻¹² F/m.
+Step 2: Calculate the area (A) of one circular plate using the formula A = πr². A = π × (0.10 m)² ≈ 0.0314159 m².
+Step 3: Calculate the capacitance (C) of the parallel-plate capacitor using the formula C = (ε₀ × A) / d. C = (8.85 x 10⁻¹² F/m × 0.0314159 m²) / 0.01 m ≈ 2.7798 x 10⁻¹¹ F.
+Step 4: Recall the formula relating charge (Q), capacitance (C), and voltage (V): Q = C × V.
+Step 5: The charge on the capacitor is approximately 3 nC.",3,nC
+TD010,"A parallel-plate capacitor in air is connected to a 50 V power source. The capacitor is then disconnected from the source, and the distance between its plates is doubled. What is the voltage across the capacitor at that point?","Step 1: Identify the initial voltage across the capacitor when connected to the power source.
+Step 2: Note that when a capacitor is disconnected from its power source, the charge (Q) stored on its plates remains constant.
+Step 3: Recall the formula for the capacitance of a parallel-plate capacitor: C = (ε₀ × A) / d, where ε₀ is the permittivity of free space, A is the plate area, and d is the plate separation.
+Step 4: Determine how the capacitance changes when the plate distance is doubled. If the initial capacitance is C1 for distance d1, the new capacitance C2 for distance d2 = 2×d1 will be C2 = (ε₀ × A) / (2×d1) = C1 / 2.
+Step 5: Use the relation U = Q / C. Since Q is constant, the potential difference is inversely proportional to the capacitance (U is proportional to 1 / C).
+Step 6: The new voltage across the capacitor is 100 V.",100,V
+TD011,A parallel plate capacitor has circular plates with a radius R = 60 cm. The distance between the plates is d = 2 mm. The space between the plates is filled with air. What is the capacitance of the capacitor?,"Step 1: Identify the given values and the dielectric constant for air.
+Step 2: Convert the given radius and distance to SI units (meters).
+Step 3: Calculate the area (A) of one circular plate using the formula A = πR².
+Step 4: Use the formula for the capacitance of a parallel plate capacitor: C = (ε₀ × A) / d, where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 5: The capacitance of the capacitor is approximately 5 nF.",5,nF
+TD012,A parallel-plate capacitor has circular plates with a radius R = 60 cm. The plate separation is d = 2 mm. Air is between the plates. What is the maximum charge that can be stored on the capacitor without dielectric breakdown? Given that the maximum electric field strength air can withstand is 3 x 10^5 V/m.,"Step 1: Convert the given dimensions to SI units.
+Step 2: Calculate the area of the circular plates.
+Step 3: Determine the maximum potential difference (voltage) that can be applied across the plates before dielectric breakdown.
+Step 4: State the formula relating maximum charge, capacitance, and maximum voltage.
+Step 5: The maximum charge that can be stored on the capacitor without dielectric breakdown is approximately 3 μC.",3,μC
+TD013,A parallel-plate capacitor with a capacitance of 7.0 nF is filled with a dielectric. The area of each plate is 15 cm² and the distance between the plates is 10⁻⁵ m. What is the dielectric constant of the dielectric?,"Step 1: Identify the given values from the question: Capacitance (C) = 7.0 nF, Plate Area (A) = 15 cm², Plate Separation (d) = 10⁻⁵ m.
+Step 2: Convert the given values to standard SI units: C = 7.0 × 10⁻⁹ F, A = 15 × 10⁻⁴ m², d = 10⁻⁵ m.
+Step 3: Recall the formula for the capacitance of a parallel-plate capacitor filled with a dielectric: C = κ × ε₀ × (A / d), where κ is the dielectric constant and ε₀ is the permittivity of free space.
+Step 4: Rearrange the formula to solve for the dielectric constant (κ): κ = (C × d) / (ε₀ × A).
+Step 5: The dielectric constant of the material is approximately 5.28.",5.28,
+TD014,"Two capacitors with capacitances C1 = 2 μF and C2 = 3 μF are charged to voltages U1 = 200 V and U2 = 400 V, respectively. Afterwards, their like-charged plates are connected together. What is the voltage across the combined capacitors?","Step 1: Identify the given capacitances and initial voltages. C1 = 2 μF, U1 = 200 V, C2 = 3 μF, U2 = 400 V.
+Step 2: Calculate the initial charges: Q1 = C1 × U1. Q1 = 2 μF × 200 V = 400 μC and Q2 = C2 × U2. Q2 = 3 μF × 400 V = 1200 μC.
+Step 3: Since like-charged plates are connected, the total charge of the combined system is the sum of the individual charges. Q_total = Q1 + Q2 = 400 μC + 1200 μC = 1600 μC.
+Step 4: Calculate the equivalent capacitance (C_eq) for the parallel combination: C_eq = C1 + C2 = 5 μF.
+Step 5: Determine the final voltage (U) across the combined capacitors using the relation U = Q_total / C_eq.
+Step 6: The final voltage across the combined capacitors is 320 V.",320,V
+TD015,"Two capacitors, C1 = 3μF and C2 = 6μF, are connected in series across a circuit segment AB with a total voltage UAB = 10 V. What is the voltage across capacitor C2?","Step 1: Identify the given values: C1 = 3 μF, C2 = 6 μF, and total voltage U_AB = 10 V. The capacitors are connected in series.
+Step 2: Calculate the equivalent capacitance (C_eq) for two capacitors in series using the formula 1 / C_eq = 1 / C1 + 1 / C2 = 2 μF.
+Step 3: Calculate the total charge (Q_total) stored in the series combination using Q_total = C_eq × U_AB = 20 μC.
+Step 4: Note that for capacitors in series, the charge on each capacitor is equal to the total charge: Q2 = Q_total = 20 μC.
+Step 5: Determine the voltage across capacitor C2 (U2) using the relation U2 = Q2 / C2.
+Step 6: The voltage across capacitor C2 is 10 / 3 V.",10/3,V
+TD016,"Two capacitors with capacitances C1 = 0.4μF and C2 = 0.6μF are connected in parallel, and then connected to a power source with a voltage U < 60 V. One of the two capacitors has a charge of 3 × 10^-5 C. Calculate the voltage U.","Step 1: Identify the given capacitances as C1 = 0.4 μF, C2 = 0.6 μF, Q = 3 × 10^-5 C, and U < 60 V.
+Step 2: Note that for capacitors in parallel, the voltage across each is the same: V1 = V2 = U.
+Step 3: Calculate the potential difference (U) if the charge is on C1: U = Q / C_1 = 75 V. (Invalid since U < 60 V).
+Step 4: Calculate the potential difference (U) if the charge is on C2: U = Q / C_2 = 50 V. (Valid since 50 V < 60 V).
+Step 5: The voltage U across the capacitors is 50 V.",50,V
+TD017,A parallel-plate air capacitor has an area of each plate of 33.2 cm² and the distance between the two plates is 1.86 mm. Calculate the capacitance of the capacitor.,"Step 1: The formula for the capacitance of a parallel-plate capacitor is C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 2: Identify the given values: plate area A = 33.2 cm^2 and plate separation d = 1.86 mm and κ = 1 (for air).
+Step 3: Convert the given units to SI units: A = 33.2 × 10^-4 m^2 and d = 1.86 × 10^-3 m.\
+Step 4: The capacitance of the capacitor is approximately 15.76 pF.",15.76,pF
+TD018,A parallel-plate capacitor has a capacitance of 15.76 pF and is charged to a voltage of 91.6 V. Calculate the charge stored on the capacitor.,"Step 1: Identify the given values from the question. The capacitance (C) is 15.76 pF and the voltage (V) is 91.6 V.
+Step 2: Recall the formula for the charge (Q) stored on a capacitor, which is Q = C × V.
+Step 3: Convert the capacitance from picofarads (pF) to farads (F): 15.76 pF = 15.76 × 10⁻¹² F.
+Step 4: Substitute the values of capacitance and voltage into the formula: Q = (15.76 × 10⁻¹² F) × (91.6 V).
+Step 5: The charge stored on the capacitor is approximately 1.44 nC.",1.44,nC
+TD019,An air-filled parallel-plate capacitor has a capacitance of 15.76 pF and is charged to a voltage of 91.6 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given values from the question.
+Step 2: The capacitance (C) is 15.76 pF and the voltage (V) is 91.6 V.
+Step 3: Convert the capacitance from picofarads (pF) to farads (F): C = 15.76 × 10^-12 F.
+Step 4: Recall the formula for the energy (U) stored in a capacitor: U = (1/2) × C × V^2.
+Step 5: The electric field energy stored in the capacitor is approximately 66.16 nJ.",66.16,nJ
+TD020,A parallel-plate air capacitor has a plate area of 19.6 cm² and a plate separation of 0.41 mm. Calculate its capacitance.,"Step 1: Identify the given values: plate area (A) = 19.6 cm², plate separation (d) = 0.41 mm. The capacitor uses air as the dielectric.
+Step 2: Convert the given values to SI units: A = 19.6 × 10^-4 m^2 and d = 0.41 × 10^-3 m.
+Step 3: Recall the permittivity of free space (ε₀) for an air capacitor, which is approximately 8.854 × 10⁻¹² F/m.
+Step 4: Use the formula for the capacitance (C) of a parallel-plate capacitor: C = (ε₀ × A) / d.
+Step 5: The capacitance of the capacitor is approximately 42.3 pF.",42.3,pF
+TD021,A parallel-plate capacitor has a capacitance of 42.64 pF and is charged with a potential difference of 122.7 V. Calculate the electric charge that the capacitor stores.,"Step 1: Identify the given values: C = 42.64 pF, V = 122.7 V
+Step 2: Convert the capacitance to SI units: C = 42.64 × 10^-12 F.
+Step 3: The formula to calculate the electric charge (Q) stored in a capacitor is Q = C × V.
+Step 4: The electric charge stored on the capacitor is approximately 5.23 nC.",5.23,nC
+TD022,A parallel-plate air capacitor has a capacitance of 42.64 pF and is charged to a potential difference of 122.7 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) as 42.64 pF and the potential difference (V) as 122.7 V.
+Step 2: Convert the capacitance from picofarads (pF) to farads (F): C = 42.64 × 10⁻¹² F.
+Step 3: Use the formula for the energy (U) stored in a capacitor: U = (1/2)CV².
+Step 4: Substitute the values into the formula: U = (1/2) × (42.64 × 10⁻¹² F) × (122.7 V)².
+Step 5: The electric field energy stored in the capacitor is approximately 320.83 nJ.",320.83,nJ
+TD023,A parallel plate air capacitor has a plate area of 44.1 cm² and the distance between the two plates is 0.79 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the formula for the capacitance of a parallel plate capacitor, which is C = (ε × A) / d, where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 2: Convert the the given values to SI units: A = 44.1 × 10⁻⁴ m², d = 0.79 × 10⁻³ m.
+Step 3: The capacitance of the capacitor is approximately 49.4 pF.",49.4,pF
+TD024,A parallel-plate capacitor has a capacitance of 49.11 pF and is charged to a voltage of 66.3 V. Calculate the charge accumulated by the capacitor.,"Step 1: Identify the given capacitance (C) and voltage (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F). (1 pF = 10^-12 F)
+Step 3: Use the formula for charge (Q) on a capacitor: Q = C × V.
+Step 4: The charge accumulated by the capacitor is approximately 3.26 nC.",3.26,nC
+TD025,An air-filled parallel-plate capacitor has a capacitance of 49.11 pF and is charged to a potential difference of 66.3 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) as 49.11 pF and the potential difference (V) as 66.3 V.
+Step 2: Recall the formula for the electric field energy (U) stored in a capacitor: U = (1 / 2) × (C × V^2).
+Step 3: Convert the capacitance from picofarads (pF) to farads (F): C = 49.11 × 10^-12 F.
+Step 4: The electric field energy stored in the capacitor is approximately 107.96 nJ.",107.96,nJ
+TD026,An air-filled parallel-plate capacitor has a plate area of 34.5 cm² and the distance between the two plates is 0.64 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given plate area (A) and the distance between the plates (d).
+Step 2: Convert the units to SI: A = 34.5 cm² = 34.5 × 10⁻⁴ m², d = 0.64 mm = 0.64 × 10⁻³ m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 47.7 pF.",47.7,pF
+TD027,A parallel-plate capacitor with a capacitance of 47.93 pF is charged to a voltage of 70.1 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 47.93 pF, V = 70.1 V.
+Step 2: Convert the capacitance to SI units: C = 47.93 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored on a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 3.36 nC.",3.36,nC
+TD028,An air-filled parallel-plate capacitor has a capacitance of 47.93 pF and is charged to a voltage of 70.1 V. Calculate the energy stored in the capacitor.,"Step 1: Identify the given values: C = 47.93 pF, V = 70.1 V.
+Step 2: Convert the capacitance to SI units: C = 47.93 × 10^-12 F.
+Step 3: Recall the formula for the energy (U) stored in a capacitor: U = 0.5 *C *V^2.
+Step 4: The energy stored in the capacitor is approximately 117.6 nJ.",117.6,nJ
+TD029,An air-filled parallel-plate capacitor has a plate area of 46.7 cm² and a separation distance between the two plates of 1.88 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: Plate area (A) = 46.7 cm², plate separation (d) = 1.88 mm. The capacitor is air-filled.
+Step 2: Convert the units to SI: A = 46.7 × 10⁻⁴ m², d = 1.88 × 10⁻³ m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 21.96 pF.",21.96,pF
+TD030,A parallel-plate capacitor with a capacitance of 21.96 pF is charged to a voltage of 28.8 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 21.96 pF, V = 28.8 V.
+Step 2: Convert the capacitance to SI units: C = 21.96 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 0.63 nC.",0.63,nC
+TD031,A parallel-plate air capacitor has a capacitance of 21.96 pF and is charged to a potential difference of 28.8 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 9.11 nJ.",9.11,nJ
+TD032,An air-filled parallel plate capacitor has a plate area of 23.8 cm² and a distance between the plates of 0.94 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 23.8 cm^2, d = 0.94 mm.
+Step 2: Convert the units to SI: A = 23.8 × 10^-4 m^2 and d = 0.94 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 22.42 pF.",22.42,pF
+TD033,A parallel-plate capacitor with a capacitance of 22.53 pF is charged to a voltage of 20.5 V. Calculate the charge stored on the capacitor.,"Step 1: Identify the given values: C = 22.53 pF, V = 20.5 V.
+Step 2: Convert the capacitance to SI units: C = 22.53 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 0.46 nC.",0.46,nC
+TD034,A parallel-plate air capacitor has a capacitance of 22.53 pF and is charged to a potential difference of 20.5 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 4.73 nJ.",4.73,nJ
+TD035,A parallel-plate air capacitor has a plate area of 31.1 cm² and a plate separation of 1.53 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 31.1 cm^2, d = 1.53 mm.
+Step 2: Convert the units to SI: A = 31.1 × 10^-4 m^2 and d = 1.53 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 17.99 pF.",17.99,pF
+TD036,A parallel-plate capacitor has a capacitance of 17.99 pF and is charged to a voltage of 130.1 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 17.99 pF, V = 130.1 V.
+Step 2: Convert the capacitance to SI units: C = 17.99 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 2.34 nC.",2.34,nC
+TD037,An air-filled parallel-plate capacitor has a capacitance of 17.99 pF and is charged to a potential difference of 130.1 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 152.34 nJ.",152.34,nJ
+TD038,A parallel-plate air capacitor has a plate area of 12.8 cm² and a plate separation of 0.95 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 12.8 cm^2, d = 0.95 mm.
+Step 2: Convert the units to SI: A = 12.8 × 10^-4 m^2 and d = 0.95 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 11.93 pF.",11.93,pF
+TD039,A parallel-plate capacitor with a capacitance of 11.95 pF is charged to a voltage of 50.1 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 11.95 pF, V = 50.1 V.
+Step 2: Convert the capacitance to SI units: C = 11.95 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 0.6 nC.",0.6,nC
+TD040,A parallel-plate air capacitor has a capacitance of 11.95 pF and is charged to a voltage of 50.1 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 14.99 nJ.",14.99,nJ
+TD041,An air-filled parallel-plate capacitor has a plate area of 28.4 cm² and a plate separation of 1.92 mm. Calculate its capacitance.,"Step 1: Identify the given values: A = 28.4 cm^2, d = 1.92 mm.
+Step 2: Convert the units to SI: A = 28.4 × 10^-4 m^2 and d = 1.92 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 13.10 pF.",13.10,pF
+TD042,A parallel-plate capacitor with a capacitance of 13.06 pF is charged to a voltage of 86.1 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 13.06 pF, V = 86.1 V.
+Step 2: Convert the capacitance to SI units: C = 13.06 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 1.12 nC.",1.12,nC
+TD043,An air-filled parallel-plate capacitor has a capacitance of 13.06 pF and is charged to a potential difference of 86.1 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 48.44 nJ.",48.44,nJ
+TD044,A parallel-plate air capacitor has a plate area of 21.2 cm² and a plate separation of 1.17 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 21.2 cm^2, d = 1.17 mm.
+Step 2: Convert the units to SI: A = 21.2 × 10^-4 m^2 and d = 1.17 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 16.04 pF.",16.04,pF
+TD045,A parallel-plate capacitor with a capacitance of 16.02 pF is charged to a voltage of 124.6 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 16.02 pF, V = 124.6 V.
+Step 2: Convert the capacitance to SI units: C = 16.02 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 2 nC.",2,nC
+TD046,An air-filled parallel plate capacitor has a capacitance of 16.02 pF and is charged at a potential difference of 124.6 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 124.36 nJ.",124.36,nJ
+TD047,An air-filled parallel plate capacitor has a plate area of 41.4 cm² and a plate separation of 0.71 mm. Calculate its capacitance.,"Step 1: Identify the given values: A = 41.4 cm^2, d = 0.71 mm.
+Step 2: Convert the units to SI: A = 41.4 × 10^-4 m^2 and d = 0.71 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 51.63 pF.",51.63,pF
+TD048,A parallel-plate capacitor with a capacitance of 51.55 pF is charged to a potential difference of 158.2 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 51.55 pF, V = 158.2 V.
+Step 2: Convert the capacitance to SI units: C = 158.2 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 8.16 nC.",8.16,nC
+TD049,An air-filled parallel-plate capacitor has a capacitance of 51.55 pF and is charged to a potential difference of 158.2 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 645.08 nJ.",645.08,nJ
+TD050,A parallel-plate air capacitor has a plate area of 10.5 cm² and the distance between the plates is 1.99 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 10.5 cm^2, d = 1.99 mm.
+Step 2: Convert the units to SI: A = 10.5 × 10^-4 m^2 and d = 1.99 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 4.67 pF.",4.67,pF
+TD051,A parallel-plate capacitor has a capacitance of 4.68 pF and is charged to a voltage of 199.6 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 4.68 pF, V = 199.6 V.
+Step 2: Convert the capacitance to SI units: C = 4.68 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 0.93 nC.",0.93,nC
+TD052,A parallel-plate air capacitor has a capacitance of 4.68 pF and is charged to a voltage of 199.6 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 93.23 nJ.",93.23,nJ
+TD053,Calculate the capacitance of a parallel-plate air capacitor with a plate area of 34.0 cm² and a plate separation of 0.50 mm.,"Step 1: Identify the given values: A = 34.0 cm^2, d = 0.50 mm.
+Step 2: Convert the units to SI: A = 34.0 × 10^-4 m^2 and d = 0.50 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 60.21 pF.",60.21,pF
+TD054,A flat capacitor has a capacitance of 60.70 pF and is charged to a voltage of 129.2 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 60.70 pF, V = 129.2 V.
+Step 2: Convert the capacitance to SI units: C = 60.70 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 7.84 nC.",7.84,nC
+TD055,An air capacitor has a capacitance of 60.70 pF and is charged to a voltage of 129.2 V. Calculate the energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 506.62 nJ.",506.62,nJ
+TD056,An air-filled parallel plate capacitor has a plate area of 47.7 cm² and the distance between the two plates is 1.33 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 47.7 cm^2, d = 1.33 mm.
+Step 2: Convert the units to SI: A = 47.7 × 10^-4 m^2 and d = 1.33 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 31.75 pF.",31.75,pF
+TD057,A flat capacitor has a capacitance of 31.89 pF and is charged to a voltage of 147.0 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 31.89 pF, V = 147.0 V.
+Step 2: Convert the capacitance to SI units: C = 31.89 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 4.69 nC.",4.69,nC
+TD058,An air-filled parallel-plate capacitor has a capacitance of 31.89 pF and is charged to a voltage of 147.0 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 344.56 nJ.",344.56,nJ
+TD059,An air-filled parallel-plate capacitor has a plate area of 20.4 cm² and a plate separation of 1.42 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 20.4 cm^2, d = 1.42 mm.
+Step 2: Convert the units to SI: A = 20.4 × 10^-4 m^2 and d = 1.42 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 12.72 pF.",12.72,pF
+TD060,A parallel-plate capacitor has a capacitance of 12.71 pF and is charged to a potential difference of 57.2 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 12.71 pF, V = 57.2 V.
+Step 2: Convert the capacitance to SI units: C = 12.71 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 0.73 nC.",0.73,nC
+TD061,An air parallel-plate capacitor has a capacitance of 12.71 pF and is charged to a potential difference of 57.2 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 20.8 nJ.",20.8,nJ
+TD062,An air-filled parallel plate capacitor has a plate area of 32.1 cm² and a plate separation of 1.25 mm. Calculate its capacitance.,"Step 1: Identify the given values: A = 32.1 cm^2, d = 1.25 mm.
+Step 2: Convert the units to SI: A = 32.1 × 10^-4 m^2 and d = 1.25 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 22.74 pF.",22.74,pF
+TD063,A parallel-plate capacitor has a capacitance of 22.72 pF and is charged to a voltage of 111.2 V. Calculate the charge stored on the capacitor.,"Step 1: Identify the given values: C = 22.72 pF, V = 111.2 V.
+Step 2: Convert the capacitance to SI units: C = 22.72 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 2.53 nC.",2.53,nC
+TD064,A parallel-plate air capacitor has a capacitance of 22.72 pF and is charged to a potential difference of 111.2 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 140.47 nJ.",140.47,nJ
+TD065,A parallel-plate air capacitor has a plate area of 44.3 cm² and a plate separation of 1.98 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 44.3 cm^2, d = 1.98 mm.
+Step 2: Convert the units to SI: A = 44.3 × 10^-4 m^2 and d = 1.98 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 19.81 pF.",19.81,pF
+TD066,A parallel-plate capacitor with a capacitance of 19.75 pF is charged to a voltage of 131.9 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 19.75 pF, V = 131.9 V.
+Step 2: Convert the capacitance to SI units: C = 19.75 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 2.61 nC.",2.61,nC
+TD067,A parallel-plate air capacitor has a capacitance of 19.75 pF and is charged to a potential difference of 131.9 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 171.80 nJ.",171.80,nJ
+TD068,A parallel-plate air capacitor has a plate area of 31.0 cm² and the distance between the two plates is 0.84 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 31.0 cm^2, d = 0.84 mm.
+Step 2: Convert the units to SI: A = 31.0 × 10^-4 m^2 and d = 0.84 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 32.68 pF.",32.68,pF
+TD069,A parallel-plate capacitor with a capacitance of 32.48 pF is charged to a voltage of 162.4 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 32.48 pF, V = 162.4 V.
+Step 2: Convert the capacitance to SI units: C = 32.48 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 5.27 nC.",5.27,nC
+TD070,An air parallel-plate capacitor has a capacitance of 32.48 pF and is charged at a potential difference of 162.4 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 428.31 nJ.",428.31,nJ
+TD071,An air-filled parallel-plate capacitor has a plate area of 49.1 cm² and a plate separation of 0.71 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 49.1 cm^2, d = 0.71 mm.
+Step 2: Convert the units to SI: A = 49.1 × 10^-4 m^2 and d = 0.71 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 61.23 pF.",61.23,pF
+TD072,A flat capacitor has a capacitance of 61.37 pF and is charged to a voltage of 105.2 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 61.37 pF, V = 105.2 V.
+Step 2: Convert the capacitance to SI units: C = 61.37 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 6.46 nC.",6.46,nC
+TD073,An air capacitor has a capacitance of 61.37 pF and is charged to a voltage of 105.2 V. Calculate the electrical energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 339.59 nJ.",339.59,nJ
+TD074,An air-filled parallel-plate capacitor has a plate area of 48.0 cm² and a separation between the plates of 0.52 mm. Calculate its capacitance.,"Step 1: Identify the given values: A = 48.0 cm^2, d = 0.53 mm.
+Step 2: Convert the units to SI: A = 48.0 × 10^-4 m^2 and d = 0.52 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 81.73 pF.",81.73,pF
+TD075,A parallel-plate capacitor has a capacitance of 81.22 pF and is charged to a voltage of 129.1 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 81.22 pF, V = 129.1 V.
+Step 2: Convert the capacitance to SI units: C = 81.22 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 10.49 nC.",10.49,nC
+TD076,An air-filled parallel-plate capacitor has a capacitance of 81.22 pF and is charged to a voltage of 129.1 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 676.84 nJ.",676.84,nJ
+TD077,An air parallel-plate capacitor has a plate area of 37.2 cm² and the distance between its plates is 0.83 mm. Calculate its capacitance.,"Step 1: Identify the given values: A = 37.2 cm^2, d = 0.83 mm.
+Step 2: Convert the units to SI: A = 37.2 × 10^-4 m^2 and d = 0.83 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 39.68 pF.",39.68,pF
+TD078,A flat capacitor with a capacitance of 39.72 pF is charged to a potential difference of 113.6 V. Calculate the electric charge stored by the capacitor.,"Step 1: Identify the given values: C = 39.72 pF, V = 113.6 V.
+Step 2: Convert the capacitance to SI units: C = 39.72 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 4.51 nC.",4.51,nC
+TD079,A parallel-plate air capacitor has a capacitance of 39.72 pF and is charged to a potential difference of 113.6 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 256.29 nJ.",256.29,nJ
+TD080,An air-filled parallel-plate capacitor has a plate area of 16.4 cm² and the distance between the two plates is 0.67 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 16.4 cm^2, d = 0.67 mm.
+Step 2: Convert the units to SI: A = 16.4 × 10^-4 m^2 and d = 0.67 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 21.67 pF.",21.67,pF
+TD081,A parallel-plate capacitor with a capacitance of 21.67 pF is charged to a voltage of 84.3 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 21.67 pF, V = 84.3 V.
+Step 2: Convert the capacitance to SI units: C = 21.67 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 1.83 nC.",1.83,nC
+TD082,An air capacitor has a capacitance of 21.67 pF and is charged to a voltage of 84.3 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 77.00 nJ.",77.00,nJ
+TD083,A parallel-plate air capacitor has an area of 45.9 cm² for each plate and a separation of 1.01 mm between the plates. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 45.9 cm^2, d = 1.01 mm.
+Step 2: Convert the units to SI: A = 45.9 × 10^-4 m^2 and d = 1.01 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 40.24 pF.",40.24,pF
+TD084,A parallel-plate capacitor with a capacitance of 40.31 pF is charged to a voltage of 100.2 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 40.31 pF, V = 100.2 V.
+Step 2: Convert the capacitance to SI units: C = 40.31 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 4.04 nC.",4.04,nC
+TD085,An air-filled parallel plate capacitor has a capacitance of 40.31 pF and is charged to a potential difference of 100.2 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 202.36 nJ.",202.36,nJ
+TD086,A parallel-plate air capacitor has a plate area of 26.8 cm² and a plate separation of 0.86 mm. Calculate its capacitance.,"Step 1: Identify the given values: A = 26.8 cm^2, d = 0.86 mm.
+Step 2: Convert the units to SI: A = 26.8 × 10^-4 m^2 and d = 0.86 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 27.59 pF.",27.59,pF
+TD087,A parallel-plate capacitor has a capacitance of 27.63 pF and is charged to a potential difference of 91.9 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 27.63 pF, V = 91.9 V.
+Step 2: Convert the capacitance to SI units: C = 27.63 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 2.54 nC.",2.54,nC
+TD088,An air-filled parallel plate capacitor has a capacitance of 27.63 pF and is charged to a potential difference of 91.9 V. Calculate the electric field energy stored in the capacitor.,"Step 1: Identify the given capacitance (C) and potential difference (V).
+Step 2: Convert the capacitance from picofarads (pF) to farads (F).
+Step 3: Use the formula for the electric field energy (U) stored in a capacitor: U = 0.5 × C × V^2.
+Step 4: The electric field energy stored in the capacitor is approximately 116.68 nJ.",116.68,nJ
+TD089,A parallel plate air capacitor has a plate area of 39.5 cm² and the distance between the plates is 1.12 mm. Calculate the capacitance of the capacitor.,"Step 1: Identify the given values: A = 39.5 cm^2, d = 1.12 mm.
+Step 2: Convert the units to SI: A = 39.5 × 10^-4 m^2 and d = 1.12 × 10^-3 m.
+Step 3: Recall the capacitance formula for a parallel-plate capacitor: C = κ × ε₀ × (A / d), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F/m for air).
+Step 4: The capacitance of the capacitor is approximately 31.23 pF.",31.23,pF
+TD090,A parallel-plate capacitor has a capacitance of 31.11 pF and is charged to a voltage of 76.4 V. Calculate the charge stored by the capacitor.,"Step 1: Identify the given values: C = 31.11 pF, V = 76.4 V.
+Step 2: Convert the capacitance to SI units: C = 31.11 × 10^-12 F.
+Step 3: Recall the formula for the charge (Q) stored in a capacitor: Q = C × V.
+Step 4: The charge stored by the capacitor is approximately 2.38 nC.",2.38,nC
+TD091,"A parallel-plate capacitor consists of two circular plates, each with a radius R = 50 cm. The distance between the plates is d = 1.5 mm. What is the maximum charge that can be stored in the capacitor without causing dielectric breakdown, given that the maximum electric field strength (dielectric strength) of air is E_max = 3×10⁵ V/m?","Step 1: Convert all given values to SI units.
+Step 2: Calculate the area (A) of the circular capacitor plates using the given radius R = 0.50 m.
+Step 3: Calculate the maximum voltage (V_max) the capacitor can withstand using the maximum electric field strength (E_max) and the distance between plates (d = 1.5 × 10⁻³ m).
+Step 4: Calculate the capacitance (C) of the parallel-plate capacitor using the permittivity of free space (ε₀ ≈ 8.854 × 10⁻¹² F / m), the calculated area (A), and the distance (d).
+Step 5: Calculate the maximum charge (Q_max) using the formula Q_max = C × V_max.
+Step 6: Step 6: The maximum charge stored is 2.085 μC.",2.085,μC
+TD092,"A parallel-plate capacitor has two circular plates, each with a radius of 45 cm, separated by 2.1 mm. Calculate the maximum charge the capacitor can store without causing dielectric breakdown of the air (Emax = 3×10⁵ V/m).","Step 1: Identify the given values and convert them to SI units.
+Step 2: Calculate the area (A) of one circular plate using the radius (r).
+Step 3: Calculate the maximum voltage (V_max) the capacitor can withstand, using the maximum electric field (E_max) and the plate separation (d).
+Step 4: Calculate the capacitance (C) of the parallel-plate capacitor, using the plate area (A), plate separation (d), and the permittivity of free space (ε₀ ≈ 8.854 × 10⁻¹² F/m) for air.
+Step 5: Calculate the maximum charge (Q_max) using the formula Q_max = C × V_max.
+Step 6: The maximum charge stored is 1.69 μC.",1.69,μC
+TD093,"A parallel-plate capacitor has a capacitance of 5.2 nF, the area of each plate is 12.3 cm², and the distance between the plates is 1.2×10⁻⁵ m. Calculate the dielectric constant of the dielectric material inside the capacitor.","Step 1: The given values are capacitance C = 5.2 nF, plate area A = 12.3 cm², and plate separation d = 1.2×10⁻⁵ m.
+Step 2: The formula for the capacitance of a parallel-plate capacitor with a dielectric is C = κ × ε₀ × A / d, where κ is the dielectric constant and ε₀ is the permittivity of free space.
+Step 3: To find the dielectric constant κ, the formula can be rearranged to κ = (C × d) / (ε₀ × A), where ε₀ is the permittivity of free space (approximately 8.854 × 10⁻¹² F / m for air).
+Step 4: The dielectric constant of the dielectric material inside the capacitor is 5.73.",5.73,—
+TD094,"A capacitor has a capacitance of 8.8 nF. Its square plates have an area of 9 cm², and the distance between the plates is 1.0×10⁻⁵ m. What is the dielectric constant of the material inside the capacitor?","Step 1: Identify the given quantities: Capacitance (C) = 8.8 nF, Plate Area (A) = 9 cm², Plate Separation (d) = 1.0 × 10⁻⁵ m. The constant permittivity of free space (ε₀) is approximately 8.854 × 10⁻¹² F/m.
+Step 2: Convert the given quantities to SI units: C = 8.8 × 10⁻⁹ F, A = 9 × (10⁻² m)² = 9 × 10⁻⁴ m², and d = 1.0 × 10⁻⁵ m.
+Step 3: The formula for the capacitance of a parallel-plate capacitor with a dielectric material is C = κ × ε₀ × (A / d), where κ is the dielectric constant.
+Step 4: Rearrange the formula to solve for the dielectric constant (κ): κ = (C × d) / (ε₀ × A).
+Step 5: The dielectric constant of the dielectric material inside the capacitor is 11.04.",11.04,—
+TD095,"Two capacitors with capacitances C1 = 4 μF and C2 = 6 μF are charged to U1 = 150 V and U2 = 300 V, respectively. After connecting their like-poled terminals together, what is the final voltage across the combination?","Step 1: Calculate the initial charge (Q1) on capacitor C1 using Q = C × U.
+Step 2: Calculate the initial charge (Q2) on capacitor C2 using Q = C × U.
+Step 3: When capacitors are connected with like polarities, the total charge (Q_total) is the sum of the individual charges.
+Step 4: When capacitors are connected in parallel, the total capacitance (C_total) is the sum of the individual capacitances.
+Step 5: Calculate the final voltage (V) across the combination using V = Q_total / C_total.
+Step 6: The final voltage across the combination is 240 V.",240,V
+TD096,"Two capacitors with capacitances C1 = 3 μF and C2 = 5 μF, respectively, are charged to U1 = 100 V and U2 = 250 V. After connecting their like-signed terminals (e.g., positive to positive, negative to negative), calculate the voltage across the capacitor combination.","Step 1: Calculate the initial charge Q1 on capacitor C1 using Q = C × U.
+Step 2: Calculate the initial charge Q2 on capacitor C2 using Q = C × U.
+Step 3: When capacitors are connected with like-signed terminals, the total charge is the sum of individual charges.
+Step 4: When connected in parallel, the equivalent capacitance is the sum of individual capacitances.
+Step 5: Calculate the final voltage (V) across the combination using V = Q_total / C_eq.
+Step 6: The final voltage across the combination is 193.75 V.",193.75,V
+TD097,"Two flat circular capacitor plates, each with a radius of 55 cm, are separated by 1.8 mm. Calculate the maximum charge the capacitor can store without dielectric breakdown. Given that the maximum electric field strength (Emax) for air is 3×10⁵ V/m.","Step 1: Convert the given radius and separation distance to SI units (meters).
+Step 2: Calculate the area of one circular capacitor plate using the formula A = πr².
+Step 3: Calculate the capacitance of the parallel plate capacitor using the formula C = ε₀A/d, where ε₀ is the permittivity of free space (8.854 × 10⁻¹² F/m).
+Step 4: Calculate the maximum voltage the capacitor can withstand using the formula V_max = E_max × d.
+Step 5: Calculate the maximum charge (Q_max) using Q_max = C × V_max.
+Step 6: The maximum charge the capacitor can store without dielectric breakdown is 2.52 μC.",2.52,μC
+TD098,"A capacitor has a capacitance of 6.3 nF, a plate area of 14 cm², and a plate separation of 9.0×10⁻⁶ m. Calculate the dielectric constant of the dielectric material in the capacitor.","Step 1: Identify the given values from the question: Capacitance (C) = 6.3 nF, Plate area (A) = 14 cm², Plate separation (d) = 9.0×10⁻⁶ m.
+Step 2: Convert the given values to SI units: C = 6.3 × 10⁻⁹ F, A = 14 × 10⁻⁴ m².
+Step 3: Recall the formula for the capacitance of a parallel plate capacitor with a dielectric: C = κ × ε₀ × A / d, where κ is the dielectric constant and ε₀ is the permittivity of free space (ε₀ ≈ 8.854 × 10⁻¹² F/m).
+Step 4: Rearrange the formula to solve for the dielectric constant (κ): κ = (C × d) / (ε₀ × A).
+Step 5: The dielectric constant of the dielectric material in the capacitor is 4.57.",4.57,—
+TD099,"Two capacitors, C1 = 2.5 μF and C2 = 3.5 μF, are charged to U1 = 220 V and U2 = 180 V, respectively. They are then connected with their like-polarity terminals joined (i.e., positive to positive and negative to negative). What is the voltage across them after they are connected?","Step 1: Calculate the initial charge on capacitor C1 using Q = C × U.
+Step 2: Calculate the initial charge on capacitor C2 using Q = C × U.
+Step 3: Determine the total initial charge by summing Q1 and Q2, as the capacitors are connected with like polarities.
+Step 4: Calculate the equivalent capacitance of the two capacitors connected in parallel.
+Step 5: Calculate the final voltage (V) across the combination using V = Q_total / C_eq.
+Step 6: The voltage across them after they are connected iss 196.67 V.",196.67,V
+TD100,"A capacitor has a capacitance of 9.2 nF, its plates are square with an area of 10.5 cm², and the distance between the two plates is 1.1×10⁻⁵ m. Calculate the dielectric constant.","Step 1: Identify the given values from the question.
+Step 2: Convert the given values to SI units.
+Step 3: Recall the formula for the capacitance of a parallel plate capacitor with a dielectric material.
+Step 4: Rearrange the formula to solve for the dielectric constant κ.
+Step 5: The dielectric constant of the dielectric material inside the capacitor is 10.89.",10.89,—
+TD101,"A parallel-plate capacitor has circular plates with a radius of 10 cm. The plate separation is 1 cm, and the potential difference across the plates is 108 V. Air is between the plates. Find the charge of the capacitor.","Step 1: Identify given values: radius r = 0.1 m, plate separation d = 0.01 m, potential difference V = 108 V, and ε₀ ≈ 8.85 × 10⁻¹² F/m.
+Step 2: Calculate the plate area A = π × r² = 3.14159 × 0.1² ≈ 0.0314 m².
+Step 3: Calculate capacitance C = ε₀ × A / d = (8.85 × 10⁻¹² × 0.0314) / 0.01 ≈ 2.78 × 10⁻¹¹ F.
+Step 4: Calculate the charge Q = C × V = 2.78 × 10⁻¹¹ × 108 ≈ 3.00 × 10⁻⁹ C.",3,nC
+TD162,An air parallel-plate capacitor has a plate area of 29.8 cm² and a plate separation of 0.88 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 29.8 × 10⁻⁴ m² and the separation d = 0.88 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.85 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.85 × 10⁻¹² F/m) × (29.8 × 10⁻⁴ m²)] / (0.88 × 10⁻³ m) ≈ 29.97 pF",29.97,pF
+TD163,A parallel-plate capacitor has a capacitance of 29.97 pF and is charged to a voltage of 135.5 V. Calculate the charge stored by the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 29.97 × 10⁻¹² F and the voltage V = 135.5 V.
+Step 2: State the formula for charge Q = C × V.
+Step 3: Substitute the values into the formula.
+Q = (29.97 × 10⁻¹² F) × (135.5 V) ≈ 4.06 nC",4.06,nC
+TD164,An air-filled parallel-plate capacitor has a capacitance of 29.97 pF and is charged to a voltage of 135.5 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 29.98 × 10⁻¹² F and the voltage V = 135.5 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula.
+U = 1/2 × (29.98 × 10⁻¹² F) × (135.5 V)² ≈ 275.26 nJ",275.26,nJ
+TD165,An air parallel-plate capacitor has a plate area of 38.2 cm² and a plate separation of 1.22 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values to SI units. The plate area A = 38.2 × 10⁻⁴ m² and the plate separation d = 1.22 × 10⁻³ m.
+Step 2: State the formula for the capacitance of a parallel-plate capacitor, C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (38.2 × 10⁻⁴ m²)] / (1.22 × 10⁻³ m) ≈ 27.72 pF",27.720,pF
+TD166,A parallel-plate capacitor has a capacitance of 27.62 pF and is charged to a voltage of 108.8 V. Calculate the charge on the capacitor. Give your answer rounded to three decimal places.,"Step 1: Identify the given capacitance (C) and voltage (V) from the question.
+ Step 2: State the formula for the charge (Q) on a capacitor: Q = C × V.
+ Step 3: Substitute the given values, C = 27.62 pF and V = 108.8 V, into the formula.
+ Step 4: Calculate the charge Q = 27.62 pF × 108.8 V.",3.005,nC
+TD167,A parallel-plate air capacitor has a capacitance of 27.62 pF and is charged to a potential difference of 108.8 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to onedecimal places.,"Step 1: Identify and convert the given values. The capacitance C = 27.62 × 10⁻¹² F and the voltage V = 108.8 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula.
+U = 1/2 × (27.62 × 10⁻¹² F) × (108.8 V)² ≈ 163.4 nJ",163.4,nJ
+TD168,An air parallel-plate capacitor has a plate area of 20.3 cm² and a plate separation of 0.61 mm. Calculate its capacitance. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 20.3 × 10⁻⁴ m² and the separation d = 0.61 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (20.3 × 10⁻⁴ m²)] / (0.61 × 10⁻³ m) ≈ 29.42 pF",29.42,pF
+TD169,A parallel-plate capacitor with a capacitance of 29.42 pF is charged to a voltage of 96.3 V. Calculate the charge stored by the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 29.42 × 10⁻¹² F and the voltage V = 96.3 V.
+Step 2: State the formula for charge Q = C × V.
+Step 3: Substitute the values into the formula.
+Q = (29.42 × 10⁻¹² F) × (96.3 V) ≈ 2.83 nC",2.83,nC
+TD170,An air-filled capacitor has a capacitance of 29.42 pF and is charged to a potential difference of 96.3 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to one decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 29.42 × 10⁻¹² F and the voltage V = 96.3 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula.
+U = 1/2 × (29.42 × 10⁻¹² F) × (96.3 V)² ≈ 136.4 nJ",136.4,nJ
+TD171,An air parallel-plate capacitor has a plate area of 47.8 cm² and a plate separation of 1.87 mm. Calculate its capacitance. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 47.8 × 10⁻⁴ m² and the separation d = 1.87 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (47.8 × 10⁻⁴ m²)] / (1.87 × 10⁻³ m) ≈ 22.63 pF",22.63,pF
+TD172,A parallel-plate capacitor with a capacitance of 22.38 pF is charged to a potential difference of 112.2 V. Calculate the charge stored by the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 22.38 × 10⁻¹² F and the voltage V = 112.2 V.
+Step 2: State the formula for charge Q = C × V.
+Step 3: Substitute the values into the formula.
+Q = (22.38 × 10⁻¹² F) × (112.2 V) ≈ 2.51 nC",2.51,nC
+TD173,A parallel-plate air capacitor has a capacitance of 22.38 pF and is charged to a voltage of 112.2 V. Calculate the energy stored in the capacitor. Give your answer rounded to the nearest integer.,"Step 1: Identify and convert the given values. The capacitance C = 22.38 × 10⁻¹² F and the voltage V = 112.2 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula.
+U = 1/2 × (22.38 × 10⁻¹² F) × (112.2 V)² ≈ 141 nJ",141,nJ
+TD174,A parallel-plate air capacitor has a plate area of 25.1 cm² and a plate separation of 0.93 mm. Calculate its capacitance.Give your answer rounded to one decimal places.,"Step 1: Convert units to SI. The area A = 25.1 × 10⁻⁴ m² and the separation d = 0.93 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (25.1 × 10⁻⁴ m²)] / (0.93 × 10⁻³ m) ≈ 23.9 pF",23.900,pF
+TD175,A parallel-plate capacitor with a capacitance of 23.22 pF is charged to a voltage of 77.7 V. Calculate the charge stored by the capacitor Give your answer rounded to three decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 23.22 × 10⁻¹² F and the voltage V = 77.7 V.
+Step 2: State the formula for charge Q = C × V.
+Step 3: Substitute the values into the formula.
+Q = (23.22 × 10⁻¹² F) × (77.7 V) ≈ 1.804 nC",1.804,nC
+TD176,An air-filled parallel-plate capacitor has a capacitance of 23.22 pF and is charged to a voltage of 77.7 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 23.22 × 10⁻¹² F and the voltage V = 77.7 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula.
+U = 1/2 × (23.22 × 10⁻¹² F) × (77.7 V)² ≈ 70.09 nJ",70.09,nJ
+TD177,An air-filled parallel plate capacitor has a plate area of 42.3 cm² and a plate separation of 1.02 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 42.3 × 10⁻⁴ m² and the separation d = 1.02 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (42.3 × 10⁻⁴ m²)] / (1.02 × 10⁻³ m) ≈ 36.72 pF",36.72,pF
+TD178,A parallel plate capacitor has a capacitance of 36.53 pF and is charged to a voltage of 124.5 V. Calculate the charge on the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 36.53 × 10⁻¹² F and the voltage V = 124.5 V.
+Step 2: State the formula for charge Q = C × V.
+Step 3: Substitute the values into the formula.
+Q = (36.53 × 10⁻¹² F) × (124.5 V) ≈ 4.55 nC",4.55,nC
+TD179,A parallel-plate air capacitor has a capacitance of 36.53 pF and is charged at a potential difference of 124.5 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to one decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 36.53 × 10⁻¹² F and the voltage V = 124.5 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula.
+U = 1/2 × (36.53 × 10⁻¹² F) × (124.5 V)² ≈ 283.1 nJ",283.1,nJ
+TD180,An air-filled parallel-plate capacitor has a plate area of 18.4 cm² and the distance between the two plates is 0.73 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 18.4 × 10⁻⁴ m² and the separation d = 0.73 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (18.4 × 10⁻⁴ m²)] / (0.73 × 10⁻³ m) ≈ 22.32 pF",22.320,pF
+TD181,A parallel-plate capacitor with a capacitance of 22.30 pF is charged to a potential difference of 65.2 V. Calculate the charge stored on the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 22.30 × 10⁻¹² F and the potential difference V = 65.2 V.
+Step 2: State the formula for the charge stored on the capacitor, Q = C × V.
+Step 3: Substitute the values into the formula.
+Q = (22.30 × 10⁻¹² F) × (65.2 V) ≈ 1.45 nC",1.45,nC
+TD182,An air capacitor has a capacitance of 22.30 pF and is charged to a potential difference of 65.2 V. Calculate the electrical energy stored in the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance is C = 22.30 × 10⁻¹² F and the potential difference is V = 65.2 V.
+Step 2: State the formula for the electrical energy stored in the capacitor, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula to calculate the stored energy.
+U = 1/2 × (22.30 × 10⁻¹² F) × (65.2 V)² ≈ 47.40 nJ",47.47,nJ
+TD183,A parallel-plate air capacitor has a plate area of 35.6 cm² and the distance between the plates is 0.91 mm. Calculate its capacitance. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 35.6 × 10⁻⁴ m² and the separation d = 0.91 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (35.6 × 10⁻⁴ m²)] / (0.91 × 10⁻³ m) ≈ 34.64 pF",34.64,pF
+TD184,A parallel-plate capacitor with a capacitance of 34.75 pF is charged to a voltage of 139.7 V. Calculate the charge stored by the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 34.75 × 10⁻¹² F and the voltage V = 139.7 V.
+Step 2: State the formula for the charge stored by the capacitor, Q = C × V.
+Step 3: Substitute the values into the formula to find the total charge.
+Q = (34.75 × 10⁻¹² F) × (139.7 V) ≈ 4.85 nC",4.86,nC
+TD185,An air capacitor has a capacitance of 34.75 pF and is charged to a voltage of 139.7 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to one decimal places.,"Step 1: Identify and convert the given values. The capacitance is C = 34.75 × 10⁻¹² F and the voltage is V = 139.7 V.
+Step 2: State the formula for the electrical energy stored in the capacitor, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula to calculate the stored energy.
+U = 1/2 × (34.75 × 10⁻¹² F) × (139.7 V)² ≈ 339.1 nJ",339.1,nJ
+TD186,A parallel-plate air capacitor has a plate area of 49.2 cm² and a plate separation of 1.61 mm. Calculate its capacitance. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 49.2 × 10⁻⁴ m² and the separation d = 1.61 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula.
+C = [(8.854 × 10⁻¹² F/m) × (49.2 × 10⁻⁴ m²)] / (1.61 × 10⁻³ m) ≈ 27.06 pF",27.060,pF
+TD187,What is the charge stored on a parallel-plate capacitor with a capacitance of 26.97 pF when it is charged to a potential difference of 110.1 V? Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 26.97 × 10⁻¹² F and the potential difference V = 110.1 V.
+Step 2: State the formula for the charge stored on the capacitor, Q = C × V.
+Step 3: Substitute the values into the formula to calculate the total charge.
+Q = (26.97 × 10⁻¹² F) × (110.1 V) ≈ 2.97 nC",2.97,nC
+TD188,A parallel-plate air capacitor has a capacitance of 26.97 pF and is charged to a voltage of 110.1 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to one decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 26.97 × 10⁻¹² F and the voltage V = 110.1 V.
+Step 2: State the formula for the energy stored in the electric field, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula to calculate the stored energy.
+U = 1/2 × (26.97 × 10⁻¹² F) × (110.1 V)² ≈ 163.5 nJ",163.3,nJ
+TD189,An air parallel-plate capacitor has a plate area of 31.2 cm² and a plate separation of 0.62 mm. Calculate the capacitance of the capacitor. Give your answer rounded to two decimal places.,"Step 1: Convert units to SI. The area A = 31.2 × 10⁻⁴ m² and the separation d = 0.62 × 10⁻³ m.
+Step 2: State the formula C = (ε₀ × A) / d, where ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 3: Substitute the values into the formula to calculate the capacitance.
+C = [(8.854 × 10⁻¹² F/m) × (31.2 × 10⁻⁴ m²)] / (0.62 × 10⁻³ m) ≈ 44.56 pF",44.56,pF
+TD190,A flat capacitor with a capacitance of 44.36 pF is charged to a voltage of 95.9 V. Calculate the charge stored by the capacitor. Give your answer rounded to two decimal places.,"Step 1: Identify and convert the given values. The capacitance C = 44.36 × 10⁻¹² F and the voltage V = 95.9 V.
+Step 2: State the formula for the charge stored on the capacitor, Q = C × V.
+Step 3: Substitute the values into the formula to calculate the total charge.
+Q = (44.36 × 10⁻¹² F) × (95.9 V) ≈ 4.25 nC",4.25,nC
+TD191,A parallel-plate air capacitor has a capacitance of 44.36 pF and is charged to a potential difference of 95.9 V. Calculate the electric field energy stored in the capacitor. Give your answer rounded to the nearest integer.,"Step 1: Identify and convert the given values. The capacitance is C = 44.36 × 10⁻¹² F and the potential difference is V = 95.9 V.
+Step 2: State the formula for the electrical energy stored in the capacitor, U = 1/2 × C × V².
+Step 3: Substitute the values into the formula to calculate the stored energy.
+U = 1/2 × (44.36 × 10⁻¹² F) × (95.9 V)² ≈ 204 nJ",204,nJ
+TD357,A capacitor with a capacitance of 5 μF is connected to a 10 V voltage source. Calculate the charge on the capacitor.,"Step 1: Identify the given parameters: C = 5 μF and V = 10 V.
+Step 2: Use the formula Q = C × V.
+Step 3: Calculate: Q = 5 × 10 = 50 μC.",50,μC
+TD358,A capacitor has a charge of 60 μC and a voltage of 12 V. Calculate its capacitance.,"Step 1: Identify the given charge Q = 60 μC and voltage V = 12 V.
+Step 2: Use the rearranged formula for capacitance: C = Q / V.
+Step 3: Calculate: C = 60 / 12 = 5 μF.",5,μF
+TD359,A capacitor with a capacitance of 4 μF is charged to a voltage of 6 V. Calculate the electric field energy of the capacitor.,"Step 1: Identify C = 4 μF and V = 6 V.
+Step 2: Use the energy formula: W = (1/2) × C × V².
+Step 3: Calculate: W = 0.5 × 4 × 6² = 0.5 × 4 × 36 = 72 μJ",72,μJ
+TD360,A capacitor has a capacitance of 2 μF and is charged to a voltage of 10 V. Calculate the electric field energy.,"Step 1: Identify the given capacitance C = 2 μF and voltage V = 10 V.
+Step 2: Convert the capacitance to farads: C = 2 × 10⁻⁶ F.
+Step 3: Use the formula for energy stored in a capacitor: W = 0.5 × C × V².
+Step 4: Calculate the energy: W = 0.5 × (2 × 10⁻⁶) × 10² = 100 × 10⁻⁶ J = 100 μJ.",100,μJ
+TD361,A capacitor has a charge of 40 μC and a voltage of 8 V. Calculate the energy stored in the capacitor.,"Step 1: Identify the given charge Q = 40 μC and voltage V = 8 V.
+Step 2: State the formula for the energy stored in a capacitor using charge and voltage: W = 0.5 × Q × V.
+Step 3: Substitute the values: W = 0.5 × (40 × 10⁻⁶) × 8.
+Step 4: Calculate the final energy: W = 160 × 10⁻⁶ J = 160 μJ.",160,μJ
+TD362,Calculate the capacitance of a capacitor that has 200 μJ of stored energy when the voltage across it is 10 V.,"Step 1: Identify the given values: energy W = 200 μJ and voltage V = 10 V.
+Step 2: Rearrange the energy formula W = 0.5 × C × V² to solve for capacitance: C = 2W / V².
+Step 3: Substitute the values: C = (2 × 200 × 10⁻⁶) / 10².
+Step 4: Calculate: C = 400 × 10⁻⁶ / 100 = 4 × 10⁻⁶ F = 4 μF.",4,μF
+TD363,A capacitor has a capacitance of 1 μF. What voltage must be applied to the capacitor for it to have a charge of 10 μC?,"Step 1: Identify the given capacitance C = 1 μF and charge Q = 10 μC.
+Step 2: Use the formula relating charge, capacitance, and voltage: Q = C × V.
+Step 3: Rearrange the formula to solve for voltage: V = Q / C.
+Step 4: Substitute the values: V = 10 μC / 1 μF = 10 V.",10,V
+TD364,A capacitor has a charge of 20 μC and a voltage of 5 V. Calculate the capacitance.,"Step 1: Identify the given charge Q = 20 μC and voltage V = 5 V.
+Step 2: Recall the formula for capacitance: C = Q / V.
+Step 3: Substitute the values: C = 20 μC / 5 V.
+Step 4: Calculate: C = 4 μF.",0.100,nC
+TD365,A capacitor with a capacitance of 3 μF is charged to a voltage of 15 V. Calculate the charge on the capacitor.,"Step 1: Identify the given capacitance C = 3 μF and voltage V = 15 V.
+Step 2: Use the formula for charge: Q = C × V.
+Step 3: Substitute the values: Q = 3 μF × 15 V.
+Step 4: Calculate: Q = 45 μC.",45,μC
+TD366,A capacitor has a charge of 30 μC and a capacitance of 6 μF. Calculate the voltage between its plates.,"Step 1: Identify the given charge Q = 30 μC and capacitance C = 6 μF.
+Step 2: Use the formula: V = Q / C.
+Step 3: Substitute the values: V = 30 μC / 6 μF.
+Step 4: Calculate: V = 5 V.",5,V
+TD367,"A capacitor has a capacitance of 2 μF, and a voltage U is applied across it. If U is doubled, how many times will the electric field energy increase?","Step 1: State the energy formula: W = 0.5 × C × V².
+Step 2: Note that energy is proportional to the square of the voltage (W ∝ V²).
+Step 3: If the voltage is doubled (V_new = 2V), the energy increases by a factor of 2².
+Step 4: Conclude that the energy increases by 4 times.",4,lần
+TD368,A capacitor with a capacitance of 5 μF is charged to a voltage of 20 V and then disconnected from the power source. Calculate the charge on the capacitor after it is disconnected.,"Step 1: Identify C = 5 μF and V = 20 V.
+Step 2: Calculate the charge using Q = C × V.
+Step 3: Substitute the values: Q = 5 μF × 20 V = 100 μC.",100,μC
+TD369,A capacitor with a capacitance of 5 μF is charged to a voltage of 20 V and then disconnected from the power source. Calculate the charge on the capacitor after it is disconnected.,"Step 1: Identify initial charge Q = C × V = 5 μF × 20 V = 100 μC.
+Step 2: Recognize that the capacitor is disconnected from the source.
+Step 3: Understand that for a disconnected capacitor, the charge Q is conserved and remains constant even if other parameters change.
+Step 4: Conclude that the charge remains 100 μC.",Do not change,
+TD370,A capacitor has an energy of 180 μJ when U = 6 V. Calculate the capacitance of the capacitor.,"Step 1: Identify the given energy W = 180 μJ and voltage U = 6 V.
+Step 2: Use the rearranged formula for capacitance: C = 2W / U².
+Step 3: Substitute the values: C = (2 × 180 × 10⁻⁶) / 6².
+Step 4: Calculate: C = 360 × 10⁻⁶ / 36 = 10 × 10⁻⁶ F = 10 μF.",10,μF
+TD371,"A capacitor has a constant capacitance. If the voltage increases by 3 times, by what factor will the stored energy increase?","Step 1: Use the formula W = 0.5 × C × V².
+Step 2: Identify that the capacitance C is constant.
+Step 3: If the voltage V increases by 3 times, the energy increases by the square of that factor (3²).
+Step 4: Calculate the factor: 3² = 9. The energy increases by 9 times.",9,times
+TD372,A capacitor has an energy of 200 μJ and a capacitance of 2 μF. Calculate the voltage across the capacitor.,"Step 1: Identify energy W = 200 μJ and capacitance C = 2 μF.
+Step 2: Rearrange the energy formula to solve for voltage: V = √(2W / C).
+Step 3: Substitute the values: V = √(2 × 200 × 10⁻⁶ / 2 × 10⁻⁶).
+Step 4: Calculate: V = √200 ≈ 14.14 V.",14.14,V
+TD373,"A capacitor has a voltage of 10 V and a capacitance of 8 μF. If it's replaced by another capacitor with a capacitance of 4 μF, while maintaining the same voltage, what is the reduction in energy?","Step 1: Calculate initial energy W1 = 0.5 × 8 μF × (10 V)² = 400 μJ.
+Step 2: Calculate final energy W2 = 0.5 × 4 μF × (10 V)² = 200 μJ.
+Step 3: Find the reduction in energy: ΔW = W1 - W2.
+Step 4: Calculate: ΔW = 400 μJ - 200 μJ = 200 μJ . The energy is reduced by 50%",50%,
+TD374,"A capacitor C = 3 μF, is charged at 12 V, then its two plates are short-circuited. Calculate the charge and energy after short-circuiting.","Step 1: Recognize that short-circuiting a capacitor provides a path for the plates to neutralize.
+Step 2: The stored charge flows until the potential difference is zero.
+Step 3: Determine the final charge: Q = 0 C.
+Step 4: Determine the final energy: W = 0 J.",0; 0,μC; μJ
+TD375,A capacitor has a capacitance of 4 μF. What voltage must be applied to it for it to store 1 mJ of energy?,"Step 1: Identify C = 4 μF and energy W = 1 mJ = 1000 μJ.
+Step 2: Use the formula V = √(2W / C).
+Step 3: Substitute the values: V = √(2 × 1000 × 10⁻⁶ / 4 × 10⁻⁶).
+Step 4: Calculate: V = √500 ≈ 22.36 V.",22.36,V
+TD376,A capacitor with C = 2 μF is connected to a voltage of 6 V. Calculate the energy and the charge.,"Step 1: Identify the given values from the problem: capacitance C = 2 μF and voltage V = 6 V.
+Step 2: Use the formula for charge Q = C × V.
+Step 3: Substitute the values to calculate the charge: Q = 2 μF × 6 V = 12 μC.
+Step 4: Recall the formula for the energy (W) stored in a capacitor: W = 0.5 × C × V².
+Step 5: Substitute the values into the energy formula: W = 0.5 × (2 × 10⁻⁶ F) × (6 V)².
+Step 6: Calculate the final result: W = 1 × 36 × 10⁻⁶ = 36 μJ.
+
+The charge is 12 μC and the stored energy is 36 μJ.",36;12,μJ; μC
+TD377,"A capacitor has a charge Q = 50 μC and a capacitance C = 5 μF. If it's replaced with another capacitor having a capacitance of 10 μF, but the charge Q is kept constant, how does the voltage change?","Step 1: Use the formula V = Q / C.
+Step 2: Since charge Q is constant, voltage is inversely proportional to capacitance (V ∝ 1/C).
+Step 3: If capacitance increases from 5 μF to 10 μF (doubles), the voltage must be halved.
+Step 4: Calculate final voltage: V_new = 10 V / 2 = 5 V.
+Step 5: Conclude that the voltage is halfed.",the voltage is halfed,
+TD378,"A capacitor has C = 4 μF. If the desired stored energy is 0.5 mJ, what is the required voltage?","Step 1: Identify C = 4 μF and W = 0.5 mJ = 500 μJ.
+Step 2: Use the formula V = √(2W / C).
+Step 3: Substitute the values: V = √(2 × 500 × 10⁻⁶ / 4 × 10⁻⁶).
+Step 4: Calculate: V = √250 ≈ 15.81 V.",15.81,V
+TD379,A capacitor has an energy of 0.1 mJ and a voltage of 5 V. Calculate its capacitance.,"Step 1: Identify energy W = 0.1 mJ = 100 μJ and voltage V = 5 V.
+Step 2: Use the formula C = 2W / V².
+Step 3: Substitute the values: C = (2 × 100 × 10⁻⁶) / 5².
+Step 4: Calculate: C = 200 × 10⁻⁶ / 25 = 8 × 10⁻⁶ F = 8 μF.",8,μF
+TD380,"A capacitor has a charge of 90 μC and a voltage of 30 V. If the charge decreases to 45 μC, how many times does the energy change?","Step 1: Use the energy formula in terms of charge: W = Q² / 2C.
+Step 2: Capacitance C is constant, so energy is proportional to the square of the charge (W ∝ Q²).
+Step 3: If the charge decreases from 90 μC to 45 μC (halved), the energy changes by (1/2)².
+Step 4: Calculate: (1/2)² = 1/4. The energy decreases by 4 times.",decreases by 4 times,
+TD381,"Capacitor C = 5 μF, charged at 10 V. If the capacitor is cut from the source and connected with another uncharged 5 μF capacitor, calculate the energy after connection.","Step 1: Calculate initial charge Q = C1 × V = 5 μF × 10 V = 50 μC.
+Step 2: When connected to an identical uncharged capacitor C2 in parallel, the total capacitance is C_total = C1 + C2 = 10 μF.
+Step 3: The charge Q is shared equally: Q1 = Q2 = 25 μC.
+Step 4: Calculate the final energy of the system: W_total = Q² / (2 × C_total) = 50² / (2 × 10) = 2500 / 20 = 125 μJ",125,μJ
+TD382,"A parallel plate capacitor has a plate area S = 200 cm², a distance between plates d = 2 mm, and is placed in air. Calculate its capacitance.","Step 1: Identify S = 200 cm² = 0.02 m² and d = 2 mm = 0.002 m.
+Step 2: Use the parallel plate capacitance formula: C = ε₀ × S / d.
+Step 3: Use ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 4: Calculate: C = (8.854 × 10⁻¹² × 0.02) / 0.002 = 8.854 × 10⁻¹¹ F = 88.5 pF.",88.500,pF
+TD383,"An air parallel-plate capacitor has a capacitance of 10 pF. If the distance between its two plates is halved, what is the new capacitance?","Step 1: Identify the initial capacitance C1 = 10 pF.
+Step 2: Note the formula for a parallel-plate capacitor: C = (ε × A) / d.
+Step 3: Observe that capacitance is inversely proportional to the distance (C ∝ 1/d).
+Step 4: Since the distance is halved (d2 = d1 / 2), the capacitance must double.
+Step 5: Calculate the new capacitance: C2 = 10 pF × 2 = 20 pF.
+The new capacitance is 20 pF.",20,pF
+TD384,"A parallel-plate capacitor has a plate area S = 100 cm² and a plate separation d = 1 mm, placed in a medium with a dielectric constant ε = 5. Calculate the capacitance.","Step 1: Identify the given values: S = 100 cm², d = 1 mm, and ε = 5.
+Step 2: Convert to SI units: S = 0.01 m², d = 0.001 m.
+Step 3: Use the formula C = (ε × ε₀ × S) / d, with ε₀ ≈ 8.854 × 10⁻¹² F/m.
+Step 4: Calculate: C = (5 × 8.854 × 10⁻¹² × 0.01) / 0.001.
+Step 5: C = 44.27 × 10⁻¹¹ F = 442.7 pF.
+The capacitance is 442.7 pF.",442.7,pF
+TD385,"A parallel-plate capacitor with a capacitance of 100 pF is charged to 200 V. The power source is then disconnected, and the distance between its plates is doubled. Calculate the electrical energy stored in the capacitor after this change.","Step 1: Identify initial values: C_initial = 100 pF, V_initial = 200 V.
+Step 2: Calculate initial charge: Q = C_initial × V_initial = 100 pF × 200 V = 20,000 pC = 20 nC.
+Step 3: Since the source is disconnected, charge Q remains constant at 20 nC.
+Step 4: Doubling the distance (d) halves the capacitance: C_final = 100 pF / 2 = 50 pF.
+Step 5: Calculate final energy using W = Q² / (2 × C_final).
+Step 6: W = (20 × 10⁻⁹)² / (2 × 50 × 10⁻¹²) = (400 × 10⁻¹⁸) / (100 × 10⁻¹²) = 4 × 10⁻⁶ J = 4 μJ.",4.000,μJ
+TD386,"A parallel-plate capacitor is placed in a dielectric (ε = 4), with plate area S = 300 cm² and separation d = 1 mm. If the dielectric is replaced with one where ε = 2, how does the capacitance change?","Step 1: Use the formula C = (ε × ε₀ × S) / d.
+Step 2: Note that for a fixed area and distance, capacitance is directly proportional to the dielectric constant (C ∝ ε).
+Step 3: Compare the new dielectric (ε2 = 2) to the old one (ε1 = 4).
+Step 4: The ratio is ε2 / ε1 = 2 / 4 = 1/2.
+Step 5: Conclude that the capacitance decreases by half.",decreases by half,
+TD387,"A capacitor C = 5 μF is charged to 20 V. It is then connected in series with an uncharged capacitor C'. The entire circuit has a total voltage of 20 V. If the final charge on C is 30 μC, find C'.","Step 1: Identify the final charge on C as Q = 30 μC.
+Step 2: Calculate the final voltage across C: V_C = Q / C = 30 μC / 5 μF = 6 V.
+Step 3: Use the series rule for voltage: V_total = V_C + V_C'.
+Step 4: Solve for the voltage across C': V_C' = 20 V - 6 V = 14 V.
+Step 5: Since capacitors in series have the same charge, Q_C' = 30 μC.
+Step 6: Calculate C': C' = Q_C' / V_C' = 30 μC / 14 V ≈ 2.14 μF.",2.140,μF
+TD388,"A 2 μF capacitor is charged to 12 V, then disconnected, and its charge is equally shared among two identical capacitors. Calculate the total remaining energy after sharing.","Step 1: Calculate the initial charge: Q = 2 μF × 12 V = 24 μC.
+Step 2: Calculate the initial energy: W_initial = 0.5 × 2 μF × (12 V)² = 144 μJ.
+Step 3: The charge is shared among two identical capacitors (the original 2 μF and another 2 μF).
+Step 4: The total capacitance in parallel is C_total = 2 + 2 = 4 μF.
+Step 5: Calculate the final total energy: W_final = Q² / (2 × C_total) = (24)² / (2 × 4) = 576 / 8 = 72 μJ.",72,μJ
+TD389,A parallel plate capacitor has a charge of 80 μC and a voltage of 400 V. Calculate the attractive force between the two plates if the area S = 50 cm².,"Step 1: Identify the given charge Q = 80 μC and area S = 50 cm².
+Step 2: Convert to SI units: Q = 80 × 10⁻⁶ C and S = 0.005 m².
+Step 3: Recall the formula for the attractive force between plates: F = Q² / (2 × ε₀ × S).
+Step 4: Using ε₀ ≈ 8.854 × 10⁻¹² F/m, substitute the values into the formula.
+Step 5: Calculate the result: F = (80 × 10⁻⁶)² / (2 × 8.854 × 10⁻¹² × 0.005) ≈ 7.23 x 10^4 N.",7.23*10^4,mN
+TD390,Two capacitors C₁ = 2 μF and C₂ = 3 μF are connected in series. The circuit is charged to a voltage U = 100 V. Calculate the electric field inside C₁ if its plate separation d₁ = 0.5 mm.,"Step 1: Calculate the equivalent capacitance (Ceq) for the series connection: Ceq = (C1 × C2) / (C1 + C2).
+Step 2: Substitute C1 = 2 μF and C2 = 3 μF: Ceq = (2 × 3) / (2 + 3) = 1.2 μF.
+Step 3: Find the total charge (Q) which is shared by both capacitors in series: Q = Ceq × U = 1.2 μF × 100 V = 120 μC.
+Step 4: Determine the voltage across C1: V1 = Q / C1 = 120 μC / 2 μF = 60 V.
+Step 5: Calculate the electric field E1: E1 = V1 / d1 = 60 V / 0.0005 m = 120,000 V/m = 1.2 × 10⁵ V/m.",1.2×10⁵,V/m
+TD391,A parallel plate capacitor has a plate separation `d = 1 mm` and is charged to `U = 200 V`. The plate area is `S = 100 cm^2`. The plate separation is then doubled while still connected to the source. Calculate the additional work supplied by the source.,"Step 1: Convert units to SI: d = 0.001 m, S = 0.01 m², and U = 200 V.
+Step 2: Calculate initial capacitance: Ci = ε₀ × S / d = (8.854 × 10⁻¹² × 0.01) / 0.001 = 8.854 × 10⁻¹¹ F.
+Step 3: When distance doubles while connected to the source, the new capacitance is Cf = Ci / 2.
+Step 4: The work supplied by the source is W = ΔQ × U = (Cf - Ci) × U² = -0.5 × Ci × U².
+Step 5: Calculate: W = -0.5 × 8.854 × 10⁻¹¹ × 200² ≈ -1.77 μJ.",-1.77,μJ
+TD392,"A parallel-plate capacitor has a dielectric constant ε = 2, an area of 400 cm², and a plate separation of d = 0.5 mm. A voltage of U = 100 V is applied across it. Calculate the electric field energy density.","Step 1: Identify the given values: εr = 2, d = 0.0005 m, and U = 100 V.
+Step 2: Calculate the electric field strength: E = U / d = 100 / 0.0005 = 200,000 V/m.
+Step 3: Use the formula for energy density: u = 0.5 × ε₀ × εr × E².
+Step 4: Substitute values: u = 0.5 × 8.854 × 10⁻¹² × 2 × (200,000)² ≈ 0.354 J/m³.",0.354,J/m³
+TD393,A capacitor C = 10 μF is charged to U = 100 V. The capacitor plates are then split in half without any charge leakage. Calculate the new capacitance.,"Step 1: Recall the capacitance formula: C = ε₀ × S / d.
+Step 2: Note that the capacitance is directly proportional to the area of the plates.
+Step 3: Since the plates are split in half, the effective area S is halved.
+Step 4: Calculate the new capacitance: C_new = 10 μF / 2 = 5 μF",5.000,μF
+TD394,"A parallel plate capacitor has a capacitance C = 5 pF and a plate separation d = 1 mm. If the plate separation d is changed to 0.2 mm and the dielectric medium is replaced by one with a dielectric constant of ε_r = 3, what is the new capacitance?","Step 1: State the capacitance relationship: C ∝ εr / d.
+Step 2: Calculate the ratio of the new capacitance to the old: (εr_new / d_new) / (εr_old / d_old).
+Step 3: Substitute the changes (εr becomes 3, d becomes 0.2 times the original): Ratio = (3 / 0.2) / (1 / 1) = 15.
+Step 4: Multiply the initial capacitance by this ratio: C_new = 5 pF × 15 = 75 pF.",75,pF
+TD395,A parallel plate capacitor has a charge of 60 μC and a potential difference of 300 V. Calculate the electrostatic attractive force between the two plates if the area is 100 cm².,"Step 1: Identify Q = 60 μC and S = 0.01 m².
+Step 2: Use the force formula: F = Q² / (2 × ε₀ × S).
+Step 3: Substitute the constants and values: F = (60 × 10⁻⁶)² / (2 × 8.854 × 10⁻¹² × 0.01).
+Step 4: Calculate the result: F ≈ 20.33 N.",20.33,mN
+TD396,"A capacitor has an energy of 2 mJ and a capacitance of 1 μF. If it is connected in series with another 1 μF uncharged capacitor, calculate the new total energy of the system.","Step 1: Identify the initial energy W1 = 2 mJ in capacitor C1.
+Step 2: When connected to an identical uncharged capacitor C2, the total capacitance doubles (Ceq = 2 × C1).
+Step 3: Because the charge Q is conserved, the new energy W_total = Q² / (2 × Ceq).
+Step 4: Since Ceq is double the original, the new total energy is half the original: W_total = 2 mJ / 2 = 1 mJ.",1,mJ
+TD397,"A parallel plate capacitor has an area S = 400 cm², a plate separation d = 2 mm, and a dielectric constant ε = 1.5. If a voltage U = 100 V is applied, calculate the charge on each plate.","Step 1: List values: S = 0.04 m², d = 0.002 m, εr = 1.5, U = 100 V.
+Step 2: Calculate capacitance: C = εr × ε₀ × S / d.
+Step 3: C = (1.5 × 8.854 × 10⁻¹² × 0.04) / 0.002 = 2.6562 × 10⁻¹⁰ F.
+Step 4: Calculate charge: Q = C × U = 2.6562 × 10⁻¹⁰ × 100 ≈ 26.55 × nC.",26.55,nC
+TD398,"A parallel-plate capacitor has a dielectric constant (or relative permittivity) **ε = 3**, plate separation **d = 0.5 mm**, and plate area **S = 250 cm²**. If a voltage **U = 50 V** is applied across it, calculate the energy stored in the electric field.","Step 1: List values: εr = 3, d = 0.0005 m, S = 0.025 m², U = 50 V.
+Step 2: Calculate capacitance: C = (3 × 8.854 × 10⁻¹² × 0.025) / 0.0005 = 1.3281 × 10⁻⁹ F.
+Step 3: Use energy formula: W = 0.5 × C × U².
+Step 4: Calculate: W = 0.5 × 1.3281 × 10⁻⁹ × 50² ≈ 1.66 μJ.",1.66,nJ
+TD399,"A parallel-plate capacitor is fully charged and then disconnected from its power source. Subsequently, it is placed in an environment where the permittivity (ε) increases by a factor of 3. Calculate the new energy stored in the capacitor if the initial energy was 1 μJ.","Step 1: Note that the capacitor is disconnected, so charge Q is constant.
+Step 2: The capacitance is proportional to permittivity: C ∝ ε.
+Step 3: Since ε increases by 3, the new capacitance C' = 3 × C.
+Step 4: Energy W = Q² / (2C), so if C triples, energy becomes 1/3 of the initial value.
+Step 5: Calculate: W_new = 1 μJ / 3 ≈ 0.33 μJ.",0.33,μJ
+TD400,"A capacitor with capacitance C = 12 μF is charged to U = 100 V. If its charge is then distributed equally among 3 identical capacitors, what is the total energy of the system?","Step 1: Calculate the initial total charge: Q = 12 μF × 100 V = 1200 μC.
+Step 2: Identify the new system with 3 identical capacitors (each 12 μF) connected in parallel.
+Step 3: Total capacitance: C_total = 3 × 12 μF = 36 μF.
+Step 4: Use the total charge to find the final total energy: W = Q² / (2 × C_total).
+Step 5: Calculate: W = (1200 × 10⁻⁶)² / (2 × 36 × 10⁻⁶) = 20000 μJ = 20 mJ = 0.02 J",0.020,J

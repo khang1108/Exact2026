@@ -1,0 +1,74 @@
+# Type 2 pipeline config optimized for Thunder Compute with local transformers.
+#
+# Usage:
+#   python scripts/type2/run_type2_thunder.py --config configs/type2_thunder.toml
+#
+# The [llm] section is overridden by CLI args in run_type2_thunder.py, but you can
+# set defaults here. The [type2_pipeline] section controls the pipeline behavior.
+
+[dataset]
+input = "src/exact/datasets/exact/type2_physics_questions.csv"
+limit = 10
+skip_invalid = true
+task_filter = "type2"
+
+[output]
+path = "artifacts/predictions/type2/type2_thunder_run.json"
+# Optional standalone route diagnostics log. Use .jsonl for one JSON object per row.
+# routing_log_path = "artifacts/logs/type2_thunder_routing_logs.jsonl"
+include_gold = true
+include_raw = false
+progress_every = 1
+
+[type2_pipeline]
+# ─── Extraction ───
+# "merge" combines heuristic + LLM extraction for best coverage.
+# For small models that struggle with JSON, try "heuristic_only" to skip the
+# LLM extraction call entirely and rely on the rule-based extractor.
+extraction_mode = "merge"
+use_extraction_verifier = true
+
+# ─── Formula retrieval ───
+use_formula_bank = true
+use_llm_formula_selection = true
+force_llm_formula_selection = false
+
+# ─── Solving ───
+use_pot_solver = true
+# For local models, try deterministic solver first (no LLM needed) before
+# falling back to LLM-based PoT code generation.
+deterministic_first = true
+use_executable_fallback = true
+use_unit_verifier = true
+use_concept_bank = true
+
+# ─── Explanation ───
+# Skip the final explanation LLM call to save GPU time.
+# Set to true if you want explanations (costs an extra LLM call per question).
+generate_final_explanation = false
+
+# ─── Token budgets ───
+# Tuned for smaller models. Reduce if you hit OOM on generation.
+extraction_max_tokens = 512
+formula_selection_max_tokens = 768
+conceptual_max_tokens = 768
+pot_code_max_tokens = 2048
+pot_repair_max_tokens = 1024
+final_explanation_max_tokens = 512
+
+# Debugging: dump the exact PoT coding/repair prompts before sending them to the LLM.
+# debug_log_pot_prompts = true
+# debug_pot_prompt_log_path = "artifacts/debug/type2_pot_prompts.jsonl"
+
+# ─── Retries & limits ───
+pot_max_retries = 3
+formula_limit = 24
+rerank_limit = 8
+pot_timeout = 15.0
+
+[evaluation]
+relative_tolerance = 0.02
+absolute_tolerance = 1e-9
+case_sensitive_text = false
+report_path = "artifacts/reports/type2_thunder_eval_report.json"
+errors_path = "artifacts/reports/type2_thunder_eval_errors.csv"

@@ -1,0 +1,92 @@
+{
+  "config": "configs/type2_local.toml",
+  "source": "src/exact/datasets/exact/type2_physics_questions.csv",
+  "count": 3,
+  "format": "exact_predictions",
+  "predictions": [
+    {
+      "answer": "",
+      "explanation": "Prediction failed: cannot assign to field 'kind'",
+      "fol": null,
+      "cot": [
+        "The configured dataset runner caught an exception for this item."
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "physics_TD401",
+      "task_type": "type2_physics",
+      "question_type": "unknown",
+      "unit": null,
+      "error": "cannot assign to field 'kind'",
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "",
+        "explanation": "Prediction failed: cannot assign to field 'kind'",
+        "fol": null,
+        "cot": [
+          "The configured dataset runner caught an exception for this item."
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "gold_answer": "0.045",
+      "gold_unit": "J"
+    },
+    {
+      "answer": "",
+      "explanation": "Prediction failed: cannot assign to field 'kind'",
+      "fol": null,
+      "cot": [
+        "The configured dataset runner caught an exception for this item."
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "physics_TD402",
+      "task_type": "type2_physics",
+      "question_type": "unknown",
+      "unit": null,
+      "error": "cannot assign to field 'kind'",
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "",
+        "explanation": "Prediction failed: cannot assign to field 'kind'",
+        "fol": null,
+        "cot": [
+          "The configured dataset runner caught an exception for this item."
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "gold_answer": "100",
+      "gold_unit": "μF"
+    },
+    {
+      "answer": "",
+      "explanation": "Prediction failed: cannot assign to field 'kind'",
+      "fol": null,
+      "cot": [
+        "The configured dataset runner caught an exception for this item."
+      ],
+      "premises": [],
+      "confidence": 0.0,
+      "id": "physics_LD001",
+      "task_type": "type2_physics",
+      "question_type": "unknown",
+      "unit": null,
+      "error": "cannot assign to field 'kind'",
+      "route_reason": "premises_nl absent",
+      "official": {
+        "answer": "",
+        "explanation": "Prediction failed: cannot assign to field 'kind'",
+        "fol": null,
+        "cot": [
+          "The configured dataset runner caught an exception for this item."
+        ],
+        "premises": [],
+        "confidence": 0.0
+      },
+      "gold_answer": "0.05",
+      "gold_unit": "N"
+    }
+  ]
+}

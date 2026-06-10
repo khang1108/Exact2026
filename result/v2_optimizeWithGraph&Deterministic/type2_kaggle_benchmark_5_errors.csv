@@ -1,0 +1,3 @@
+id,answer,unit,gold_answer,gold_unit,status,numeric_ok,unit_ok,relative_error,absolute_error,error
+physics_LD001,0.048892,N,0.05,N,wrong_numeric,False,True,0.022160000000000096,0.0011080000000000048,
+physics_LD002,0.024415,N,24.45 × 10^-3,N,wrong_numeric,False,True,0.9990014314928425,24.425584999999998,

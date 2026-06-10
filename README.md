@@ -160,9 +160,9 @@ is to keep vLLM private and expose only the EXACT FastAPI `/predict` endpoint.
 Type 1 is LLM-only: if no JSON LLM client is configured, the request fails with
 a clear error instead of substituting a local parser.
 
-Type 2 uses a PoT-first physics pipeline: formula retrieval, LLM-generated Pint
-code, sandbox execution, answer/unit/formula verification, and evidence
-generation.
+Type 2 uses a formula-grounded physics pipeline: extraction, formula retrieval,
+executable formula solving, and optional LLM PoT fallback when formulas cannot
+solve directly.
 
 Example Type 1 request:
 
@@ -197,10 +197,17 @@ curl -X POST http://127.0.0.1:8080/predict \
 pytest
 ```
 
-## Type 2 evaluation helpers
+## Type 2 Dataset Runs
 
-Production inference goes through `POST /predict`. The scripts below only help
-score saved prediction JSON files or prepare models for deployment:
+```bash
+cp configs/type2_dataset_run.example.toml configs/type2_local.toml
+# edit dataset/output/type2_pipeline/evaluation in configs/type2_local.toml
+# choose the LLM client from the script, not from the TOML
+./venv/bin/python scripts/type2/run_type2.py --backend groq --config configs/type2_local.toml
+```
+
+Evaluate a Type 2 prediction file with the tolerances configured in the same
+TOML file:
 
 ```bash
 PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
@@ -208,8 +215,162 @@ PYTHONPATH=src python -m exact.scripts.evaluate_type2_predictions \
   --config configs/type2_local.toml
 ```
 
-To download/cache the configured Hugging Face model before starting vLLM:
+`scripts/type2/run_type2.py` is responsible for:
+
+- selecting the LLM client/backend
+- overriding client-level settings such as model, endpoint, auth, timeout, and transformer device
+- choosing `limit` / `offset` for a run
+
+`configs/type2_local.toml` is responsible for:
+
+- dataset and output defaults
+- all Type 2 pipeline behavior
+- all per-task Type 2 token budgets
+- evaluation settings
+
+Example runs:
 
 ```bash
-PYTHONPATH=src python -m exact.scripts.pull_model --config configs/type2_local.toml
+./venv/bin/python scripts/type2/run_type2.py --backend groq --limit 1
+./venv/bin/python scripts/type2/run_type2.py --backend cloudflare --limit 1
+./venv/bin/python scripts/type2/run_type2.py --backend transformers --model Qwen/Qwen2.5-Math-1.5B-Instruct
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend openai_compatible \
+  --base-url https://your-endpoint/v1 \
+  --api-key your-token \
+  --model your-model \
+  --timeout-seconds 90
+```
+
+Runner and client args for `run_type2.py`:
+
+| Arg | Meaning | Default |
+| --- | --- | --- |
+| `--backend` | Choose the LLM client preset for this run | Required |
+| `--config` | Type 2 pipeline config file | `configs/type2_dataset_run.example.toml` |
+| `--limit` | Number of Type 2 examples to process | `1` |
+| `--offset` | Start index inside the filtered Type 2 dataset | `0` |
+| `--output` | Override the output JSON path from the config | `artifacts/predictions/type2/type2_run.json` |
+| `--input` | Override the dataset input path from the config | `src/exact/datasets/exact/type2_physics_questions.csv` |
+| `--model` | Override the model id/name for the selected client | Preset-dependent |
+| `--base-url` | Override the OpenAI-compatible endpoint URL when the client uses one | Preset-dependent |
+| `--api-key` | Override the API key when the client uses one | Preset-dependent |
+| `--api-key-env` | Read the API key from a named environment variable | Unset |
+| `--temperature` | Sampling temperature | `0.0` |
+| `--top-p` | Sampling top-p | `1.0` |
+| `--timeout-seconds` | HTTP timeout per LLM call | `60.0` |
+| `--max-retries` | Retry count for failed LLM calls | `2` |
+| `--device-map` | Device placement for `transformers` backend | Preset-dependent |
+| `--torch-dtype` | Torch dtype for `transformers` backend | Preset-dependent |
+| `--local-files-only` | Do not download model artifacts for `transformers` | Off |
+| `--trust-remote-code` | Allow custom model code for `transformers` | Off |
+
+### Backend Presets
+
+Each backend uses the same runner and the same pipeline config file:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend <preset> \
+  --config configs/type2_local.toml \
+  --limit 1
+```
+
+#### Cloudflare
+
+Reads defaults from `.env` if present:
+
+- `EXACT_CLOUDFLARE_LLM_BASE_URL`
+- `EXACT_CLOUDFLARE_LLM_MODEL`
+- `EXACT_CLOUDFLARE_LLM_API_KEY`
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend cloudflare \
+  --config configs/type2_local.toml \
+  --limit 1
+```
+
+#### Groq
+
+Usually paired with `GROQ_API_KEY` in `.env` or shell env:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend groq \
+  --config configs/type2_local.toml \
+  --model llama-3.1-8b-instant \
+  --api-key-env GROQ_API_KEY
+```
+
+#### Ollama
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend ollama \
+  --config configs/type2_local.toml \
+  --model qwen2.5:0.5b \
+  --base-url http://127.0.0.1:11434/v1
+```
+
+#### Transformers
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend transformers \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-0.5B-Instruct \
+  --device-map cpu \
+  --torch-dtype float32
+```
+
+#### Hugging Face Router
+
+Usually paired with `HF_TOKEN` in `.env` or shell env:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend huggingface \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --api-key-env HF_TOKEN
+```
+
+#### OpenAI-Compatible
+
+Use this for vLLM or any other OpenAI-compatible endpoint:
+
+```bash
+./venv/bin/python scripts/type2/run_type2.py \
+  --backend openai_compatible \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --base-url http://YOUR_SERVER:8000/v1 \
+  --api-key EMPTY
+```
+
+Useful settings in `configs/type2_local.toml`:
+
+- `dataset.input`, `dataset.limit`, `output.path`, and `evaluation.*` stay in the TOML.
+- `type2_pipeline.extraction_mode = "merge"` keeps both heuristic and LLM extraction in play.
+- `type2_pipeline.use_pot_solver = true` enables the LLM PoT fallback when executable formulas cannot solve directly.
+- `type2_pipeline.use_llm_formula_selection = true` enables LLM reranking over retrieved formulas.
+- `type2_pipeline.generate_final_explanation = false` skips the final
+  explanation/evidence LLM call for faster smoke runs.
+- `type2_pipeline.pot_timeout`, `pot_max_retries`, `formula_limit`, and `rerank_limit`
+  are the main runtime knobs for Type 2 behavior.
+- LLM output budgets per task now live in the config, not in script args.
+- `type2_pipeline.extraction_max_tokens` controls the LLM budget for extraction.
+- `type2_pipeline.formula_selection_max_tokens` controls the LLM budget for formula reranking.
+- `type2_pipeline.conceptual_max_tokens` controls the LLM budget for conceptual-only answers.
+- `type2_pipeline.pot_code_max_tokens` controls the LLM budget for first-pass PoT code generation.
+- `type2_pipeline.pot_repair_max_tokens` controls the LLM budget for PoT repair calls.
+- `type2_pipeline.final_explanation_max_tokens` controls the LLM budget for the final explanation call.
+
+To download/cache the configured Hugging Face model first:
+
+```bash
+PYTHONPATH=src python -m exact.scripts.pull_model \
+  --config configs/type2_local.toml \
+  --model Qwen/Qwen2.5-0.5B-Instruct
 ```

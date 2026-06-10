@@ -86,6 +86,7 @@ class PredictionResponse(AppBaseModel):
     question_type: QuestionType = QuestionType.UNKNOWN
     unit: str | None = None
     error: str | None = None
+    routing_diagnostics: dict[str, Any] | None = None
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:

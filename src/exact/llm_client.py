@@ -18,6 +18,8 @@ from exact.logger import get_logger
 
 logger = get_logger(__name__)
 
+_LOCAL_JSON_CLIENT_CACHE: dict[tuple[Any, ...], "LocalJsonClient"] = {}
+
 
 class BaseJsonLLMClient(ABC):
     """Common contract for clients that return JSON objects from chat messages."""
@@ -190,6 +192,7 @@ class OpenAICompatibleJsonClient(BaseJsonLLMClient):
                         continue
                     resp.raise_for_status()
                 data = resp.json()
+                data = _unwrap_chat_completion_response(data)
                 choice = data["choices"][0]
                 text = choice["message"]["content"] or ""
                 finish_reason = choice.get("finish_reason", "")
@@ -407,6 +410,11 @@ class LocalJsonClient(BaseJsonLLMClient):
         return _parse_json_object(text)
 
 
+def has_json_llm_client_config(settings: Settings | None = None) -> bool:
+    settings = settings or get_settings()
+    return bool(settings.llm_base_url) or settings.llm_provider == "local"
+
+
 def build_json_client_from_settings(settings: Settings | None = None) -> BaseJsonLLMClient | None:
     """Build a JSON-producing LLM client from runtime settings.
 
@@ -416,19 +424,29 @@ def build_json_client_from_settings(settings: Settings | None = None) -> BaseJso
     """
 
     settings = settings or get_settings()
-    if settings.mock_llm:
-        return None
     if settings.llm_base_url:
         return LLMClient.from_settings(settings)
     if settings.llm_provider == "local":
-        return LocalJsonClient(
+        cache_key = (
             settings.llm_model,
-            top_p=settings.llm_top_p,
-            device_map=settings.llm_device_map,
-            torch_dtype=settings.llm_torch_dtype,
-            local_files_only=settings.llm_local_files_only,
-            trust_remote_code=settings.llm_trust_remote_code,
+            settings.llm_top_p,
+            settings.llm_device_map,
+            settings.llm_torch_dtype,
+            settings.llm_local_files_only,
+            settings.llm_trust_remote_code,
         )
+        client = _LOCAL_JSON_CLIENT_CACHE.get(cache_key)
+        if client is None:
+            client = LocalJsonClient(
+                settings.llm_model,
+                top_p=settings.llm_top_p,
+                device_map=settings.llm_device_map,
+                torch_dtype=settings.llm_torch_dtype,
+                local_files_only=settings.llm_local_files_only,
+                trust_remote_code=settings.llm_trust_remote_code,
+            )
+            _LOCAL_JSON_CLIENT_CACHE[cache_key] = client
+        return client
     return None
 
 
@@ -520,6 +538,39 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     if not isinstance(parsed, dict):
         raise ValueError("LLM JSON output must be an object")
     return parsed
+
+
+def _unwrap_chat_completion_response(data: dict[str, Any]) -> dict[str, Any]:
+    """Normalize Cloudflare Workers AI wrappers to OpenAI chat completion shape."""
+
+    result = data.get("result")
+    if data.get("success") is True and isinstance(result, dict):
+        if "choices" in result:
+            return result
+        response = result.get("response")
+        if isinstance(response, str):
+            return {
+                "choices": [
+                    {
+                        "message": {
+                            "content": response,
+                        },
+                        "finish_reason": result.get("finish_reason") or "stop",
+                    }
+                ]
+            }
+        if isinstance(response, dict):
+            return {
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(response, ensure_ascii=False),
+                        },
+                        "finish_reason": "stop",
+                    }
+                ]
+            }
+    return data
 
 
 def _find_first_json_object_span(text: str) -> tuple[int, int] | None:

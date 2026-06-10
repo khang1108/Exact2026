@@ -69,6 +69,18 @@ def _deflection_angle_in_uniform_field(known: dict[str, object]):
     gravity = _q(known, "acceleration")
     return math.atan((charge * field) / (mass * gravity)) * ureg.radian
 
+
+def _angle_between_forces_from_resultant(known: dict[str, object]):
+    f1 = _q(known, "force").to("N").magnitude
+    f2 = _q(known, "force_2").to("N").magnitude
+    resultant = _q(known, "resultant_force").to("N").magnitude
+    denominator = 2 * f1 * f2
+    if denominator == 0:
+        raise ValueError("Force magnitudes must be non-zero to solve for the included angle.")
+    cosine = (resultant * resultant - f1 * f1 - f2 * f2) / denominator
+    cosine = max(-1.0, min(1.0, cosine))
+    return math.acos(cosine) * ureg.radian
+
 K_COULOMB = 8.9875517923e9 * ureg.newton * (ureg.meter ** 2) / (ureg.coulomb ** 2)
 EPSILON_0 = 8.8541878128e-12 * ureg.farad / ureg.meter
 MU_0 = 4 * math.pi * 1e-7 * ureg.newton / (ureg.ampere ** 2)
@@ -108,6 +120,21 @@ FORMULAS: tuple[Formula, ...] = (
         solve=lambda k: _q(k, "voltage") / _q(k, "resistance"),
     ),
     Formula(
+        id="current_from_voltage_impedance",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="current",
+        required=("voltage", "impedance"),
+        output_unit="A",
+        expression="I = U / Z",
+        explanation_template="For an AC circuit, RMS current is RMS voltage divided by total impedance: I = U/Z.",
+        keywords=("rms current", "effective current", "voltage", "impedance", "rlc"),
+        variables={"I": "current", "U": "voltage", "Z": "impedance"},
+        conditions=("Voltage and impedance are RMS/effective values for the same circuit.",),
+        common_mistakes=("Use total impedance, not only resistance, unless the circuit is at resonance.",),
+        solve=lambda k: _q(k, "voltage") / _q(k, "impedance"),
+    ),
+    Formula(
         id="ohm_resistance",
         domain="circuits",
         subfield="dc_circuits",
@@ -120,6 +147,21 @@ FORMULAS: tuple[Formula, ...] = (
         variables={"R": "resistance", "U": "voltage", "I": "current"},
         conditions=("Ohmic resistor or equivalent DC resistance.",),
         common_mistakes=("Resistance is voltage divided by current.",),
+        solve=lambda k: _q(k, "voltage") / _q(k, "current"),
+    ),
+    Formula(
+        id="impedance_from_voltage_current",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="impedance",
+        required=("voltage", "current"),
+        output_unit="ohm",
+        expression="Z = U / I",
+        explanation_template="Total impedance is RMS voltage divided by RMS current: Z = U/I.",
+        keywords=("total impedance", "voltage", "current", "rlc", "ac"),
+        variables={"Z": "impedance", "U": "voltage", "I": "current"},
+        conditions=("Voltage and current are RMS/effective values for the same circuit.",),
+        common_mistakes=("Use impedance Z, not only resistance R, for the whole AC circuit.",),
         solve=lambda k: _q(k, "voltage") / _q(k, "current"),
     ),
     Formula(
@@ -166,6 +208,36 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("Voltage and resistance refer to the same resistor.",),
         common_mistakes=("Square the voltage before dividing by resistance.",),
         solve=lambda k: (_q(k, "voltage") ** 2) / _q(k, "resistance"),
+    ),
+    Formula(
+        id="ac_power_from_voltage_impedance_resistance",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="power",
+        required=("voltage", "impedance", "resistance"),
+        output_unit="W",
+        expression="P = U^2 * R / Z^2",
+        explanation_template="In a series AC circuit, real power is P = I^2R with I = U/Z, so P = U^2R/Z^2.",
+        keywords=("power consumed", "voltage", "impedance", "resistance", "rlc"),
+        variables={"P": "power", "U": "voltage", "Z": "impedance", "R": "resistance"},
+        conditions=("RMS voltage, total impedance, and resistance refer to the same AC circuit.",),
+        common_mistakes=("Use only the resistive part for real power dissipation.",),
+        solve=lambda k: (_q(k, "voltage") ** 2) * _q(k, "resistance") / (_q(k, "impedance") ** 2),
+    ),
+    Formula(
+        id="power_factor_from_resistance_impedance",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="power_factor",
+        required=("resistance", "impedance"),
+        output_unit="dimensionless",
+        expression="cos(phi) = R / Z",
+        explanation_template="For a series RLC circuit, the power factor is cos(phi) = R/Z.",
+        keywords=("power factor", "cos", "resistance", "impedance", "rlc"),
+        variables={"cos_phi": "power_factor", "R": "resistance", "Z": "impedance"},
+        conditions=("R and Z refer to the same series circuit.",),
+        common_mistakes=("Power factor is dimensionless.",),
+        solve=lambda k: _q(k, "resistance") / _q(k, "impedance"),
     ),
     Formula(
         id="voltage_from_power_current",
@@ -725,6 +797,159 @@ FORMULAS: tuple[Formula, ...] = (
         solve=lambda k: ((2 * _q(k, "energy")) / _q(k, "capacitance")) ** 0.5,
     ),
     Formula(
+        id="voltage_disconnected_capacitor_insert_dielectric",
+        domain="capacitance",
+        subfield="dielectrics",
+        target="voltage",
+        required=("voltage", "relative_permittivity"),
+        output_unit="V",
+        expression="U_new = U / epsilon_r",
+        explanation_template=(
+            "For a disconnected charged capacitor, charge remains constant. Inserting a dielectric increases "
+            "capacitance by epsilon_r, so the voltage becomes U_new = U / epsilon_r."
+        ),
+        keywords=("disconnected", "dielectric", "dielectric constant", "relative permittivity", "potential difference", "voltage"),
+        variables={"U_new": "voltage", "U": "voltage", "epsilon_r": "relative_permittivity"},
+        conditions=("The capacitor is disconnected from the source before the dielectric is inserted.",),
+        common_mistakes=("Do not keep voltage constant after disconnection; charge remains constant instead.",),
+        solve=lambda k: _q(k, "voltage") / _q(k, "relative_permittivity"),
+    ),
+    Formula(
+        id="voltage_connected_capacitor_insert_dielectric",
+        domain="capacitance",
+        subfield="dielectrics",
+        target="voltage",
+        required=("voltage",),
+        output_unit="V",
+        expression="U_new = U",
+        explanation_template=(
+            "When the capacitor remains connected to the voltage source, the source holds the potential "
+            "difference constant while charge adjusts."
+        ),
+        keywords=("still connected", "connected to the source", "voltage source", "dielectric", "potential difference", "voltage"),
+        variables={"U_new": "voltage", "U": "voltage"},
+        conditions=("The capacitor remains connected to the voltage source.",),
+        common_mistakes=("Do not treat charge as constant while the voltage source remains connected.",),
+        solve=lambda k: _q(k, "voltage"),
+    ),
+    Formula(
+        id="energy_disconnected_capacitor_insert_dielectric",
+        domain="capacitance",
+        subfield="dielectrics",
+        target="energy",
+        required=("capacitance", "voltage", "relative_permittivity"),
+        output_unit="J",
+        expression="W_new = (1/2 * C * U^2) / epsilon_r",
+        explanation_template=(
+            "For a disconnected capacitor, charge remains constant and inserting a dielectric increases "
+            "capacitance by epsilon_r, so stored energy decreases by epsilon_r."
+        ),
+        keywords=("disconnected", "dielectric", "relative permittivity", "dielectric constant", "electric field energy", "energy"),
+        variables={"W_new": "energy", "C": "capacitance", "U": "voltage", "epsilon_r": "relative_permittivity"},
+        conditions=("The capacitor is disconnected before insertion of the dielectric.",),
+        common_mistakes=("Do not use the original voltage after the dielectric is inserted.",),
+        solve=lambda k: 0.5
+        * _q(k, "capacitance")
+        * (_q(k, "voltage") ** 2)
+        / _q(k, "relative_permittivity"),
+    ),
+    Formula(
+        id="energy_connected_capacitor_insert_dielectric",
+        domain="capacitance",
+        subfield="dielectrics",
+        target="energy",
+        required=("capacitance", "voltage", "relative_permittivity"),
+        output_unit="J",
+        expression="W_new = 1/2 * epsilon_r * C * U^2",
+        explanation_template=(
+            "When the capacitor remains connected to the voltage source, voltage stays constant and "
+            "the dielectric increases capacitance by epsilon_r, so W_new = 1/2 * epsilon_r * C * U^2."
+        ),
+        keywords=("still connected", "connected to the voltage source", "connected to the source", "dielectric", "electric field energy", "energy"),
+        variables={"W_new": "energy", "C": "capacitance", "U": "voltage", "epsilon_r": "relative_permittivity"},
+        conditions=("The capacitor remains connected to the voltage source while the dielectric is inserted.",),
+        common_mistakes=("Do not keep charge constant while the voltage source remains connected.",),
+        solve=lambda k: 0.5
+        * _q(k, "relative_permittivity")
+        * _q(k, "capacitance")
+        * (_q(k, "voltage") ** 2),
+    ),
+    Formula(
+        id="capacitance_parallel_plate_distance_doubled",
+        domain="capacitance",
+        subfield="parallel_plate",
+        target="capacitance",
+        required=("capacitance",),
+        output_unit="F",
+        expression="C_new = C / 2",
+        explanation_template=(
+            "For a parallel-plate capacitor, capacitance is inversely proportional to plate separation. "
+            "Doubling the distance halves the capacitance."
+        ),
+        keywords=("plates", "moved apart", "distance", "doubled", "new capacitance", "capacitance"),
+        variables={"C_new": "capacitance", "C": "capacitance"},
+        conditions=("The plate distance is doubled while plate area and medium remain unchanged.",),
+        common_mistakes=("Do not double capacitance; C is inversely proportional to distance.",),
+        solve=lambda k: _q(k, "capacitance") / 2,
+    ),
+    Formula(
+        id="voltage_disconnected_capacitor_distance_doubled",
+        domain="capacitance",
+        subfield="parallel_plate",
+        target="voltage",
+        required=("voltage",),
+        output_unit="V",
+        expression="U_new = 2 * U",
+        explanation_template=(
+            "After disconnection, charge remains constant. Doubling plate separation halves capacitance, "
+            "so U_new = Q/(C/2) = 2U."
+        ),
+        keywords=("disconnected", "power source", "moved apart", "distance", "doubles", "potential difference", "voltage"),
+        variables={"U_new": "voltage", "U": "voltage"},
+        conditions=("The capacitor is disconnected and then the plate distance is doubled.",),
+        common_mistakes=("Do not keep voltage constant after disconnection.",),
+        solve=lambda k: 2 * _q(k, "voltage"),
+    ),
+    Formula(
+        id="voltage_connected_capacitor_distance_changed",
+        domain="capacitance",
+        subfield="parallel_plate",
+        target="voltage",
+        required=("voltage",),
+        output_unit="V",
+        expression="U_new = U",
+        explanation_template=(
+            "While the capacitor remains connected to the source, the source maintains the same potential "
+            "difference even if the plate distance changes."
+        ),
+        keywords=("still connected", "connected to the source", "plates", "moved", "distance", "potential difference", "voltage"),
+        variables={"U_new": "voltage", "U": "voltage"},
+        conditions=("The capacitor remains connected to the source while plate separation changes.",),
+        common_mistakes=("Do not conserve charge while the voltage source is still connected.",),
+        solve=lambda k: _q(k, "voltage"),
+    ),
+    Formula(
+        id="charge_parallel_plate_circular_air_capacitor",
+        domain="capacitance",
+        subfield="parallel_plate",
+        target="charge",
+        required=("length", "length_2", "voltage"),
+        output_unit="C",
+        expression="Q = epsilon_0 * pi * r^2 * U / d",
+        explanation_template=(
+            "For an air-filled circular parallel-plate capacitor, C = epsilon_0*pi*r^2/d and Q = C*U."
+        ),
+        keywords=("parallel-plate", "circular plates", "radius", "distance between the plates", "potential difference", "charge"),
+        variables={"Q": "charge", "r": "length", "d": "length_2", "U": "voltage"},
+        conditions=("Circular air-filled parallel plates with radius r and separation d.",),
+        common_mistakes=("Use plate area pi*r^2, not circumference.",),
+        solve=lambda k: EPSILON_0
+        * math.pi
+        * (_q(k, "length") ** 2)
+        * _q(k, "voltage")
+        / _q(k, "length_2"),
+    ),
+    Formula(
         id="charge_from_capacitor_energy_capacitance",
         domain="capacitance",
         subfield="capacitor_energy",
@@ -755,6 +980,21 @@ FORMULAS: tuple[Formula, ...] = (
         solve=lambda k: 0.5 * _q(k, "inductance") * (_q(k, "current") ** 2),
     ),
     Formula(
+        id="inductance_from_energy_current",
+        domain="inductance",
+        subfield="inductor_energy",
+        target="inductance",
+        required=("energy", "current"),
+        output_unit="H",
+        expression="L = 2W / I^2",
+        explanation_template="Rearranging W = 1/2*L*I^2 gives L = 2W/I^2.",
+        keywords=("inductance", "energy", "current", "inductor"),
+        variables={"L": "inductance", "W": "energy", "I": "current"},
+        conditions=("Energy and current refer to the same inductor.",),
+        common_mistakes=("Divide twice the energy by the square of current.",),
+        solve=lambda k: 2 * _q(k, "energy") / (_q(k, "current") ** 2),
+    ),
+    Formula(
         id="lc_natural_frequency",
         domain="circuits",
         subfield="lc_oscillation",
@@ -768,6 +1008,66 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("Ideal LC circuit with inductance L and capacitance C.",),
         common_mistakes=("Use frequency f in hertz, not angular frequency omega = 1/sqrt(LC)."),
         solve=lambda k: 1 / (2 * math.pi * ((_q(k, "inductance") * _q(k, "capacitance")) ** 0.5)),
+    ),
+    Formula(
+        id="lc_natural_angular_frequency",
+        domain="circuits",
+        subfield="lc_oscillation",
+        target="angular_frequency",
+        required=("inductance", "capacitance"),
+        output_unit="rad/s",
+        expression="omega = 1 / sqrt(L*C)",
+        explanation_template="The natural angular frequency of an ideal LC circuit is omega = 1/sqrt(LC).",
+        keywords=("angular frequency", "lc circuit", "resonant", "inductance", "capacitance"),
+        variables={"omega": "angular_frequency", "L": "inductance", "C": "capacitance"},
+        conditions=("Ideal LC circuit with inductance L and capacitance C.",),
+        common_mistakes=("Angular frequency is in rad/s, not hertz.",),
+        solve=lambda k: 1 / ((_q(k, "inductance") * _q(k, "capacitance")) ** 0.5),
+    ),
+    Formula(
+        id="lc_natural_period",
+        domain="circuits",
+        subfield="lc_oscillation",
+        target="time",
+        required=("inductance", "capacitance"),
+        output_unit="s",
+        expression="T = 2*pi*sqrt(L*C)",
+        explanation_template="The natural period of an ideal LC circuit is T = 2*pi*sqrt(LC).",
+        keywords=("period", "oscillation", "lc circuit", "inductance", "capacitance"),
+        variables={"T": "time", "L": "inductance", "C": "capacitance"},
+        conditions=("Ideal LC circuit with inductance L and capacitance C.",),
+        common_mistakes=("Use the square root of LC and multiply by 2*pi.",),
+        solve=lambda k: 2 * math.pi * ((_q(k, "inductance") * _q(k, "capacitance")) ** 0.5),
+    ),
+    Formula(
+        id="period_from_frequency",
+        domain="waves",
+        subfield="oscillation",
+        target="time",
+        required=("frequency",),
+        output_unit="s",
+        expression="T = 1 / f",
+        explanation_template="The period is the reciprocal of frequency: T = 1/f.",
+        keywords=("period", "frequency", "oscillation"),
+        variables={"T": "time", "f": "frequency"},
+        conditions=("Frequency is positive and constant.",),
+        common_mistakes=("Inverse frequency gives period.",),
+        solve=lambda k: 1 / _q(k, "frequency"),
+    ),
+    Formula(
+        id="frequency_from_period",
+        domain="waves",
+        subfield="oscillation",
+        target="frequency",
+        required=("time",),
+        output_unit="Hz",
+        expression="f = 1 / T",
+        explanation_template="The frequency is the reciprocal of period: f = 1/T.",
+        keywords=("frequency", "period", "oscillation"),
+        variables={"f": "frequency", "T": "time"},
+        conditions=("Period is positive and constant.",),
+        common_mistakes=("Inverse period gives frequency.",),
+        solve=lambda k: 1 / _q(k, "time"),
     ),
     Formula(
         id="electric_field_from_force_charge",
@@ -941,6 +1241,23 @@ FORMULAS: tuple[Formula, ...] = (
             + 2 * _q(k, "force") * _q(k, "force_2") * math.cos(_angle_radians(k))
         )
         ** 0.5,
+    ),
+    Formula(
+        id="angle_between_two_forces_from_resultant",
+        domain="electrostatics",
+        subfield="vector_forces",
+        target="angle",
+        required=("force", "force_2", "resultant_force"),
+        output_unit="degree",
+        expression="theta = acos((R^2 - F1^2 - F2^2) / (2*F1*F2))",
+        explanation_template=(
+            "Rearrange the two-force resultant formula to solve for the included angle."
+        ),
+        keywords=("angle between", "two forces", "resultant", "force", "cos", "acos"),
+        variables={"theta": "angle", "R": "resultant_force", "F1": "force", "F2": "force_2"},
+        conditions=("R is the resultant magnitude of the two force vectors.",),
+        common_mistakes=("Do not assume the forces are perpendicular unless the angle is given as 90 degrees.",),
+        solve=_angle_between_forces_from_resultant,
     ),
     Formula(
         id="resultant_two_perpendicular_forces",
@@ -1246,6 +1563,30 @@ FORMULAS: tuple[Formula, ...] = (
         / (_q(k, "length") ** 2),
     ),
     Formula(
+        id="electric_field_opposite_equal_charges_perpendicular_bisector",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "length", "length_2"),
+        output_unit="N/C",
+        expression="E_net = k * |q| * d / ((d/2)^2 + h^2)^(3/2)",
+        explanation_template=(
+            "For equal and opposite charges separated by d, at a point on the perpendicular bisector a distance h "
+            "from AB, vertical field components cancel and horizontal components add."
+        ),
+        keywords=("opposite", "perpendicular bisector", "distance from", "line segment", "electric field", "resultant"),
+        variables={"E_net": "electric_field", "q": "charge", "d": "length", "h": "length_2"},
+        conditions=(
+            "Two charges have equal magnitude and opposite signs.",
+            "The field point lies on the perpendicular bisector of the line joining the charges.",
+        ),
+        common_mistakes=("Do not use the full separation as the distance to each charge; use sqrt((d/2)^2 + h^2).",),
+        solve=lambda k: K_COULOMB
+        * abs(_q(k, "charge"))
+        * _q(k, "length")
+        / (((_q(k, "length") / 2) ** 2 + (_q(k, "length_2") ** 2)) ** 1.5),
+    ),
+    Formula(
         id="electric_field_midpoint_between_opposite_equal_charges",
         domain="electrostatics",
         subfield="coulomb_law",
@@ -1350,6 +1691,224 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("Infinitely long or sufficiently long ideal solenoid.",),
         common_mistakes=("Use turn density n in turns per meter, not total turns unless length is accounted for.",),
         solve=lambda k: MU_0 * _q(k, "turn_density") * _q(k, "current"),
+    ),
+    Formula(
+        id="magnetic_field_solenoid_from_turns_length_current",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="magnetic_field",
+        required=("turns", "length", "current"),
+        output_unit="T",
+        expression="B = mu_0 * N * I / l",
+        explanation_template="For a long solenoid, B = mu_0 * (N/l) * I.",
+        keywords=("solenoid", "magnetic field", "turns", "length", "current"),
+        variables={"B": "magnetic_field", "N": "turns", "l": "length", "I": "current"},
+        conditions=("Long ideal solenoid with uniformly distributed turns.",),
+        common_mistakes=("Convert the solenoid length to meters before dividing.",),
+        solve=lambda k: MU_0 * _q(k, "turns") * _q(k, "current") / _q(k, "length"),
+    ),
+    Formula(
+        id="turn_density_from_turns_length",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="turn_density",
+        required=("turns", "length"),
+        output_unit="1 / meter",
+        expression="n = N / l",
+        explanation_template="Turn density is the total number of turns divided by solenoid length: n = N/l.",
+        keywords=("turn density", "turns", "length", "solenoid"),
+        variables={"n": "turn_density", "N": "turns", "l": "length"},
+        conditions=("Turns are distributed uniformly over the solenoid length.",),
+        common_mistakes=("Convert length to meters before dividing.",),
+        solve=lambda k: _q(k, "turns") / _q(k, "length"),
+    ),
+    Formula(
+        id="induced_emf_from_inductance_current_change",
+        domain="electrostatics",
+        subfield="electromagnetic_induction",
+        target="voltage",
+        required=("inductance", "current", "current_2", "time"),
+        output_unit="V",
+        expression="|epsilon| = L * |Delta I| / Delta t",
+        explanation_template="The magnitude of induced EMF in an inductor is |epsilon| = L*|Delta I|/Delta t.",
+        keywords=("induced electromotive force", "emf", "inductance", "current increases", "current decreases", "time"),
+        variables={"epsilon": "voltage", "L": "inductance", "I_1": "current", "I_2": "current_2", "Delta t": "time"},
+        conditions=("The current changes uniformly between the two listed current values.",),
+        common_mistakes=("Report the magnitude unless the direction/sign is requested.",),
+        solve=lambda k: abs(_q(k, "inductance") * (_q(k, "current") - _q(k, "current_2")) / _q(k, "time")),
+    ),
+    Formula(
+        id="inductance_from_emf_current_change",
+        domain="electrostatics",
+        subfield="electromagnetic_induction",
+        target="inductance",
+        required=("voltage", "current", "current_2", "time"),
+        output_unit="H",
+        expression="L = |epsilon| * Delta t / |Delta I|",
+        explanation_template="Rearranging |epsilon| = L*|Delta I|/Delta t gives L = |epsilon|*Delta t/|Delta I|.",
+        keywords=("inductance", "induced electromotive force", "emf", "current increases", "current decreases", "time"),
+        variables={"L": "inductance", "epsilon": "voltage", "I_1": "current", "I_2": "current_2", "Delta t": "time"},
+        conditions=("The current changes uniformly between the two listed current values.",),
+        common_mistakes=("Use the magnitude of the current change.",),
+        solve=lambda k: abs(_q(k, "voltage") * _q(k, "time") / (_q(k, "current") - _q(k, "current_2"))),
+    ),
+    Formula(
+        id="induced_emf_from_flux_change",
+        domain="electrostatics",
+        subfield="electromagnetic_induction",
+        target="voltage",
+        required=("magnetic_flux", "time"),
+        output_unit="V",
+        expression="|epsilon| = |Delta Phi| / Delta t",
+        explanation_template="Faraday's law gives average induced EMF magnitude as |epsilon| = |Delta Phi|/Delta t.",
+        keywords=("magnetic flux", "decreases", "average induced electromotive force", "emf", "time"),
+        variables={"epsilon": "voltage", "Phi": "magnetic_flux", "t": "time"},
+        conditions=("The flux changes uniformly from the listed flux to zero, or by the listed amount.",),
+        common_mistakes=("Use magnetic flux in webers and time in seconds.",),
+        solve=lambda k: abs(_q(k, "magnetic_flux") / _q(k, "time")),
+    ),
+    Formula(
+        id="magnetic_flux_from_field_area",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="magnetic_flux",
+        required=("magnetic_field", "area"),
+        output_unit="Wb",
+        expression="Phi = B * S",
+        explanation_template="Magnetic flux through one turn is Phi = B*S when the field is normal to the area.",
+        keywords=("magnetic flux", "magnetic field", "flux density", "cross-sectional area", "one turn"),
+        variables={"Phi": "magnetic_flux", "B": "magnetic_field", "S": "area"},
+        conditions=("The magnetic field is approximately uniform and perpendicular to the cross-sectional area.",),
+        common_mistakes=("Convert cm^2 to m^2 before multiplying.",),
+        solve=lambda k: _q(k, "magnetic_field") * _q(k, "area"),
+    ),
+    Formula(
+        id="magnetic_flux_solenoid_from_turn_density_current_area",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="magnetic_flux",
+        required=("turn_density", "current", "area"),
+        output_unit="Wb",
+        expression="Phi = mu_0 * n * I * S",
+        explanation_template="For a long solenoid, B = mu_0*n*I and flux through one turn is Phi = B*S.",
+        keywords=("magnetic flux", "one turn", "solenoid", "turn density", "current", "cross-sectional area"),
+        variables={"Phi": "magnetic_flux", "n": "turn_density", "I": "current", "S": "area"},
+        conditions=("Long ideal solenoid with uniform field through the cross-section.",),
+        common_mistakes=("Use the area in square meters.",),
+        solve=lambda k: MU_0 * _q(k, "turn_density") * _q(k, "current") * _q(k, "area"),
+    ),
+    Formula(
+        id="magnetic_flux_solenoid_from_turns_length_current_area",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="magnetic_flux",
+        required=("turns", "length", "current", "area"),
+        output_unit="Wb",
+        expression="Phi = mu_0 * N * I * S / l",
+        explanation_template="For a long solenoid, flux through one turn is Phi = B*S and B = mu_0*N*I/l.",
+        keywords=("magnetic flux", "solenoid", "turns", "length", "current", "area"),
+        variables={"Phi": "magnetic_flux", "N": "turns", "l": "length", "I": "current", "S": "area"},
+        conditions=("Long ideal solenoid with uniform field through the cross-section.",),
+        common_mistakes=("Use the area in square meters and the length in meters.",),
+        solve=lambda k: MU_0 * _q(k, "turns") * _q(k, "current") * _q(k, "area") / _q(k, "length"),
+    ),
+    Formula(
+        id="flux_linkage_from_turns_flux",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="magnetic_flux",
+        required=("turns", "magnetic_flux"),
+        output_unit="Wb",
+        expression="Psi = N * Phi",
+        explanation_template="Flux linkage is the number of turns times flux per turn: Psi = N*Phi.",
+        keywords=("flux linkage", "turns", "magnetic flux"),
+        variables={"Psi": "magnetic_flux", "N": "turns", "Phi": "magnetic_flux_2"},
+        conditions=("Flux per turn is the same for each turn.",),
+        common_mistakes=("Multiply flux by the total number of turns.",),
+        solve=lambda k: _q(k, "turns") * _q(k, "magnetic_flux"),
+    ),
+    Formula(
+        id="magnetic_energy_density_from_field",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="energy_density",
+        required=("magnetic_field",),
+        output_unit="J / m^3",
+        expression="u_B = B^2 / (2*mu_0)",
+        explanation_template="Magnetic energy density is u_B = B^2/(2*mu_0).",
+        keywords=("energy density", "magnetic field energy density", "magnetic field"),
+        variables={"u_B": "energy_density", "B": "magnetic_field"},
+        conditions=("Magnetic field is in vacuum or air where mu_0 applies.",),
+        common_mistakes=("Square the magnetic field before dividing by 2*mu_0.",),
+        solve=lambda k: (_q(k, "magnetic_field") ** 2) / (2 * MU_0),
+    ),
+    Formula(
+        id="magnetic_energy_from_solenoid_geometry",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="energy",
+        required=("turns", "length", "area", "current"),
+        output_unit="J",
+        expression="W = 1/2 * mu_0 * N^2 * S * I^2 / l",
+        explanation_template="For a long solenoid, W = 1/2 * L * I^2 with L = mu_0*N^2*S/l.",
+        keywords=("magnetic energy", "solenoid", "turns", "length", "area", "current"),
+        variables={"W": "energy", "N": "turns", "l": "length", "S": "area", "I": "current"},
+        conditions=("Long ideal solenoid with uniform cross-sectional area.",),
+        common_mistakes=("Use meters squared for area and meters for length.",),
+        solve=lambda k: 0.5 * MU_0 * (_q(k, "turns") ** 2) * _q(k, "area") * (_q(k, "current") ** 2) / _q(k, "length"),
+    ),
+    Formula(
+        id="inductive_reactance",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="impedance",
+        required=("inductance", "frequency"),
+        output_unit="ohm",
+        expression="Z_L = 2*pi*f*L",
+        explanation_template="Inductive reactance is Z_L = 2*pi*f*L.",
+        keywords=("inductive reactance", "frequency", "inductance"),
+        variables={"Z_L": "impedance", "f": "frequency", "L": "inductance"},
+        conditions=("Sinusoidal steady-state AC circuit.",),
+        common_mistakes=("Use frequency in hertz, not angular frequency unless already given.",),
+        solve=lambda k: 2 * math.pi * _q(k, "frequency") * _q(k, "inductance"),
+    ),
+    Formula(
+        id="capacitive_reactance",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="impedance",
+        required=("capacitance", "frequency"),
+        output_unit="ohm",
+        expression="Z_C = 1 / (2*pi*f*C)",
+        explanation_template="Capacitive reactance is Z_C = 1/(2*pi*f*C).",
+        keywords=("capacitive reactance", "frequency", "capacitance"),
+        variables={"Z_C": "impedance", "f": "frequency", "C": "capacitance"},
+        conditions=("Sinusoidal steady-state AC circuit.",),
+        common_mistakes=("Capacitive reactance decreases as frequency or capacitance increases.",),
+        solve=lambda k: 1 / (2 * math.pi * _q(k, "frequency") * _q(k, "capacitance")),
+    ),
+    Formula(
+        id="series_rlc_impedance",
+        domain="circuits",
+        subfield="ac_circuits",
+        target="impedance",
+        required=("resistance", "inductance", "capacitance", "frequency"),
+        output_unit="ohm",
+        expression="Z = sqrt(R^2 + (2*pi*f*L - 1/(2*pi*f*C))^2)",
+        explanation_template="Series RLC impedance is Z = sqrt(R^2 + (Z_L - Z_C)^2).",
+        keywords=("rlc", "series", "total impedance", "impedance", "frequency", "resistance", "inductance", "capacitance"),
+        variables={"Z": "impedance", "R": "resistance", "L": "inductance", "C": "capacitance", "f": "frequency"},
+        conditions=("Series RLC circuit in sinusoidal steady state.",),
+        common_mistakes=("Subtract capacitive reactance from inductive reactance before squaring.",),
+        solve=lambda k: (
+            (_q(k, "resistance") ** 2)
+            + (
+                2 * math.pi * _q(k, "frequency") * _q(k, "inductance")
+                - 1 / (2 * math.pi * _q(k, "frequency") * _q(k, "capacitance"))
+            )
+            ** 2
+        )
+        ** 0.5,
     ),
     Formula(
         id="speed_of_light_from_vacuum_constants",
@@ -2058,4 +2617,108 @@ def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
             and "bc" in lower_question
             and ("charge at a" in lower_question or "qa" in lower_question)
         )
+    if formula.id == "electric_field_two_equal_sources_right_angle":
+        return (
+            ("right triangle" in lower_question or "right-angle" in lower_question or "right angle" in lower_question)
+            and "perpendicular bisector" not in lower_question
+        )
+    if formula.id == "electric_field_opposite_equal_charges_perpendicular_bisector":
+        return "perpendicular bisector" in lower_question and (
+            "opposite" in lower_question or "+3" in lower_question or "-3" in lower_question
+        )
+    if formula.id == "voltage_disconnected_capacitor_insert_dielectric":
+        return "disconnected" in lower_question and "dielectric" in lower_question
+    if formula.id == "voltage_connected_capacitor_insert_dielectric":
+        return (
+            ("still connected" in lower_question or "connected to the source" in lower_question)
+            and "dielectric" in lower_question
+        )
+    if formula.id == "energy_disconnected_capacitor_insert_dielectric":
+        return "disconnected" in lower_question and "dielectric" in lower_question
+    if formula.id == "energy_connected_capacitor_insert_dielectric":
+        return (
+            ("still connected" in lower_question or "connected to the voltage source" in lower_question or "connected to the source" in lower_question)
+            and "dielectric" in lower_question
+        )
+    if formula.id == "capacitance_parallel_plate_distance_doubled":
+        return "distance" in lower_question and ("doubled" in lower_question or "doubles" in lower_question)
+    if formula.id == "voltage_disconnected_capacitor_distance_doubled":
+        return (
+            "disconnected" in lower_question
+            and "distance" in lower_question
+            and ("doubled" in lower_question or "doubles" in lower_question)
+        )
+    if formula.id == "voltage_connected_capacitor_distance_changed":
+        return (
+            ("still connected" in lower_question or "connected to the source" in lower_question)
+            and ("moved" in lower_question or "distance" in lower_question)
+            and ("doubled" in lower_question or "doubles" in lower_question)
+        )
+    if formula.id == "charge_parallel_plate_circular_air_capacitor":
+        return (
+            ("circular plates" in lower_question or "radius" in lower_question)
+            and "distance between the plates" in lower_question
+            and ("potential difference" in lower_question or "voltage" in lower_question)
+        )
+    if formula.id == "turn_density_from_turns_length":
+        return "turn density" in lower_question or "turns per" in lower_question
+    if formula.id == "inductance_from_energy_current":
+        return "inductance" in lower_question and "energy" in lower_question and "current" in lower_question
+    if formula.id == "induced_emf_from_inductance_current_change":
+        return (
+            ("induced electromotive force" in lower_question or "emf" in lower_question)
+            and ("current increases" in lower_question or "current decreases" in lower_question)
+        )
+    if formula.id == "inductance_from_emf_current_change":
+        return "induced electromotive force" in lower_question or "emf" in lower_question
+    if formula.id == "induced_emf_from_flux_change":
+        return (
+            ("induced electromotive force" in lower_question or "emf" in lower_question)
+            and "magnetic flux" in lower_question
+        )
+    if formula.id == "magnetic_flux_from_field_area":
+        return "magnetic flux" in lower_question and (
+            "magnetic field" in lower_question or "flux density" in lower_question
+        )
+    if formula.id == "magnetic_flux_solenoid_from_turn_density_current_area":
+        return "magnetic flux" in lower_question and "turn density" in lower_question
+    if formula.id == "magnetic_field_solenoid_from_turns_length_current":
+        return "magnetic field" in lower_question and "solenoid" in lower_question and "turns" in lower_question
+    if formula.id == "magnetic_flux_solenoid_from_turns_length_current_area":
+        return "magnetic flux" in lower_question and "solenoid" in lower_question and "turns" in lower_question
+    if formula.id == "flux_linkage_from_turns_flux":
+        return "flux linkage" in lower_question
+    if formula.id == "magnetic_energy_density_from_field":
+        return "energy density" in lower_question and "magnetic field" in lower_question
+    if formula.id == "magnetic_energy_from_solenoid_geometry":
+        return (
+            ("magnetic energy" in lower_question or "magnetic field energy" in lower_question)
+            and "solenoid" in lower_question
+        )
+    if formula.id == "lc_natural_angular_frequency":
+        return "angular frequency" in lower_question and "lc" in lower_question
+    if formula.id == "lc_natural_period":
+        return "period" in lower_question and "lc" in lower_question
+    if formula.id == "period_from_frequency":
+        return "period" in lower_question and "frequency" in lower_question
+    if formula.id == "frequency_from_period":
+        return "frequency" in lower_question and "period" in lower_question
+    if formula.id == "inductive_reactance":
+        return "inductive reactance" in lower_question
+    if formula.id == "capacitive_reactance":
+        return "capacitive reactance" in lower_question
+    if formula.id == "series_rlc_impedance":
+        return "rlc" in lower_question and "impedance" in lower_question
+    if formula.id == "current_from_voltage_impedance":
+        return "impedance" in lower_question and "current" in lower_question
+    if formula.id == "impedance_from_voltage_current":
+        return "impedance" in lower_question and "voltage" in lower_question and "current" in lower_question
+    if formula.id == "ac_power_from_voltage_impedance_resistance":
+        return (
+            "power" in lower_question
+            and ("impedance" in lower_question or " z =" in lower_question)
+            and ("resistance" in lower_question or " r =" in lower_question)
+        )
+    if formula.id == "power_factor_from_resistance_impedance":
+        return "power factor" in lower_question
     return True

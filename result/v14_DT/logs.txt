@@ -1,0 +1,93 @@
+148.8s	267	processed 1/68 id=physics_DT001 status=pipeline_error answer= unit=None gold=0 V/m elapsed=76.52s correct=0 wrong=1 errors=1 acc=0.000
+148.8s	268	processed 2/68 id=physics_DT002 status=correct_numeric answer=639115 unit=N/C gold=640000 V/m elapsed=0.03s correct=1 wrong=1 errors=1 acc=0.500
+148.9s	269	processed 3/68 id=physics_DT003 status=correct_numeric answer=350795 unit=N/C gold=351000 V/m elapsed=0.02s correct=2 wrong=1 errors=1 acc=0.667
+148.9s	270	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.7'
+148.9s	271	processed 4/68 id=physics_DT004 status=pipeline_error answer= unit=None gold=0.7 N elapsed=0.03s correct=2 wrong=2 errors=2 acc=0.500
+148.9s	272	[Symbolic/Numeric Mismatch] Model: '', Gold: '0.094'
+148.9s	273	processed 5/68 id=physics_DT005 status=pipeline_error answer= unit=None gold=0.094 N elapsed=0.04s correct=2 wrong=3 errors=3 acc=0.400
+149.0s	274	processed 6/68 id=physics_DT006 status=correct_numeric answer=0.167938 unit=N gold=0.168 N elapsed=0.03s correct=3 wrong=3 errors=3 acc=0.500
+149.0s	275	processed 7/68 id=physics_DT007 status=pipeline_error answer= unit=None gold=a/ \sqrt{2} m elapsed=0.03s correct=3 wrong=4 errors=4 acc=0.429
+149.0s	276	processed 8/68 id=physics_DT008 status=pipeline_error answer= unit=None gold=/frac{2k \abs{q} h}{(a^2 + h^2)^1.5} V/m elapsed=0.04s correct=3 wrong=5 errors=5 acc=0.375
+149.1s	277	[Symbolic/Numeric Mismatch] Model: '', Gold: '0'
+149.1s	278	processed 9/68 id=physics_DT019 status=pipeline_error answer= unit=None gold=0 V/m elapsed=0.03s correct=3 wrong=6 errors=6 acc=0.333
+149.1s	279	[Symbolic/Numeric Mismatch] Model: '', Gold: '\frac{4 \sqrt{2} k q}{\epsilon a^2}'
+149.1s	280	processed 10/68 id=physics_DT020 status=pipeline_error answer= unit=None gold=\frac{4 \sqrt{2} k q}{\epsilon a^2} V/m elapsed=0.03s correct=3 wrong=7 errors=7 acc=0.300
+149.1s	281	processed 11/68 id=physics_DT025 status=pipeline_error answer= unit=None gold=60 cm elapsed=0.04s correct=3 wrong=8 errors=8 acc=0.273
+149.2s	282	processed 12/68 id=physics_DT027 status=pipeline_error answer= unit=None gold=8 cm elapsed=0.04s correct=3 wrong=9 errors=9 acc=0.250
+149.2s	283	processed 13/68 id=physics_DT028 status=pipeline_error answer= unit=None gold=4 cm elapsed=0.03s correct=3 wrong=10 errors=10 acc=0.231
+149.2s	284	processed 14/68 id=physics_DT029 status=pipeline_error answer= unit=None gold=36 cm elapsed=0.03s correct=3 wrong=11 errors=11 acc=0.214
+149.3s	285	processed 15/68 id=physics_DT030 status=pipeline_error answer= unit=None gold=48 cm elapsed=0.03s correct=3 wrong=12 errors=12 acc=0.200
+149.3s	286	processed 16/68 id=physics_DT033 status=correct_numeric answer=6.29129e+06 unit=N/C gold=6300000 V/m elapsed=0.02s correct=4 wrong=12 errors=12 acc=0.250
+149.3s	287	processed 17/68 id=physics_DT034 status=pipeline_error answer= unit=None gold=27.6 cm elapsed=0.04s correct=4 wrong=13 errors=13 acc=0.235
+149.3s	288	processed 18/68 id=physics_DT035 status=correct_numeric answer=4.49378e+06 unit=N/C gold=45.10^{5} V/m elapsed=0.02s correct=5 wrong=13 errors=13 acc=0.278
+149.4s	289	processed 19/68 id=physics_DT036 status=pipeline_error answer= unit=None gold=12 cm elapsed=0.04s correct=5 wrong=14 errors=14 acc=0.263
+149.4s	290	processed 20/68 id=physics_DT037 status=pipeline_error answer= unit=None gold=8 cm elapsed=0.04s correct=5 wrong=15 errors=15 acc=0.250
+149.5s	291	[Symbolic/Numeric Mismatch] Model: '', Gold: '4 . 10^{-9}'
+149.5s	292	processed 21/68 id=physics_DT040 status=pipeline_error answer= unit=None gold=4 . 10^{-9} C elapsed=0.04s correct=5 wrong=16 errors=16 acc=0.238
+149.5s	293	processed 22/68 id=physics_DT041 status=wrong_numeric answer=17296.6 unit=N/C gold=10^4 V/m elapsed=0.02s correct=5 wrong=17 errors=16 acc=0.227
+149.5s	294	processed 23/68 id=physics_DT042 status=pipeline_error answer= unit=None gold=-0.4 . 10^{-6} C elapsed=0.03s correct=5 wrong=18 errors=17 acc=0.217
+149.5s	295	[Symbolic/Numeric Mismatch] Model: '', Gold: '2.56'
+149.5s	296	processed 24/68 id=physics_DT043 status=pipeline_error answer= unit=None gold=2.56 mm elapsed=0.04s correct=5 wrong=19 errors=18 acc=0.208
+149.6s	297	processed 25/68 id=physics_DT044 status=unit_mismatch answer=2.25e+06 unit=V/m gold=-40 . 10^{-6} C elapsed=0.03s correct=5 wrong=20 errors=18 acc=0.200
+149.6s	298	[Symbolic/Numeric Mismatch] Model: '', Gold: '3 . 10^{-7}'
+149.6s	299	processed 26/68 id=physics_DT045 status=pipeline_error answer= unit=None gold=3 . 10^{-7} C elapsed=0.03s correct=5 wrong=21 errors=19 acc=0.192
+149.6s	300	processed 27/68 id=physics_DT046 status=wrong_numeric answer=17296.6 unit=N/C gold=3 . 10^4 V/m elapsed=0.03s correct=5 wrong=22 errors=19 acc=0.185
+149.7s	301	[Symbolic/Numeric Mismatch] Model: '', Gold: '1/2 . (1/ \sqrt{E_A} + 1/ \sqrt{E_B})'
+149.7s	302	processed 28/68 id=physics_DT047 status=pipeline_error answer= unit=None gold=1/2 . (1/ \sqrt{E_A} + 1/ \sqrt{E_B})  elapsed=0.03s correct=5 wrong=23 errors=20 acc=0.179
+149.7s	303	processed 29/68 id=physics_DT048 status=pipeline_error answer= unit=None gold=246 V/m elapsed=0.05s correct=5 wrong=24 errors=21 acc=0.172
+149.7s	304	processed 30/68 id=physics_DT049 status=pipeline_error answer= unit=None gold=-9 × 10^-8 C elapsed=0.04s correct=5 wrong=25 errors=22 acc=0.167
+149.8s	305	processed 31/68 id=physics_DT050 status=pipeline_error answer= unit=None gold=1.6 × 10^-7 C elapsed=0.04s correct=5 wrong=26 errors=23 acc=0.161
+149.8s	306	processed 32/68 id=physics_DT051 status=wrong_numeric answer=0 unit=N/C gold=1.22 . 10^{-3} V/m elapsed=0.02s correct=5 wrong=27 errors=23 acc=0.156
+149.8s	307	processed 33/68 id=physics_DT052 status=pipeline_error answer= unit=None gold=2160 V/m elapsed=0.04s correct=5 wrong=28 errors=24 acc=0.152
+149.9s	308	processed 34/68 id=physics_DT053 status=pipeline_error answer= unit=None gold=2000 V/m elapsed=0.04s correct=5 wrong=29 errors=25 acc=0.147
+149.9s	309	processed 35/68 id=physics_DT054 status=pipeline_error answer= unit=None gold=9.8 . 10^{5} N/C elapsed=0.04s correct=5 wrong=30 errors=26 acc=0.143
+150.0s	310	[Symbolic/Numeric Mismatch] Model: '', Gold: '538'
+150.0s	311	processed 36/68 id=physics_DT055 status=pipeline_error answer= unit=None gold=538 N/C elapsed=0.03s correct=5 wrong=31 errors=27 acc=0.139
+150.0s	312	[Symbolic/Numeric Mismatch] Model: '', Gold: '9000'
+150.0s	313	processed 37/68 id=physics_DT056 status=pipeline_error answer= unit=None gold=9000 V/m elapsed=0.03s correct=5 wrong=32 errors=28 acc=0.135
+150.1s	314	[Symbolic/Numeric Mismatch] Model: '', Gold: '4.5 . 10^5'
+150.1s	315	processed 38/68 id=physics_DT057 status=pipeline_error answer= unit=None gold=4.5 . 10^5 V/m elapsed=0.04s correct=5 wrong=33 errors=29 acc=0.132
+150.1s	316	[Symbolic/Numeric Mismatch] Model: '', Gold: '8E'
+150.1s	317	processed 39/68 id=physics_DT058 status=pipeline_error answer= unit=None gold=8E V/m elapsed=0.04s correct=5 wrong=34 errors=30 acc=0.128
+150.1s	318	[Symbolic/Numeric Mismatch] Model: '', Gold: '7500'
+150.1s	319	processed 40/68 id=physics_DT059 status=pipeline_error answer= unit=None gold=7500 V/m elapsed=0.03s correct=5 wrong=35 errors=31 acc=0.125
+150.2s	320	processed 41/68 id=physics_DT060 status=wrong_numeric answer=0.785398 unit=rad gold=1/4 \pi rad elapsed=0.03s correct=5 wrong=36 errors=31 acc=0.122
+150.2s	321	[Symbolic/Numeric Mismatch] Model: '', Gold: '16'
+150.2s	322	processed 42/68 id=physics_DT061 status=pipeline_error answer= unit=None gold=16 V/m elapsed=0.03s correct=5 wrong=37 errors=32 acc=0.119
+150.2s	323	[Symbolic/Numeric Mismatch] Model: '', Gold: '-2.7 . 10^{-8}'
+150.2s	324	processed 43/68 id=physics_DT062 status=pipeline_error answer= unit=None gold=-2.7 . 10^{-8} C elapsed=0.05s correct=5 wrong=38 errors=33 acc=0.116
+150.3s	325	[Symbolic/Numeric Mismatch] Model: '', Gold: '-6.4 . 10^{-8}'
+150.3s	326	processed 44/68 id=physics_DT063 status=pipeline_error answer= unit=None gold=-6.4 . 10^{-8} C elapsed=0.05s correct=5 wrong=39 errors=34 acc=0.114
+150.3s	327	processed 45/68 id=physics_DT072 status=wrong_numeric answer=7.47211e+07 unit=N/C gold=3863925.47 N/C elapsed=0.03s correct=5 wrong=40 errors=34 acc=0.111
+150.4s	328	processed 46/68 id=physics_DT073 status=pipeline_error answer= unit=None gold=6.43 x 10^5 N/C elapsed=0.03s correct=5 wrong=41 errors=35 acc=0.109
+150.4s	329	[Symbolic/Numeric Mismatch] Model: '', Gold: '1000000'
+150.4s	330	processed 47/68 id=physics_DT074 status=pipeline_error answer= unit=None gold=1000000 N/C elapsed=0.03s correct=5 wrong=42 errors=36 acc=0.106
+150.4s	331	[Symbolic/Numeric Mismatch] Model: '', Gold: '0'
+150.4s	332	processed 48/68 id=physics_DT075 status=pipeline_error answer= unit=None gold=0 N/C elapsed=0.03s correct=5 wrong=43 errors=37 acc=0.104
+150.5s	333	[Symbolic/Numeric Mismatch] Model: '', Gold: '3.4 . 10^{-7}'
+150.5s	334	processed 49/68 id=physics_DT080 status=pipeline_error answer= unit=None gold=3.4 . 10^{-7} kg elapsed=0.03s correct=5 wrong=44 errors=38 acc=0.102
+150.5s	335	processed 50/68 id=physics_DT081 status=wrong_numeric answer=363228 unit=N/C gold=200000 V/m elapsed=0.03s correct=5 wrong=45 errors=38 acc=0.100
+150.5s	336	processed 51/68 id=physics_DT082 status=pipeline_error answer= unit=None gold=1272792.21 V/m elapsed=0.03s correct=5 wrong=46 errors=39 acc=0.098
+150.6s	337	[Symbolic/Numeric Mismatch] Model: '', Gold: '156154.35'
+150.6s	338	processed 52/68 id=physics_DT083 status=pipeline_error answer= unit=None gold=156154.35 V/m elapsed=0.04s correct=5 wrong=47 errors=40 acc=0.096
+150.6s	339	processed 53/68 id=physics_DT084 status=pipeline_error answer= unit=None gold=245.91 N/C elapsed=0.04s correct=5 wrong=48 errors=41 acc=0.094
+150.6s	340	[Symbolic/Numeric Mismatch] Model: '', Gold: '32000'
+150.6s	341	processed 54/68 id=physics_DT085 status=pipeline_error answer= unit=None gold=32000 V/m elapsed=0.04s correct=5 wrong=49 errors=42 acc=0.093
+150.7s	342	processed 55/68 id=physics_DT087 status=wrong_numeric answer=7988.934926 unit=N/C gold=2000 V/m elapsed=0.03s correct=5 wrong=50 errors=42 acc=0.091
+150.7s	343	[Symbolic/Numeric Mismatch] Model: '', Gold: '10^{-11}'
+150.7s	344	processed 56/68 id=physics_DT088 status=pipeline_error answer= unit=None gold=10^{-11} C elapsed=0.03s correct=5 wrong=51 errors=43 acc=0.089
+150.7s	345	processed 57/68 id=physics_DT089 status=wrong_numeric answer=15566.9 unit=N/C gold=2.26.10^4 V/m elapsed=0.02s correct=5 wrong=52 errors=43 acc=0.088
+150.8s	346	processed 58/68 id=physics_DT090 status=pipeline_error answer= unit=None gold=540 V/m elapsed=0.03s correct=5 wrong=53 errors=44 acc=0.086
+150.8s	347	[Symbolic/Numeric Mismatch] Model: '', Gold: '100'
+150.8s	348	processed 59/68 id=physics_DT091 status=pipeline_error answer= unit=None gold=100 V/m elapsed=0.03s correct=5 wrong=54 errors=45 acc=0.085
+150.8s	349	[Symbolic/Numeric Mismatch] Model: '', Gold: '1.23 . 10^6'
+150.8s	350	processed 60/68 id=physics_DT092 status=pipeline_error answer= unit=None gold=1.23 . 10^6 V/m elapsed=0.04s correct=5 wrong=55 errors=46 acc=0.083
+150.9s	351	[Symbolic/Numeric Mismatch] Model: '', Gold: '4.25 . 10^5'
+150.9s	352	processed 61/68 id=physics_DT093 status=pipeline_error answer= unit=None gold=4.25 . 10^5 V/m elapsed=0.04s correct=5 wrong=56 errors=47 acc=0.082
+150.9s	353	[Symbolic/Numeric Mismatch] Model: '', Gold: '2000'
+150.9s	354	processed 62/68 id=physics_DT094 status=pipeline_error answer= unit=None gold=2000 V/m elapsed=0.04s correct=5 wrong=57 errors=48 acc=0.081
+150.9s	355	[Symbolic/Numeric Mismatch] Model: '', Gold: '4500'
+150.9s	356	processed 63/68 id=physics_DT095 status=pipeline_error answer= unit=None gold=4500 V/m elapsed=0.03s correct=5 wrong=58 errors=49 acc=0.079
+151.0s	357	processed 64/68 id=physics_DT096 status=wrong_numeric answer=39944.7 unit=N/C gold=0 N/C elapsed=0.03s correct=5 wrong=59 errors=49 acc=0.078
+151.0s	358	processed 65/68 id=physics_DT097 status=pipeline_error answer= unit=None gold=2.3 x 10^4 N/C elapsed=0.04s correct=5 wrong=60 errors=50 acc=0.077
+151.0s	359	processed 66/68 id=physics_DT098 status=wrong_numeric answer=622676 unit=N/C gold=4.0 × 10⁴ N/C elapsed=0.03s correct=5 wrong=61 errors=50 acc=0.076

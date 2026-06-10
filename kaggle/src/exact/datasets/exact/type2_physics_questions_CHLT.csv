@@ -1,0 +1,177 @@
+id,question,cot,answer,unit
+CHLT001,"An RLC series circuit consists of R=50 Ω, L=0.5 H, and C=20 μF. When an AC voltage with a frequency of 40 Hz is supplied, does the circuit experience electrical resonance?","Step 1: Identify the given values from the question: R = 50 Ω, L = 0.5 H, C = 20 μF, and the frequency is f = 40 Hz.
+Step 2: Convert the capacitance to SI units: C = 20 μF = 20 × 10⁻⁶ F.
+Step 3: Calculate the inductive reactance using the formula X_L = 2×pi*f*L and substitute the values: X_L = 2×pi*(40 Hz)×(0.5 H) = 40×pi Ω ≈ 125.66 Ω.
+Step 4: Calculate the capacitive reactance using the formula X_C = 1/(2×pi*f*C) and substitute the values: X_C = 1/(2×pi*(40 Hz)×(20 × 10⁻⁶ F)).
+Step 5: Calculate the denominator: 2×pi*(40)×(20 × 10⁻⁶) = 1600×pi × 10⁻⁶ = 1.6×pi × 10⁻³.
+Step 6: Perform the division: X_C = 1/(1.6×pi × 10⁻³) ≈ 199.47 Ω.
+Step 7: Compare the reactances: X_L ≈ 125.66 Ω and X_C ≈ 199.47 Ω, therefore X_L ≠ X_C.
+Step 8: Final conclusion: the circuit does not experience electrical resonance because the inductive reactance is not equal to the capacitive reactance.",No,-
+CHLT002,"Given a series AC circuit with R = 10 Ω, L = 0.4 H, and C = 50 μF, determine if resonance occurs at an operating frequency of 35.6 Hz.","Step 1: Identify the given values from the question: R = 10 Ω, L = 0.4 H, C = 50 μF, and the operating frequency is f = 35.6 Hz.
+Step 2: Recall that resonance in a series RLC circuit occurs when the operating frequency equals the resonant frequency, where the resonant frequency is given by f₀ = 1/(2×pi*sqrt(L*C)).
+Step 3: Convert the capacitance to SI units: C = 50 μF = 50 × 10⁻⁶ F.
+Step 4: Substitute the given values into the resonant frequency formula: f₀ = 1/(2×pi*sqrt((0.4 H)×(50 × 10⁻⁶ F))).
+Step 5: Calculate the product inside the square root: (0.4)×(50 × 10⁻⁶) = 20 × 10⁻⁶ = 2 × 10⁻⁵.
+Step 6: Take the square root: sqrt(2 × 10⁻⁵) ≈ 4.472 × 10⁻³.
+Step 7: Substitute into the expression: f₀ = 1/(2×pi*(4.472 × 10⁻³)).
+Step 8: Calculate the denominator: 2×pi*(4.472 × 10⁻³) ≈ 0.0281.
+Step 9: Perform the division: f₀ ≈ 1 / 0.0281 ≈ 35.6 Hz.
+Step 10: Final conclusion: the resonant frequency is approximately f₀ ≈ 35.6 Hz, which is equal to the operating frequency, therefore the circuit is in resonance.",Yes,-
+CHLT003,A pure inductor with an inductance of 0.2 H is connected in series with a resistor R=25 Ω and a capacitor C=10 μF. Determine if resonance occurs at a frequency of f=112 Hz?,"Step 1: Identify the given values from the question: the inductance is L = 0.2 H, the capacitance is C = 10 μF, the resistance is R = 25 Ω, and the operating frequency is f = 112 Hz.
+Step 2: Convert the capacitance to SI units: C = 10 μF = 10 × 10⁻⁶ F.
+Step 3: Recall the formula for the resonant frequency of a series RLC circuit: f₀ = 1/(2pisqrt(L*C)).
+Step 4: Substitute the given values into the formula: f₀ = 1/(2pisqrt((0.2 H)×(10 × 10⁻⁶ F))).
+Step 5: Calculate the product inside the square root: (0.2)×(10 × 10⁻⁶) = 2 × 10⁻⁶.
+Step 6: Take the square root: sqrt(2 × 10⁻⁶) ≈ 1.414 × 10⁻³.
+Step 7: Substitute into the expression: f₀ = 1/(2pi(1.414 × 10⁻³)).
+Step 8: Calculate the denominator: 2pi(1.414 × 10⁻³) ≈ 0.008885.
+Step 9: Perform the division: f₀ ≈ 1 / 0.008885 ≈ 112.6 Hz.
+Step 10: Compare the frequencies: f₀ ≈ 112.6 Hz and the operating frequency f = 112 Hz, which are approximately equal.
+Step 11: Final conclusion: the circuit operates at resonance because the operating frequency is approximately equal to the resonant frequency.",Yes,-
+CHLT004,"Given an RLC series circuit with R=40 Ω, L=0.318 H, and C=25 μF, will resonance occur if the AC current has a frequency of 56.4 Hz?","Step 1: Identify the given values from the question: the resistance is R = 40 Ω, the inductance is L = 0.318 H, the capacitance is C = 25 μF, and the operating frequency is f = 56.4 Hz.
+Step 2: Convert the capacitance to SI units: C = 25 μF = 25 × 10⁻⁶ F.
+Step 3: Recall the formula for the resonant frequency of a series RLC circuit: f₀ = 1/(2×pi*sqrt(L*C)).
+Step 4: Substitute the given values into the formula: f₀ = 1/(2×pi*sqrt((0.318 H)×(25 × 10⁻⁶ F))).
+Step 5: Calculate the product inside the square root: (0.318)×(25 × 10⁻⁶) = 7.95 × 10⁻⁶.
+Step 6: Take the square root: sqrt(7.95 × 10⁻⁶) ≈ 2.82 × 10⁻³.
+Step 7: Substitute into the expression: f₀ = 1/(2×pi*(2.82 × 10⁻³)).
+Step 8: Calculate the denominator: 2×pi*(2.82 × 10⁻³) ≈ 0.01772.
+Step 9: Perform the division: f₀ ≈ 1 / 0.01772 ≈ 56.4 Hz.
+Step 10: Compare the frequencies: f₀ ≈ 56.4 Hz and the operating frequency f = 56.4 Hz.
+Step 11: Final conclusion: resonance occurs because the operating frequency is equal to the resonant frequency.",Yes,-
+CHLT005,"An RLC series circuit has a resistor R=60 Ω, an inductor L=0.8 H, and a capacitor C=5 μF. When the power source supplies a frequency of 50 Hz, does electrical resonance occur?","Step 1: Identify the given values from the question: the resistance is R = 60 Ω, the inductance is L = 0.8 H, the capacitance is C = 5 μF, and the source frequency is f = 50 Hz.
+Step 2: Convert the capacitance to SI units: C = 5 μF = 5 × 10⁻⁶ F.
+Step 3: Calculate the inductive reactance using the formula X_L = 2×pi*f*L and substitute the values: X_L = 2×pi*(50 Hz)×(0.8 H) = 80×pi Ω ≈ 251.33 Ω.
+Step 4: Calculate the capacitive reactance using the formula X_C = 1/(2×pi*f*C) and substitute the values: X_C = 1/(2×pi*(50 Hz)×(5 × 10⁻⁶ F)).
+Step 5: Calculate the denominator: 2×pi*(50)×(5 × 10⁻⁶) = 500×pi × 10⁻⁶ = 0.0005×pi.
+Step 6: Perform the division: X_C = 1/(0.0005×pi) Ω ≈ 636.62 Ω.
+Step 7: Compare the reactances: X_L ≈ 251.33 Ω and X_C ≈ 636.62 Ω.
+Step 8: Final conclusion: electrical resonance does not occur because the inductive reactance is not equal to the capacitive reactance (X_L ≠ X_C).",No,-
+CHLT006,"An RLC series circuit consists of a resistor with R=100 Ω, an inductor with L=0.02 H, and a capacitor with C=200 μF. Is it in resonance at a frequency of 80 Hz?","Step 1: Identify the given values from the question: the resistance is R = 100 Ω, the inductance is L = 0.02 H, the capacitance is C = 200 μF, and the operating frequency is f = 80 Hz.
+Step 2: Convert the capacitance to SI units: C = 200 μF = 200 × 10⁻⁶ F.
+Step 3: Calculate the inductive reactance using the formula X_L = 2×pi*f*L and substitute the values: X_L = 2×pi*(80 Hz)×(0.02 H) = 3.2×pi Ω ≈ 10.05 Ω.
+Step 4: Calculate the capacitive reactance using the formula X_C = 1/(2×pi*f*C) and substitute the values: X_C = 1/(2×pi*(80 Hz)×(200 × 10⁻⁶ F)).
+Step 5: Calculate the denominator: 2×pi*(80)×(200 × 10⁻⁶) = 32000×pi × 10⁻⁶ = 0.032×pi.
+Step 6: Perform the division: X_C = 1/(0.032×pi) Ω ≈ 9.95 Ω.
+Step 7: Compare the reactances: X_L ≈ 10.05 Ω and X_C ≈ 9.95 Ω, which are approximately equal.
+Step 8: Final conclusion: the circuit is approximately in resonance because the inductive reactance is nearly equal to the capacitive reactance (X_L ≈ X_C).",Yes,-
+CHLT007,"A series RLC circuit consists of R=15 Ω, L=0.3 H, and C=30 μF. Is the circuit in resonance at a frequency of 70 Hz?","Step 1: Identify the given values from the question: the resistance is R = 15 Ω, the inductance is L = 0.3 H, the capacitance is C = 30 μF, and the operating frequency is f = 70 Hz.
+Step 2: Convert the capacitance to SI units: C = 30 μF = 30 × 10⁻⁶ F.
+Step 3: Recall the formula for the resonant frequency of a series RLC circuit: f₀ = 1/(2×pi*sqrt(L*C)).
+Step 4: Substitute the given values into the formula: f₀ = 1/(2×pi*sqrt((0.3 H)×(30 × 10⁻⁶ F))).
+Step 5: Calculate the product inside the square root: (0.3)×(30 × 10⁻⁶) = 9 × 10⁻⁶.
+Step 6: Take the square root: sqrt(9 × 10⁻⁶) = 3 × 10⁻³.
+Step 7: Substitute into the expression: f₀ = 1/(2×pi*(3 × 10⁻³)).
+Step 8: Calculate the denominator: 2×pi*(3 × 10⁻³) ≈ 0.01885.
+Step 9: Perform the division: f₀ ≈ 1 / 0.01885 ≈ 53.1 Hz.
+Step 10: Compare the frequencies: the resonant frequency f₀ ≈ 53.1 Hz while the operating frequency is f = 70 Hz.
+Step 11: Final conclusion: the circuit is not in resonance because the operating frequency is not equal to the resonant frequency.",No,-
+CHLT008,"For an RLC AC circuit with R = 45 Ω, L = 1 H, and C = 4 μF, does resonance occur in the circuit at a frequency of 79.6 Hz?","Step 1: Identify the given values from the question: the resistance is R = 45 Ω, the inductance is L = 1 H, the capacitance is C = 4 μF, and the operating frequency is f = 79.6 Hz.
+Step 2: Convert the capacitance to SI units: C = 4 μF = 4 × 10⁻⁶ F
+Step 3: Recall the formula for the resonant frequency of a series RLC circuit: f₀ = 1/(2×pi*sqrt(L*C)).
+Step 4: Substitute the given values into the formula: f₀ = 1/(2×pi*sqrt((1 H)×(4 × 10⁻⁶ F))).
+Step 5: Calculate the product inside the square root: (1)×(4 × 10⁻⁶) = 4 × 10⁻⁶.
+Step 6: Take the square root: sqrt(4 × 10⁻⁶) = 2 × 10⁻³.
+Step 7: Substitute into the expression: f₀ = 1/(2×pi*(2 × 10⁻³)) = 1/(4×pi × 10⁻³).
+Step 8: Simplify the expression: f₀ = 250/pi Hz.
+Step 9: Convert to decimal form: 250/pi ≈ 79.6 Hz.
+Step 10: Compare the frequencies: f₀ ≈ 79.6 Hz and the operating frequency f = 79.6 Hz.
+Step 11: Final conclusion: the circuit is in resonance because the operating frequency is equal to the resonant frequency.",Yes,-
+CHLT009,"A series circuit consists of a capacitor C=100 μF, an inductor L=0.01 H, and a resistor R=8 Ω. Does resonance occur at f=100 Hz?","Step 1: Identify the given values: C=100 μF, L=0.01 H, R=8 Ω, and the frequency f=100 Hz.
+Step 2: Convert the capacitance to Farads: C=100 μF=100×10⁻⁶ F=1×10⁻⁴ F.
+Step 3: Calculate the inductive reactance using X_L=2πfL: X_L=2π×100×0.01≈6.28 Ω.
+Step 4: Calculate the capacitive reactance using X_C=1/(2πfC): X_C=1/(2π×100×1×10⁻⁴)≈15.9 Ω.
+Step 5: Compare X_L and X_C.
+Step 6: X_L ≠ X_C, so resonance does not occur at f=100 Hz.",No,-
+CHLT010,"Consider an electrical circuit consisting of R=30 Ω, L=0.4 H, and a capacitor C=20 μF. Is the frequency f=56.3 Hz the resonant frequency of the circuit?","Step 1: Identify the given values: R=30 Ω, L=0.4 H, C=20 μF, and the given frequency f=56.3 Hz.
+Step 2: Convert the capacitance to Farads: C=20 μF=20×10⁻⁶ F.
+Step 3: Recall the formula for the resonant frequency of an RLC circuit: f_res=1/(2π√(LC)).
+Step 4: Substitute the values of L and C: f_res=1/(2π√(0.4×20×10⁻⁶)).
+Step 5: Calculate the value inside the square root: LC=0.4×20×10⁻⁶=8×10⁻⁶.
+Step 6: Compute the resonant frequency: f_res=1/(2π√(8×10⁻⁶))≈56.3 Hz.
+Step 7: The frequency 56.3 Hz is the resonant frequency of the circuit.",Yes,-
+CHLT011,"Consider an RLC series circuit with R=50 Ω, L=0.25 H, and C=25 μF. At a frequency of f=60 Hz, does resonance occur?","Step 1: Identify the given values L=0.25 H, C=25 μF, and operating frequency f=60 Hz.
+Step 2: Convert the capacitance to farads: C=25 μF=25×10⁻⁶ F.
+Step 3: Use the resonant frequency formula for a series RLC circuit: f_res=1/(2π√(LC)).
+Step 4: Substitute the values: LC=0.25×25×10⁻⁶=6.25×10⁻⁶; √(LC)=√(6.25×10⁻⁶)=2.5×10⁻³; f_res=1/(2π×2.5×10⁻³)=1/0.015708≈63.66 Hz.
+Step 5: Compare the operating frequency with the resonant frequency: f=60 Hz and f_res≈63.66 Hz, so they are not equal.
+Step 6: Resonance does not occur.",No,-
+CHLT012,"An RLC circuit has R=20 Ω, L=0.159 H, and C=10 μF. Is the circuit in resonance at f=126 Hz?","Step 1: State the resonance condition for an RLC circuit: X_L=X_C.
+Step 2: Calculate the inductive reactance: X_L=2πfL.
+Step 3: Substitute the values into the inductive reactance formula: X_L=2×π×126×0.159≈125.996 Ω.
+Step 4: Convert the capacitance to Farads: C=10 μF=10×10⁻⁶ F.
+Step 5: Calculate the capacitive reactance: X_C=1/(2πfC).
+Step 6: Substitute the values into the capacitive reactance formula: X_C=1/(2×π×126×10×10⁻⁶)≈126.3 Ω.
+Step 7: Compare the reactances: X_L≈125.996 Ω and X_C≈126.3 Ω≈X_L so the resonance condition is satisfied.
+Step 8: The frequency 126 Hz is the resonant frequency of the circuit.",Yes,-
+CHLT013,"Consider a series RLC circuit with R=35 Ω, L=0.5 H, C=2 μF. When supplied with an AC current at a frequency of 70 Hz, does the circuit resonate?","Step 1: Identify the given values: R=35 Ω, L=0.5 H, C=2 μF, f=70 Hz.
+Step 2: State the resonance condition for a series RLC circuit: f=f₀.
+Step 3: Recall the resonant frequency formula: f₀=1/(2π√(LC)).
+Step 4: Convert the capacitance to Farads: C=2μF=2×10⁻⁶F.
+Step 5: Substitute the values to compute LC: LC=0.5×2×10⁻⁶=1×10⁻⁶.
+Step 6: Calculate the square root of LC: √(LC)=√(1×10⁻⁶)=10⁻³.
+Step 7: Calculate the resonant frequency: f₀=1/(2π×10⁻³)≈159.15 Hz.
+Step 8: Compare the applied frequency with the resonant frequency: f=70 Hz and f₀≈159.15 Hz.
+Step 9: The circuit does not resonate.",No,-
+CHLT014,"A series RLC circuit has R=75 Ω, L=0.2 H, C=40 μF. Is 56.3 Hz the resonant frequency?","Step 1: Identify the formula for the resonant frequency of a series RLC circuit: f_res=1/(2π√(LC)).
+Step 2: Identify the given values and convert the capacitance to Farads: L=0.2 H and C=40 μF=40×10⁻⁶ F.
+Step 3: Substitute the given values into the resonant frequency formula: f_res=1/(2π√(0.2×40×10⁻⁶)).
+Step 4: Simplify the product inside the square root to prepare for calculation: 0.2×40×10⁻⁶=8×10⁻⁶.
+Step 5: Calculate the square root of the product: √(8×10⁻⁶)≈0.002828.
+Step 6: Calculate the denominator of the expression: 2π×0.002828≈0.01777.
+Step 7: Calculate the resonant frequency: f_res=1/0.01777≈56.27 Hz.
+Step 8: Compare the calculated value with the proposed value: 56.27 Hz≈56.3 Hz. 
+Step 9: 56.3 Hz is approximately the resonant frequency of the circuit.",Yes,-
+CHLT015,"A circuit consists of an inductor L=0.3 H, a capacitor C=5 μF, and a resistor R=12 Ω. When operating at f=100 Hz, does the circuit resonate?","Step 1: Identify the given values and convert capacitance to Farads: L=0.3 H, C=5 μF=5×10⁻⁶ F, f=100 Hz.
+Step 2: Calculate the inductive reactance using the formula: X_L=2πfL.
+Step 3: Substitute the values to compute the inductive reactance: X_L=2π×100×0.3=60π Ω≈188.50 Ω.
+Step 4: Calculate the capacitive reactance using the formula: X_C=1/(2πfC).
+Step 5: Substitute the values to compute the capacitive reactance: X_C=1/(2π×100×5×10⁻⁶).
+Step 6: Simplify the denominator to perform the calculation: 2π×100×5×10⁻⁶=0.0031416.
+Step 7: Calculate the capacitive reactance: X_C=1/0.0031416≈318.31 Ω.
+Step 8: Compare the inductive and capacitive reactances to determine resonance: XL≠XC since 188.50 Ω≠318.31 Ω.
+Step 9: The circuit is not in resonance at 100 Hz.",No,-
+CHLT016,"A series circuit contains a resistor R=90 Ω, an inductor L=0.25 H, and a capacitor C=100 μF. Does the circuit resonate at a frequency of 31.8 Hz?","Step 1: Identify the given values and convert capacitance to Farads: L=0.25 H, C=100 μF=100×10⁻⁶ F=1×10⁻⁴ F.
+Step 2: Recall the formula for the resonant frequency of a series RLC circuit: f₀=1/(2π√(LC)).
+Step 3: Substitute the given values into the formula to form the calculation expression: f₀=1/(2π√(0.25×1×10⁻⁴)).
+Step 4: Calculate the product inside the square root to simplify the expression: 0.25×1×10⁻⁴=2.5×10⁻⁵.
+Step 5: Calculate the square root of the product: √(2.5×10⁻⁵)=0.005.
+Step 6: Calculate the denominator of the frequency expression: 2π×0.005≈0.0314.
+Step 7: Calculate the resonant frequency: f₀=1/0.0314≈31.8 Hz.
+Step 8: Compare the calculated frequency with the proposed value: 31.8 Hz≈31.8 Hz.
+Step 9: The circuit resonates at approximately 31.8 Hz.",Yes,-
+CHLT017,"In a series RLC circuit with R=30 Ω, L=1 H, C=1 μF, does resonance occur at f=159 Hz?","Step 1: Identify the given values and convert capacitance to Farads: L=1 H, C=1 μF=1×10⁻⁶ F.
+Step 2: Recall the formula for the resonant frequency of a series RLC circuit: f₀=1/(2π√(LC)).
+Step 3: Substitute the given values into the formula to form the calculation expression: f₀=1/(2π√(1×1×10⁻⁶)).
+Step 4: Calculate the product inside the square root to simplify the expression: 1×1×10⁻⁶=1×10⁻⁶.
+Step 5: Calculate the square root of the product: √(1×10⁻⁶)=1×10⁻³.
+Step 6: Calculate the denominator of the frequency expression: 2π×1×10⁻³≈0.006283.
+Step 7: Calculate the resonant frequency: f₀=1/0.006283≈159.15 Hz.
+Step 8: Compare the calculated frequency with the given operating frequency: 159.15 Hz≈159 Hz.
+Step 9: The circuit resonates at approximately 159 Hz.",Yes,-
+CHLT018,"An AC circuit has R=18 Ω, L=0.8 H, and C=3 μF. At a frequency of 100 Hz, does electrical resonance occur?","Step 1: State the condition for electrical resonance in a series RLC circuit: X_L=X_C.
+Step 2: Calculate the inductive reactance using the given frequency and inductance: X_L=2πfL.
+Step 3: Substitute the values to compute the inductive reactance: X_L=2π×100×0.8=160π Ω≈502.65 Ω.
+Step 4: Convert the capacitance to Farads before calculating capacitive reactance: C=3 μF=3×10⁻⁶ F.
+Step 5: Calculate the capacitive reactance using the formula: X_C=1/(2πfC).
+Step 6: Substitute the values to compute the capacitive reactance: X_C=1/(2π×100×3×10⁻⁶)=1/(600π×10⁻⁶)≈530.52 Ω.
+Step 7: Compare the inductive and capacitive reactances to determine resonance: X_L≈502.65 Ω and X_C≈530.52 Ω so X_L≠X_C 
+Step 8: Electrical resonance does not occur at 100 Hz.",No,-
+CHLT019,"Does a series RLC circuit with R=20 Ω, L=0.1 H, C=50 μF resonate at f=71 Hz?","Step 1: Identify the given values and convert capacitance to Farads: R=20 Ω, L=0.1 H, C=50 μF=50×10⁻⁶ F, f=71 Hz.
+Step 2: Recall the formula for the resonant frequency of a series RLC circuit: f₀=1/(2π√(LC)).
+Step 3: Substitute the given values into the formula to form the calculation expression: f₀=1/(2π√(0.1×50×10⁻⁶)).
+Step 4: Calculate the product inside the square root to simplify the expression: 0.1×50×10⁻⁶=5×10⁻⁶.
+Step 5: Calculate the square root of the product: √(5×10⁻⁶)≈0.002236.
+Step 6: Calculate the denominator of the frequency expression: 2π×0.002236≈0.01405.
+Step 7: Calculate the resonant frequency: f₀=1/0.01405≈71.2 Hz.
+Step 8: Compare the calculated resonant frequency with the given frequency: 71.2 Hz≈71 Hz.
+Step 9: Tthe circuit resonates at approximately 71 Hz.",Yes,-
+CHLT020,"An AC circuit consists of R=10 Ω, L=0.05 H, C=100 μF. When the frequency is 225 Hz, does resonance occur?","Step 1: Identify the given values and convert capacitance to Farads: R=10 Ω, L=0.05 H, C=100 μF=100×10⁻⁶ F=1×10⁻⁴ F, f=225 Hz.
+Step 2: Recall the formula for the resonant frequency of a series RLC circuit: f₀=1/(2π√(LC)).
+Step 3: Substitute the given values into the formula to form the calculation expression: f₀=1/(2π√(0.05×1×10⁻⁴)).
+Step 4: Calculate the product inside the square root to simplify the expression: 0.05×1×10⁻⁴=5×10⁻⁶.
+Step 5: Calculate the square root of the product: √(5×10⁻⁶)≈0.002236.
+Step 6: Calculate the denominator of the frequency expression: 2π×0.002236≈0.01405.
+Step 7: Calculate the resonant frequency: f₀=1/0.01405≈71.2 Hz.
+Step 8: Compare the calculated resonant frequency with the given operating frequency: 71.2 Hz≠225 Hz.
+Step 9: Resonance does not occur at 225 Hz.",No,-

@@ -1,0 +1,1885 @@
+{
+  "config": "/tmp/exact_type2_run_hddu31p3.toml",
+  "source": "/kaggle/working/EXACT_2026/src/exact/datasets/exact/type2_physics_questions.csv",
+  "count": 10,
+  "requested_count": 10,
+  "offset": 0,
+  "interrupted": false,
+  "run_elapsed_seconds": 521.927014,
+  "format": "exact_type2_monitor_predictions",
+  "summary": {
+    "total": 10,
+    "correct": 6,
+    "wrong": 4,
+    "pipeline_errors": 0,
+    "missing_gold": 0,
+    "conceptual_only": 0,
+    "numeric_total": 10,
+    "numeric_correct": 6,
+    "accuracy": 0.6,
+    "numeric_accuracy": 0.6,
+    "average_elapsed_seconds": 52.192392700000006
+  },
+  "predictions": [
+    {
+      "answer": "0.045",
+      "explanation": "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed.",
+        "PoT solver failed; executable formula fallback was used. Reason: Traceback (most recent call last):\n  File \"<string>\", line 43, in <module>\n  File \"/tmp/exact_type2_g2weq7om/program.py\", line 7, in <module>\n    ans = E.to('J').magnitude\n          ^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/quantity.py\", line 537, in to\n    magnitude = self._convert_magnitude_not_inplace(other, *contexts, **ctx_kwargs)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/quantity.py\", line 480, in _convert_magnitude_not_inplace\n    return self._REGISTRY.convert(self._magnitude, self._units, other, **ctx_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/registry.py\", line 1121, in convert\n    return self._convert(value, src, dst, inplace, **ctx_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/context/registry.py\", line 410, in _convert\n    return super()._convert(value, src, dst, inplace, **ctx_kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/nonmultiplicative/registry.py\", line 264, in _convert\n    return super()._convert(value, src, dst, inplace)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/dist-packages/pint/facets/plain/registry.py\", line 1156, in _convert\n    raise factor\npint.errors.DimensionalityError: Cannot convert from 'coulomb * volt ** 2' ([mass] ** 2 * [length] ** 4 / [current] / [time] ** 5) to 'joule' ([mass] * [length] ** 2 / [time] ** 2)",
+        "Normalized the physics question and extracted known quantities.",
+        "Selected formula `W = 1/2 * C * U^2` from the capacitance formula bank.",
+        "Computed `energy` and converted the result to `J`."
+      ],
+      "premises": [
+        "The energy stored in a capacitor is W = 1/2 * C * U^2.",
+        "C = 100 uF",
+        "U = 30 V"
+      ],
+      "confidence": 0.82,
+      "id": "physics_TD401",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "J",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_TD401",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "formula_executor",
+        "predicted_method": "direct_formula",
+        "formula_family": "capacitor_energy",
+        "eligible_solvers": [
+          "formula_executor"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is direct_formula"
+          }
+        ],
+        "extraction_target": "energy",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "capacitance",
+          "voltage"
+        ],
+        "retrieved_formula_ids": [
+          "capacitor_energy",
+          "energy_disconnected_capacitor_insert_dielectric",
+          "energy_connected_capacitor_insert_dielectric",
+          "capacitor_energy_from_charge_voltage",
+          "capacitor_energy_from_charge_capacitance",
+          "electrical_energy_from_voltage_current_time",
+          "electrical_energy_from_voltage_charge",
+          "heat_from_fuel_mass_calorific_value",
+          "energy_from_power_time",
+          "work_from_force_distance",
+          "electric_potential_energy_two_point_charges",
+          "work_from_pressure_volume",
+          "heat_from_mass_specific_heat_temperature_change",
+          "inductor_energy",
+          "magnetic_energy_from_solenoid_geometry",
+          "joule_heating_from_current_resistance_time",
+          "total_energy_from_useful_efficiency",
+          "charge_from_capacitance_voltage",
+          "voltage_from_capacitor_energy_capacitance",
+          "capacitance_from_energy_voltage",
+          "capacitance_from_charge_voltage",
+          "voltage_from_charge_capacitance",
+          "voltage_disconnected_capacitor_distance_doubled",
+          "voltage_disconnected_capacitor_insert_dielectric"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_TD401",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "formula_executor",
+        "predicted_method": "direct_formula",
+        "formula_family": "capacitor_energy",
+        "eligible_solvers": [
+          "formula_executor"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is direct_formula"
+          }
+        ],
+        "extraction_target": "energy",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "capacitance",
+          "voltage"
+        ],
+        "retrieved_formula_ids": [
+          "capacitor_energy",
+          "energy_disconnected_capacitor_insert_dielectric",
+          "energy_connected_capacitor_insert_dielectric",
+          "capacitor_energy_from_charge_voltage",
+          "capacitor_energy_from_charge_capacitance",
+          "electrical_energy_from_voltage_current_time",
+          "electrical_energy_from_voltage_charge",
+          "heat_from_fuel_mass_calorific_value",
+          "energy_from_power_time",
+          "work_from_force_distance",
+          "electric_potential_energy_two_point_charges",
+          "work_from_pressure_volume",
+          "heat_from_mass_specific_heat_temperature_change",
+          "inductor_energy",
+          "magnetic_energy_from_solenoid_geometry",
+          "joule_heating_from_current_resistance_time",
+          "total_energy_from_useful_efficiency",
+          "charge_from_capacitance_voltage",
+          "voltage_from_capacitor_energy_capacitance",
+          "capacitance_from_energy_voltage",
+          "capacitance_from_charge_voltage",
+          "voltage_from_charge_capacitance",
+          "voltage_disconnected_capacitor_distance_doubled",
+          "voltage_disconnected_capacitor_insert_dielectric"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": true,
+        "diagnostics_only": true,
+        "evaluation_status": "correct_numeric"
+      },
+      "type2_kind": "mixed",
+      "gold_answer": "0.045",
+      "gold_unit": "J",
+      "elapsed_seconds": 152.063609
+    },
+    {
+      "answer": "0.0001",
+      "explanation": "capacitance_from_charge_voltage: C = Q / U",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed.",
+        "Retrieved formula context for the question.",
+        "Generated a Pint-based Python program with the LLM.",
+        "Executed the program in the sandbox.",
+        "Verified the numeric answer, unit, and formula IDs.",
+        "No LLM final explanation was available; used a concise verified fallback."
+      ],
+      "premises": [
+        "capacitance_from_charge_voltage: C = Q / U"
+      ],
+      "confidence": 0.72,
+      "id": "physics_TD402",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "F",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_TD402",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "formula_executor",
+        "predicted_method": "direct_formula",
+        "formula_family": "capacitor_charge",
+        "eligible_solvers": [
+          "formula_executor"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is direct_formula"
+          }
+        ],
+        "extraction_target": "capacitance",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "voltage"
+        ],
+        "retrieved_formula_ids": [
+          "capacitance_from_charge_voltage",
+          "capacitance_from_energy_voltage",
+          "capacitance_parallel_plate_distance_doubled",
+          "parallel_plate_capacitance_air",
+          "series_capacitance_two",
+          "parallel_capacitance",
+          "series_capacitance_three",
+          "parallel_capacitance_three",
+          "capacitor_energy_from_charge_voltage",
+          "electrical_energy_from_voltage_charge",
+          "voltage_from_charge_capacitance",
+          "charge_from_capacitance_voltage",
+          "capacitor_energy",
+          "capacitor_energy_from_charge_capacitance",
+          "voltage_disconnected_capacitor_insert_dielectric",
+          "voltage_connected_capacitor_insert_dielectric",
+          "energy_disconnected_capacitor_insert_dielectric",
+          "energy_connected_capacitor_insert_dielectric",
+          "voltage_connected_capacitor_distance_changed",
+          "voltage_disconnected_capacitor_distance_doubled",
+          "charge_parallel_plate_circular_air_capacitor",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_field_point_charge",
+          "electric_potential_point_charge"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_TD402",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "formula_executor",
+        "predicted_method": "direct_formula",
+        "formula_family": "capacitor_charge",
+        "eligible_solvers": [
+          "formula_executor"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is direct_formula"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is direct_formula"
+          }
+        ],
+        "extraction_target": "capacitance",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "voltage"
+        ],
+        "retrieved_formula_ids": [
+          "capacitance_from_charge_voltage",
+          "capacitance_from_energy_voltage",
+          "capacitance_parallel_plate_distance_doubled",
+          "parallel_plate_capacitance_air",
+          "series_capacitance_two",
+          "parallel_capacitance",
+          "series_capacitance_three",
+          "parallel_capacitance_three",
+          "capacitor_energy_from_charge_voltage",
+          "electrical_energy_from_voltage_charge",
+          "voltage_from_charge_capacitance",
+          "charge_from_capacitance_voltage",
+          "capacitor_energy",
+          "capacitor_energy_from_charge_capacitance",
+          "voltage_disconnected_capacitor_insert_dielectric",
+          "voltage_connected_capacitor_insert_dielectric",
+          "energy_disconnected_capacitor_insert_dielectric",
+          "energy_connected_capacitor_insert_dielectric",
+          "voltage_connected_capacitor_distance_changed",
+          "voltage_disconnected_capacitor_distance_doubled",
+          "charge_parallel_plate_circular_air_capacitor",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_field_point_charge",
+          "electric_potential_point_charge"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": true,
+        "diagnostics_only": true,
+        "evaluation_status": "correct_numeric"
+      },
+      "type2_kind": "mixed",
+      "gold_answer": "100",
+      "gold_unit": "μF",
+      "elapsed_seconds": 63.549554
+    },
+    {
+      "answer": "0.048892",
+      "explanation": "layout=three_side_triangle",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `q3` at point C as the target charge.",
+        "Added force from q1 at A to q3: r=0.05000000000000001 meter, sign=repulsive.",
+        "Added force from q2 at B to q3: r=0.029999999999999992 meter, sign=attractive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=three_side_triangle",
+        "q1@A=6e-08 coulomb",
+        "q2@B=-6e-08 coulomb",
+        "q3@C=6e-08 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD001",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD001",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2",
+          "length_3"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "electric_potential_energy_two_point_charges",
+          "rectangular_prism_volume",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_field_midpoint_between_equal_charges",
+          "triangle_area_base_height",
+          "pythagorean_hypotenuse",
+          "pythagorean_leg",
+          "charge_parallel_plate_circular_air_capacitor"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD001",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2",
+          "length_3"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "electric_potential_energy_two_point_charges",
+          "rectangular_prism_volume",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_field_midpoint_between_equal_charges",
+          "triangle_area_base_height",
+          "pythagorean_hypotenuse",
+          "pythagorean_leg",
+          "charge_parallel_plate_circular_air_capacitor"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": true,
+        "diagnostics_only": true,
+        "evaluation_status": "correct_numeric"
+      },
+      "type2_kind": "numerical",
+      "gold_answer": "0.05",
+      "gold_unit": "N",
+      "elapsed_seconds": 18.800959
+    },
+    {
+      "answer": "0.024415",
+      "explanation": "layout=right_angle_at_a",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `qa` at point A as the target charge.",
+        "Added force from qb at B to qa: r=4.0 meter, sign=attractive.",
+        "Added force from qc at C to qa: r=3.0 meter, sign=repulsive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=right_angle_at_a",
+        "qa@A=4.9999999999999996e-06 coulomb",
+        "qb@B=-4.9999999999999996e-06 coulomb",
+        "qc@C=4e-06 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD002",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD002",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "text_solver",
+        "predicted_method": "conceptual_reasoning",
+        "formula_family": "conceptual_selection",
+        "eligible_solvers": [
+          "text_solver"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "formula_executor",
+            "reason": "predicted solver family is text_solver"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is conceptual_reasoning"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_three_charges_triangle_on_q3",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "electric_potential_energy_two_point_charges",
+          "electric_dipole_moment_magnitude",
+          "electric_field_midpoint_between_equal_charges",
+          "pythagorean_leg",
+          "electric_field_midpoint_between_opposite_equal_charges"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD002",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "text_solver",
+        "predicted_method": "conceptual_reasoning",
+        "formula_family": "conceptual_selection",
+        "eligible_solvers": [
+          "text_solver"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "formula_executor",
+            "reason": "predicted solver family is text_solver"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is conceptual_reasoning"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_three_charges_triangle_on_q3",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "electric_potential_energy_two_point_charges",
+          "electric_dipole_moment_magnitude",
+          "electric_field_midpoint_between_equal_charges",
+          "pythagorean_leg",
+          "electric_field_midpoint_between_opposite_equal_charges"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": false,
+        "diagnostics_only": true,
+        "evaluation_status": "wrong_numeric"
+      },
+      "type2_kind": "mixed",
+      "gold_answer": "24.45 × 10^-3",
+      "gold_unit": "N",
+      "elapsed_seconds": 22.132993
+    },
+    {
+      "answer": "6.751058",
+      "explanation": "net_force_three_charges_triangle_on_q3: F_net = |F13 + F23| using Coulomb forces and the law of cosines",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Retrieved formula context for the question.",
+        "Generated a Pint-based Python program with the LLM.",
+        "Executed the program in the sandbox.",
+        "Verified the numeric answer, unit, and formula IDs.",
+        "No LLM final explanation was available; used a concise verified fallback."
+      ],
+      "premises": [
+        "net_force_three_charges_triangle_on_q3: F_net = |F13 + F23| using Coulomb forces and the law of cosines"
+      ],
+      "confidence": 0.72,
+      "id": "physics_LD003",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD003",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2",
+          "length_3"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "resultant_two_forces_angle",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "rectangular_prism_volume",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_dipole_moment_magnitude",
+          "electric_field_point_charge",
+          "electric_field_midpoint_between_opposite_equal_charges",
+          "electric_field_midpoint_between_equal_charges",
+          "pythagorean_hypotenuse"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD003",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2",
+          "length_3"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "resultant_two_forces_angle",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "rectangular_prism_volume",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_dipole_moment_magnitude",
+          "electric_field_point_charge",
+          "electric_field_midpoint_between_opposite_equal_charges",
+          "electric_field_midpoint_between_equal_charges",
+          "pythagorean_hypotenuse"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": true,
+        "diagnostics_only": true,
+        "evaluation_status": "correct_numeric"
+      },
+      "type2_kind": "numerical",
+      "gold_answer": "6.76",
+      "gold_unit": "N",
+      "elapsed_seconds": 140.495808
+    },
+    {
+      "answer": "0.005226",
+      "explanation": "layout=three_side_triangle",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `mass` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `q0` at point M as the target charge.",
+        "Added force from q1 at A to q0: r=0.04 meter, sign=attractive.",
+        "Added force from q2 at B to q0: r=0.030000000000000006 meter, sign=attractive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=three_side_triangle",
+        "q1@A=3e-08 coulomb",
+        "q2@B=2e-08 coulomb",
+        "q0@M=-2e-08 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD004",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD004",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "mass",
+          "mass_2"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_right_triangle_at_a_from_b_c",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "deflection_angle_uniform_field",
+          "electric_dipole_moment_magnitude",
+          "electric_field_midpoint_between_equal_charges",
+          "electric_field_point_charge",
+          "electric_field_midpoint_between_opposite_equal_charges",
+          "electric_potential_point_charge"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD004",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "mass",
+          "mass_2"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "coulomb_force",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_right_triangle_at_a_from_b_c",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_two_equal_sources_right_angle",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "deflection_angle_uniform_field",
+          "electric_dipole_moment_magnitude",
+          "electric_field_midpoint_between_equal_charges",
+          "electric_field_point_charge",
+          "electric_field_midpoint_between_opposite_equal_charges",
+          "electric_potential_point_charge"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": false,
+        "diagnostics_only": true,
+        "evaluation_status": "wrong_numeric"
+      },
+      "type2_kind": "mixed",
+      "gold_answer": "5.234 × 10^-3",
+      "gold_unit": "N",
+      "elapsed_seconds": 22.913679
+    },
+    {
+      "answer": "1.55669e-26",
+      "explanation": "layout=equilateral_triangle",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `q3` at point C as the target charge.",
+        "Added force from q1 at A to q3: r=0.16 meter, sign=repulsive.",
+        "Added force from q2 at B to q3: r=0.16 meter, sign=repulsive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=equilateral_triangle",
+        "q1@A=1.6e-19 coulomb",
+        "q2@B=1.6e-19 coulomb",
+        "q3@C=1.6e-19 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD005",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD005",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "length"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_equal_coulomb_equilateral",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "electric_field_two_equal_sources_equilateral",
+          "net_force_equal_charges_right_angle",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_charges_triangle_on_q3",
+          "coulomb_force",
+          "net_force_three_collinear_middle_charge",
+          "net_force_right_triangle_at_a_from_b_c",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "electric_field_point_charge",
+          "electric_dipole_moment_magnitude",
+          "electric_field_midpoint_between_opposite_equal_charges",
+          "electric_field_midpoint_between_equal_charges"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD005",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "length"
+        ],
+        "retrieved_formula_ids": [
+          "net_force_equal_coulomb_equilateral",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "electric_field_two_equal_sources_equilateral",
+          "net_force_equal_charges_right_angle",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_charges_triangle_on_q3",
+          "coulomb_force",
+          "net_force_three_collinear_middle_charge",
+          "net_force_right_triangle_at_a_from_b_c",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "electric_field_point_charge",
+          "electric_dipole_moment_magnitude",
+          "electric_field_midpoint_between_opposite_equal_charges",
+          "electric_field_midpoint_between_equal_charges"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": false,
+        "diagnostics_only": true,
+        "evaluation_status": "wrong_numeric"
+      },
+      "type2_kind": "numerical",
+      "gold_answer": "9\\sqrt{3} × 10^-27",
+      "gold_unit": "N",
+      "elapsed_seconds": 21.211238
+    },
+    {
+      "answer": "0.001229",
+      "explanation": "layout=perpendicular_bisector",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Built an electrostatic geometry graph with charge nodes and point coordinates.",
+        "Identified `q` at point M as the target charge.",
+        "Added force from q1 at A to q: r=0.05 meter, sign=repulsive.",
+        "Added force from q2 at B to q: r=0.05 meter, sign=attractive.",
+        "Summed x/y force components and returned the net magnitude."
+      ],
+      "premises": [
+        "layout=perpendicular_bisector",
+        "q1@A=1e-08 coulomb",
+        "q2@B=-3e-08 coulomb",
+        "q@M=1e-08 coulomb"
+      ],
+      "confidence": 0.93,
+      "id": "physics_LD006",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD006",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "text_solver",
+        "predicted_method": "conceptual_reasoning",
+        "formula_family": "conceptual_selection",
+        "eligible_solvers": [
+          "text_solver"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "formula_executor",
+            "reason": "predicted solver family is text_solver"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is conceptual_reasoning"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "force",
+          "length",
+          "length_2"
+        ],
+        "retrieved_formula_ids": [
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "net_force_equal_charges_right_angle",
+          "resultant_two_perpendicular_forces",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "rectangular_prism_volume",
+          "DefinitionOfElectricFlux",
+          "magnetic_flux_from_field_area",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "coulomb_force",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_three_charges_triangle_on_q3",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_two_equal_sources_equilateral",
+          "coulomb_equal_charges_from_force"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD006",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "text_solver",
+        "predicted_method": "conceptual_reasoning",
+        "formula_family": "conceptual_selection",
+        "eligible_solvers": [
+          "text_solver"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "formula_executor",
+            "reason": "predicted solver family is text_solver"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is conceptual_reasoning"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is conceptual_reasoning"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "mixed",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "force",
+          "length",
+          "length_2"
+        ],
+        "retrieved_formula_ids": [
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "net_force_equal_charges_right_angle",
+          "resultant_two_perpendicular_forces",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "rectangular_prism_volume",
+          "DefinitionOfElectricFlux",
+          "magnetic_flux_from_field_area",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "coulomb_force",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_three_charges_triangle_on_q3",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_two_equal_sources_equilateral",
+          "coulomb_equal_charges_from_force"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": false,
+        "diagnostics_only": true,
+        "evaluation_status": "wrong_numeric"
+      },
+      "type2_kind": "mixed",
+      "gold_answer": "1.23 × 10^-3",
+      "gold_unit": "N",
+      "elapsed_seconds": 32.114429
+    },
+    {
+      "answer": "17.256099",
+      "explanation": "For a target on the perpendicular bisector, resolve each Coulomb force into x/y components.",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `charge` quantities were extracted; object identity must remain clear.; Multiple `length` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Matched a high-confidence deterministic vector template before LLM code generation.",
+        "Detected two source charges and a target on the perpendicular bisector.",
+        "Computed vector magnitude and converted the result to N."
+      ],
+      "premises": [
+        "For a target on the perpendicular bisector, resolve each Coulomb force into x/y components.",
+        "q1 = +2e-6 C",
+        "q2 = -2e-6 C",
+        "q3 = +2e-6 C",
+        "6 cm",
+        "4 cm"
+      ],
+      "confidence": 0.9,
+      "id": "physics_LD007",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD007",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2"
+        ],
+        "retrieved_formula_ids": [
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "net_force_equal_charges_right_angle",
+          "resultant_two_perpendicular_forces",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "rectangular_prism_volume",
+          "DefinitionOfElectricFlux",
+          "magnetic_flux_from_field_area",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "coulomb_force",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_three_charges_triangle_on_q3",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_dipole_moment_magnitude"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD007",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "geometry_vector_graph",
+        "formula_family": "vector_resultant_force",
+        "eligible_solvers": [
+          "electrostatic_graph"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "vector_superposition",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is geometry_vector_graph"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is geometry_vector_graph"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "charge",
+          "charge_2",
+          "charge_3",
+          "length",
+          "length_2"
+        ],
+        "retrieved_formula_ids": [
+          "electric_field_opposite_equal_charges_perpendicular_bisector",
+          "net_force_equal_charges_right_angle",
+          "resultant_two_perpendicular_forces",
+          "electric_field_two_equal_sources_right_angle",
+          "pythagorean_hypotenuse",
+          "triangle_area_base_height",
+          "rectangular_prism_volume",
+          "DefinitionOfElectricFlux",
+          "magnetic_flux_from_field_area",
+          "net_force_right_triangle_at_a_from_b_c",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_collinear_middle_charge",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "coulomb_force",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_three_charges_triangle_on_q3",
+          "force_from_field_charge",
+          "force_from_work_distance",
+          "resultant_two_forces_angle",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_potential_energy_two_point_charges",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_dipole_moment_magnitude"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": true,
+        "diagnostics_only": true,
+        "evaluation_status": "correct_numeric"
+      },
+      "type2_kind": "numerical",
+      "gold_answer": "17.28",
+      "gold_unit": "N",
+      "elapsed_seconds": 36.36348
+    },
+    {
+      "answer": "7",
+      "explanation": "For forces in the same direction, add the magnitudes directly.",
+      "fol": null,
+      "cot": [
+        "Extraction checklist passed. Warnings: Multiple `force` quantities were extracted; object identity must remain clear.",
+        "Used deterministic vector template before LLM code generation.",
+        "Matched a high-confidence deterministic vector template before LLM code generation.",
+        "Detected two force magnitudes acting in the same direction.",
+        "Computed vector magnitude and converted the result to N."
+      ],
+      "premises": [
+        "For forces in the same direction, add the magnitudes directly.",
+        "3 N",
+        "4 N"
+      ],
+      "confidence": 0.9,
+      "id": "physics_LD008",
+      "task_type": "type2_physics",
+      "question_type": "numerical",
+      "unit": "N",
+      "error": null,
+      "routing_diagnostics": {
+        "id": "physics_LD008",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "vector_superposition",
+        "formula_family": "superposition_force",
+        "eligible_solvers": [
+          "vector_superposition"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is vector_superposition"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is vector_superposition"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is vector_superposition"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is vector_superposition"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "force",
+          "force_2"
+        ],
+        "retrieved_formula_ids": [
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "force_from_field_charge",
+          "coulomb_force",
+          "net_force_three_collinear_middle_charge",
+          "net_force_right_triangle_at_a_from_b_c",
+          "force_from_work_distance",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_field_from_force_charge",
+          "work_from_force_distance",
+          "pressure_from_force_area",
+          "distance_from_work_force",
+          "coulomb_equal_charges_from_force",
+          "power_from_force_speed",
+          "speed_from_power_force",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_midpoint_between_equal_charges",
+          "CoulombsLaw"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": null,
+        "diagnostics_only": true
+      },
+      "routing_log": {
+        "id": "physics_LD008",
+        "gold_solver_family": null,
+        "gold_or_dataset_method": null,
+        "gold_formula_family": null,
+        "predicted_solver_family": "vector_solver",
+        "predicted_method": "vector_superposition",
+        "formula_family": "superposition_force",
+        "eligible_solvers": [
+          "vector_superposition"
+        ],
+        "ineligible_solvers": [
+          {
+            "solver": "text_solver",
+            "reason": "question is not classified as conceptual"
+          },
+          {
+            "solver": "formula_executor",
+            "reason": "target appears vector-valued, not scalar direct formula"
+          },
+          {
+            "solver": "electrostatic_graph",
+            "reason": "predicted method is vector_superposition"
+          },
+          {
+            "solver": "circuit_network_graph",
+            "reason": "predicted method is vector_superposition"
+          },
+          {
+            "solver": "capacitor_network_graph",
+            "reason": "predicted method is vector_superposition"
+          },
+          {
+            "solver": "equilibrium_solver",
+            "reason": "predicted method is vector_superposition"
+          }
+        ],
+        "extraction_target": "force",
+        "extraction_kind": "numerical",
+        "extracted_quantities": [
+          "force",
+          "force_2"
+        ],
+        "retrieved_formula_ids": [
+          "resultant_two_perpendicular_forces",
+          "resultant_two_forces_angle",
+          "net_force_midpoint_between_opposite_equal_charges",
+          "net_force_three_charges_triangle_on_q3",
+          "net_force_equal_charges_right_angle",
+          "net_force_equal_coulomb_equilateral",
+          "net_force_two_equal_sources_equilateral_on_target",
+          "force_from_field_charge",
+          "coulomb_force",
+          "net_force_three_collinear_middle_charge",
+          "net_force_right_triangle_at_a_from_b_c",
+          "force_from_work_distance",
+          "force_from_pressure_area",
+          "force_from_power_speed",
+          "electric_field_from_force_charge",
+          "work_from_force_distance",
+          "pressure_from_force_area",
+          "distance_from_work_force",
+          "coulomb_equal_charges_from_force",
+          "power_from_force_speed",
+          "speed_from_power_force",
+          "electric_field_two_equal_sources_equilateral",
+          "electric_field_midpoint_between_equal_charges",
+          "CoulombsLaw"
+        ],
+        "actual_solver": "llm_pot",
+        "fallback_solver": "llm_pot",
+        "fallback_used": false,
+        "verification_passed": true,
+        "correct": true,
+        "diagnostics_only": true,
+        "evaluation_status": "correct_numeric"
+      },
+      "type2_kind": "numerical",
+      "gold_answer": "7",
+      "gold_unit": "N",
+      "elapsed_seconds": 12.278178
+    }
+  ]
+}

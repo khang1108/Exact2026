@@ -1,0 +1,39 @@
+{
+  "source": "artifacts/predictions/type2/kaggle_smoke.json",
+  "count": 1,
+  "relative_tolerance": 0.02,
+  "absolute_tolerance": 1e-09,
+  "summary": {
+    "total": 1,
+    "correct": 1,
+    "wrong": 0,
+    "missing_gold": 0,
+    "conceptual_only": 0,
+    "accuracy": 1.0,
+    "numeric_total": 1,
+    "numeric_correct": 1,
+    "numeric_accuracy": 1.0,
+    "pipeline_errors": 0,
+    "unit_mismatches": 0,
+    "relative_tolerance": 0.02,
+    "absolute_tolerance": 1e-09,
+    "by_status": {
+      "correct_numeric": 1
+    }
+  },
+  "rows": [
+    {
+      "id": "physics_TD401",
+      "answer": "0.045",
+      "unit": "J",
+      "gold_answer": "0.045",
+      "gold_unit": "J",
+      "status": "correct_numeric",
+      "numeric_ok": true,
+      "unit_ok": true,
+      "relative_error": 0.0,
+      "absolute_error": 0.0,
+      "error": null
+    }
+  ]
+}

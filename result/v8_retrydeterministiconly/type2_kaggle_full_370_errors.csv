@@ -1,0 +1,228 @@
+id,answer,unit,gold_answer,gold_unit,status,numeric_ok,unit_ok,relative_error,absolute_error,error
+physics_TD387,,,2.140,uF,pipeline_error,,,,,float division by zero
+physics_TD027,,,3.36,nC,pipeline_error,,,,,division by zero
+physics_TD005,,,1.2,nC,pipeline_error,,,,,division by zero
+physics_TD069,,,5.27,nC,pipeline_error,,,,,division by zero
+physics_TD363,,,10,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_TD021,,,5.23,nC,pipeline_error,,,,,division by zero
+physics_TD375,,,22.36,V,pipeline_error,,,,,type2_pot_solver_failed
+physics_TD007,,,1200,V,pipeline_error,,,,,division by zero
+physics_TD006,,,1,pF,pipeline_error,,,,,division by zero
+physics_TD378,,,15.81,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_TD398,,,1.66,nJ,pipeline_error,,,,,type2_pot_solver_failed
+physics_TD367,,,4,lần,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_TD392,3.54168e-06,J,0.354,J/m³,unit_mismatch,False,False,0.9999899952542373,0.35399645832,
+physics_TD166,,,3.005,nC,pipeline_error,,,,,division by zero
+physics_TD374,0.000216,J,0; 0,uC; uJ,unit_mismatch,False,False,215999.99999999997,0.000216,
+physics_TD039,,,0.6,nC,pipeline_error,,,,,division by zero
+physics_TD389,,,7.23*10^4,mN,pipeline_error,,,,,division by zero
+physics_TD373,0.0004,J,50%,,wrong_numeric,False,,0.999992,49.9996,
+physics_TD385,2e-06,J,4.000,uJ,wrong_numeric,False,True,0.5,2.0,
+physics_TD386,,,decreases by half,,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_TD090,,,2.38,nC,pipeline_error,,,,,division by zero
+physics_TD087,,,2.54,nC,pipeline_error,,,,,division by zero
+physics_TD066,,,2.61,nC,pipeline_error,,,,,division by zero
+physics_TD010,,,100,V,pipeline_error,,,,,division by zero
+physics_TD030,,,0.63,nC,pipeline_error,,,,,division by zero
+physics_TD091,,,2.085,uC,pipeline_error,,,,,type2_pot_solver_failed
+physics_LD297,3.66923e+07,N/C,1.84*10^7,V/m,wrong_numeric,False,True,0.9941467391304348,18292300.0,
+physics_LD100,0,N/C,5.67 × 10^6,V/m,wrong_numeric,False,True,1.0,5670000.0,
+physics_LD340,2.25254e+06,N/C,8.87*10^6,V/m,wrong_numeric,False,True,0.7460496054114995,6617460.0,
+physics_LD399,4.91452e+07,N/C,18.07 × 10^6,V/m,wrong_numeric,False,True,1.7197122302158274,31075200.0,
+physics_LD150,,,36.32,N,pipeline_error,,,,,'NoneType' object has no attribute 'upper'
+physics_LD041,1.79751e+12,N,\sqrt{2} × F₀,N,wrong_numeric,False,True,898754999999.0,1797509999998.0,
+physics_LD327,34846,N/C,4.36 × 10^7,V/m,wrong_numeric,False,True,0.9992007798165138,43565154.0,
+physics_LD084,,,0,V/m,pipeline_error,,,,,type2_pot_solver_failed
+physics_LD345,4.41405e+06,N/C,5.608*10^7,V/m,wrong_numeric,False,True,0.9212901212553495,51665950.0,
+physics_LD353,5.61206e+07,N/C,6.02 × 10^7,V/m,wrong_numeric,False,True,0.06776411960132879,4079399.9999999925,
+physics_LD333,,,9.18 × 10^6,V/m,pipeline_error,,,,,type2_pot_solver_failed
+physics_LD088,0,V/m,73718,V/m,wrong_numeric,False,True,1.0,73718.0,
+physics_LD329,2.112954,N,1.76 × 10^6,V/m,unit_mismatch,False,False,0.9999987994579546,1759997.887046,
+physics_LD287,,,1.028,N,pipeline_error,,,,,'NoneType' object has no attribute 'upper'
+physics_LD114,0.009599,N,5.625*10^-3,N,wrong_numeric,False,True,0.7064888888888889,0.003974,
+physics_LD354,1.23139e+07,N/C,1.155*10^7,V/m,wrong_numeric,False,True,0.06613852813852814,763900.0,
+physics_LD397,2.22473e+06,N/C,3.15*10^6,V/m,wrong_numeric,False,True,0.29373650793650796,925270.0,
+physics_LD119,0.014381,N,12*10^-3,N,wrong_numeric,False,True,0.1984166666666666,0.0023809999999999994,
+physics_LD034,7.98893e-06,N,4 × 10^-6,N,wrong_numeric,False,True,0.9972325,3.98893e-06,
+physics_DT060,0.785398,rad,1/4 \pi,rad,wrong_numeric,False,True,0.21460199999999996,0.21460199999999996,
+physics_DT047,,,1/2 . (1/ \sqrt{E_A} + 1/ \sqrt{E_B}),,pipeline_error,,,,,type2_pot_solver_failed
+physics_DT096,39944.7,N/C,0,N/C,wrong_numeric,False,True,39944699999999.99,39944.7,
+physics_DT082,2.54206e+06,N/C,1272792.21,V/m,wrong_numeric,False,True,0.9972309541397963,1269267.79,
+physics_DT091,39.320539,N/C,100,V/m,wrong_numeric,False,True,0.60679461,60.679461,
+physics_DT020,7.19004e+10,N/C,\frac{4 \sqrt{2} k q}{\epsilon a^2},V/m,wrong_numeric,False,True,17975099999.0,71900399996.0,
+physics_DT034,2.5907e+06,N/C,27.6,cm,unit_mismatch,False,False,93864.9420289855,2590672.4,
+physics_DT019,2.54206e+10,N/C,0,V/m,wrong_numeric,False,True,2.5420600000000004e+19,25420600000.000004,
+physics_DT075,,,0,N/C,pipeline_error,,,,,type2_pot_solver_failed
+physics_DT055,561.721987,N/C,538,N/C,wrong_numeric,False,True,0.04409291263940523,23.721987000000013,
+physics_DT054,326820,N/C,9.8 . 10^{5},N/C,wrong_numeric,False,True,33347.97959183673,326810.2,
+physics_DT098,622676,N/C,4.0 × 10⁴,N/C,wrong_numeric,False,True,155668.0,622672.0,
+physics_DT057,898755,N/C,4.5 . 10^5,V/m,wrong_numeric,False,True,199722.33333333334,898750.5,
+physics_DT099,17975.1,N/C,0,N/C,wrong_numeric,False,True,17975099999999.996,17975.1,
+physics_DT085,32754.6,N/C,32000,V/m,wrong_numeric,False,True,0.023581249999999953,754.5999999999985,
+physics_DT045,,,3 . 10^{-7},C,pipeline_error,,,,,type2_pot_solver_failed
+physics_DT043,,,2.56,mm,pipeline_error,,,,,type2_pot_solver_failed
+physics_DT030,,,48,cm,pipeline_error,,,,,type2_pot_solver_failed
+physics_DT093,1.09848e+06,N/C,4.25 . 10^5,V/m,wrong_numeric,False,True,258464.88235294117,1098475.75,
+physics_DT052,0,N/C,2160,V/m,wrong_numeric,False,True,1.0,2160.0,
+physics_DT051,0,N/C,1.22 . 10^{-3},V/m,wrong_numeric,False,True,1.0,1.22,
+physics_DT006,3.35875e+06,N/C,0.168,N,unit_mismatch,False,False,19992558.523809522,3358749.832,
+physics_DT004,0.898755,N,0.7,N,wrong_numeric,False,True,0.28393571428571435,0.19875500000000001,
+physics_DT008,3.18198e+09,N/C,/frac{2k \abs{q} h}{(a^2 + h^2)^1.5},V/m,wrong_numeric,False,True,1590989999.0,3181979998.0,
+physics_DT100,76698.4,N/C,5.76 x 10^4,N/C,wrong_numeric,False,True,0.33156944444444436,19098.399999999994,
+physics_DT025,0.4,m,60,cm,wrong_numeric,False,True,0.3333333333333333,20.0,
+physics_DT084,7988.934926,N/C,245.91,N/C,wrong_numeric,False,True,31.487230799886138,7743.024926,
+physics_DT005,3.74481e+06,N/C,0.094,N,unit_mismatch,False,False,39838403.25531915,3744809.906,
+physics_DT044,2.25e+06,V/m,-40 . 10^{-6},C,unit_mismatch,False,False,56110.72568578554,2250040.1,
+physics_DT056,15956.1,N/C,9000,V/m,wrong_numeric,False,True,0.7729,6956.1,
+physics_DT049,,,-9 × 10^-8,C,pipeline_error,,,,,"Command '['/usr/bin/python3', '-I', '-c', '\nimport builtins\nimport json\nimport math\nimport sys\nfrom pathlib import Path\n\nSAFE_BUILTINS = {\n    ""abs"": abs,\n    ""all"": all,\n    ""any"": any,\n    ""bool"": bool,\n    ""dict"": dict,\n    ""enumerate"": enumerate,\n    ""float"": float,\n    ""isinstance"": isinstance,\n    ""len"": len,\n    ""list"": list,\n    ""max"": max,\n    ""min"": min,\n    ""pow"": pow,\n    ""print"": print,\n    ""range"": range,\n    ""round"": round,\n    ""set"": set,\n    ""str"": str,\n    ""sum"": sum,\n    ""tuple"": tuple,\n    ""__import__"": None,\n    ""int"": int,\n}\n\ndef _safe_import(name, globals=None, locals=None, fromlist=(), level=0):\n    root = name.split(""."")[0]\n    if root not in {""math"", ""sympy"", ""pint""}:\n        raise ImportError(f""import not allowed: {name}"")\n    return __import__(name, globals, locals, fromlist, level)\n\npath = Path(sys.argv[1])\nsource = path.read_text(encoding=""utf-8"")\nglb = {""__builtins__"": dict(SAFE_BUILTINS, __import__=_safe_import)}\n\nexec(compile(source, str(path), ""exec""), glb, glb)\n\nif ""ans"" not in glb:\n    raise SystemExit(""ans not defined"")\n\nvalue = glb[""ans""]\nif hasattr(value, ""magnitude""):\n    try:\n        value = float(value.magnitude)\n    except Exception:\n        pass\nelif hasattr(value, ""item""):\n    try:\n        value = value.item()\n    except Exception:\n        pass\n\nans_unit = glb.get(""ans_unit"")\nprint(""__ANS__="" + json.dumps({""ans"": value, ""ans_unit"": ans_unit}, default=str))\n', '/tmp/exact_type2_s0saiww0/program.py']' timed out after 10.0 seconds"
+physics_DT053,3994.467463,N/C,2000,V/m,wrong_numeric,False,True,0.9972337314999999,1994.467463,
+physics_DT088,1e-11,C,10^{-11},C,wrong_numeric,False,True,0.9999999999990001,9.99999999999,
+physics_DT001,823164,N/C,0,V/m,wrong_numeric,False,True,823164000000000.0,823164.0,
+physics_DT041,17296.6,N/C,10^4,V/m,wrong_numeric,False,True,0.7296599999999999,7296.5999999999985,
+physics_DT081,363228,N/C,200000,V/m,wrong_numeric,False,True,0.81614,163228.0,
+physics_DT063,432293,N/C,-6.4 . 10^{-8},C,unit_mismatch,False,False,67546.78125,432299.4,
+physics_DT050,4.48e-08,C,1.6 × 10^-7,C,wrong_numeric,False,True,0.72,1.152e-07,
+physics_DT035,4.49378e+06,N/C,45.10^{5},V/m,wrong_numeric,False,True,99639.35476718404,4493734.9,
+physics_DT090,269.626554,N/C,540,V/m,wrong_numeric,False,True,0.5006915666666667,270.373446,
+physics_DT087,7988.934926,N/C,2000,V/m,wrong_numeric,False,True,2.994467463,5988.934926,
+physics_DT040,1.6e-08,C,4 . 10^{-9},C,wrong_numeric,False,True,0.9999999960975609,4.099999983999999,
+physics_DT048,176.255877,N/C,246,V/m,wrong_numeric,False,True,0.2835126951219512,69.744123,
+physics_DT061,22.5,V/m,16,V/m,wrong_numeric,False,True,0.40625,6.5,
+physics_DT029,38349.2,N/C,36,cm,unit_mismatch,False,False,1064.2555555555555,38313.2,
+physics_DT072,7.47211e+07,N/C,3863925.47,N/C,wrong_numeric,False,True,18.33813179890346,70857174.53,
+physics_THCB114,30,V,10.0; 0.067,V; V,unit_mismatch,False,False,2.0,20.0,
+physics_THCB001,0.8,A,0.1,A,wrong_numeric,False,True,7.0,0.7000000000000001,
+physics_THCB120,0.5,kg,0.5; 0.77,kg; %,wrong_numeric,False,True,99.0,49.5,
+physics_THCB078,0.6,A,Rtd = 20.0,Ω,unit_mismatch,False,False,0.97,19.4,
+physics_THCB132,,,0.4,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB094,100.2,gram,100.2; 0.133,g; g,unit_mismatch,True,False,0.0,0.0,
+physics_THCB130,0.606061,%,1.0; 0.61,cm; %,unit_mismatch,False,False,0.39393900000000004,0.39393900000000004,
+physics_THCB081,increase,,Total current increases.,,conceptual_only,,,,,
+physics_THCB075,,,P = 48.0,W,pipeline_error,,,,,division by zero
+physics_THCB103,,,0.5,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB076,1.5,A,I₁ = 0.5; I₂ = 1.0,A; A,unit_mismatch,False,False,2.0,1.0,
+physics_THCB097,0.3,centimeter,0.3; 1.5,cm; %,wrong_numeric,False,True,99.0,29.7,
+physics_THCB118,,,36.7; 0.067,°C; °C,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB003,21.034483,ohm,1.0,Ω,wrong_numeric,False,True,20.034483,20.034483,
+physics_THCB008,3.78,W,0.19,W,wrong_numeric,False,True,18.894736842105264,3.59,
+physics_THCB115,,,2.0,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB112,,,2.0,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB107,1.5,degree_Celsius,1.5; 1.5,°C; %,unit_mismatch,True,False,0.0,0.0,
+physics_THCB125,,,0.83,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB071,current increases,,Resistance decreases → current increases.,,conceptual_only,,,,,
+physics_THCB111,,,0.67,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB092,,,1.0,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB113,,,0.5,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB102,,,10.0,%,wrong_text,,,,,
+physics_THCB087,0.6,centimeter,0.6; 1.2,cm; %,wrong_numeric,False,True,99.0,59.4,
+physics_THCB005,0.004,W,4.21,%,unit_mismatch,False,False,0.9990498812351545,4.206,
+physics_THCB090,0.05,m,0.05; 2.94,m; %,wrong_numeric,False,True,99.0,4.95,
+physics_THCB098,14,cm,14.0; 0.067,cm; cm,unit_mismatch,True,False,0.0,0.0,
+physics_THCB091,,,0.63,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB066,1,A,I_D₁ = 1.0; I_D₂ = 1.0; I_total = 2.0,A; A; A,unit_mismatch,True,False,0.0,0.0,
+physics_THCB133,,,20.0; 0.067,°C; °C,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB083,brighter,,Brighter because the current is higher.,,conceptual_only,,,,,
+physics_THCB129,,,0.45,%,pipeline_error,,,,,type2_pot_solver_failed
+physics_THCB117,0.2,centimeter,0.2; 0.33,cm; %,wrong_numeric,False,True,99.0,19.8,
+physics_THCB070,0.7,A,I_total_new = 0.5,A,wrong_numeric,False,True,0.3999999999999999,0.19999999999999996,
+physics_NL326,0.111111,dimensionless,90,%,wrong_numeric,False,True,0.8765433333333335,78.8889,
+physics_NL104,1.341641,A,0.04,A,wrong_numeric,False,True,32.541025,1.301641,
+physics_NL098,0.6,H,0.0006,H,wrong_numeric,False,True,999.0,0.5993999999999999,
+physics_NL017,,,17.32,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_NL127,,,4,lần,pipeline_error,,,,,type2_output_sanity_failed
+physics_NL006,,,10.00,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_NL361,2e-05,J,0.1,J,wrong_numeric,False,True,0.9997999999999999,0.09998,
+physics_NL019,0.25,H,0.25,mH,wrong_numeric,False,True,999.0,249.75,
+physics_NL372,0.5,J,1,J,wrong_numeric,False,True,0.5,0.5,
+physics_NL016,2,H,0.002,H,wrong_numeric,False,True,999.0,1.998,
+physics_NL125,,,6.00,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_NL335,,,4,,pipeline_error,,,,,type2_pot_solver_failed
+physics_NL095,,,all the energy is stored in the electric field of the capacitor.,,pipeline_error,,,,,type2_output_sanity_failed
+physics_NL103,,,10.95,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_NL315,linear,,Upward straight line,,conceptual_only,,,,,
+physics_NL025,all energy is stored in the magnetic field of the inductor,,all energy is entirely stored in the magnetic field of the inductor,,conceptual_only,,,,,
+physics_NL316,parabolic,,Upward straight line,,conceptual_only,,,,,
+physics_NL330,,,1 / (ωC),Ω,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_NL026,all energy is stored in the electric field of the capacitor,,all energy is entirely stored in the electric field of the capacitor,,conceptual_only,,,,,
+physics_NL384,1,J,0.173,J,wrong_numeric,False,True,4.780346820809249,0.827,
+physics_NL028,2.5,H,0.0025,H,wrong_numeric,False,True,999.0,2.4975,
+physics_NL397,,,200,V,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_DDT220,the current changes with time,,the current changes with time,,conceptual_only,,,,,
+physics_DDT219,the magnetic field energy increases proportionally to B²,,the magnetic field energy increases proportionally to B²,,conceptual_only,,,,,
+physics_DDT385,0.0075,H,7.5 × 10⁻³,H,wrong_numeric,False,True,0.999,7.4925,
+physics_DDT325,,,53.05,Ω,pipeline_error,,,,,cannot normalize microfarad to F
+physics_DDT206,Volt (V),,Volt (V),,conceptual_only,,,,,
+physics_DDT330,the circuit exhibits an inductive characteristic,,the circuit exhibits an inductive characteristic,,conceptual_only,,,,,
+physics_DDT382,0.009425,T,9.42×10⁻³,T,wrong_numeric,False,True,0.9989994692144374,9.410575,
+physics_DDT140,Zero,,Approximately zero,,conceptual_only,,,,,
+physics_DDT374,2.01062e-06,Wb,2.01×10⁻⁶,Wb,wrong_numeric,False,True,0.9999989996915424,2.00999798938,
+physics_DDT381,3000,1 / meter,3000,turns/m,wrong_numeric,False,True,0.8408450569081046,2522.535170724314,
+physics_DDT341,,,45.79,Ω,pipeline_error,,,,,cannot normalize microfarad to F
+physics_DDT143,Magnetic field collapses,,An induced electromotive force (EMF) in the opposite direction appears,,conceptual_only,,,,,
+physics_DDT137,doubles,,Doubled,,conceptual_only,,,,,
+physics_DDT354,No,,No,,conceptual_only,,,,,
+physics_DDT340,,,38.16 Ω and 0.30,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_DDT378,0.0025,Wb,2.5×10⁻³,Wb,wrong_numeric,False,True,0.999,2.4975,
+physics_DDT201,4000,1 / meter,4000,turns/m,wrong_numeric,False,True,0.8408450569081046,3363.3802276324186,
+physics_DDT152,Current through the solenoid,,Current through the solenoid,,conceptual_only,,,,,
+physics_DDT399,0.00754,T,7.54×10⁻³,T,wrong_numeric,False,True,0.999,7.53246,
+physics_DDT400,0.00754,T,7.54×10⁻³,T,wrong_numeric,False,True,0.999,7.53246,
+physics_DDT329,8,A,512.0,W,unit_mismatch,False,False,0.984375,504.0,
+physics_DDT207,increases in direct proportion,,increases in direct proportion,,conceptual_only,,,,,
+physics_DDT396,,,1.5×10⁻⁶,Wb,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_DDT355,,,ω = 1/√(LC),rad/s,pipeline_error,,,,,type2_pot_solver_failed
+physics_DDT372,0.023687,T,3.77×10⁻³,T,wrong_numeric,False,True,0.993716976127321,3.7463130000000002,
+physics_DDT155,3000,1 / meter,3000,turns/m,wrong_numeric,False,True,0.8408450569081046,2522.535170724314,
+physics_DDT345,,,35.37,Ω,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT001,,,No,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT002,Yes,,Yes,,conceptual_only,,,,,
+physics_CHLT003,No,,Yes,,conceptual_only,,,,,
+physics_CHLT004,,,Yes,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT005,,,No,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT006,No,,Yes,,conceptual_only,,,,,
+physics_CHLT007,53.051648,Hz,No,,wrong_text,,,,,
+physics_CHLT008,0,,Yes,,conceptual_only,,,,,
+physics_CHLT009,No,,No,,conceptual_only,,,,,
+physics_CHLT010,,,Yes,,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_CHLT011,0,,No,,conceptual_only,,,,,
+physics_CHLT012,,,Yes,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT013,,,No,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT014,56.26977,Hz,Yes,,wrong_text,,,,,
+physics_CHLT015,,,No,,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_CHLT016,31.830989,Hz,Yes,,wrong_text,,,,,
+physics_CHLT017,,,Yes,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT018,102.734074,Hz,No,,wrong_text,,,,,
+physics_CHLT019,,,Yes,,pipeline_error,,,,,cannot normalize microfarad to F
+physics_CHLT020,No,,No,,conceptual_only,,,,,
+physics_CH032,,,159.15,Hz,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH191,3.141593,rad/s,2.0,,wrong_numeric,False,,0.5707964999999999,1.1415929999999999,
+physics_CH030,,,159.15,Hz,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH275,576,W,360,W,wrong_numeric,False,True,0.6,216.0,
+physics_CH081,,,633.26,mH,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'
+physics_CH351,0.031831,F,50.66,µF,wrong_numeric,False,True,627.3260955388868,31780.34,
+physics_CH042,4,A,480,W,unit_mismatch,False,False,0.9916666666666667,476.0,
+physics_CH096,0.006631,F,0.88,uF,wrong_numeric,False,True,7534.227272727273,6630.12,
+physics_CH036,,,125.82,Hz,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH151,0.003183,A,1.414,A,wrong_numeric,False,True,0.9977489391796323,1.410817,
+physics_CH237,40.249224,V,51.96,V,wrong_numeric,False,True,0.22538060046189382,11.710776000000003,
+physics_CH062,0.007958,F,12.67,uF,wrong_numeric,False,True,627.0978689818469,7945.33,
+physics_CH245,106.666667,W,64.0,W,wrong_numeric,False,True,0.6666666718750001,42.666667000000004,
+physics_CH192,,,1.5,,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH105,25,ohm,115.47,Ω,wrong_numeric,False,True,0.7834935481077336,90.47,
+physics_CH153,,,200,W,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH233,90,ohm,60.0,Ω,wrong_numeric,False,True,0.5,30.0,
+physics_CH068,,,351.8,mH,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH184,,,80,Ω,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH265,4.8,A,3,A,wrong_numeric,False,True,0.6,1.7999999999999998,
+physics_CH005,625,ohm,25,Ω,wrong_numeric,False,True,24.0,600.0,
+physics_CH052,2,A,180,W,unit_mismatch,False,False,0.9888888888888889,178.0,
+physics_CH366,3,A,150,V,unit_mismatch,False,False,0.98,147.0,
+physics_CH350,0.015915,F,50.66,µF,wrong_numeric,False,True,313.15317804974336,15864.339999999998,
+physics_CH209,,,2.236,,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH220,1000,W,100.0,W,wrong_numeric,False,True,9.0,900.0,
+physics_CH176,,,1,,pipeline_error,,,,,type2_pot_solver_failed
+physics_CH369,6,A,379.47,V,unit_mismatch,False,False,0.9841884733971065,373.47,
+physics_CH185,3181.529229,ohm,100,Ω,wrong_numeric,False,True,30.815292290000002,3081.529229,
+physics_CH374,83.88202,Hz,2.11,,wrong_numeric,False,,38.75451184834123,81.77202,
+physics_CH054,3,A,900,W,unit_mismatch,False,False,0.9966666666666667,897.0,
+physics_CH069,,,101.32,mH,pipeline_error,,,,,'NoneType' object has no attribute 'quantity'

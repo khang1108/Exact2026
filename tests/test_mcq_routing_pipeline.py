@@ -225,7 +225,7 @@ def test_type1_pipeline_requires_json_llm_client_when_unconfigured() -> None:
     with pytest.raises(RuntimeError, match="requires a JSON LLM client"):
         run_type1_pipeline(
             request,
-            settings=Settings(llm_provider="openai", llm_base_url=None, mock_llm=True),
+            settings=Settings(llm_provider="openai", llm_base_url=None),
             question_type=QuestionType.YES_NO_UNCERTAIN,
         )
 
