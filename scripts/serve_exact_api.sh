@@ -110,6 +110,9 @@ PARSER_GPU_MEM="${EXACT_TYPE1_PARSER_SERVER_GPU_MEMORY_UTILIZATION:-0.25}"
 PARSER_DTYPE="${EXACT_TYPE1_PARSER_SERVER_DTYPE:-auto}"
 PARSER_QUANTIZATION="${EXACT_TYPE1_PARSER_SERVER_QUANTIZATION:-}"
 PARSER_TENSOR_PARALLEL="${EXACT_TYPE1_PARSER_SERVER_TENSOR_PARALLEL_SIZE:-1}"
+# Default to eager mode: CUDA-graph capture is unreliable on virtualized GPUs
+# (e.g. ThunderCompute). Set =0 on a dedicated GPU host to re-enable graphs.
+PARSER_ENFORCE_EAGER="${EXACT_TYPE1_PARSER_SERVER_ENFORCE_EAGER:-1}"
 PARSER_CPU_KVCACHE="${EXACT_TYPE1_PARSER_SERVER_CPU_KVCACHE_SPACE:-1}"
 PARSER_CPU_RESERVED="${EXACT_TYPE1_PARSER_SERVER_CPU_RESERVED_CPUS:-1}"
 PARSER_CPU_IMAGE="${EXACT_TYPE1_PARSER_SERVER_CPU_IMAGE:-vllm/vllm-openai-cpu:latest-x86_64}"
@@ -202,6 +205,7 @@ else
     --generation-config vllm
   )
   [[ -n "$PARSER_QUANTIZATION" ]] && parser_cmd+=(--quantization "$PARSER_QUANTIZATION")
+  [[ "$PARSER_ENFORCE_EAGER" == "1" ]] && parser_cmd+=(--enforce-eager)
 
   "${parser_cmd[@]}" >> "$LOG_DIR/parser.log" 2>&1 &
   PARSER_PID=$!
@@ -233,6 +237,7 @@ else
   VLLM_GPU_MEM="${VLLM_GPU_MEMORY_UTILIZATION:-0.70}"
   VLLM_QUANTIZATION="${VLLM_QUANTIZATION:-}"
   VLLM_TENSOR_PARALLEL="${VLLM_TENSOR_PARALLEL_SIZE:-1}"
+  VLLM_ENFORCE_EAGER_FLAG="${VLLM_ENFORCE_EAGER:-1}"
 
   log_info "Starting main vLLM: $VLLM_MODEL → $VLLM_HOST:$VLLM_PORT"
 
@@ -249,6 +254,7 @@ else
     --generation-config vllm
   )
   [[ -n "$VLLM_QUANTIZATION" ]] && vllm_cmd+=(--quantization "$VLLM_QUANTIZATION")
+  [[ "$VLLM_ENFORCE_EAGER_FLAG" == "1" ]] && vllm_cmd+=(--enforce-eager)
 
   "${vllm_cmd[@]}" >> "$LOG_DIR/vllm.log" 2>&1 &
   VLLM_PID=$!
