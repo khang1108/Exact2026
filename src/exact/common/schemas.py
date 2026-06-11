@@ -7,9 +7,9 @@ describe the normalized boundary between the product surface and Type 2.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
 class TaskType(str, Enum):
@@ -23,7 +23,8 @@ class QuestionType(str, Enum):
     """Question shape emitted by the Type 2 pipeline."""
 
     # Type 1: MCQ, 
-
+    MCQ = "mcq"
+    YNU = "ynu" # yes no uncertain
 
     OPEN_ENDED = "open_ended"
     NUMERICAL = "numerical"
@@ -51,10 +52,13 @@ class InboundBaseModel(BaseModel):
 
 
 class PredictionRequest(InboundBaseModel):
-    """Normalized input sample for Type 2 physics."""
+    """Normalized input sample."""
 
-    id: str | None = None
-    question: str
+    query_id: str | None = Field(default=None, validation_alias=AliasChoices("id", "query_id"))
+    question: str = Field(validation_alias=AliasChoices("question", "query"))
+    type: Literal["type1", "type2"] | None = None
+    premises: list[str] | None = None
+    options: Any | None = None
 
     @field_validator("question")
     @classmethod

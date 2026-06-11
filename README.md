@@ -34,7 +34,7 @@ future Type 1 redevelopment, but there is no active Type 1 runtime or routing.
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[api,dev]"
-PYTHONPATH=src uvicorn exact.app.main:app --host 0.0.0.0 --port 8080
+bash scripts/serve_exact_api.sh
 ```
 
 Health check: `GET http://localhost:8080/health`
@@ -43,7 +43,7 @@ Health check: `GET http://localhost:8080/health`
 
 ```bash
 cp configs/type2_dataset_run.example.toml configs/type2_local.toml
-./venv/bin/python scripts/type2/run_type2.py --backend groq --config configs/type2_local.toml
+./venv/bin/python scripts/type2/run_type2.py --backend vllm --base-url http://YOUR_VM:8000/v1 --config configs/type2_local.toml
 ```
 
 Evaluate predictions:

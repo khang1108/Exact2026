@@ -1,15 +1,55 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from ipaddress import ip_address
 from pathlib import Path
 from typing import Literal
+from urllib.parse import urlsplit
 
-from pydantic import AliasChoices, Field, SecretStr
+from pydantic import AliasChoices, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 SRC_DIR = ROOT_DIR / "src"
 PACKAGE_DIR = SRC_DIR / "exact"
+
+
+def validate_self_hosted_model_url(value: str) -> str:
+    """Return a normalized model URL or reject endpoints outside local infrastructure.
+
+    Model inference may target the same machine, a private network address, or
+    an internal service-discovery hostname. Public DNS names and public IP
+    addresses are rejected so an inference client cannot accidentally call a
+    third-party model API.
+    """
+
+    normalized = value.strip().rstrip("/")
+    parsed = urlsplit(normalized)
+    hostname = parsed.hostname
+    if parsed.scheme not in {"http", "https"} or not hostname:
+        raise ValueError("model endpoint must be an http(s) URL with a hostname")
+
+    lowered_hostname = hostname.lower()
+    if lowered_hostname == "localhost":
+        return normalized
+
+    try:
+        address = ip_address(lowered_hostname)
+    except ValueError:
+        is_internal_name = (
+            "." not in lowered_hostname
+            or lowered_hostname.endswith((".internal", ".local", ".svc", ".cluster.local"))
+        )
+        if is_internal_name:
+            return normalized
+    else:
+        if address.is_private or address.is_loopback or address.is_link_local:
+            return normalized
+
+    raise ValueError(
+        "model endpoint must use localhost, a private IP, or an internal service hostname"
+    )
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
@@ -39,7 +79,6 @@ class Settings(BaseSettings):
     )
     default_seed: int = 42
 
-    llm_provider: Literal["openai", "anthropic", "groq", "ollama", "local"] = "local"
     llm_model: str = Field(
         default="Qwen/Qwen2.5-7B-Instruct",
         validation_alias=AliasChoices("EXACT_LLM_MODEL", "EXACT_MODEL_ID"),
@@ -62,13 +101,17 @@ class Settings(BaseSettings):
     )
     llm_timeout_seconds: float = Field(default=55.0, gt=0)
     llm_max_retries: int = Field(default=0, ge=0, validation_alias="EXACT_MAX_RETRIES")
-    llm_device_map: str | None = Field(default="auto", validation_alias="EXACT_LLM_DEVICE_MAP")
-    llm_torch_dtype: Literal["auto", "float16", "bfloat16", "float32"] = Field(
-        default="float16",
-        validation_alias="EXACT_LLM_TORCH_DTYPE",
-    )
-    llm_local_files_only: bool = Field(default=False, validation_alias="EXACT_LLM_LOCAL_FILES_ONLY")
-    llm_trust_remote_code: bool = Field(default=False, validation_alias="EXACT_LLM_TRUST_REMOTE_CODE")
+
+    # Dedicated Type 1 parser vLLM service. These settings remain separate from
+    # the general LLM endpoint because parser traffic has different models,
+    # token limits, and concurrency requirements.
+    type1_parser_base_url: str | None = None
+    type1_parser_model: str = "type1-parser"
+    type1_parser_api_key: SecretStr | None = None
+    type1_parser_concurrency: int = Field(default=32, ge=1)
+    type1_parser_timeout_seconds: float = Field(default=30.0, gt=0)
+    type1_parser_max_retries: int = Field(default=2, ge=0)
+    type1_parser_max_tokens: int = Field(default=512, ge=1)
 
     # Type 2 Physics Pipeline Settings
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
@@ -160,6 +203,13 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     json_logs: bool = False
 
+    @field_validator("llm_base_url", "type1_parser_base_url")
+    @classmethod
+    def validate_model_endpoint(cls, value: str | None) -> str | None:
+        """Prevent model clients configured from environment variables from using public APIs."""
+
+        return validate_self_hosted_model_url(value) if value is not None else None
+
     def ensure_artifact_dirs(self) -> None:
         for directory in [
             self.artifacts_dir,
@@ -172,7 +222,6 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Load and cache validated application settings on first runtime use."""
+
     return Settings()
-
-
-settings = get_settings()

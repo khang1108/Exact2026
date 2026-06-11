@@ -13,9 +13,6 @@ from pathlib import Path
 from typing import Any
 
 
-DEFAULT_CLOUDFLARE_BASE_URL = "https://exact-llm-api.duchoaiduong100.workers.dev/v1"
-DEFAULT_CLOUDFLARE_MODEL = "@cf/openai/gpt-oss-120b"
-DEFAULT_CLOUDFLARE_API_KEY = "exact2026"
 DEFAULT_TEMPERATURE = 0.0
 DEFAULT_TOP_P = 1.0
 DEFAULT_TIMEOUT_SECONDS = 60.0
@@ -32,16 +29,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=default_config)
     parser.add_argument(
         "--backend",
-        choices=[
-            "cloudflare",
-            "groq",
-            "ollama",
-            "transformers",
-            "huggingface",
-            "openai_compatible",
-        ],
-        required=True,
-        help="LLM client/backend preset for this run.",
+        choices=["vllm"],
+        default="vllm",
+        help="Self-hosted LLM backend.",
     )
     parser.add_argument("--input", type=Path, default=default_input)
     parser.add_argument("--output", type=Path, default=default_output)
@@ -56,10 +46,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--top-p", type=float, default=DEFAULT_TOP_P)
     parser.add_argument("--timeout-seconds", type=float, default=DEFAULT_TIMEOUT_SECONDS)
     parser.add_argument("--max-retries", type=int, default=DEFAULT_MAX_RETRIES)
-    parser.add_argument("--device-map", choices=["auto", "cpu", "cuda"], default=None)
-    parser.add_argument("--torch-dtype", choices=["float16", "bfloat16", "float32"], default=None)
-    parser.add_argument("--local-files-only", action="store_true")
-    parser.add_argument("--trust-remote-code", action="store_true")
     parser.add_argument(
         "--python-exe",
         type=Path,
@@ -153,41 +139,14 @@ def build_config_text(args: argparse.Namespace) -> str:
 
 
 def build_llm_config(backend: str) -> dict[str, Any]:
-    preset: dict[str, Any] = {
+    return {
         "enabled": True,
-        "backend": backend,
+        "backend": "vllm",
         "temperature": DEFAULT_TEMPERATURE,
         "top_p": DEFAULT_TOP_P,
         "timeout_seconds": DEFAULT_TIMEOUT_SECONDS,
         "max_retries": DEFAULT_MAX_RETRIES,
     }
-    if backend == "cloudflare":
-        preset["backend"] = "openai_compatible"
-        preset["base_url"] = env_or_dotenv("EXACT_CLOUDFLARE_LLM_BASE_URL", DEFAULT_CLOUDFLARE_BASE_URL)
-        preset["model"] = env_or_dotenv("EXACT_CLOUDFLARE_LLM_MODEL", DEFAULT_CLOUDFLARE_MODEL)
-        preset["api_key"] = env_or_dotenv("EXACT_CLOUDFLARE_LLM_API_KEY", DEFAULT_CLOUDFLARE_API_KEY)
-    elif backend == "groq":
-        preset["backend"] = "groq"
-        preset["model"] = "llama-3.1-8b-instant"
-        preset["api_key_env"] = "GROQ_API_KEY"
-    elif backend == "ollama":
-        preset["backend"] = "ollama"
-        preset["model"] = "qwen3.5:4b-cloud"
-        preset["base_url"] = "http://127.0.0.1:11434/v1"
-        preset["api_key"] = "ollama"
-    elif backend == "transformers":
-        preset["backend"] = "transformers"
-        preset["model"] = "Qwen/Qwen2.5-Math-1.5B-Instruct"
-        preset["device_map"] = "auto"
-        preset["torch_dtype"] = "bfloat16"
-        preset["local_files_only"] = False
-        preset["trust_remote_code"] = False
-    elif backend == "huggingface":
-        preset["backend"] = "huggingface"
-        preset["api_key_env"] = "HF_TOKEN"
-    elif backend == "openai_compatible":
-        preset["backend"] = "openai_compatible"
-    return preset
 
 
 def apply_cli_overrides(llm_cfg: dict[str, Any], args: argparse.Namespace) -> dict[str, Any]:
@@ -206,14 +165,6 @@ def apply_cli_overrides(llm_cfg: dict[str, Any], args: argparse.Namespace) -> di
     updated["top_p"] = args.top_p
     updated["timeout_seconds"] = args.timeout_seconds
     updated["max_retries"] = args.max_retries
-    if args.device_map is not None:
-        updated["device_map"] = args.device_map
-    if args.torch_dtype is not None:
-        updated["torch_dtype"] = args.torch_dtype
-    if args.local_files_only:
-        updated["local_files_only"] = True
-    if args.trust_remote_code:
-        updated["trust_remote_code"] = True
     return updated
 
 
@@ -223,8 +174,10 @@ def validate_llm_config(llm_cfg: dict[str, Any]) -> None:
     base_url = str(llm_cfg.get("base_url") or "").strip()
     if not model:
         raise ValueError("This backend requires a model. Pass --model or use a preset with a default model.")
-    if backend == "openai_compatible" and not base_url:
-        raise ValueError("openai_compatible requires --base-url or the Cloudflare preset.")
+    if backend != "vllm":
+        raise ValueError("Only the self-hosted vllm backend is supported.")
+    if not base_url:
+        raise ValueError("vllm requires --base-url.")
 
 
 def python_executable(root_dir: Path) -> Path:
@@ -232,29 +185,6 @@ def python_executable(root_dir: Path) -> Path:
         return Path(sys.executable)
     venv_python = root_dir / "venv" / "bin" / "python"
     return venv_python if venv_python.exists() else Path(sys.executable)
-
-
-def env_or_dotenv(name: str, default: str) -> str:
-    value = os.getenv(name)
-    if value:
-        return value
-
-    env_path = Path(__file__).resolve().parents[2] / ".env"
-    if not env_path.exists():
-        return default
-
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        text = line.strip()
-        if not text or text.startswith("#") or "=" not in text:
-            continue
-        key, raw_value = text.split("=", 1)
-        if key.strip() != name:
-            continue
-        parsed = raw_value.strip()
-        if len(parsed) >= 2 and parsed[0] == parsed[-1] and parsed[0] in {'"', "'"}:
-            parsed = parsed[1:-1]
-        return parsed or default
-    return default
 
 
 def dump_toml(sections: dict[str, dict[str, Any]]) -> str:

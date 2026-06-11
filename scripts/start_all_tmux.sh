@@ -144,7 +144,7 @@ fi
 log_section "Kiểm tra package EXACT API"
 
 MISSING_API=0
-for pkg in fastapi uvicorn openai httpx pydantic-settings sympy; do
+for pkg in fastapi uvicorn httpx pydantic-settings sympy; do
     if ! pkg_installed "$API_PIP" "$pkg"; then
         log_warn "Thiếu package: $pkg"
         MISSING_API=1

@@ -28,9 +28,9 @@ def main() -> None:
         raise ValueError("No model set. Configure model_pull.model or pass --model.")
 
     backend = str(pull.get("backend") or llm.get("backend") or "none").strip().lower()
-    if backend not in {"transformers", "huggingface"} and not args.force:
+    if backend != "vllm" and not args.force:
         raise ValueError(
-            "Model pull is intended for Hugging Face model ids. "
+            "Model pull is intended for open-source model ids deployed with vLLM. "
             "Use --force if you still want to download this model id."
         )
 
@@ -38,7 +38,7 @@ def main() -> None:
         from huggingface_hub import snapshot_download
     except ImportError as exc:
         raise RuntimeError(
-            "huggingface_hub is required. Install dependencies with requirements.txt."
+            "huggingface_hub is required. Install the model tools with `pip install -e '.[model-tools]'`."
         ) from exc
 
     kwargs: dict[str, Any] = {

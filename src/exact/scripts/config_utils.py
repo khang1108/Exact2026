@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import SecretStr
 
-from exact.config import Settings, get_settings
+from exact.config import Settings, get_settings, validate_self_hosted_model_url
 
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
@@ -30,34 +30,16 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
     if not enabled or backend == "none":
         return _settings_without_llm(settings).model_copy(update=type2_updates)
 
-    base_url = str(llm.get("base_url") or "").strip() or None
+    raw_base_url = str(llm.get("base_url") or "").strip()
+    base_url = validate_self_hosted_model_url(raw_base_url) if raw_base_url else None
     api_key = _resolve_api_key(llm)
-    provider = "openai"
-
-    if backend == "transformers":
-        provider = "local"
-        base_url = None
-        api_key = None
-    elif backend == "ollama":
-        provider = "ollama"
-        base_url = base_url or "http://127.0.0.1:11434/v1"
-        api_key = api_key or "ollama"
-    elif backend == "groq":
-        provider = "groq"
-        base_url = base_url or "https://api.groq.com/openai/v1"
-        api_key = api_key or os.getenv("GROQ_API_KEY") or "EMPTY"
-    elif backend == "huggingface":
-        base_url = base_url or "https://router.huggingface.co/v1"
-        api_key = api_key or os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    elif backend == "openai_compatible":
-        if not base_url:
-            raise ValueError("llm.base_url is required for backend='openai_compatible'")
-        api_key = api_key or "EMPTY"
-    else:
-        raise ValueError(f"Unsupported llm.backend: {backend}")
+    if backend != "vllm":
+        raise ValueError("Only backend='vllm' is supported")
+    if not base_url:
+        raise ValueError("llm.base_url is required for the self-hosted vLLM server")
+    api_key = api_key or "EMPTY"
 
     updates: dict[str, Any] = {
-        "llm_provider": provider,
         "llm_model": str(llm.get("model") or settings.llm_model),
         "llm_base_url": base_url,
         "llm_api_key": SecretStr(api_key) if api_key else None,
@@ -66,10 +48,6 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
         "llm_top_p": float(llm.get("top_p", settings.llm_top_p)),
         "llm_timeout_seconds": float(llm.get("timeout_seconds", settings.llm_timeout_seconds)),
         "llm_max_retries": int(llm.get("max_retries", settings.llm_max_retries)),
-        "llm_device_map": _optional_string(llm.get("device_map", settings.llm_device_map)),
-        "llm_torch_dtype": str(llm.get("torch_dtype", settings.llm_torch_dtype)),
-        "llm_local_files_only": bool(llm.get("local_files_only", settings.llm_local_files_only)),
-        "llm_trust_remote_code": bool(llm.get("trust_remote_code", settings.llm_trust_remote_code)),
         **type2_updates,
     }
 
@@ -177,7 +155,6 @@ def settings_for_disabled_llm(settings: Settings | None = None) -> Settings:
 def _settings_without_llm(settings: Settings) -> Settings:
     return settings.model_copy(
         update={
-            "llm_provider": "openai",
             "llm_base_url": None,
             "llm_api_key": None,
         }
@@ -213,12 +190,3 @@ def _dotenv_value(name: str, path: Path | None = None) -> str | None:
             value = value[1:-1]
         return value or None
     return None
-
-
-def _optional_string(value: Any) -> str | None:
-    if value is None:
-        return None
-    text = str(value).strip()
-    if not text or text.lower() in {"none", "null"}:
-        return None
-    return text

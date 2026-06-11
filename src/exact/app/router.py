@@ -1,57 +1,38 @@
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import APIRouter, Request
+from fastapi import HTTPException
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, TaskType
 from exact.logger import get_request_logger
 from exact.type2.pipeline import run_type2_pipeline
+from exact.type1.pipeline import run_type1_pipeline
 
 api_router = APIRouter()
 
-
 @api_router.get("/health")
 def health_check() -> dict[str, str]:
-    return {"status": "ok", "pipeline": "type2_physics"}
-
-
-def _predict_internal(payload: PredictionRequest, request: Request) -> PredictionResponse:
-    """
-    Internal prediction pipeline.
-
-    Args:
-        payload: Prediction request.
-        request: FastAPI request.
-
-    Returns:
-        Prediction response.
-    """
-    logger = get_request_logger(
-        __name__,
-        request_id=payload.id or request.headers.get("X-Request-ID"),
-        task_type=TaskType.TYPE2_PHYSICS.value,
-    )
-
-    logger.info("Received request")
-
-    try:
-        return run_type2_pipeline(payload)
-    except Exception as exc:
-        logger.error("Prediction failed", exc_info=True)
-        return PredictionResponse(
-            id=payload.id,
-            task_type=TaskType.TYPE2_PHYSICS,
-            answer="",
-            explanation=f"Prediction failed: {exc}",
-            fol=None,
-            cot=["The system attempted to process the request but failed."],
-            premises=[],
-            confidence=0.0,
-            error=str(exc),
-        )
-
+    return {"status": "ok", "pipeline": "full_pipeline", "version": "0.1.0"}
 
 @api_router.post("/predict", response_model=PredictionResponse)
-def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
+async def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
     """Run the full EXACT pipeline and return the merged prediction payload."""
+    logger = get_request_logger(
+        name="api_router.predict",
+        request_id=payload.query_id,
+        task_type=TaskType.TYPE1_LOGIC if payload.type == "type1" else TaskType.TYPE2_PHYSICS,
+    )
 
-    return _predict_internal(payload, request)
+    logger.info(f"Received prediction request: {payload}")
+
+    if payload.type == "type2":
+        logger.info("Running Type 2 pipeline")
+        return await asyncio.to_thread(run_type2_pipeline, payload)
+
+    logger.info("Running Type 1 pipeline")
+    parser = getattr(request.app.state, "type1_fol_parser", None)
+    if parser is None:
+        raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
+    return await run_type1_pipeline(payload, parser)
