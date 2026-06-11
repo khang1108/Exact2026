@@ -1,0 +1,24 @@
+# vLLM SERVER stack for the self-hosted models (Type 1 parser + general LLM).
+# Install ONLY on the GPU host, in a dedicated venv — never on the dev/client box:
+#   python -m venv .venv-vllm && source .venv-vllm/bin/activate
+#   PYTHONNOUSERSITE=1 pip install --no-cache-dir -r requirements-serve.txt
+#
+# PYTHONNOUSERSITE=1 stops a stray ~/.local install from shadowing the venv.
+
+# Why pinned to 0.8.5 (do not bump blindly):
+#  - newest vLLM fails on ThunderCompute's network-virtualized A6000 with
+#    `cudaHostGetDevicePointer ... invalid argument` (no UVA / zero-copy host mem).
+#  - vLLM 0.6.6 cannot load Qwen3 (`Qwen3ForCausalLM ... not supported`).
+#  - 0.8.5 supports Qwen3 and uses the runner that works on the virtualized GPU.
+vllm==0.8.5
+
+# vLLM 0.8.5 pulls its own torch (2.6.0) — do NOT pin torch separately.
+# Pin transformers within 0.8.5's compatible range; a newer transformers triggers
+# `Qwen2Tokenizer has no attribute all_special_tokens_extended` at startup.
+transformers==4.51.3
+
+# flashinfer is intentionally NOT listed. A flashinfer built against a different
+# torch ABI crashes vLLM on import
+# (`libtorch_c_dlpack...torch26-cuda.so: undefined symbol`). If one is already
+# present, remove it so vLLM uses its native sampler:
+#   pip uninstall -y flashinfer flashinfer-python
