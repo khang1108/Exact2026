@@ -180,6 +180,7 @@ class ParserClient:
             "messages": list(messages),
             "temperature": temperature,
             "max_tokens": max_tokens,
+            "chat_template_kwargs": {"enable_thinking": False},
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
