@@ -200,11 +200,10 @@ else
     --gpu-memory-utilization "$PARSER_GPU_MEM"
     --enable-prefix-caching
     --generation-config vllm
-    --enforce-eager
   )
   [[ -n "$PARSER_QUANTIZATION" ]] && parser_cmd+=(--quantization "$PARSER_QUANTIZATION")
 
-  VLLM_WORKER_MULTIPROC_METHOD=spawn "${parser_cmd[@]}" >> "$LOG_DIR/parser.log" 2>&1 &
+  "${parser_cmd[@]}" >> "$LOG_DIR/parser.log" 2>&1 &
   PARSER_PID=$!
   PIDS+=("$PARSER_PID")
   log_info "Parser vLLM started (PID $PARSER_PID) — log: logs/parser.log"
@@ -248,11 +247,10 @@ else
     --tensor-parallel-size "$VLLM_TENSOR_PARALLEL"
     --enable-prefix-caching
     --generation-config vllm
-    --enforce-eager
   )
   [[ -n "$VLLM_QUANTIZATION" ]] && vllm_cmd+=(--quantization "$VLLM_QUANTIZATION")
 
-  VLLM_WORKER_MULTIPROC_METHOD=spawn "${vllm_cmd[@]}" >> "$LOG_DIR/vllm.log" 2>&1 &
+  "${vllm_cmd[@]}" >> "$LOG_DIR/vllm.log" 2>&1 &
   VLLM_PID=$!
   PIDS+=("$VLLM_PID")
   log_info "Main vLLM started (PID $VLLM_PID) — log: logs/vllm.log"
