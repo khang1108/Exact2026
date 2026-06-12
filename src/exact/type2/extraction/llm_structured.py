@@ -433,7 +433,7 @@ def _build_pot_messages(question: str, explanation: str, formula_context: str = 
                 "Return strict JSON only with exactly these keys: code, explanation, answer_unit, formula_ids_used. "
                 "No Markdown, no code fences, no extra prose. "
                 "`code` must be a JSON string with escaped newlines (\\n), never literal newlines; do not use Python triple quotes. "
-                "The program must define ans as the final answer (which can be either a numeric magnitude or a qualitative/text string) "
+                "The program must define ans as the final answer (which can be a numeric magnitude, a qualitative/text string, or a string representing approximations/ranges like '1.5 +- 0.1' or 'approx. 5') "
                 "and ans_unit as the final unit string (or None/empty string if not applicable). "
                 "Use pint for units and sympy only if genuinely needed; Do not import numpy and do not print. "
                 "Follow the Formula selector plan when present. Use the formulas provided in the context, "
@@ -572,7 +572,7 @@ def _build_repair_messages(question: str, original_code: str, error_message: str
             "content": (
                 "You repair Python code for a physics question. Return strict JSON only with keys "
                 "code, explanation, answer_unit, formula_ids_used. Do not return Markdown or code fences. "
-                "Keep the solution short. The code must define ans (which can be either a numeric magnitude or a qualitative/text string) "
+                "Keep the solution short. The code must define ans (which can be a numeric magnitude, a qualitative/text string, or a string representing approximations/ranges like '1.5 +- 0.1' or 'approx. 5') "
                 "and ans_unit (unit string or None/empty string if not applicable). "
                 "The code field must be a JSON string with escaped newlines (\\n), not literal line breaks. "
                 "formula_ids_used must be a JSON array of strings, never a string. "
