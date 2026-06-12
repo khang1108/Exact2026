@@ -42,7 +42,8 @@ async def predict(payload: PredictionRequest, request: Request) -> PredictionRes
     parser = getattr(request.app.state, "type1_fol_parser", None)
     if parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
-    return await run_type1_pipeline(payload, parser)
+    solver = getattr(request.app.state, "type1_solver", None)
+    return await run_type1_pipeline(payload, parser, solver)
 
 
 @api_router.post("/parser", response_model=ParsePremisesResponse)
