@@ -72,6 +72,15 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
                 settings.type2_use_llm_domain_routing,
             )
         ),
+        "type2_use_llm_question_kind_routing": bool(
+            type2_pipeline.get(
+                "use_llm_question_kind_routing",
+                settings.type2_use_llm_question_kind_routing,
+            )
+        ),
+        "type2_use_agent_loop": bool(
+            type2_pipeline.get("use_agent_loop", settings.type2_use_agent_loop)
+        ),
         "type2_extraction_mode": extraction_mode,
         "type2_use_extraction_verifier": bool(
             type2_pipeline.get("use_extraction_verifier", settings.type2_use_extraction_verifier)
@@ -103,6 +112,12 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
         "type2_pot_max_retries": int(
             type2_pipeline.get("pot_max_retries", settings.type2_pot_max_retries)
         ),
+        "type2_agent_loop_max_attempts": int(
+            type2_pipeline.get(
+                "agent_loop_max_attempts",
+                settings.type2_agent_loop_max_attempts,
+            )
+        ),
         "type2_pot_batch_size": int(
             type2_pipeline.get("pot_batch_size", settings.type2_pot_batch_size)
         ),
@@ -131,6 +146,18 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
             type2_pipeline.get(
                 "domain_routing_max_tokens",
                 settings.type2_domain_routing_max_tokens,
+            )
+        ),
+        "type2_question_kind_max_tokens": int(
+            type2_pipeline.get(
+                "question_kind_max_tokens",
+                settings.type2_question_kind_max_tokens,
+            )
+        ),
+        "type2_agent_loop_max_tokens": int(
+            type2_pipeline.get(
+                "agent_loop_max_tokens",
+                settings.type2_agent_loop_max_tokens,
             )
         ),
         "type2_formula_selection_max_tokens": int(

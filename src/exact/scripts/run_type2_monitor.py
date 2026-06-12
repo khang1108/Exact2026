@@ -19,7 +19,6 @@ from exact.datasets.schemas import PredictionResponse, QuestionType, TaskType
 from exact.llm_client import has_json_llm_client_config
 from exact.scripts.config_utils import build_settings_from_config, load_toml_config
 from exact.scripts.evaluate_type2_predictions import evaluate_prediction
-from exact.type2.extraction.extractor import extract_type2
 from exact.type2.pipeline import run_type2_pipeline, set_generate_final_explanation
 
 
@@ -116,7 +115,6 @@ def main() -> None:
 
 
 def _predict(example: LoadedExample, settings) -> dict[str, Any]:
-    type2_kind = extract_type2(example.request.question).kind.value
     try:
         response = run_type2_pipeline(example.request, settings=settings)
     except Exception as exc:
@@ -136,7 +134,6 @@ def _predict(example: LoadedExample, settings) -> dict[str, Any]:
     prediction = response.model_dump(mode="json")
     if response.routing_diagnostics is not None:
         prediction["routing_log"] = response.routing_diagnostics
-    prediction["type2_kind"] = type2_kind
     prediction["gold_answer"] = example.gold_answer
     prediction["gold_unit"] = example.gold_unit
     return prediction

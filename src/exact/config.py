@@ -118,6 +118,14 @@ class Settings(BaseSettings):
         default=True,
         validation_alias="EXACT_TYPE2_USE_LLM_DOMAIN_ROUTING",
     )
+    type2_use_llm_question_kind_routing: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_LLM_QUESTION_KIND_ROUTING",
+    )
+    type2_use_agent_loop: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_AGENT_LOOP",
+    )
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
         default="merge",
         validation_alias="EXACT_TYPE2_EXTRACTION_MODE",
@@ -161,6 +169,11 @@ class Settings(BaseSettings):
     type2_pot_max_retries: int = Field(
         default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
     )
+    type2_agent_loop_max_attempts: int = Field(
+        default=2,
+        ge=1,
+        validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_ATTEMPTS",
+    )
     type2_pot_batch_size: int = Field(
         default=1,
         ge=1,
@@ -189,6 +202,16 @@ class Settings(BaseSettings):
         default=256,
         ge=1,
         validation_alias="EXACT_TYPE2_DOMAIN_ROUTING_MAX_TOKENS",
+    )
+    type2_question_kind_max_tokens: int = Field(
+        default=128,
+        ge=1,
+        validation_alias="EXACT_TYPE2_QUESTION_KIND_MAX_TOKENS",
+    )
+    type2_agent_loop_max_tokens: int = Field(
+        default=1024,
+        ge=1,
+        validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_TOKENS",
     )
     type2_formula_selection_max_tokens: int = Field(
         default=768,

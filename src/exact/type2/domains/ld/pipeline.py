@@ -15,6 +15,7 @@ from exact.type2.solving.pot_solver import solve_with_pot
 from exact.type2.pipeline import (
     _try_llm_extraction,
     _to_prediction_response,
+    _with_llm_question_kind,
     _GENERATE_FINAL_EXPLANATION_OVERRIDE,
 )
 from exact.type2.deterministic import run_deterministic_stage, merge_routing_diagnostics
@@ -27,8 +28,8 @@ def _legacy_build_solver_extraction(
 ) -> Extraction:
     llm_extraction = _try_llm_extraction(question, settings=settings)
     if llm_extraction is not None:
-        return llm_extraction
-    return extract_type2(question)
+        return _with_llm_question_kind(llm_extraction, question, settings=settings)
+    return _with_llm_question_kind(extract_type2(question), question, settings=settings)
 
 
 def run_ld_pipeline(

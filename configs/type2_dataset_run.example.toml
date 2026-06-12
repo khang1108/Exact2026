@@ -20,6 +20,10 @@ progress_every = 1
 # Runtime knobs read by `build_settings_from_config()`.
 # Domain routing: use the configured LLM first; fallback to ID/keyword heuristics if unavailable.
 use_llm_domain_routing = true
+# Question-kind routing: numerical | conceptual | mixed is LLM-owned.
+use_llm_question_kind_routing = true
+# Final safety loop: if the deterministic/PoT path fails, ask the LLM for a direct answer.
+use_agent_loop = true
 
 # `extraction_mode`: merge | llm_only | heuristic_only
 extraction_mode = "merge"
@@ -42,6 +46,8 @@ generate_final_explanation = true
 
 # Per-task LLM output budgets
 domain_routing_max_tokens = 256
+question_kind_max_tokens = 128
+agent_loop_max_tokens = 1024
 extraction_max_tokens = 512
 formula_selection_max_tokens = 1024
 conceptual_max_tokens = 1024
@@ -54,6 +60,7 @@ final_explanation_max_tokens = 1024
 # debug_pot_prompt_log_path = "artifacts/debug/type2_pot_prompts.jsonl"
 
 pot_max_retries = 3
+agent_loop_max_attempts = 2
 pot_batch_size = 3
 pot_batch_temperature = 0.4
 formula_limit = 24

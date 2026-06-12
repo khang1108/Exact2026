@@ -42,20 +42,10 @@ class DomainRouteSpec(BaseModel):
         return normalized
 
 
-def route_domain(
-    question_id: str | None,
-    question_text: str,
-    settings: Settings | None = None,
-    client: JsonClient | None = None,
-) -> Type2Domain:
-    """Route a Type 2 question to a domain pipeline."""
+def route_domain(question_id: str | None, question_text: str) -> Type2Domain:
+    """Route a Type 2 question to a specific domain pipeline based on ID or content."""
 
-    return route_domain_with_metadata(
-        question_id,
-        question_text,
-        settings=settings,
-        client=client,
-    ).domain
+    return route_domain_heuristic(question_id, question_text)
 
 
 def route_domain_with_metadata(
@@ -72,14 +62,12 @@ def route_domain_with_metadata(
         if route is not None:
             return route
 
-    fallback = route_domain_heuristic(question_id, question_text)
+    fallback = route_domain(question_id, question_text)
     reason = "LLM domain routing disabled" if not settings.type2_use_llm_domain_routing else "LLM route unavailable"
     return DomainRoute(domain=fallback, source="heuristic", fallback_reason=reason)
 
 
 def route_domain_heuristic(question_id: str | None, question_text: str) -> Type2Domain:
-    """Route a Type 2 question to a specific domain pipeline based on ID or content."""
-
     # Prefix routing
     if question_id:
         if "LD" in question_id or "DT" in question_id:

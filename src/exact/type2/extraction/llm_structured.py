@@ -56,6 +56,22 @@ class Type2ExtractionSpec(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+class Type2QuestionKindSpec(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+    reason: str | None = None
+
+    @field_validator("kind")
+    @classmethod
+    def kind_must_be_supported(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        if normalized not in {"numerical", "conceptual", "mixed"}:
+            raise ValueError("kind must be one of: numerical, conceptual, mixed")
+        return normalized
+
+
 class PotCodeSpec(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -91,6 +107,16 @@ class FinalExplanationSpec(BaseModel):
     cot: list[str] = Field(default_factory=list)
 
 
+class DirectAnswerSpec(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str
+    unit: str | None = None
+    explanation: str
+    premises: list[str] = Field(default_factory=list)
+    confidence: float | None = Field(default=None, ge=0.0, le=1.0)
+
+
 def build_llm_json_client(settings: Settings | None = None) -> JsonClient | None:
     settings = settings or get_settings()
     try:
@@ -119,6 +145,24 @@ def parse_with_llm(
     spec = Type2ExtractionSpec.model_validate(raw)
     spec.notes.append(f"normalized_question={normalize_question(question)}")
     return spec
+
+
+def classify_question_kind_with_llm(
+    question: str,
+    client: JsonClient | None = None,
+    settings: Settings | None = None,
+) -> Type2QuestionKindSpec | None:
+    settings = settings or get_settings()
+    client = client or build_llm_json_client(settings)
+    if client is None:
+        return None
+
+    raw = client.complete_json_sync(
+        messages=_build_question_kind_messages(question),
+        temperature=settings.llm_temperature,
+        max_tokens=settings.type2_question_kind_max_tokens,
+    )
+    return Type2QuestionKindSpec.model_validate(raw)
 
 
 def generate_pot_code(
@@ -281,6 +325,26 @@ def generate_final_explanation(
     return _validate_final_explanation_spec(raw)
 
 
+def generate_direct_answer(
+    question: str,
+    failure_context: str,
+    client: JsonClient | None = None,
+    settings: Settings | None = None,
+) -> DirectAnswerSpec | None:
+    settings = settings or get_settings()
+    client = client or build_llm_json_client(settings)
+    if client is None:
+        return None
+
+    raw = client.complete_json_sync(
+        messages=_build_direct_answer_messages(question, failure_context),
+        temperature=settings.llm_temperature,
+        max_tokens=settings.type2_agent_loop_max_tokens,
+    )
+    normalized = _normalize_direct_answer_raw(raw)
+    return DirectAnswerSpec.model_validate(normalized)
+
+
 def _build_extraction_messages(question: str):
     return [
         {
@@ -301,6 +365,27 @@ def _build_extraction_messages(question: str):
                 "If the question is conceptual, set kind to conceptual.\n"
                 f"Question: {question}"
             ),
+        },
+    ]
+
+
+def _build_question_kind_messages(question: str):
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You classify the answer mode of a Type 2 physics question. "
+                "Return JSON only with keys kind, confidence, reason. "
+                "kind must be exactly one of: numerical, conceptual, mixed. "
+                "Use numerical when the expected final answer is a number, unit-bearing value, "
+                "or numeric expression. Use conceptual when the expected final answer is qualitative "
+                "text, a choice of behavior, a unit-name explanation, or a descriptive statement. "
+                "Use mixed when the problem asks for both numeric work and qualitative reasoning."
+            ),
+        },
+        {
+            "role": "user",
+            "content": f"Question:\n{question}",
         },
     ]
 
@@ -448,6 +533,30 @@ def _build_final_explanation_messages(
     ]
 
 
+def _build_direct_answer_messages(question: str, failure_context: str):
+    return [
+        {
+            "role": "system",
+            "content": (
+                "You are the final safety agent for a Type 2 physics pipeline. "
+                "The normal deterministic or Program-of-Thought path failed, so produce the best direct answer. "
+                "Return JSON only with keys answer, unit, explanation, premises, confidence. "
+                "For numeric answers, put only the numeric magnitude in answer and the unit string in unit. "
+                "For conceptual answers, put a short phrase in answer and null in unit. "
+                "Keep explanation concise. Do not mention pipeline internals, code, JSON, or failures."
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"Question:\n{question}\n\n"
+                f"Previous failure context:\n{failure_context}\n\n"
+                "Return one JSON object only."
+            ),
+        },
+    ]
+
+
 def _build_repair_messages(question: str, original_code: str, error_message: str):
     return [
         {
@@ -498,6 +607,24 @@ def _normalize_final_explanation_raw(raw: object) -> object:
         normalized["explanation"] = _stringify_value(explanation) if explanation is not None else "Generated explanation."
     normalized["premises"] = _string_list(normalized.get("premises"))
     normalized["cot"] = _string_list(normalized.get("cot"))
+    return normalized
+
+
+def _normalize_direct_answer_raw(raw: object) -> object:
+    if not isinstance(raw, dict):
+        return raw
+    normalized = dict(raw)
+    answer = normalized.get("answer")
+    normalized["answer"] = _stringify_value(answer).strip() if answer is not None else ""
+    explanation = normalized.get("explanation")
+    normalized["explanation"] = (
+        _stringify_value(explanation).strip()
+        if explanation is not None
+        else "Generated a direct fallback answer."
+    )
+    unit = normalized.get("unit")
+    normalized["unit"] = str(unit).strip() if unit is not None and str(unit).strip() else None
+    normalized["premises"] = _string_list(normalized.get("premises"))
     return normalized
 
 
