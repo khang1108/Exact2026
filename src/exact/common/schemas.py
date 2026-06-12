@@ -67,6 +67,38 @@ class PredictionRequest(InboundBaseModel):
             raise ValueError("question must not be empty")
         return value
 
+
+class ParsePremisesRequest(InboundBaseModel):
+    """Input for the standalone ``/parser`` endpoint: raw NL premises only."""
+
+    premises: list[str] = Field(
+        validation_alias=AliasChoices("premises", "premises-NL", "premises_nl"),
+    )
+
+    @field_validator("premises")
+    @classmethod
+    def premises_must_not_be_empty(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value if item and item.strip()]
+        if not cleaned:
+            raise ValueError("premises must contain at least one non-empty string")
+        return cleaned
+
+
+class ParsedPremise(AppBaseModel):
+    """One natural-language premise translated to FOL."""
+
+    id: str
+    original_text: str
+    fol: str
+    ast: dict[str, Any]
+
+
+class ParsePremisesResponse(AppBaseModel):
+    """FOL translations aligned 1:1 with the input premises."""
+
+    premises: list[ParsedPremise]
+
+
 class PredictionResponse(AppBaseModel):
     """Competition-facing prediction plus local metadata for debugging."""
 
