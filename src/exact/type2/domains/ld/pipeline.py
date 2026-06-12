@@ -13,6 +13,7 @@ from exact.type2.schemas import Extraction, Verification
 from exact.type2.solving.pot_solver import solve_with_pot
 
 from exact.type2.pipeline import (
+    _append_extraction_note,
     _try_llm_extraction,
     _to_prediction_response,
     _with_llm_question_kind,
@@ -28,8 +29,16 @@ def _legacy_build_solver_extraction(
 ) -> Extraction:
     llm_extraction = _try_llm_extraction(question, settings=settings)
     if llm_extraction is not None:
-        return _with_llm_question_kind(llm_extraction, question, settings=settings)
-    return _with_llm_question_kind(extract_type2(question), question, settings=settings)
+        return _with_llm_question_kind(
+            _append_extraction_note(llm_extraction, "structured_extraction_source=llm"),
+            question,
+            settings=settings,
+        )
+    return _with_llm_question_kind(
+        _append_extraction_note(extract_type2(question), "structured_extraction_source=heuristic; llm_extraction=unavailable"),
+        question,
+        settings=settings,
+    )
 
 
 def run_ld_pipeline(

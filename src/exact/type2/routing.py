@@ -51,6 +51,7 @@ def build_routing_diagnostics(
         "ineligible_solvers": ineligible,
         "extraction_target": extraction.target,
         "extraction_kind": extraction.kind.value,
+        "extraction_notes": list(extraction.notes),
         "extracted_quantities": sorted(extraction.quantities),
         "retrieved_formula_ids": list(formula_context.formula_ids),
         "actual_solver": None,

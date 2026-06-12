@@ -164,18 +164,39 @@ def _build_solver_extraction(
     heuristic = extract_type2(question)
     mode = settings.type2_extraction_mode if settings else "merge"
     if mode == "heuristic_only":
-        return _with_llm_question_kind(heuristic, question, settings=settings)
+        return _with_llm_question_kind(
+            _append_extraction_note(heuristic, "structured_extraction_source=heuristic_only"),
+            question,
+            settings=settings,
+        )
 
     llm_extraction = _try_llm_extraction(question, settings=settings)
     if llm_extraction is None:
-        return _with_llm_question_kind(heuristic, question, settings=settings)
+        return _with_llm_question_kind(
+            _append_extraction_note(heuristic, "structured_extraction_source=heuristic; llm_extraction=unavailable"),
+            question,
+            settings=settings,
+        )
     if mode == "llm_only":
-        return _with_llm_question_kind(llm_extraction, question, settings=settings)
+        return _with_llm_question_kind(
+            _append_extraction_note(llm_extraction, "structured_extraction_source=llm"),
+            question,
+            settings=settings,
+        )
     return _with_llm_question_kind(
-        _merge_extractions(heuristic, llm_extraction),
+        _append_extraction_note(
+            _merge_extractions(heuristic, llm_extraction),
+            "structured_extraction_source=merged",
+        ),
         question,
         settings=settings,
     )
+
+
+def _append_extraction_note(extraction: Extraction, note: str) -> Extraction:
+    if note in extraction.notes:
+        return extraction
+    return replace(extraction, notes=(*extraction.notes, note))
 
 
 def _to_prediction_response(
@@ -204,7 +225,6 @@ def _with_domain_route_diagnostics(
 ) -> PredictionResponse:
     diagnostics = dict(response.routing_diagnostics or {})
     diagnostics["type2_domain_route"] = domain_route
-    diagnostics["type2_pot_solver_enabled"] = None
     return response.model_copy(update={"routing_diagnostics": diagnostics})
 
 
@@ -215,9 +235,20 @@ def _with_agent_loop_if_needed(
     trigger: str | None,
 ) -> PredictionResponse:
     diagnostics = dict(response.routing_diagnostics or {})
+    diagnostics["type2_llm_configured"] = bool(settings.llm_base_url)
+    diagnostics["type2_llm_domain_routing_enabled"] = settings.type2_use_llm_domain_routing
+    diagnostics["type2_llm_question_kind_routing_enabled"] = settings.type2_use_llm_question_kind_routing
+    diagnostics["type2_agent_loop_enabled"] = settings.type2_use_agent_loop
+    diagnostics["type2_agent_loop_max_attempts"] = settings.type2_agent_loop_max_attempts
     diagnostics["type2_pot_solver_enabled"] = settings.type2_use_pot_solver
     response = response.model_copy(update={"routing_diagnostics": diagnostics})
     if not trigger:
+        diagnostics["type2_agent_loop"] = {
+            "used": False,
+            "trigger": None,
+            "reason": "no pipeline error",
+        }
+        response = response.model_copy(update={"routing_diagnostics": diagnostics})
         return response
     return _agent_loop_response(
         request,
@@ -237,10 +268,20 @@ def _agent_loop_response(
     previous_response: PredictionResponse | None = None,
 ) -> PredictionResponse:
     diagnostics = dict(diagnostics or {})
+    diagnostics["type2_llm_configured"] = bool(settings.llm_base_url)
+    diagnostics["type2_llm_domain_routing_enabled"] = settings.type2_use_llm_domain_routing
+    diagnostics["type2_llm_question_kind_routing_enabled"] = settings.type2_use_llm_question_kind_routing
+    diagnostics["type2_agent_loop_enabled"] = settings.type2_use_agent_loop
+    diagnostics["type2_agent_loop_max_attempts"] = settings.type2_agent_loop_max_attempts
     diagnostics["type2_pot_solver_enabled"] = settings.type2_use_pot_solver
     if not settings.type2_use_agent_loop:
+        diagnostics["type2_agent_loop"] = {
+            "used": False,
+            "trigger": trigger,
+            "reason": "agent loop disabled",
+        }
         if previous_response is not None:
-            return previous_response
+            return previous_response.model_copy(update={"routing_diagnostics": diagnostics})
         return _guardrail_response(request, trigger, diagnostics)
 
     attempts: list[dict[str, Any]] = []
@@ -254,12 +295,16 @@ def _agent_loop_response(
         except Exception as exc:
             attempts.append({"attempt": attempt, "status": "error", "reason": str(exc)})
             continue
-        if spec is None or not spec.answer.strip():
+        if spec is None:
+            attempts.append({"attempt": attempt, "status": "unavailable"})
+            continue
+        if not spec.answer.strip():
             attempts.append({"attempt": attempt, "status": "empty"})
             continue
         attempts.append({"attempt": attempt, "status": "answered"})
         diagnostics["type2_agent_loop"] = {
             "used": True,
+            "enabled": True,
             "trigger": trigger,
             "attempts": attempts,
         }
@@ -280,6 +325,7 @@ def _agent_loop_response(
 
     diagnostics["type2_agent_loop"] = {
         "used": True,
+        "enabled": True,
         "trigger": trigger,
         "attempts": attempts,
         "fallback": "guardrail_response",
