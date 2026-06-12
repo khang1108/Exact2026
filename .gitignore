@@ -24,3 +24,6 @@ docs/
 tests/
 outputs/
 tmp/
+
+# Local-only: contains the cloudflared tunnel secret — never commit/push.
+/setup.sh
