@@ -130,7 +130,7 @@ def fol_node_to_dict(node: FOLNode) -> dict[str, Any]:
             "variable": node.variable,
             "body": fol_node_to_dict(node.body),
         }
-    return {  # LogicalNode — only remaining branch
+    return {
         "type": "logical",
         "operator": node.operator,
         "left": fol_node_to_dict(node.left),
