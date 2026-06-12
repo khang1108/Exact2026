@@ -58,6 +58,9 @@ class QuantifiedNode:
 
     def __repr__(self) -> str:
         symbol = "∀" if self.quantifier == "FORALL" else "∃"
+        # LogicalNode repr already wraps itself in parens; avoid doubling.
+        if isinstance(self.body, LogicalNode):
+            return f"{symbol}{self.variable}.{self.body}"
         return f"{symbol}{self.variable}.({self.body})"
 
 
