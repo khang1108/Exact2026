@@ -61,9 +61,28 @@ class FOLParser:
         self.max_depth = max_depth
 
     async def parse_many(self, sentences: Iterable[str]) -> list[FOLNode]:
-        """Parse independent sentences concurrently while preserving order."""
+        """Parse independent sentences concurrently while preserving order.
 
-        return list(await asyncio.gather(*(self.parse(sentence) for sentence in sentences)))
+        Quantified sentences are first rephrased to IF-THEN form in a single
+        batch; those that convert to logical avoid quantifier-nesting loops.
+        Remaining quantified sentences fall back to the progress-check guard
+        inside ``_parse_quantified``.
+        """
+        sentence_list = list(sentences)
+
+        # Batch-rephrase all quantified sentences in one vLLM round-trip.
+        rephrased = await asyncio.gather(*(
+            self._rephrase_if_quantified(s) for s in sentence_list
+        ))
+
+        return list(await asyncio.gather(*(self.parse(s) for s in rephrased)))
+
+    async def _rephrase_if_quantified(self, sentence: str) -> str:
+        """Rephrase a quantified sentence to IF-THEN; return others unchanged."""
+        if fast_classify(sentence) != "quantified":
+            return sentence
+        rephrased = await self.rephrase(sentence)
+        return rephrased if fast_classify(rephrased) == "logical" else sentence
 
     async def parse(
         self,
@@ -139,10 +158,11 @@ class FOLParser:
         if result.variable not in scope_sentence:
             scope_sentence = re.sub(r"\b[a-z]\d*\b", result.variable, scope_sentence, count=1)
 
-        # If the LLM returned a scope that's nearly identical to the input the
-        # parser would loop forever adding nested quantifiers. Break the cycle
-        # by treating the scope as atomic.
-        if self._is_recursive_loop(sentence, scope_sentence):
+        # Break quantifier-nesting loops: if the scope is nearly the same as
+        # the input (token overlap) OR not meaningfully shorter (word count),
+        # the LLM isn't making progress — parse scope as atomic instead.
+        no_progress = len(scope_sentence.split()) >= len(sentence.split()) * 0.85
+        if self._is_recursive_loop(sentence, scope_sentence) or no_progress:
             body = await self._parse_atomic(scope_sentence)
         else:
             body = await self.parse(
