@@ -83,3 +83,22 @@ def _extract_bound_var(node: FOLNode) -> str | None:
 
 # Public name used by package consumers; keep the private alias for older code.
 extract_bound_variable = _extract_bound_var
+
+
+def simplify(node: FOLNode) -> FOLNode:
+    """Eliminate double negations recursively: NOT(NOT(x)) → x."""
+    if isinstance(node, AtomicNode):
+        return node
+    if isinstance(node, QuantifiedNode):
+        return QuantifiedNode(node.quantifier, node.variable, simplify(node.body))
+    # LogicalNode
+    if node.operator == "NOT":
+        inner = simplify(node.left)
+        if isinstance(inner, LogicalNode) and inner.operator == "NOT":
+            return simplify(inner.left)
+        return LogicalNode("NOT", inner)
+    return LogicalNode(
+        node.operator,
+        simplify(node.left),
+        simplify(node.right) if node.right is not None else None,
+    )

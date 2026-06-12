@@ -398,10 +398,17 @@ log_info "Starting EXACT API: $API_HOST:$API_PORT"
 # uvicorn only accepts lowercase log levels; EXACT_LOG_LEVEL may be uppercase.
 API_LOG_LEVEL="${UVICORN_LOG_LEVEL:-${EXACT_LOG_LEVEL:-info}}"
 API_LOG_LEVEL="${API_LOG_LEVEL,,}"
-"$PYTHON_BIN" -m uvicorn exact.app.main:app \
-  --host "$API_HOST" \
-  --port "$API_PORT" \
-  --log-level "$API_LOG_LEVEL" &
+uvicorn_cmd=(
+  "$PYTHON_BIN" -m uvicorn exact.app.main:app
+  --host "$API_HOST"
+  --port "$API_PORT"
+  --log-level "$API_LOG_LEVEL"
+)
+if [[ "${UVICORN_RELOAD:-0}" == "1" ]]; then
+  uvicorn_cmd+=(--reload --reload-dir "$PROJECT_ROOT/src")
+  log_info "API hot-reload enabled (watching src/)"
+fi
+"${uvicorn_cmd[@]}" &
 API_PID=$!
 PIDS+=("$API_PID")
 

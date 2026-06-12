@@ -22,6 +22,7 @@ from exact.type1.ast.nodes import (
     LogicalNode,
     QuantifiedNode,
     _extract_bound_var,
+    simplify,
 )
 from exact.type1.models.schemas import Predicate
 from exact.type1.parser.client import ParserClient
@@ -81,23 +82,23 @@ class FOLParser:
 
         used_variables = used_variables or frozenset()
         if depth > self.max_depth or self._is_recursive_loop(parent, sentence):
-            return await self._parse_atomic(sentence)
+            return simplify(await self._parse_atomic(sentence))
 
         sentence_type = fast_classify(sentence)
         if sentence_type == "quantified":
-            return await self._parse_quantified(
+            return simplify(await self._parse_quantified(
                 sentence,
                 depth=depth,
                 used_variables=used_variables,
                 force_quantifier=force_quantifier,
-            )
+            ))
         if sentence_type == "logical":
-            return await self._parse_logical(
+            return simplify(await self._parse_logical(
                 sentence,
                 depth=depth,
                 used_variables=used_variables,
-            )
-        return await self._parse_atomic(sentence)
+            ))
+        return simplify(await self._parse_atomic(sentence))
 
     async def rephrase(self, sentence: str) -> str:
         """Minimally rewrite one sentence using the dedicated rephrase prompt."""
