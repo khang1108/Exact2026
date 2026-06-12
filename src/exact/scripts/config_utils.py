@@ -97,6 +97,15 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
         "type2_pot_max_retries": int(
             type2_pipeline.get("pot_max_retries", settings.type2_pot_max_retries)
         ),
+        "type2_pot_batch_size": int(
+            type2_pipeline.get("pot_batch_size", settings.type2_pot_batch_size)
+        ),
+        "type2_pot_batch_temperature": float(
+            type2_pipeline.get(
+                "pot_batch_temperature",
+                settings.type2_pot_batch_temperature,
+            )
+        ),
         "type2_formula_limit": int(
             type2_pipeline.get("formula_limit", settings.type2_formula_limit)
         ),

@@ -45,14 +45,37 @@ class VLLMJsonClient:
         json_schema: dict[str, Any] | None = None,
         timeout_override: float | None = None,
     ) -> dict[str, Any]:
+        return (
+            await self.complete_json_batch(
+                messages=messages,
+                n=1,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                json_schema=json_schema,
+                timeout_override=timeout_override,
+            )
+        )[0]
+
+    async def complete_json_batch(
+        self,
+        messages: Iterable[ChatMessage],
+        n: int,
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
+    ) -> list[dict[str, Any]]:
         """
-        Return a JSON object from the configured self-hosted vLLM server.
+        Return one or more JSON objects from the configured self-hosted vLLM server.
 
         When provided, ``json_schema`` is sent as vLLM ``guided_json`` structured
         decoding. If the server rejects that schema, the request is retried once
         using prompt-level JSON constraints.
         """
         import httpx
+
+        if n < 1:
+            raise ValueError("n must be >= 1")
 
         effective_timeout = timeout_override if timeout_override is not None else self._timeout
         payload: dict[str, Any] = {
@@ -62,6 +85,8 @@ class VLLMJsonClient:
             "max_tokens": max_tokens,
             "response_format": {"type": "json_object"},
         }
+        if n > 1:
+            payload["n"] = n
         # guided_json constrains token sampling to only produce JSON matching the
         # schema, effectively replacing retry-on-bad-JSON loops with a one-shot
         # structural guarantee.
@@ -99,16 +124,31 @@ class VLLMJsonClient:
                         continue
                     resp.raise_for_status()
                 data = resp.json()
-                choice = data["choices"][0]
-                text = choice["message"]["content"] or ""
-                finish_reason = choice.get("finish_reason", "")
-                try:
-                    return _parse_json_object(text)
-                except ValueError as exc:
-                    raise ValueError(
-                        "LLM returned invalid JSON "
-                        f"with finish_reason={finish_reason}: {_clip_text(text)}"
-                    ) from exc
+                parsed_choices: list[dict[str, Any]] = []
+                parse_errors: list[str] = []
+                for choice in data.get("choices", []):
+                    text = choice["message"]["content"] or ""
+                    finish_reason = choice.get("finish_reason", "")
+                    try:
+                        parsed_choices.append(_parse_json_object(text))
+                    except ValueError as exc:
+                        parse_errors.append(
+                            "finish_reason={finish_reason}: {text}".format(
+                                finish_reason=finish_reason,
+                                text=_clip_text(text),
+                            )
+                        )
+                        if n == 1:
+                            raise ValueError(
+                                "LLM returned invalid JSON "
+                                f"with finish_reason={finish_reason}: {_clip_text(text)}"
+                            ) from exc
+                if parsed_choices:
+                    return parsed_choices
+                raise ValueError(
+                    "LLM returned no parseable JSON choices: "
+                    + "; ".join(parse_errors or ["empty choices"])
+                )
             except httpx.HTTPStatusError as exc:
                 last_exc = exc
                 if attempts_remaining > 0:
@@ -134,10 +174,32 @@ class VLLMJsonClient:
         """
         Synchronous wrapper for command-line scripts, FastAPI sync routes, and Jupyter notebooks.
         """
+        return self.complete_json_batch_sync(
+            messages=messages,
+            n=1,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_schema=json_schema,
+            timeout_override=timeout_override,
+        )[0]
+
+    def complete_json_batch_sync(
+        self,
+        messages: Iterable[ChatMessage],
+        n: int,
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Synchronous wrapper for batched JSON completions.
+        """
         import concurrent.futures
 
-        coro = self.complete_json(
+        coro = self.complete_json_batch(
             messages=messages,
+            n=n,
             temperature=temperature,
             max_tokens=max_tokens,
             json_schema=json_schema,

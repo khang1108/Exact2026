@@ -50,6 +50,8 @@ final_explanation_max_tokens = 1024
 # debug_pot_prompt_log_path = "artifacts/debug/type2_pot_prompts.jsonl"
 
 pot_max_retries = 3
+pot_batch_size = 3
+pot_batch_temperature = 0.4
 formula_limit = 24
 rerank_limit = 8
 pot_timeout = 10.0

@@ -157,6 +157,17 @@ class Settings(BaseSettings):
     type2_pot_max_retries: int = Field(
         default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
     )
+    type2_pot_batch_size: int = Field(
+        default=1,
+        ge=1,
+        validation_alias="EXACT_TYPE2_POT_BATCH_SIZE",
+    )
+    type2_pot_batch_temperature: float = Field(
+        default=0.4,
+        ge=0.0,
+        le=2.0,
+        validation_alias="EXACT_TYPE2_POT_BATCH_TEMPERATURE",
+    )
     type2_formula_limit: int = Field(default=24, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
     type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
     type2_generate_explanation: bool = Field(

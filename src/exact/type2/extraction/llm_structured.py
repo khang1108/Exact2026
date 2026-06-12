@@ -21,6 +21,14 @@ class JsonClient(Protocol):
         max_tokens: int = 2048,
     ) -> dict[str, Any]: ...
 
+    def complete_json_batch_sync(
+        self,
+        messages,
+        n: int,
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+    ) -> list[dict[str, Any]]: ...
+
 
 class ExtractionQuantitySpec(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -141,6 +149,56 @@ def generate_pot_code(
         max_tokens=settings.type2_pot_code_max_tokens,
     )
     return _validate_pot_code_spec(raw)
+
+
+def generate_pot_code_candidates(
+    question: str,
+    explanation: str,
+    formula_context: str = "",
+    candidate_count: int = 1,
+    client: JsonClient | None = None,
+    settings: Settings | None = None,
+    temperature: float | None = None,
+    debug_metadata: dict[str, Any] | None = None,
+) -> list[PotCodeSpec] | None:
+    settings = settings or get_settings()
+    client = client or build_llm_json_client(settings)
+    if client is None:
+        return None
+
+    candidate_count = max(1, int(candidate_count))
+    messages = _build_pot_messages(question, explanation, formula_context)
+    metadata = dict(debug_metadata or {})
+    metadata["candidate_count"] = candidate_count
+    _log_type2_prompt(
+        settings,
+        stage="pot_code_batch" if candidate_count > 1 else "pot_code",
+        question=question,
+        messages=messages,
+        max_tokens=settings.type2_pot_code_max_tokens,
+        metadata=metadata,
+    )
+    effective_temperature = settings.llm_temperature if temperature is None else temperature
+
+    batch_method = getattr(client, "complete_json_batch_sync", None)
+    if callable(batch_method):
+        raw_items = batch_method(
+            messages=messages,
+            n=candidate_count,
+            temperature=effective_temperature,
+            max_tokens=settings.type2_pot_code_max_tokens,
+        )
+        return [_validate_pot_code_spec(raw) for raw in raw_items]
+
+    candidates: list[PotCodeSpec] = []
+    for _ in range(candidate_count):
+        raw = client.complete_json_sync(
+            messages=messages,
+            temperature=effective_temperature,
+            max_tokens=settings.type2_pot_code_max_tokens,
+        )
+        candidates.append(_validate_pot_code_spec(raw))
+    return candidates
 
 
 def select_formula_ids(

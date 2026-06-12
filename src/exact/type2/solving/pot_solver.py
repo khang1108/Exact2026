@@ -4,6 +4,7 @@ import ast
 import json
 import math
 import re
+from dataclasses import dataclass, replace
 from typing import Any
 
 from exact.config import Settings, get_settings
@@ -12,7 +13,7 @@ from exact.llm_client import has_json_llm_client_config
 from exact.type2.extraction.llm_structured import (
     PotCodeSpec,
     generate_final_explanation,
-    generate_pot_code,
+    generate_pot_code_candidates,
     repair_pot_code,
     build_llm_json_client,
 )
@@ -26,6 +27,17 @@ from exact.type2.solving.solver import answer_conceptual, solve_extraction, solv
 
 POT_SOLVER_NOT_CONFIGURED = "type2_pot_solver_not_configured"
 POT_SOLVER_FAILED = "type2_pot_solver_failed"
+
+
+@dataclass(frozen=True)
+class PotCandidateAttempt:
+    index: int
+    code_spec: PotCodeSpec
+    execution: ExecutionResult
+    repair_attempts: int
+    verified: OutputSanityResult | None = None
+    error: str | None = None
+    agreement_count: int = 1
 
 
 def _load_conceptual_kb() -> list[dict[str, Any]]:
@@ -206,13 +218,17 @@ def solve_with_pot(
         return vector_fast_path
     prompt_context = _build_solver_context(extraction, formula_context)
     try:
-        code_spec = generate_pot_code(
+        candidate_count = max(1, settings.type2_pot_batch_size)
+        candidates = generate_pot_code_candidates(
             extraction.normalized_question,
             "Use the retrieved formulas to solve the problem with Pint.",
             formula_context=prompt_context,
+            candidate_count=candidate_count,
+            temperature=_pot_generation_temperature(settings, candidate_count),
             settings=settings,
             debug_metadata={
                 "attempt": 0,
+                "batch_size": candidate_count,
                 "max_repair_attempts": settings.type2_pot_max_retries,
                 "trigger": "initial_generation",
             },
@@ -223,58 +239,46 @@ def solve_with_pot(
         if fallback is not None:
             return fallback
         return _failed_result(extraction, reason)
-    if code_spec is None:
+    if candidates is None:
         return _unconfigured_result(extraction)
+    if not candidates:
+        return _failed_result(extraction, "LLM code generation returned no usable PoT candidates.")
 
-    code_spec, execution, repair_attempts, repair_error = _execute_with_repair_loop(
+    selected, failed_attempts = _select_verified_pot_candidate(
         extraction,
-        code_spec,
+        candidates,
         formula_context,
         settings,
     )
-    if repair_error is not None:
-        fallback = _try_executable_formula_fallback(extraction, formula_context, repair_error, settings)
+    if selected is None:
+        reason = _candidate_failure_reason(failed_attempts)
+        fallback = _try_executable_formula_fallback(extraction, formula_context, reason, settings)
         if fallback is not None:
             return fallback
-        return _failed_result(extraction, repair_error)
-
-    if not execution.ok:
-        fallback = _try_executable_formula_fallback(extraction, formula_context, execution.error, settings)
-        if fallback is not None:
-            return fallback
-        return _failed_result(
-            extraction,
-            execution.error or f"execution failed after {repair_attempts} repair attempt(s)",
+        verification = (
+            failed_attempts[-1].verified.verification
+            if failed_attempts and failed_attempts[-1].verified
+            else Verification(False, reason)
         )
-
-    unit = execution.ans_unit or code_spec.answer_unit
-    verified = _verify_or_accept_execution(
-        execution.ans,
-        unit,
-        code_spec.formula_ids_used,
-        formula_context,
-        extraction,
-        settings,
-    )
-    if verified.error is not None:
-        fallback = _try_executable_formula_fallback(extraction, formula_context, verified.verification.message, settings)
-        if fallback is not None:
-            return fallback
         return Type2SolveResult(
             answer="",
             unit=None,
             value=None,
             formula=None,
             extraction=extraction,
-            verification=verified.verification,
-            cot=["PoT code executed, but verifier rejected the result."],
+            verification=verification,
+            cot=[
+                f"Generated {len(candidates)} PoT candidate program(s) with the LLM.",
+                "No PoT candidate passed execution and verification.",
+            ],
             premises=[],
             confidence=0.0,
-            error=verified.error,
+            error=POT_SOLVER_FAILED,
         )
 
+    assert selected.verified is not None
     deterministic_conflict = _try_deterministic_conflict_fallback(
-        verified,
+        selected.verified,
         extraction,
         formula_context,
         settings,
@@ -284,35 +288,161 @@ def solve_with_pot(
 
     explanation = _final_explanation(
         extraction,
-        verified.answer,
-        verified.unit,
+        selected.verified.answer,
+        selected.verified.unit,
         formula_context,
-        code_spec,
+        selected.code_spec,
         settings,
         generate_explanation=generate_explanation,
     )
     return Type2SolveResult(
-        answer=verified.answer,
-        unit=verified.unit,
-        value=verified.value,
+        answer=selected.verified.answer,
+        unit=selected.verified.unit,
+        value=selected.verified.value,
         formula=None,
         extraction=extraction,
-        verification=verified.verification,
+        verification=selected.verified.verification,
         cot=[
             "Retrieved formula context for the question.",
-            "Generated a Pint-based Python program with the LLM.",
+            _pot_generation_cot(len(candidates), selected),
             *(
-                [f"Repaired the generated program {repair_attempts} time(s) before execution succeeded."]
-                if repair_attempts
+                [f"Repaired the selected generated program {selected.repair_attempts} time(s) before execution succeeded."]
+                if selected.repair_attempts
                 else []
             ),
-            "Executed the program in the sandbox.",
+            f"Executed {len(candidates)} PoT candidate program(s) in the sandbox.",
             "Verified the numeric answer, unit, and formula IDs.",
             *explanation.cot,
         ],
         premises=explanation.premises,
         confidence=0.72,
         error=None,
+    )
+
+
+def _pot_generation_temperature(settings: Settings, candidate_count: int) -> float:
+    if candidate_count <= 1:
+        return settings.llm_temperature
+    return settings.type2_pot_batch_temperature
+
+
+def _select_verified_pot_candidate(
+    extraction: Extraction,
+    candidates: list[PotCodeSpec],
+    formula_context: RetrievedFormulaContext,
+    settings: Settings,
+) -> tuple[PotCandidateAttempt | None, list[PotCandidateAttempt]]:
+    attempts: list[PotCandidateAttempt] = []
+    verified_attempts: list[PotCandidateAttempt] = []
+
+    for index, candidate in enumerate(candidates):
+        code_spec, execution, repair_attempts, repair_error = _execute_with_repair_loop(
+            extraction,
+            candidate,
+            formula_context,
+            settings,
+        )
+        if repair_error is not None:
+            attempts.append(
+                PotCandidateAttempt(
+                    index=index,
+                    code_spec=code_spec,
+                    execution=execution,
+                    repair_attempts=repair_attempts,
+                    error=repair_error,
+                )
+            )
+            continue
+        if not execution.ok:
+            attempts.append(
+                PotCandidateAttempt(
+                    index=index,
+                    code_spec=code_spec,
+                    execution=execution,
+                    repair_attempts=repair_attempts,
+                    error=execution.error or f"execution failed after {repair_attempts} repair attempt(s)",
+                )
+            )
+            continue
+
+        unit = execution.ans_unit or code_spec.answer_unit
+        verified = _verify_or_accept_execution(
+            execution.ans,
+            unit,
+            code_spec.formula_ids_used,
+            formula_context,
+            extraction,
+            settings,
+        )
+        attempt = PotCandidateAttempt(
+            index=index,
+            code_spec=code_spec,
+            execution=execution,
+            repair_attempts=repair_attempts,
+            verified=verified,
+            error=verified.error,
+        )
+        attempts.append(attempt)
+        if verified.error is None:
+            verified_attempts.append(attempt)
+
+    if not verified_attempts:
+        return None, attempts
+    return _choose_agreeing_candidate(verified_attempts), attempts
+
+
+def _choose_agreeing_candidate(attempts: list[PotCandidateAttempt]) -> PotCandidateAttempt:
+    best = attempts[0]
+    best_count = 1
+    for candidate in attempts:
+        count = sum(
+            1
+            for other in attempts
+            if _verified_values_agree(candidate.verified, other.verified)
+        )
+        if (
+            count > best_count
+            or (
+                count == best_count
+                and (candidate.repair_attempts, candidate.index)
+                < (best.repair_attempts, best.index)
+            )
+        ):
+            best = candidate
+            best_count = count
+    return replace(best, agreement_count=best_count)
+
+
+def _verified_values_agree(left: OutputSanityResult | None, right: OutputSanityResult | None) -> bool:
+    if left is None or right is None:
+        return False
+    if left.value is None or right.value is None:
+        return left.answer == right.answer and left.unit == right.unit
+    try:
+        converted = right.value.to(left.value.units)
+        left_magnitude = float(left.value.magnitude)
+        right_magnitude = float(converted.magnitude)
+    except Exception:
+        return left.answer == right.answer and left.unit == right.unit
+    if not (math.isfinite(left_magnitude) and math.isfinite(right_magnitude)):
+        return False
+    scale = max(abs(left_magnitude), abs(right_magnitude), 1e-12)
+    return abs(left_magnitude - right_magnitude) <= max(1e-9, 0.02 * scale)
+
+
+def _candidate_failure_reason(attempts: list[PotCandidateAttempt]) -> str:
+    errors = [attempt.error for attempt in attempts if attempt.error]
+    if not errors:
+        return "No PoT candidate was available."
+    return errors[-1]
+
+
+def _pot_generation_cot(candidate_count: int, selected: PotCandidateAttempt) -> str:
+    if candidate_count <= 1:
+        return "Generated a Pint-based Python program with the LLM."
+    return (
+        f"Generated {candidate_count} Pint-based Python candidate program(s) with the LLM; "
+        f"selected candidate {selected.index + 1} with agreement count {selected.agreement_count}."
     )
 
 
@@ -499,8 +629,7 @@ def _try_deterministic_conflict_fallback(
             f"used deterministic result instead. PoT returned {pot_result.answer} {pot_result.unit or ''}."
         ).strip(),
     )
-    deterministic.confidence = max(deterministic.confidence, 0.86)
-    return deterministic
+    return replace(deterministic, confidence=max(deterministic.confidence, 0.86))
 
 
 def _results_numerically_agree(pot_result: OutputSanityResult, deterministic: Type2SolveResult) -> bool:
