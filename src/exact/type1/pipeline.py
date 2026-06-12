@@ -12,11 +12,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
-from exact.type1.ast import AtomicNode, FOLNode, LogicalNode, QuantifiedNode
+from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
 from exact.type1.parser import FOLParser
 
 if TYPE_CHECKING:
-    from exact.type1.solvers import FOLSolver
+    from exact.type1.solvers import FOLSolver  # type: ignore[import-untyped]
 
 
 async def run_type1_pipeline(
@@ -130,11 +130,9 @@ def fol_node_to_dict(node: FOLNode) -> dict[str, Any]:
             "variable": node.variable,
             "body": fol_node_to_dict(node.body),
         }
-    if isinstance(node, LogicalNode):
-        return {
-            "type": "logical",
-            "operator": node.operator,
-            "left": fol_node_to_dict(node.left),
-            "right": fol_node_to_dict(node.right) if node.right is not None else None,
-        }
-    raise TypeError(f"Unsupported FOL node: {type(node).__name__}")
+    return {  # LogicalNode — only remaining branch
+        "type": "logical",
+        "operator": node.operator,
+        "left": fol_node_to_dict(node.left),
+        "right": fol_node_to_dict(node.right) if node.right is not None else None,
+    }
