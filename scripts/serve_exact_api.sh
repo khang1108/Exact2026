@@ -54,16 +54,63 @@ log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 # ---------------------------------------------------------------------------
 
 wait_for_http() {
-  local name="$1" url="$2" timeout="${3:-120}" elapsed=0
+  local name="$1" url="$2" timeout="${3:-120}" pid="${4:-}" log_file="${5:-}" elapsed=0
   log_info "Waiting for $name at $url (timeout ${timeout}s)..."
-  until curl -sf "$url" -o /dev/null 2>/dev/null; do
+  while true; do
+    if [[ -n "$pid" ]] && ! kill -0 "$pid" 2>/dev/null; then
+      local process_status=0
+      wait "$pid" 2>/dev/null || process_status=$?
+      log_error "$name exited before becoming ready (status $process_status)."
+      if [[ -n "$log_file" && -f "$log_file" ]]; then
+        log_error "Last lines from $log_file:"
+        tail -n 40 "$log_file" >&2
+      fi
+      return 1
+    fi
+
+    if curl -sf "$url" -o /dev/null 2>/dev/null; then
+      echo ""
+      log_info "$name ready after ${elapsed}s."
+      return 0
+    fi
+
     if [[ $elapsed -ge $timeout ]]; then
       log_error "$name not ready after ${timeout}s — check $LOG_DIR/"
+      if [[ -n "$log_file" && -f "$log_file" ]]; then
+        log_error "Last lines from $log_file:"
+        tail -n 40 "$log_file" >&2
+      fi
       return 1
     fi
     sleep 3; elapsed=$((elapsed + 3)); echo -n "."
   done
-  echo ""; log_info "$name ready after ${elapsed}s."
+}
+
+supervise_services() {
+  local names=("$@")
+  local service_count=$(( ${#names[@]} / 3 ))
+  local index name pid log_file process_status
+
+  while true; do
+    for (( index=0; index<service_count; index++ )); do
+      name="${names[index * 3]}"
+      pid="${names[index * 3 + 1]}"
+      log_file="${names[index * 3 + 2]}"
+      if ! kill -0 "$pid" 2>/dev/null; then
+        process_status=0
+        wait "$pid" 2>/dev/null || process_status=$?
+        SHUTDOWN_REASON="$name exited"
+        log_error "$name exited unexpectedly (status $process_status)."
+        if [[ -n "$log_file" && -f "$log_file" ]]; then
+          log_error "Last lines from $log_file:"
+          tail -n 40 "$log_file" >&2
+        fi
+        [[ $process_status -eq 0 ]] && process_status=1
+        return "$process_status"
+      fi
+    done
+    sleep 2
+  done
 }
 
 check_vllm_runtime() {
@@ -97,12 +144,15 @@ PY
 }
 
 PIDS=()
+SHUTDOWN_REASON="launcher exit"
 cleanup() {
-  local exit_code="${1:-$?}"
+  local exit_code="${1:-$?}" index pid
   trap - INT TERM EXIT
   echo ""
-  log_warn "Stopping all services..."
-  for pid in "${PIDS[@]}"; do
+  log_warn "Stopping all services (reason: $SHUTDOWN_REASON, status: $exit_code)..."
+  # Stop dependents before their model servers: API, main vLLM, then parser.
+  for (( index=${#PIDS[@]}-1; index>=0; index-- )); do
+    pid="${PIDS[index]}"
     kill "$pid" 2>/dev/null || true
     wait "$pid" 2>/dev/null || true
   done
@@ -114,8 +164,9 @@ cleanup() {
   log_info "Done."
   exit "$exit_code"
 }
-trap 'cleanup 130' INT
-trap 'cleanup 143' TERM
+trap 'SHUTDOWN_REASON="received SIGINT"; cleanup 130' INT
+trap 'SHUTDOWN_REASON="received SIGTERM"; cleanup 143' TERM
+trap 'SHUTDOWN_REASON="received SIGHUP (terminal/SSH disconnected)"; cleanup 129' HUP
 trap 'cleanup $?' EXIT
 
 # ---------------------------------------------------------------------------
@@ -268,7 +319,12 @@ fi
 
 # Finish parser initialization before starting the second vLLM process. This
 # avoids races while both processes allocate internal coordination ports.
-wait_for_http "Parser vLLM" "http://${PARSER_HOST}:${PARSER_PORT}/health" 300 || exit 1
+wait_for_http \
+  "Parser vLLM" \
+  "http://${PARSER_HOST}:${PARSER_PORT}/health" \
+  300 \
+  "$PARSER_PID" \
+  "$LOG_DIR/parser.log" || exit 1
 
 # ---------------------------------------------------------------------------
 # 2. Main vLLM (GPU, port 8000) — skipped if binary not found
@@ -335,7 +391,12 @@ fi
 # ---------------------------------------------------------------------------
 
 if [[ "$VLLM_SKIP" != "1" ]]; then
-  wait_for_http "Main vLLM" "http://${VLLM_HOST}:${VLLM_PORT}/health" 360 || exit 1
+  wait_for_http \
+    "Main vLLM" \
+    "http://${VLLM_HOST}:${VLLM_PORT}/health" \
+    360 \
+    "$VLLM_PID" \
+    "$LOG_DIR/vllm.log" || exit 1
 fi
 
 # ---------------------------------------------------------------------------
@@ -344,21 +405,40 @@ fi
 
 API_HOST="${API_HOST:-${EXACT_API_HOST:-0.0.0.0}}"
 API_PORT="${API_PORT:-${EXACT_API_PORT:-8080}}"
-
-echo ""
-log_info "All services ready."
-echo -e "  ${GREEN}Parser vLLM:${NC}  http://${PARSER_HOST}:${PARSER_PORT}/v1"
-[[ "$VLLM_SKIP" != "1" ]] && echo -e "  ${GREEN}Main vLLM:${NC}    http://${VLLM_HOST}:${VLLM_PORT}/v1"
-echo -e "  ${GREEN}EXACT API:${NC}    http://${API_HOST}:${API_PORT} (starting...)"
-echo ""
+API_HEALTH_HOST="$API_HOST"
+[[ "$API_HEALTH_HOST" == "0.0.0.0" ]] && API_HEALTH_HOST="127.0.0.1"
 
 export PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
+log_info "Starting EXACT API: $API_HOST:$API_PORT"
 "$PYTHON_BIN" -m uvicorn exact.app.main:app \
   --host "$API_HOST" \
   --port "$API_PORT" \
   --log-level "${UVICORN_LOG_LEVEL:-${EXACT_LOG_LEVEL:-info}}" &
 API_PID=$!
 PIDS+=("$API_PID")
-wait "$API_PID"
+
+wait_for_http \
+  "EXACT API" \
+  "http://${API_HEALTH_HOST}:${API_PORT}/health" \
+  60 \
+  "$API_PID" \
+  "$PROJECT_ROOT/outputs/logs/api.log" || exit 1
+
+echo ""
+log_info "All services ready."
+echo -e "  ${GREEN}Parser vLLM:${NC}  http://${PARSER_HOST}:${PARSER_PORT}/v1"
+[[ "$VLLM_SKIP" != "1" ]] && echo -e "  ${GREEN}Main vLLM:${NC}    http://${VLLM_HOST}:${VLLM_PORT}/v1"
+echo -e "  ${GREEN}EXACT API:${NC}    http://${API_HOST}:${API_PORT}"
+echo ""
+
+services=(
+  "Parser vLLM" "$PARSER_PID" "$LOG_DIR/parser.log"
+  "EXACT API" "$API_PID" "$PROJECT_ROOT/outputs/logs/api.log"
+)
+if [[ "$VLLM_SKIP" != "1" ]]; then
+  services+=("Main vLLM" "$VLLM_PID" "$LOG_DIR/vllm.log")
+fi
+
+supervise_services "${services[@]}"
 exit $?
