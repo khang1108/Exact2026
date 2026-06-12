@@ -139,12 +139,18 @@ class FOLParser:
         if result.variable not in scope_sentence:
             scope_sentence = re.sub(r"\b[a-z]\d*\b", result.variable, scope_sentence, count=1)
 
-        body = await self.parse(
-            scope_sentence,
-            depth=depth + 1,
-            parent=sentence,
-            used_variables=used_variables | {result.variable},
-        )
+        # If the LLM returned a scope that's nearly identical to the input the
+        # parser would loop forever adding nested quantifiers. Break the cycle
+        # by treating the scope as atomic.
+        if self._is_recursive_loop(sentence, scope_sentence):
+            body = await self._parse_atomic(scope_sentence)
+        else:
+            body = await self.parse(
+                scope_sentence,
+                depth=depth + 1,
+                parent=sentence,
+                used_variables=used_variables | {result.variable},
+            )
         return QuantifiedNode(
             quantifier="FORALL" if quantifier == "ForAll" else "EXISTS",
             variable=result.variable,
