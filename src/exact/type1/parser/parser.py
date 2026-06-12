@@ -205,10 +205,8 @@ class FOLParser:
             result.operator == "IMPLIES"
             and re.search(r"^(a|an)\s+\w+", result.left_operand.lower().strip()) is not None
         )
-        if result.operator == "IMPLIES" and PRONOUNS.search(right_sentence):
-            right_sentence = await self._resolve_coreference(result.left_operand, right_sentence)
 
-        # Parse left first because it may introduce a variable needed by right.
+        # Parse left first because it introduces the bound variable needed by right.
         left = await self.parse(
             result.left_operand,
             depth=depth + 1,
@@ -217,6 +215,17 @@ class FOLParser:
             force_quantifier="ForAll" if force_universal else None,
         )
         bound_variable = _extract_bound_var(left)
+
+        # Resolve pronouns in the right clause.
+        # When a bound variable is already known, substitute directly — a 1.7 B model
+        # tends to hallucinate the left's predicate when asked to resolve "it is not X"
+        # against a left clause like "is not Y", producing "it is not Y" instead.
+        if PRONOUNS.search(right_sentence):
+            if bound_variable:
+                right_sentence = self._substitute_pronouns(right_sentence, bound_variable)
+            elif result.operator == "IMPLIES":
+                right_sentence = await self._resolve_coreference(result.left_operand, right_sentence)
+
         if bound_variable:
             right_sentence = self._inject_variable(
                 right_sentence,
@@ -224,11 +233,13 @@ class FOLParser:
                 result.left_operand,
             )
 
+        # Pass the bound variable as used so the right side doesn't re-quantify with
+        # the same variable (e.g. ∀x.(P(x) IMPLIES ∀x.Q(x)) → use y instead).
         right = await self.parse(
             right_sentence,
             depth=depth + 1,
             parent=sentence,
-            used_variables=used_variables,
+            used_variables=used_variables | ({bound_variable} if bound_variable else frozenset()),
         )
         # Lift quantifier so it scopes over the whole expression, not just left.
         # ∀x.P(x) IMPLIES Q(x)  →  ∀x.(P(x) IMPLIES Q(x))
@@ -260,6 +271,16 @@ class FOLParser:
         if re.search(r"\b(no\s+one|nobody|no\s+\w+)\b", lowered):
             return "ForAll"
         return parsed
+
+    @staticmethod
+    def _substitute_pronouns(text: str, variable: str) -> str:
+        """Replace subject/object pronouns with a bound variable."""
+        return re.sub(
+            r"\b(it|its|they|them|their|he|his|him|she|her)\b",
+            variable,
+            text,
+            flags=re.IGNORECASE,
+        )
 
     @staticmethod
     def _is_recursive_loop(parent: str, sentence: str) -> bool:
