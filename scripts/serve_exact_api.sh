@@ -115,6 +115,7 @@ PARSER_GPU_MEM="${EXACT_TYPE1_PARSER_SERVER_GPU_MEMORY_UTILIZATION:-0.25}"
 PARSER_DTYPE="${EXACT_TYPE1_PARSER_SERVER_DTYPE:-auto}"
 PARSER_QUANTIZATION="${EXACT_TYPE1_PARSER_SERVER_QUANTIZATION:-}"
 PARSER_TENSOR_PARALLEL="${EXACT_TYPE1_PARSER_SERVER_TENSOR_PARALLEL_SIZE:-1}"
+PARSER_CUDA_VISIBLE_DEVICES="${EXACT_TYPE1_PARSER_SERVER_CUDA_VISIBLE_DEVICES:-${CUDA_VISIBLE_DEVICES:-}}"
 # Default to eager mode: CUDA-graph capture is unreliable on virtualized GPUs
 # (e.g. ThunderCompute). Set =0 on a dedicated GPU host to re-enable graphs.
 PARSER_ENFORCE_EAGER="${EXACT_TYPE1_PARSER_SERVER_ENFORCE_EAGER:-1}"
@@ -194,13 +195,16 @@ else
   fi
 
   log_info "Starting Type 1 parser vLLM: $PARSER_MODEL → $PARSER_HOST:$PARSER_PORT ($PARSER_DEVICE)"
+  [[ -n "$PARSER_CUDA_VISIBLE_DEVICES" ]] && log_info "Parser GPU(s): $PARSER_CUDA_VISIBLE_DEVICES"
 
   # VLLM_PORT is reserved by vLLM as the base for internal coordination
   # sockets. The launcher also accepts it as the main HTTP-port override, so
   # do not pass an exported value into either vLLM child process; otherwise
   # vLLM may try to claim adjacent ports such as 8001/8002.
+  parser_env=(env -u VLLM_PORT)
+  [[ -n "$PARSER_CUDA_VISIBLE_DEVICES" ]] && parser_env+=(CUDA_VISIBLE_DEVICES="$PARSER_CUDA_VISIBLE_DEVICES")
   parser_cmd=(
-    env -u VLLM_PORT "$PARSER_VLLM_BIN" serve "$PARSER_MODEL"
+    "${parser_env[@]}" "$PARSER_VLLM_BIN" serve "$PARSER_MODEL"
     --served-model-name "$PARSER_SERVED_NAME"
     --host "$PARSER_HOST" --port "$PARSER_PORT"
     --api-key "$PARSER_API_KEY"
@@ -250,12 +254,16 @@ else
   VLLM_GPU_MEM="${VLLM_GPU_MEMORY_UTILIZATION:-0.70}"
   VLLM_QUANTIZATION="${VLLM_QUANTIZATION:-}"
   VLLM_TENSOR_PARALLEL="${VLLM_TENSOR_PARALLEL_SIZE:-1}"
+  VLLM_CUDA_DEVICES="${VLLM_CUDA_VISIBLE_DEVICES:-${CUDA_VISIBLE_DEVICES:-}}"
   VLLM_ENFORCE_EAGER_FLAG="${VLLM_ENFORCE_EAGER:-1}"
 
   log_info "Starting main vLLM: $VLLM_MODEL → $VLLM_HOST:$VLLM_PORT"
+  [[ -n "$VLLM_CUDA_DEVICES" ]] && log_info "Main vLLM GPU(s): $VLLM_CUDA_DEVICES"
 
+  main_vllm_env=(env -u VLLM_PORT)
+  [[ -n "$VLLM_CUDA_DEVICES" ]] && main_vllm_env+=(CUDA_VISIBLE_DEVICES="$VLLM_CUDA_DEVICES")
   vllm_cmd=(
-    env -u VLLM_PORT "$MAIN_VLLM_BIN" serve "$VLLM_MODEL"
+    "${main_vllm_env[@]}" "$MAIN_VLLM_BIN" serve "$VLLM_MODEL"
     --served-model-name "$VLLM_SERVED_NAME"
     --host "$VLLM_HOST" --port "$VLLM_PORT"
     --api-key "$VLLM_API_KEY"

@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 from pydantic import AliasChoices, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 ROOT_DIR = Path(__file__).resolve().parents[2]
 SRC_DIR = ROOT_DIR / "src"
 PACKAGE_DIR = SRC_DIR / "exact"
@@ -36,9 +37,8 @@ def validate_self_hosted_model_url(value: str) -> str:
     try:
         address = ip_address(lowered_hostname)
     except ValueError:
-        is_internal_name = (
-            "." not in lowered_hostname
-            or lowered_hostname.endswith((".internal", ".local", ".svc", ".cluster.local"))
+        is_internal_name = "." not in lowered_hostname or lowered_hostname.endswith(
+            (".internal", ".local", ".svc", ".cluster.local")
         )
         if is_internal_name:
             return normalized
@@ -154,11 +154,17 @@ class Settings(BaseSettings):
         default=True,
         validation_alias="EXACT_TYPE2_USE_EXECUTABLE_FALLBACK",
     )
-    type2_pot_max_retries: int = Field(default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES")
+    type2_pot_max_retries: int = Field(
+        default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
+    )
     type2_formula_limit: int = Field(default=24, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
     type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
-    type2_generate_explanation: bool = Field(default=True, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION")
-    type2_pot_timeout: float = Field(default=10.0, gt=0.0, validation_alias="EXACT_TYPE2_POT_TIMEOUT")
+    type2_generate_explanation: bool = Field(
+        default=True, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION"
+    )
+    type2_pot_timeout: float = Field(
+        default=10.0, gt=0.0, validation_alias="EXACT_TYPE2_POT_TIMEOUT"
+    )
     type2_extraction_max_tokens: int = Field(
         default=768,
         ge=1,
