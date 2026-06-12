@@ -156,7 +156,7 @@ class FOLParser:
         *,
         depth: int,
         used_variables: frozenset[str],
-    ) -> LogicalNode:
+    ) -> LogicalNode | QuantifiedNode:
         result = await self._execute(
             build_sentence_request(sentence, kind="logical"), LogicalResult
         )
@@ -203,6 +203,14 @@ class FOLParser:
             parent=sentence,
             used_variables=used_variables,
         )
+        # Lift quantifier so it scopes over the whole expression, not just left.
+        # ∀x.P(x) IMPLIES Q(x)  →  ∀x.(P(x) IMPLIES Q(x))
+        if isinstance(left, QuantifiedNode):
+            return QuantifiedNode(
+                quantifier=left.quantifier,
+                variable=left.variable,
+                body=LogicalNode(operator=result.operator, left=left.body, right=right),
+            )
         return LogicalNode(operator=result.operator, left=left, right=right)
 
     async def _resolve_coreference(self, left: str, right: str) -> str:
