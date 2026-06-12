@@ -262,7 +262,8 @@ def select_formula_ids(
         temperature=settings.llm_temperature,
         max_tokens=settings.type2_formula_selection_max_tokens,
     )
-    return FormulaChoiceSpec.model_validate(raw)
+    normalized = _normalize_formula_choice_raw(raw)
+    return FormulaChoiceSpec.model_validate(normalized)
 
 
 def repair_pot_code(
@@ -436,8 +437,8 @@ def _build_pot_messages(question: str, explanation: str, formula_context: str = 
                 "and ans_unit as the final unit string (or None/empty string if not applicable). "
                 "Use pint for units and sympy only if genuinely needed; Do not import numpy and do not print. "
                 "Follow the Formula selector plan when present. Use the formulas provided in the context, "
-                "but you MUST also use your own pre-trained physics knowledge to define any intermediate formulas, "
-                "constants, or steps required to solve the question. "
+                "but you MUST also use your own pre-trained physics knowledge to generate the correct code structure, "
+                "physics equations, physical constants, or steps required to solve the question. "
                 "Set formula_ids_used to a JSON array of copied formula IDs. "
                 "Preserve distinct physical objects and roles: q1, q2, q3, source charge, target charge, and test charge "
                 "must not be collapsed unless the problem explicitly says they are identical; keep them separate in code, "
@@ -574,7 +575,9 @@ def _build_repair_messages(question: str, original_code: str, error_message: str
                 "Keep the solution short. The code must define ans (which can be either a numeric magnitude or a qualitative/text string) "
                 "and ans_unit (unit string or None/empty string if not applicable). "
                 "The code field must be a JSON string with escaped newlines (\\n), not literal line breaks. "
-                "formula_ids_used must be a JSON array of strings, never a string."
+                "formula_ids_used must be a JSON array of strings, never a string. "
+                "You MUST use your own pre-trained physics knowledge to define any physical formulas, constants, "
+                "or intermediate steps needed to fix the execution error and correctly solve the question."
             ),
         },
         {
@@ -633,6 +636,17 @@ def _normalize_direct_answer_raw(raw: object) -> object:
     unit = normalized.get("unit")
     normalized["unit"] = str(unit).strip() if unit is not None and str(unit).strip() else None
     normalized["premises"] = _string_list(normalized.get("premises"))
+    return normalized
+
+
+def _normalize_formula_choice_raw(raw: object) -> object:
+    if not isinstance(raw, dict):
+        return raw
+    normalized = dict(raw)
+    normalized["formula_ids"] = _string_list(normalized.get("formula_ids"))
+    normalized["missing_variables"] = _string_list(normalized.get("missing_variables"))
+    normalized["solution_plan"] = _string_list(normalized.get("solution_plan"))
+    normalized["notes"] = _string_list(normalized.get("notes"))
     return normalized
 
 
