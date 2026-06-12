@@ -68,10 +68,13 @@ wait_for_http() {
 
 PIDS=()
 cleanup() {
+  local exit_code="${1:-$?}"
+  trap - INT TERM EXIT
   echo ""
   log_warn "Stopping all services..."
   for pid in "${PIDS[@]}"; do
     kill "$pid" 2>/dev/null || true
+    wait "$pid" 2>/dev/null || true
   done
   # Stop the parser Docker container if we started one.
   if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^exact-type1-parser-cpu$"; then
@@ -79,9 +82,11 @@ cleanup() {
     docker stop exact-type1-parser-cpu >/dev/null 2>&1 || true
   fi
   log_info "Done."
-  exit 0
+  exit "$exit_code"
 }
-trap cleanup INT TERM
+trap 'cleanup 130' INT
+trap 'cleanup 143' TERM
+trap 'cleanup $?' EXIT
 
 # ---------------------------------------------------------------------------
 # API Python executable
@@ -190,8 +195,12 @@ else
 
   log_info "Starting Type 1 parser vLLM: $PARSER_MODEL → $PARSER_HOST:$PARSER_PORT ($PARSER_DEVICE)"
 
+  # VLLM_PORT is reserved by vLLM as the base for internal coordination
+  # sockets. The launcher also accepts it as the main HTTP-port override, so
+  # do not pass an exported value into either vLLM child process; otherwise
+  # vLLM may try to claim adjacent ports such as 8001/8002.
   parser_cmd=(
-    "$PARSER_VLLM_BIN" serve "$PARSER_MODEL"
+    env -u VLLM_PORT "$PARSER_VLLM_BIN" serve "$PARSER_MODEL"
     --served-model-name "$PARSER_SERVED_NAME"
     --host "$PARSER_HOST" --port "$PARSER_PORT"
     --api-key "$PARSER_API_KEY"
@@ -212,6 +221,10 @@ else
   PIDS+=("$PARSER_PID")
   log_info "Parser vLLM started (PID $PARSER_PID) — log: logs/parser.log"
 fi
+
+# Finish parser initialization before starting the second vLLM process. This
+# avoids races while both processes allocate internal coordination ports.
+wait_for_http "Parser vLLM" "http://${PARSER_HOST}:${PARSER_PORT}/health" 300 || exit 1
 
 # ---------------------------------------------------------------------------
 # 2. Main vLLM (GPU, port 8000) — skipped if binary not found
@@ -242,7 +255,7 @@ else
   log_info "Starting main vLLM: $VLLM_MODEL → $VLLM_HOST:$VLLM_PORT"
 
   vllm_cmd=(
-    "$MAIN_VLLM_BIN" serve "$VLLM_MODEL"
+    env -u VLLM_PORT "$MAIN_VLLM_BIN" serve "$VLLM_MODEL"
     --served-model-name "$VLLM_SERVED_NAME"
     --host "$VLLM_HOST" --port "$VLLM_PORT"
     --api-key "$VLLM_API_KEY"
@@ -266,8 +279,6 @@ fi
 # 3. Wait for vLLM servers to be ready
 # ---------------------------------------------------------------------------
 
-wait_for_http "Parser vLLM" "http://${PARSER_HOST}:${PARSER_PORT}/health" 300 || exit 1
-
 if [[ "$VLLM_SKIP" != "1" ]]; then
   wait_for_http "Main vLLM" "http://${VLLM_HOST}:${VLLM_PORT}/health" 360 || exit 1
 fi
@@ -288,7 +299,11 @@ echo ""
 
 export PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
-exec "$PYTHON_BIN" -m uvicorn exact.app.main:app \
+"$PYTHON_BIN" -m uvicorn exact.app.main:app \
   --host "$API_HOST" \
   --port "$API_PORT" \
-  --log-level "${UVICORN_LOG_LEVEL:-${EXACT_LOG_LEVEL:-info}}"
+  --log-level "${UVICORN_LOG_LEVEL:-${EXACT_LOG_LEVEL:-info}}" &
+API_PID=$!
+PIDS+=("$API_PID")
+wait "$API_PID"
+exit $?
