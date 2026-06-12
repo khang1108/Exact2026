@@ -1,0 +1,47 @@
+id,question,cot,answer,unit
+TD390,Two capacitors C₁ = 2 μF and C₂ = 3 μF are connected in series. The circuit is charged to a voltage U = 100 V. Calculate the electric field inside C₁ if its plate separation d₁ = 0.5 mm.,"Step 1: Calculate the equivalent capacitance (Ceq) for the series connection: Ceq = (C1 × C2) / (C1 + C2).
+Step 2: Substitute C1 = 2 μF and C2 = 3 μF: Ceq = (2 × 3) / (2 + 3) = 1.2 μF.
+Step 3: Find the total charge (Q) which is shared by both capacitors in series: Q = Ceq × U = 1.2 μF × 100 V = 120 μC.
+Step 4: Determine the voltage across C1: V1 = Q / C1 = 120 μC / 2 μF = 60 V.
+Step 5: Calculate the electric field E1: E1 = V1 / d1 = 60 V / 0.0005 m = 120,000 V/m = 1.2 × 10⁵ V/m.",1.2×10⁵,V/m
+LD014,"Two charges separated by 15 cm exert a force of 4.8 N. Given that q1 = q2 = q, find q.","Step 1: Identify the given values from the question: The force (F) between the charges is 4.8 N, the separation distance (r) is 15 cm, and the magnitudes of the charges are equal (q1 = q2 = q).
+Step 2: State Coulomb's Law, which describes the magnitude of the electrostatic force between two point charges: F = k × |q1 × q2| / r^2, where k is Coulomb's constant (approximately 9 x 10^9 N m^2/C^2).
+Step 3: Convert the separation distance from centimeters to meters: r = 15 cm = 0.15 m.
+Step 4: Substitute the given values (F = 4.8 N, r = 0.15 m, k = 9 x 10^9 N m^2/C^2) and the condition q1 = q2 = q into Coulomb's Law: 4.8 = (9 x 10^9) × q^2 / (0.15)^2.",3.46,μC
+NL329,The magnetic field energy in an ideal LC circuit is described by the expression: W_L = W₀cos²(ωt). What is the expression for the electric field energy?,"Step 1: In an ideal LC circuit, the total electromagnetic energy W is strictly conserved and mathematically defined by the constant algebraic sum W = W_L + W_C, where W_L represents the instantaneous magnetic field energy and W_C represents the instantaneous electric field energy.
+Step 2: The instantaneous magnetic field energy is mathematically defined by the explicitly provided algebraic expression W_L = W_0 × cos^2(omega × t), where W_0 represents the absolute maximum energy amplitude.
+Step 3: The absolute maximum magnetic field energy mathematically evaluates strictly to the total conserved electromagnetic energy, establishing the algebraic equality W = W_0.
+Step 4: Applying the principle of energy conservation algebraically yields the equation W_0 = W_0 × cos^2(omega × t) + W_C. Solving strictly for the instantaneous electric field energy yields the algebraic expression W_C = W_0 × (1 - cos^2(omega × t)). Applying the standard Pythagorean trigonometric identity mathematically transforms this expression to yield the final calculated expression for the electric field energy as W_C = W_0 × sin^2(omega × t).",W_C = W₀sin²(ωt),J
+NL308,When will the magnetic field energy in a coil be zero?,"Step 1: The magnetic field energy (W_L) stored in a coil is given by the formula W_L = (1/2) × L × I^2, where L is the inductance of the coil and I is the current flowing through it.
+Step 2: For the magnetic field energy W_L to be zero, one of the terms on the right side of the equation (1/2, L, or I^2) must be zero.
+Step 3: The factor (1/2) is a constant and cannot be zero. The inductance (L) is a property of the coil itself and is typically a positive, non-zero value for a physical coil.
+Step 4: Therefore, for the energy W_L to be zero, the current (I) flowing through the coil must be zero.",When the current is zero,-
+DT040,"At two vertices A and B of an equilateral triangle ABC with side length 'a', two point charges q1 = q2 = 4 x 10^-9 C are placed in air. What value must charge q3 have at vertex C so that the electric field strength produced by the system of three charges at the centroid G of the triangle is zero?","Step 1: Identify the charges q1, q2, q3 at vertices A, B, C respectively, and the point of interest G (the centroid) where the net electric field must be zero.
+Step 2: Recognize that for an equilateral triangle with side length 'a', the distance from each vertex to the centroid is equal: GA = GB = GC = a/√3.
+Step 3: Calculate the magnitude of the electric field contributions from q1 and q2 at G. Since q1 = q2 = 4 x 10^-9 C and GA = GB, the magnitudes E1 (due to q1) and E2 (due to q2) at G are equal: E1 = E2 = k × q1 / (a/√3)^2.
+Step 4: Determine the directions of E1 and E2 at G. E1 points away from A along GA, and E2 points away from B along GB. The angle between these two field vectors at G is 120 degrees.
+Step 5: Therefore, the charge q3 must have a value of 4 x 10^-9 C to make the net electric field at the centroid G zero.",4 . 10^{-9},C
+CH262,"In an RLC circuit, XL = 10 Ω, XC = 160 Ω, and the source voltage U = 120 V. If the frequency is increased by 4 times, what is the RMS voltage across the resistor R?","Step 1: Change in parameters when frequency is increased fourfold (f' = 4f)
+Inductive reactance Z_L is directly proportional to frequency so Z_L' = 4 × 10 = 40 Ω. Capacitive reactance Z_C is inversely proportional to frequency so Z_C' = 160 / 4 = 40 Ω.
+Step 2: Determine the circuit state
+Because Z_L' = Z_C' = 40 Ω the circuit reaches electrical resonance.
+Step 3: Calculate the voltage across the resistor R
+At the resonance state, the voltages across the inductor and capacitor cancel each other out completely (U_L = U_C). Therefore the RMS voltage across the resistor (U_R) is exactly equal to the source voltage U. Therefore U_R = U = 120 V.",120,V
+THCB082,Two identical lamps are connected in parallel and consume a total of 18W. Calculate the power of each lamp.,"Step 1: Total power in a circuit is the sum of individual component powers: P_total = P1 + P2.
+Step 2: Identify given total power: 18 W.
+Step 3: Since the lamps are identical and in parallel, they operate under the same conditions and consume equal power.
+Step 4: Calculation: Power per lamp = 18 W / 2 = 9 W.",P = 9.0,W
+LD237,"Two charges, q1 = +3 × 10^-7 C and q2 = -3 × 10^-7 C, are placed at two points A and B, separated by 6 cm. A third charge, q3 = -3 × 10^-7 C, is placed at the midpoint of AB. Calculate the electric force acting on q3.","Step 1: Identify the given charges and their positions.
+Step 2: Convert the total distance between points A and B from centimeters to meters.
+Step 3: Determine the distance of charge q3 from q1 (r13) and from q2 (r23), as q3 is at the midpoint of AB.
+Step 4: Calculate the magnitude of the electric force exerted by q1 on q3 (F13) using Coulomb's Law, F = k × |q1 × q3| / r13², where k = 9 × 10^9 N×m²/C².
+Step 5: The magnitude of the net electric force acting on q3 is 1.8 N.",1.8,N
+CH352,L = 0.08 H. Determine C for f0 = 75 Hz.,"Step 1: Identify the given inductance (L) and resonance frequency (f0) from the question.
+Step 2: Recall the formula for the resonance frequency (f0) of an LC circuit: f0 = 1 / (2π√(LC)).
+Step 3: Rearrange the formula to solve for the capacitance (C): C = 1 / (L × (2πf0)²).
+Step 4: Substitute the given values L = 0.08 H and f0 = 75 Hz into the rearranged formula. Then, C = 56.29 µF.",56.28,µF
+LD279,Three electric charges q1 = q2 = q3 = -2 × 10^-6 C are placed at the 3 vertices of an equilateral triangle with side length 15 cm. Calculate the resultant electric force acting on q3.,"Step 1: Identify the given charges and the geometry of their arrangement.
+Step 2: Identify the individual electric forces acting on q3.
+Step 3: Determine the nature and direction of these forces.
+Step 4: Calculate the magnitude of the individual forces using Coulomb's Law: F = k × |q_a × q_b| / r^2.
+Step 5: The magnitude of the net electric force acting on q3 is approximately 2.7713 N.",2.7713,N
