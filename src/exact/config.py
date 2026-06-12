@@ -167,7 +167,7 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_USE_EXECUTABLE_FALLBACK",
     )
     type2_pot_max_retries: int = Field(
-        default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
+        default=1, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
     )
     type2_agent_loop_max_attempts: int = Field(
         default=2,
@@ -185,16 +185,16 @@ class Settings(BaseSettings):
         le=2.0,
         validation_alias="EXACT_TYPE2_POT_BATCH_TEMPERATURE",
     )
-    type2_formula_limit: int = Field(default=24, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
-    type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
+    type2_formula_limit: int = Field(default=10, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
+    type2_rerank_limit: int = Field(default=6, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
     type2_generate_explanation: bool = Field(
-        default=True, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION"
+        default=False, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION"
     )
     type2_pot_timeout: float = Field(
         default=10.0, gt=0.0, validation_alias="EXACT_TYPE2_POT_TIMEOUT"
     )
     type2_extraction_max_tokens: int = Field(
-        default=768,
+        default=512,
         ge=1,
         validation_alias="EXACT_TYPE2_EXTRACTION_MAX_TOKENS",
     )
@@ -214,7 +214,7 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_TOKENS",
     )
     type2_formula_selection_max_tokens: int = Field(
-        default=768,
+        default=512,
         ge=1,
         validation_alias="EXACT_TYPE2_FORMULA_SELECTION_MAX_TOKENS",
     )
@@ -234,7 +234,7 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_POT_REPAIR_MAX_TOKENS",
     )
     type2_final_explanation_max_tokens: int = Field(
-        default=768,
+        default=512,
         ge=1,
         validation_alias="EXACT_TYPE2_FINAL_EXPLANATION_MAX_TOKENS",
     )

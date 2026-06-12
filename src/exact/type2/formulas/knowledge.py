@@ -174,19 +174,19 @@ def _format_context(summaries: list[dict[str, Any]], selection=None) -> str:
         lines.extend(f"- {step}" for step in selection.solution_plan)
         lines.append("")
     for item in summaries:
-        variables = _compact_mapping(item.get("variables") or {})
-        conditions = _compact_sequence(item.get("conditions") or ())
+        variables = _compact_mapping(item.get("variables") or {}, limit=220)
+        conditions = _compact_sequence(item.get("conditions") or (), limit=220)
+        expression = _clip_text(str(item.get("expression") or item.get("latex") or ""), 260)
         lines.append(
-            "- {id} [{source}; {domain}/{subfield}; target={target}; required={required}; output={output}]: "
+            "- {id} [{source}; {domain}/{subfield}; target={target}; output={output}]: "
             "{expression}; vars={variables}; conditions={conditions}".format(
                 id=item.get("id"),
                 source=item.get("source"),
                 domain=item.get("domain"),
                 subfield=item.get("subfield"),
                 target=item.get("target"),
-                required=tuple(item.get("required") or ()),
                 output=item.get("output_unit"),
-                expression=item.get("expression") or item.get("latex"),
+                expression=expression,
                 variables=variables,
                 conditions=conditions,
             )
@@ -194,12 +194,19 @@ def _format_context(summaries: list[dict[str, Any]], selection=None) -> str:
     return "\n".join(lines)
 
 
-def _compact_mapping(mapping: dict[str, Any]) -> str:
-    return ", ".join(f"{key}:{value}" for key, value in mapping.items()) or "-"
+def _compact_mapping(mapping: dict[str, Any], *, limit: int) -> str:
+    return _clip_text(", ".join(f"{key}:{value}" for key, value in mapping.items()) or "-", limit)
 
 
-def _compact_sequence(values) -> str:
-    return "; ".join(str(value) for value in values if str(value).strip()) or "-"
+def _compact_sequence(values, *, limit: int) -> str:
+    return _clip_text("; ".join(str(value) for value in values if str(value).strip()) or "-", limit)
+
+
+def _clip_text(text: str, limit: int) -> str:
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    return text[:limit].rstrip() + "..."
 
 
 def _rerank_with_llm(

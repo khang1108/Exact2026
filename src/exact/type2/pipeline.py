@@ -35,7 +35,7 @@ def run_type2_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
 ) -> PredictionResponse:
-    """Route the request to a domain-specific pipeline or fallback to generic."""
+    """Run Type 2 with lightweight domain metadata and one generic solver path."""
     from exact.type2.domains.router import route_domain_with_metadata
 
     settings = settings or get_settings()
@@ -43,13 +43,7 @@ def run_type2_pipeline(
         domain_route = route_domain_with_metadata(request.id, request.question, settings=settings)
         domain = domain_route.domain
 
-        if domain == "LD":
-            from exact.type2.domains.ld.pipeline import run_ld_pipeline
-            response = run_ld_pipeline(request, settings)
-        elif domain == "TD":
-            from exact.type2.domains.td.pipeline import run_td_pipeline
-            response = run_td_pipeline(request, settings)
-        elif domain == "NL_ENERGY":
+        if domain == "NL_ENERGY":
             from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
             nl_result, fallback = run_nl_energy_pipeline(request, settings)
             response = run_generic_pipeline(request, settings) if fallback or nl_result is None else nl_result
@@ -57,7 +51,12 @@ def run_type2_pipeline(
             response = run_generic_pipeline(request, settings)
 
         response = _with_domain_route_diagnostics(response, domain_route.to_dict())
-        return _with_agent_loop_if_needed(request, response, settings, trigger=response.error)
+        return _with_agent_loop_if_needed(
+            request,
+            response,
+            settings,
+            trigger=_agent_loop_trigger(response),
+        )
     except Exception as exc:
         return _agent_loop_response(
             request,
@@ -228,6 +227,14 @@ def _with_domain_route_diagnostics(
     return response.model_copy(update={"routing_diagnostics": diagnostics})
 
 
+def _agent_loop_trigger(response: PredictionResponse) -> str | None:
+    if response.error:
+        return response.error
+    if not str(response.answer or "").strip():
+        return "empty_answer"
+    return None
+
+
 def _with_agent_loop_if_needed(
     request: PredictionRequest,
     response: PredictionResponse,
@@ -286,11 +293,51 @@ def _agent_loop_response(
 
     attempts: list[dict[str, Any]] = []
     for attempt in range(1, settings.type2_agent_loop_max_attempts + 1):
+        extraction = _build_solver_extraction(request.question, settings=settings)
+        formula_context = retrieve_formula_context(
+            request.question,
+            extraction,
+            limit=settings.type2_formula_limit,
+            settings=settings,
+        )
+
+        result = solve_with_pot(
+            extraction,
+            formula_context,
+            settings=settings,
+            generate_explanation=settings.type2_generate_explanation,
+        )
+        if _is_usable_agent_result(result):
+            attempts.append(
+                {
+                    "attempt": attempt,
+                    "status": "solved_with_pot",
+                    "answer": result.answer,
+                    "unit": result.unit,
+                }
+            )
+            diagnostics["type2_agent_loop"] = {
+                "used": True,
+                "enabled": True,
+                "trigger": trigger,
+                "attempts": attempts,
+                "strategy": "re_extract_then_pot_then_direct_answer",
+            }
+            result = replace(result, routing_diagnostics=diagnostics)
+            return _to_prediction_response(request, result)
+
         try:
             spec = generate_direct_answer(
                 request.question,
-                _agent_loop_failure_context(trigger, previous_response),
+                _agent_loop_failure_context(
+                    trigger,
+                    previous_response,
+                    attempt,
+                    attempts,
+                    result.error if result.error else None,
+                ),
                 settings=settings,
+                temperature=_agent_loop_temperature(settings, attempt),
             )
         except Exception as exc:
             attempts.append({"attempt": attempt, "status": "error", "reason": str(exc)})
@@ -301,12 +348,20 @@ def _agent_loop_response(
         if not spec.answer.strip():
             attempts.append({"attempt": attempt, "status": "empty"})
             continue
-        attempts.append({"attempt": attempt, "status": "answered"})
+        attempts.append(
+            {
+                "attempt": attempt,
+                "status": "answered_directly",
+                "answer": spec.answer.strip(),
+                "unit": spec.unit,
+            }
+        )
         diagnostics["type2_agent_loop"] = {
             "used": True,
             "enabled": True,
             "trigger": trigger,
             "attempts": attempts,
+            "strategy": "re_extract_then_pot_then_direct_answer",
         }
         return PredictionResponse(
             id=request.id,
@@ -315,7 +370,7 @@ def _agent_loop_response(
             answer=spec.answer.strip(),
             explanation=spec.explanation,
             fol=None,
-            cot=["Type 2 safety agent loop generated a direct fallback answer."],
+            cot=["Type 2 agent loop generated a direct answer after structured solving did not finish cleanly."],
             premises=spec.premises,
             confidence=spec.confidence or 0.35,
             unit=spec.unit,
@@ -328,9 +383,18 @@ def _agent_loop_response(
         "enabled": True,
         "trigger": trigger,
         "attempts": attempts,
-        "fallback": "guardrail_response",
+        "fallback": "best_previous_response_or_guardrail",
+        "strategy": "re_extract_then_pot_then_direct_answer",
     }
+    if previous_response is not None and _response_has_answer(previous_response):
+        return previous_response.model_copy(update={"routing_diagnostics": diagnostics})
     return _guardrail_response(request, trigger, diagnostics)
+
+
+def _agent_loop_temperature(settings: Settings, attempt: int) -> float:
+    if attempt <= 1:
+        return settings.llm_temperature
+    return max(settings.llm_temperature, min(settings.type2_pot_batch_temperature, 0.7))
 
 
 def _guardrail_response(
@@ -357,16 +421,46 @@ def _guardrail_response(
 def _agent_loop_failure_context(
     trigger: str,
     previous_response: PredictionResponse | None,
+    attempt: int,
+    attempts: list[dict[str, Any]],
+    latest_solver_error: str | None = None,
 ) -> str:
+    guidance = (
+        "If the structured pipeline context is incomplete or wrong, solve directly from the "
+        "question using your physics knowledge. Do not refuse just because the pipeline failed. "
+        "Infer the relevant physics principle, compute the answer when possible, and return the "
+        "best direct answer. Prefer a concise numeric answer with a unit when the question asks "
+        "for a calculation."
+    )
     if previous_response is None:
-        return trigger
+        return str(
+            {
+                "trigger": trigger,
+                "attempt": attempt,
+                "previous_attempts": attempts,
+                "latest_solver_error": latest_solver_error,
+                "guidance": guidance,
+            }
+        )
     payload = {
         "trigger": trigger,
+        "attempt": attempt,
+        "previous_attempts": attempts,
         "previous_answer": previous_response.answer,
         "previous_unit": previous_response.unit,
         "previous_explanation": previous_response.explanation,
+        "latest_solver_error": latest_solver_error,
+        "guidance": guidance,
     }
     return str(payload)
+
+
+def _is_usable_agent_result(result: Type2SolveResult) -> bool:
+    return result.error is None and bool(str(result.answer).strip())
+
+
+def _response_has_answer(response: PredictionResponse) -> bool:
+    return bool(str(response.answer or "").strip())
 
 
 def _question_type(result: Type2SolveResult) -> QuestionType:
@@ -392,6 +486,14 @@ def _try_llm_extraction(
     if spec is None:
         return None
 
+    notes = list(spec.notes)
+    try:
+        kind = Type2QuestionKind(spec.kind.strip().lower())
+        notes.append(f"question_kind_source=llm_extraction; kind={kind.value}")
+    except Exception:
+        kind = Type2QuestionKind.NUMERICAL
+        notes.append(f"question_kind_source=llm_extraction_invalid; raw_kind={spec.kind}")
+
     quantities: dict[str, Quantity] = {}
     for item in spec.quantities:
         try:
@@ -412,11 +514,11 @@ def _try_llm_extraction(
         )
 
     return Extraction(
-        kind=Type2QuestionKind.NUMERICAL,
+        kind=kind,
         normalized_question=question,
         target=spec.target,
         quantities=quantities,
-        notes=tuple(spec.notes),
+        notes=tuple(notes),
     )
 
 
@@ -430,6 +532,8 @@ def _with_llm_question_kind(
     if not settings.type2_use_llm_question_kind_routing:
         notes.append("question_kind_source=disabled; fail_safe_kind=numerical")
         return replace(extraction, kind=Type2QuestionKind.NUMERICAL, notes=tuple(notes))
+    if any(note.startswith("question_kind_source=llm_extraction") for note in notes):
+        return extraction
 
     try:
         spec = classify_question_kind_with_llm(question, settings=settings)
@@ -478,7 +582,7 @@ def _merge_extractions(heuristic: Extraction, llm_extraction: Extraction) -> Ext
     normalized_question = heuristic.normalized_question or llm_extraction.normalized_question
 
     return Extraction(
-        kind=Type2QuestionKind.NUMERICAL,
+        kind=llm_extraction.kind,
         normalized_question=normalized_question,
         target=target,
         quantities=quantities,

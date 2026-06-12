@@ -11,7 +11,8 @@ POST /predict
     -> PredictionRequest
     -> Type 2 domain routing
     -> deterministic solver when eligible
-    -> LLM Program-of-Thought fallback when needed
+    -> LLM Program-of-Thought solver when needed
+    -> LLM agent loop retries extraction/solve and answers directly if needed
     -> PredictionResponse
 ```
 

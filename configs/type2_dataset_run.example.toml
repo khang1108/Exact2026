@@ -41,30 +41,30 @@ use_executable_fallback = true
 use_unit_verifier = true
 use_concept_bank = true
 
-# Skip the final explanation LLM call when false.
-generate_final_explanation = true
+# Skip the final explanation LLM call when false. Keep false for fast runs; enable only for polished explanations.
+generate_final_explanation = false
 
 # Per-task LLM output budgets
 domain_routing_max_tokens = 256
 question_kind_max_tokens = 128
 agent_loop_max_tokens = 1024
 extraction_max_tokens = 512
-formula_selection_max_tokens = 1024
+formula_selection_max_tokens = 512
 conceptual_max_tokens = 1024
 pot_code_max_tokens = 3072
 pot_repair_max_tokens = 2048
-final_explanation_max_tokens = 1024
+final_explanation_max_tokens = 512
 
 # Debugging: dump the exact PoT coding/repair prompts before sending them to the LLM.
 # debug_log_pot_prompts = true
 # debug_pot_prompt_log_path = "artifacts/debug/type2_pot_prompts.jsonl"
 
-pot_max_retries = 3
+pot_max_retries = 1
 agent_loop_max_attempts = 2
-pot_batch_size = 3
+pot_batch_size = 1
 pot_batch_temperature = 0.4
-formula_limit = 24
-rerank_limit = 8
+formula_limit = 10
+rerank_limit = 6
 pot_timeout = 10.0
 
 [evaluation]

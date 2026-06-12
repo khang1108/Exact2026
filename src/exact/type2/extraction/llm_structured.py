@@ -330,6 +330,7 @@ def generate_direct_answer(
     failure_context: str,
     client: JsonClient | None = None,
     settings: Settings | None = None,
+    temperature: float | None = None,
 ) -> DirectAnswerSpec | None:
     settings = settings or get_settings()
     client = client or build_llm_json_client(settings)
@@ -338,7 +339,7 @@ def generate_direct_answer(
 
     raw = client.complete_json_sync(
         messages=_build_direct_answer_messages(question, failure_context),
-        temperature=settings.llm_temperature,
+        temperature=settings.llm_temperature if temperature is None else temperature,
         max_tokens=settings.type2_agent_loop_max_tokens,
     )
     normalized = _normalize_direct_answer_raw(raw)
@@ -538,11 +539,14 @@ def _build_direct_answer_messages(question: str, failure_context: str):
         {
             "role": "system",
             "content": (
-                "You are the final safety agent for a Type 2 physics pipeline. "
-                "The normal deterministic or Program-of-Thought path failed, so produce the best direct answer. "
+                "You are an expert physics solver for the Type 2 pipeline. "
+                "The normal deterministic or Program-of-Thought path did not finish cleanly, so produce the best direct answer. "
                 "Return JSON only with keys answer, unit, explanation, premises, confidence. "
                 "For numeric answers, put only the numeric magnitude in answer and the unit string in unit. "
                 "For conceptual answers, put a short phrase in answer and null in unit. "
+                "Use your physics knowledge to infer the correct method and solve from the question when possible. "
+                "Do not return a refusal or a guardrail-style response just because some structured context is missing. "
+                "If a detail is ambiguous, make the most likely assumption and state it briefly in the explanation. "
                 "Keep explanation concise. Do not mention pipeline internals, code, JSON, or failures."
             ),
         },
@@ -551,7 +555,7 @@ def _build_direct_answer_messages(question: str, failure_context: str):
             "content": (
                 f"Question:\n{question}\n\n"
                 f"Previous failure context:\n{failure_context}\n\n"
-                "Return one JSON object only."
+                "Return one JSON object only. Solve the problem instead of describing why the pipeline failed."
             ),
         },
     ]
