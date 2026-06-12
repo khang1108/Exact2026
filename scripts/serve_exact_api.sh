@@ -53,15 +53,15 @@ log_error() { echo -e "${RED}[ERROR]${NC} $*"; }
 # Helpers
 # ---------------------------------------------------------------------------
 
-health_host_for_bind() {
+connect_host_for_bind() {
   local host="$1"
   [[ "$host" == "0.0.0.0" || "$host" == "::" ]] && host="127.0.0.1"
   printf '%s' "$host"
 }
 
-wait_for_http() {
-  local name="$1" url="$2" timeout="${3:-120}" pid="${4:-}" log_file="${5:-}" elapsed=0
-  log_info "Waiting for $name at $url (timeout ${timeout}s)..."
+wait_for_tcp() {
+  local name="$1" host="$2" port="$3" timeout="${4:-120}" pid="${5:-}" log_file="${6:-}" elapsed=0
+  log_info "Waiting for $name at $host:$port (timeout ${timeout}s)..."
   while true; do
     if [[ -n "$pid" ]] && ! kill -0 "$pid" 2>/dev/null; then
       local process_status=0
@@ -74,7 +74,9 @@ wait_for_http() {
       return 1
     fi
 
-    if curl -sf "$url" -o /dev/null 2>/dev/null; then
+    if "$PYTHON_BIN" -c \
+      'import socket, sys; socket.create_connection((sys.argv[1], int(sys.argv[2])), timeout=1).close()' \
+      "$host" "$port" 2>/dev/null; then
       echo ""
       log_info "$name ready after ${elapsed}s."
       return 0
@@ -89,43 +91,6 @@ wait_for_http() {
       return 1
     fi
     sleep 3; elapsed=$((elapsed + 3)); echo -n "."
-  done
-}
-
-supervise_services() {
-  local services=("$@")
-  local service_count=$(( ${#services[@]} / 3 ))
-  local index name url log_file failures
-  local -a failure_counts=()
-
-  for (( index=0; index<service_count; index++ )); do
-    failure_counts[index]=0
-  done
-
-  while true; do
-    for (( index=0; index<service_count; index++ )); do
-      name="${services[index * 3]}"
-      url="${services[index * 3 + 1]}"
-      log_file="${services[index * 3 + 2]}"
-
-      if curl -sf "$url" -o /dev/null 2>/dev/null; then
-        failure_counts[index]=0
-        continue
-      fi
-
-      failures=$(( failure_counts[index] + 1 ))
-      failure_counts[index]="$failures"
-      if [[ $failures -ge 3 ]]; then
-        SHUTDOWN_REASON="$name health check failed"
-        log_error "$name failed 3 consecutive health checks at $url."
-        if [[ -n "$log_file" && -f "$log_file" ]]; then
-          log_error "Last lines from $log_file:"
-          tail -n 40 "$log_file" >&2
-        fi
-        return 1
-      fi
-    done
-    sleep 5
   done
 }
 
@@ -207,7 +172,7 @@ DEFAULT_VLLM_BIN="$PROJECT_ROOT/.venv-vllm/bin/vllm"
 PARSER_MODEL="${EXACT_TYPE1_PARSER_SOURCE_MODEL:-Qwen/Qwen3-1.7B}"
 PARSER_SERVED_NAME="${EXACT_TYPE1_PARSER_MODEL:-type1-parser}"
 PARSER_HOST="${EXACT_TYPE1_PARSER_SERVER_HOST:-127.0.0.1}"
-PARSER_HEALTH_HOST="$(health_host_for_bind "$PARSER_HOST")"
+PARSER_CONNECT_HOST="$(connect_host_for_bind "$PARSER_HOST")"
 PARSER_PORT="${EXACT_TYPE1_PARSER_SERVER_PORT:-8001}"
 PARSER_API_KEY="${EXACT_TYPE1_PARSER_API_KEY:-exact-parser-token}"
 PARSER_DEVICE="${EXACT_TYPE1_PARSER_SERVER_DEVICE:-auto}"
@@ -336,9 +301,10 @@ fi
 
 # Finish parser initialization before starting the second vLLM process. This
 # avoids races while both processes allocate internal coordination ports.
-wait_for_http \
+wait_for_tcp \
   "Parser vLLM" \
-  "http://${PARSER_HEALTH_HOST}:${PARSER_PORT}/health" \
+  "$PARSER_CONNECT_HOST" \
+  "$PARSER_PORT" \
   300 \
   "$PARSER_PID" \
   "$LOG_DIR/parser.log" || exit 1
@@ -367,7 +333,7 @@ else
   VLLM_MODEL="${VLLM_MODEL:-${EXACT_LLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}}"
   VLLM_SERVED_NAME="${VLLM_SERVED_MODEL_NAME:-$VLLM_MODEL}"
   VLLM_HOST="${VLLM_HOST:-127.0.0.1}"
-  VLLM_HEALTH_HOST="$(health_host_for_bind "$VLLM_HOST")"
+  VLLM_CONNECT_HOST="$(connect_host_for_bind "$VLLM_HOST")"
   VLLM_PORT="${VLLM_PORT:-8000}"
   VLLM_API_KEY="${VLLM_API_KEY:-${EXACT_LLM_API_KEY:-exact-local-token}}"
   VLLM_DTYPE="${VLLM_DTYPE:-auto}"
@@ -409,9 +375,10 @@ fi
 # ---------------------------------------------------------------------------
 
 if [[ "$VLLM_SKIP" != "1" ]]; then
-  wait_for_http \
+  wait_for_tcp \
     "Main vLLM" \
-    "http://${VLLM_HEALTH_HOST}:${VLLM_PORT}/health" \
+    "$VLLM_CONNECT_HOST" \
+    "$VLLM_PORT" \
     360 \
     "$VLLM_PID" \
     "$LOG_DIR/vllm.log" || exit 1
@@ -423,7 +390,7 @@ fi
 
 API_HOST="${API_HOST:-${EXACT_API_HOST:-0.0.0.0}}"
 API_PORT="${API_PORT:-${EXACT_API_PORT:-8080}}"
-API_HEALTH_HOST="$(health_host_for_bind "$API_HOST")"
+API_CONNECT_HOST="$(connect_host_for_bind "$API_HOST")"
 
 export PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
@@ -438,9 +405,10 @@ API_LOG_LEVEL="${API_LOG_LEVEL,,}"
 API_PID=$!
 PIDS+=("$API_PID")
 
-wait_for_http \
+wait_for_tcp \
   "EXACT API" \
-  "http://${API_HEALTH_HOST}:${API_PORT}/health" \
+  "$API_CONNECT_HOST" \
+  "$API_PORT" \
   60 \
   "$API_PID" \
   "$PROJECT_ROOT/outputs/logs/api.log" || exit 1
@@ -452,13 +420,12 @@ echo -e "  ${GREEN}Parser vLLM:${NC}  http://${PARSER_HOST}:${PARSER_PORT}/v1"
 echo -e "  ${GREEN}EXACT API:${NC}    http://${API_HOST}:${API_PORT}"
 echo ""
 
-services=(
-  "Parser vLLM" "http://${PARSER_HEALTH_HOST}:${PARSER_PORT}/health" "$LOG_DIR/parser.log"
-  "EXACT API" "http://${API_HEALTH_HOST}:${API_PORT}/health" "$PROJECT_ROOT/outputs/logs/api.log"
-)
-if [[ "$VLLM_SKIP" != "1" ]]; then
-  services+=("Main vLLM" "http://${VLLM_HEALTH_HOST}:${VLLM_PORT}/health" "$LOG_DIR/vllm.log")
-fi
-
-supervise_services "${services[@]}"
-exit $?
+# Keep the launcher attached to the directly-owned API process without polling
+# any HTTP endpoint. vLLM wrapper PIDs are intentionally not supervised because
+# some vLLM versions hand off to another process after startup.
+API_STATUS=0
+wait "$API_PID" || API_STATUS=$?
+SHUTDOWN_REASON="EXACT API exited"
+log_error "EXACT API exited unexpectedly (status $API_STATUS)."
+[[ $API_STATUS -eq 0 ]] && API_STATUS=1
+exit "$API_STATUS"
