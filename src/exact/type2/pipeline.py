@@ -43,12 +43,7 @@ def run_type2_pipeline(
         domain_route = route_domain_with_metadata(request.id, request.question, settings=settings)
         domain = domain_route.domain
 
-        if domain == "NL_ENERGY":
-            from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
-            nl_result, fallback = run_nl_energy_pipeline(request, settings)
-            response = run_generic_pipeline(request, settings) if fallback or nl_result is None else nl_result
-        else:
-            response = run_generic_pipeline(request, settings)
+        response = run_generic_pipeline(request, settings, domain_hint=domain)
 
         response = _with_domain_route_diagnostics(response, domain_route.to_dict())
         return _with_agent_loop_if_needed(
@@ -69,6 +64,7 @@ def run_type2_pipeline(
 def run_generic_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
+    domain_hint: str | None = None,
 ) -> PredictionResponse:
     """Run the Type 2 physics pipeline with deterministic routing before PoT.
 
@@ -86,6 +82,9 @@ def run_generic_pipeline(
     logger.info("Start Type 2 deterministic-first pipeline")
 
     extraction = _build_solver_extraction(request.question, settings=settings)
+    if domain_hint in {"numerical", "conceptual", "mixed"}:
+        extraction = replace(extraction, kind=Type2QuestionKind(domain_hint))
+
     if settings.type2_use_extraction_verifier:
         review = verify_type2_extraction(extraction)
     else:

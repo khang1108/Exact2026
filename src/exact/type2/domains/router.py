@@ -10,8 +10,8 @@ from exact.config import Settings, get_settings
 from exact.type2.extraction.llm_structured import JsonClient, build_llm_json_client
 
 
-Type2Domain = Literal["LD", "TD", "NL_ENERGY", "GENERIC"]
-VALID_DOMAINS = {"LD", "TD", "NL_ENERGY", "GENERIC"}
+Type2Domain = Literal["numerical", "conceptual", "mixed"]
+VALID_DOMAINS = {"numerical", "conceptual", "mixed"}
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,7 @@ class DomainRouteSpec(BaseModel):
     @field_validator("domain")
     @classmethod
     def domain_must_be_supported(cls, value: str) -> str:
-        normalized = value.strip().upper()
+        normalized = value.strip().lower()
         if normalized not in VALID_DOMAINS:
             raise ValueError(f"domain must be one of {sorted(VALID_DOMAINS)}")
         return normalized
@@ -68,41 +68,27 @@ def route_domain_with_metadata(
 
 
 def route_domain_heuristic(question_id: str | None, question_text: str) -> Type2Domain:
-    # Prefix routing
+    # Prefix routing mapping to kinds if possible, else heuristic keywords
     if question_id:
         if "LD" in question_id or "DT" in question_id:
-            return "LD"
+            return "numerical"
         if "TD" in question_id:
-            return "TD"
+            return "numerical"
         if "NL" in question_id:
-            return "NL_ENERGY"
+            return "numerical"
 
-    # Conservative keyword fallback for NL_ENERGY if no ID is present
     text = question_text.lower()
-    
-    nl_keywords = [
-        "capacitor energy",
-        "electric field energy",
-        "magnetic field energy",
-        "inductor energy",
-        "lc circuit",
-        "oscillation",
-        "maximum current",
-        "maximum charge",
-        "si unit of energy",
-        "energy versus current",
-        "energy versus capacitance",
+    # If question asks to explain or why, classify as conceptual
+    conceptual_keywords = [
+        "explain", "why", "describe", "which of", "what is the relationship",
+        "conceptual", "theory", "meaning", "define", "statement is correct",
+        "is it true", "how does", "what happens"
     ]
-    
-    for kw in nl_keywords:
+    for kw in conceptual_keywords:
         if kw in text:
-            return "NL_ENERGY"
-            
-    # Regex fallback for I(t), q(t), U(t) etc with sin/cos
-    if re.search(r"\b[iqvu]\(t\).*?(sin|cos)", text):
-        return "NL_ENERGY"
+            return "conceptual"
 
-    return "GENERIC"
+    return "numerical"
 
 
 def _try_llm_domain_route(
@@ -137,14 +123,14 @@ def _build_domain_route_messages(question_text: str) -> list[dict[str, str]]:
         {
             "role": "system",
             "content": (
-                "You route Type 2 physics questions to exactly one solver domain. "
+                "You classify a Type 2 physics question into one of three categories: "
+                "numerical, conceptual, mixed. "
                 "Return JSON only with keys domain, confidence, reason. "
-                "Allowed domain values: LD, TD, NL_ENERGY, GENERIC. "
-                "LD is for electrostatics/vector Coulomb-force or electric-field point-charge problems. "
-                "TD is for static capacitor/dielectric/capacitance problems. "
-                "NL_ENERGY is for LC oscillations, time-varying capacitor/inductor energy, "
-                "energy graph shape, maximum current/charge energy, or conceptual SI energy unit questions. "
-                "GENERIC is for all other Type 2 physics problems. "
+                "domain must be exactly one of: numerical, conceptual, mixed. "
+                "Use numerical when the expected final answer is a number, unit-bearing value, "
+                "or numeric expression. Use conceptual when the expected final answer is qualitative "
+                "text, a choice of behavior, a unit-name explanation, or a descriptive statement. "
+                "Use mixed when the problem asks for both numeric work and qualitative reasoning. "
                 "Classify from the question content only; do not rely on dataset ID prefixes."
             ),
         },
