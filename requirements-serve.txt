@@ -21,4 +21,7 @@ transformers==4.51.3
 # torch ABI crashes vLLM on import
 # (`libtorch_c_dlpack...torch26-cuda.so: undefined symbol`). If one is already
 # present, remove it so vLLM uses its native sampler:
-#   pip uninstall -y flashinfer flashinfer-python
+#   pip uninstall -y flashinfer flashinfer-python tvm-ffi torch-c-dlpack-ext
+#
+# Preferred setup/repair command:
+#   bash scripts/setup_vllm_env.sh

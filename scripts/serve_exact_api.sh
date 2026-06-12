@@ -66,6 +66,36 @@ wait_for_http() {
   echo ""; log_info "$name ready after ${elapsed}s."
 }
 
+check_vllm_runtime() {
+  local vllm_bin="$1" resolved_bin runtime_python
+  resolved_bin="$(command -v "$vllm_bin" 2>/dev/null || true)"
+  [[ -z "$resolved_bin" ]] && return 0
+
+  runtime_python="$(dirname "$resolved_bin")/python"
+  [[ ! -x "$runtime_python" ]] && return 0
+
+  if ! PYTHONNOUSERSITE=1 "$runtime_python" - <<'PY'
+import importlib.metadata
+import importlib.util
+
+import torch
+
+vllm_version = importlib.metadata.version("vllm")
+if vllm_version == "0.8.5" and not torch.__version__.startswith("2.6.0"):
+    raise RuntimeError(
+        f"vLLM 0.8.5 requires Torch 2.6.0, but found Torch {torch.__version__}"
+    )
+
+if importlib.util.find_spec("flashinfer") is not None:
+    import flashinfer.sampling
+PY
+  then
+    log_error "The vLLM Python environment has an incompatible Torch/FlashInfer installation."
+    log_error "Repair it with: bash scripts/setup_vllm_env.sh"
+    return 1
+  fi
+}
+
 PIDS=()
 cleanup() {
   local exit_code="${1:-$?}"
@@ -97,6 +127,11 @@ if [[ ! -x "$PYTHON_BIN" ]]; then
   log_error "Python not found: $PYTHON_BIN"
   exit 1
 fi
+
+# Keep the CUDA-heavy vLLM stack separate from the API environment. A shared
+# environment is prone to Torch ABI conflicts from optional packages such as
+# FlashInfer.
+DEFAULT_VLLM_BIN="$PROJECT_ROOT/.venv-vllm/bin/vllm"
 
 # ---------------------------------------------------------------------------
 # 1. Type 1 parser vLLM
@@ -182,7 +217,11 @@ else
   # ---- Native vllm binary path ----
   PARSER_VLLM_BIN="${EXACT_TYPE1_PARSER_SERVER_VLLM_BIN:-}"
   if [[ -z "$PARSER_VLLM_BIN" ]]; then
-    if [[ -x "$PROJECT_ROOT/.venv-vllm-cpu/bin/vllm" ]]; then
+    if [[ -n "${VLLM_BIN:-}" ]]; then
+      PARSER_VLLM_BIN="$VLLM_BIN"
+    elif [[ -x "$DEFAULT_VLLM_BIN" ]]; then
+      PARSER_VLLM_BIN="$DEFAULT_VLLM_BIN"
+    elif [[ -x "$PROJECT_ROOT/.venv-vllm-cpu/bin/vllm" ]]; then
       PARSER_VLLM_BIN="$PROJECT_ROOT/.venv-vllm-cpu/bin/vllm"
     else
       PARSER_VLLM_BIN="vllm"
@@ -193,6 +232,7 @@ else
     log_error "Install vLLM, set EXACT_TYPE1_PARSER_SERVER_VLLM_BIN, or set EXACT_TYPE1_PARSER_SERVER_DEVICE=cpu to use Docker."
     exit 1
   fi
+  check_vllm_runtime "$PARSER_VLLM_BIN" || exit 1
 
   log_info "Starting Type 1 parser vLLM: $PARSER_MODEL → $PARSER_HOST:$PARSER_PORT ($PARSER_DEVICE)"
   [[ -n "$PARSER_CUDA_VISIBLE_DEVICES" ]] && log_info "Parser GPU(s): $PARSER_CUDA_VISIBLE_DEVICES"
@@ -235,7 +275,13 @@ wait_for_http "Parser vLLM" "http://${PARSER_HOST}:${PARSER_PORT}/health" 300 ||
 # ---------------------------------------------------------------------------
 
 VLLM_SKIP="${VLLM_SKIP:-0}"
-MAIN_VLLM_BIN="${VLLM_BIN:-vllm}"
+if [[ -n "${VLLM_BIN:-}" ]]; then
+  MAIN_VLLM_BIN="$VLLM_BIN"
+elif [[ -x "$DEFAULT_VLLM_BIN" ]]; then
+  MAIN_VLLM_BIN="$DEFAULT_VLLM_BIN"
+else
+  MAIN_VLLM_BIN="vllm"
+fi
 
 if [[ "$VLLM_SKIP" == "1" ]]; then
   log_warn "VLLM_SKIP=1 — skipping main vLLM (assumed already running)."
@@ -244,6 +290,7 @@ elif ! command -v "$MAIN_VLLM_BIN" >/dev/null 2>&1; then
   log_warn "If the main model is already running, set VLLM_SKIP=1 to suppress this warning."
   VLLM_SKIP=1
 else
+  check_vllm_runtime "$MAIN_VLLM_BIN" || exit 1
   VLLM_MODEL="${VLLM_MODEL:-${EXACT_LLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}}"
   VLLM_SERVED_NAME="${VLLM_SERVED_MODEL_NAME:-$VLLM_MODEL}"
   VLLM_HOST="${VLLM_HOST:-127.0.0.1}"
