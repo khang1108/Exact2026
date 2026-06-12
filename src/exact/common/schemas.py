@@ -67,6 +67,11 @@ class PredictionRequest(InboundBaseModel):
             raise ValueError("question must not be empty")
         return value
 
+    @property
+    def id(self) -> str | None:
+        """Backward-compatible request identifier alias used by older runners."""
+        return self.query_id
+
 
 class ParsePremisesRequest(InboundBaseModel):
     """Input for the standalone ``/parser`` endpoint: raw NL premises only."""
