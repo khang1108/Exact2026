@@ -66,6 +66,12 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
         )
 
     return {
+        "type2_use_llm_domain_routing": bool(
+            type2_pipeline.get(
+                "use_llm_domain_routing",
+                settings.type2_use_llm_domain_routing,
+            )
+        ),
         "type2_extraction_mode": extraction_mode,
         "type2_use_extraction_verifier": bool(
             type2_pipeline.get("use_extraction_verifier", settings.type2_use_extraction_verifier)
@@ -120,6 +126,12 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
         ),
         "type2_extraction_max_tokens": int(
             type2_pipeline.get("extraction_max_tokens", settings.type2_extraction_max_tokens)
+        ),
+        "type2_domain_routing_max_tokens": int(
+            type2_pipeline.get(
+                "domain_routing_max_tokens",
+                settings.type2_domain_routing_max_tokens,
+            )
         ),
         "type2_formula_selection_max_tokens": int(
             type2_pipeline.get(

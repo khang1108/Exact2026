@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import Any
 from types import SimpleNamespace
 
-from exact.config import Settings
+from exact.config import Settings, get_settings
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
 from exact.logger import get_request_logger
 from exact.type2.extraction.extractor import extract_type2
@@ -31,22 +32,25 @@ def run_type2_pipeline(
     settings: Settings | None = None,
 ) -> PredictionResponse:
     """Route the request to a domain-specific pipeline or fallback to generic."""
-    from exact.type2.domains.router import route_domain
-    domain = route_domain(request.id, request.question)
-    
+    from exact.type2.domains.router import route_domain_with_metadata
+
+    settings = settings or get_settings()
+    domain_route = route_domain_with_metadata(request.id, request.question, settings=settings)
+    domain = domain_route.domain
+
     if domain == "LD":
         from exact.type2.domains.ld.pipeline import run_ld_pipeline
-        return run_ld_pipeline(request, settings)
+        return _with_domain_route_diagnostics(run_ld_pipeline(request, settings), domain_route.to_dict())
     elif domain == "TD":
         from exact.type2.domains.td.pipeline import run_td_pipeline
-        return run_td_pipeline(request, settings)
+        return _with_domain_route_diagnostics(run_td_pipeline(request, settings), domain_route.to_dict())
     elif domain == "NL_ENERGY":
         from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
         nl_result, fallback = run_nl_energy_pipeline(request, settings)
         if not fallback and nl_result is not None:
-            return nl_result
-            
-    return run_generic_pipeline(request, settings)
+            return _with_domain_route_diagnostics(nl_result, domain_route.to_dict())
+
+    return _with_domain_route_diagnostics(run_generic_pipeline(request, settings), domain_route.to_dict())
 
 
 def run_generic_pipeline(
@@ -174,6 +178,15 @@ def _to_prediction_response(
         error=result.error,
         routing_diagnostics=result.routing_diagnostics,
     )
+
+
+def _with_domain_route_diagnostics(
+    response: PredictionResponse,
+    domain_route: dict[str, Any],
+) -> PredictionResponse:
+    diagnostics = dict(response.routing_diagnostics or {})
+    diagnostics["type2_domain_route"] = domain_route
+    return response.model_copy(update={"routing_diagnostics": diagnostics})
 
 
 def _question_type(result: Type2SolveResult) -> QuestionType:

@@ -18,6 +18,9 @@ progress_every = 1
 
 [type2_pipeline]
 # Runtime knobs read by `build_settings_from_config()`.
+# Domain routing: use the configured LLM first; fallback to ID/keyword heuristics if unavailable.
+use_llm_domain_routing = true
+
 # `extraction_mode`: merge | llm_only | heuristic_only
 extraction_mode = "merge"
 use_extraction_verifier = true
@@ -38,6 +41,7 @@ use_concept_bank = true
 generate_final_explanation = true
 
 # Per-task LLM output budgets
+domain_routing_max_tokens = 256
 extraction_max_tokens = 512
 formula_selection_max_tokens = 1024
 conceptual_max_tokens = 1024

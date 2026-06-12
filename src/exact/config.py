@@ -114,6 +114,10 @@ class Settings(BaseSettings):
     type1_parser_max_tokens: int = Field(default=512, ge=1)
 
     # Type 2 Physics Pipeline Settings
+    type2_use_llm_domain_routing: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_LLM_DOMAIN_ROUTING",
+    )
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
         default="merge",
         validation_alias="EXACT_TYPE2_EXTRACTION_MODE",
@@ -180,6 +184,11 @@ class Settings(BaseSettings):
         default=768,
         ge=1,
         validation_alias="EXACT_TYPE2_EXTRACTION_MAX_TOKENS",
+    )
+    type2_domain_routing_max_tokens: int = Field(
+        default=256,
+        ge=1,
+        validation_alias="EXACT_TYPE2_DOMAIN_ROUTING_MAX_TOKENS",
     )
     type2_formula_selection_max_tokens: int = Field(
         default=768,
