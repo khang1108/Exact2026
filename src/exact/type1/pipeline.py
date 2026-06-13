@@ -20,6 +20,7 @@ from exact.type1.models.schemas import Predicate
 from exact.type1.parser import FOLParser
 
 if TYPE_CHECKING:
+    from exact.type1.llm_head import Type1LLMHead
     from exact.type1.solvers import FOLSolver  # type: ignore[import-untyped]
 
 # Minimum Jaccard word-similarity to rename a conclusion predicate to a premise predicate.
@@ -30,8 +31,9 @@ async def run_type1_pipeline(
     payload: PredictionRequest,
     parser: FOLParser,
     solver: FOLSolver | None = None,
+    llm_head: Type1LLMHead | None = None,
 ) -> PredictionResponse:
-    """Parse premises + conclusion in one batch, align predicates, then solve via Z3."""
+    """Parse → Z3 entailment → LLM head fallback when Z3 is Uncertain."""
 
     premises = [p.strip() for p in payload.premises or [] if p.strip()]
     if not premises:
@@ -65,6 +67,15 @@ async def run_type1_pipeline(
             answer = solver.check_ynu(premise_fols, conclusion_fols[0])
     else:
         answer = "Uncertain"
+
+    # --- LLM head fallback (only when Z3 could not decide) -------------------
+    answered_by = "z3"
+    if answer == "Uncertain" and llm_head is not None:
+        if is_mcq:
+            answer = await llm_head.answer_mcq(premises, payload.question, options_dict)
+        else:
+            answer = await llm_head.answer_ynu(premises, payload.question)
+        answered_by = "llm_head"
 
     # --- Debug FOL text -------------------------------------------------------
     premise_items = [
@@ -104,7 +115,9 @@ async def run_type1_pipeline(
         confidence=None,
         routing_diagnostics={
             "stage": "z3_entailment",
+            "answered_by": answered_by,
             "solver_available": solver is not None,
+            "llm_head_available": llm_head is not None,
             "predicate_renames": renames,
             "parsed_premises": premise_items,
             "parsed_conclusions": conclusion_items,

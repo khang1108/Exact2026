@@ -41,14 +41,16 @@ async def predict(payload: PredictionRequest, request: Request) -> PredictionRes
     if parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
-    return await run_type1_pipeline(payload, parser, solver)
+    llm_head = getattr(request.app.state, "type1_llm_head", None)
+    return await run_type1_pipeline(payload, parser, solver, llm_head)
 
 
 @api_router.post("/z3", response_model=PredictionResponse)
 async def z3_predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
-    """Parse premises + question/options to FOL then answer via Z3 entailment."""
+    """Parse premises + question/options to FOL then answer via Z3 + LLM head."""
     parser = getattr(request.app.state, "type1_fol_parser", None)
     if parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
-    return await run_type1_pipeline(payload, parser, solver)
+    llm_head = getattr(request.app.state, "type1_llm_head", None)
+    return await run_type1_pipeline(payload, parser, solver, llm_head)
