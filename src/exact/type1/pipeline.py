@@ -73,7 +73,9 @@ async def _run_type1_core(
     question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
     option_labels = list(options_dict.keys()) if is_mcq else ["question"]
 
-    conclusion_sentences = list(options_dict.values()) if is_mcq else [payload.question]
+    conclusion_sentences = (
+        list(options_dict.values()) if is_mcq else [_clean_question(payload.question)]
+    )
 
     all_trees = await parser.parse_many(premises + conclusion_sentences)
     # Deterministic, no-LLM step: collapse casing/plural variants of the same
@@ -249,14 +251,66 @@ async def _refine_and_retry(
 
 _VAR_RE = re.compile(r"^[xyz]\d*$")
 
+# Lightweight morphological stemming. The per-sentence parser renders one concept
+# with different verb forms across sentences (Complete / Completed / HasCompleted,
+# Qualify / Qualifies / Qualified, Has / Have), so casing-only grouping can't unify
+# them. Stemming to a shared key lets Z3 chain. True synonyms (Eligible vs
+# Qualified) and hallucinated arguments are NOT handled here — that needs the refiner.
+_AUX_WORDS = frozenset(
+    "has have had is are was were be been being does do did "
+    "will would can could should must a an the".split()
+)
+_AUX_LEMMA = {
+    "has": "have", "have": "have", "had": "have",
+    "is": "be", "are": "be", "was": "be", "were": "be", "been": "be", "being": "be",
+    "does": "do", "do": "do", "did": "do",
+}
+
+
+def _stem_word(word: str) -> str:
+    """Crude suffix stemmer: completed/completes/completing → complet, qualifies → qualifi."""
+    w = word.lower()
+    if len(w) <= 3:
+        return w
+    if w.endswith(("ied", "ies")):
+        w = w[:-3] + "y"
+    elif w.endswith("ing") and len(w) > 5:
+        w = w[:-3]
+    elif w.endswith("ed") and len(w) > 4:
+        w = w[:-2]
+    elif w.endswith("es") and len(w) > 4:
+        w = w[:-2]
+    elif w.endswith("s") and not w.endswith("ss"):
+        w = w[:-1]
+    if len(w) > 3 and w.endswith("e"):
+        w = w[:-1]
+    if len(w) > 3 and w.endswith("y"):
+        w = w[:-1] + "i"
+    return w
+
+
+def _symbol_stem(name: str) -> str:
+    """Order-preserving morphological key for a predicate/constant name.
+
+    Drops leading auxiliaries so ``HasCompleted`` and ``Complete`` share the key
+    ``complet``. An all-auxiliary name (``Has`` / ``Have``) is lemmatised instead
+    of dropped so those still unify.
+    """
+    words = [w.lower() for w in re.findall(r"[A-Z][a-z0-9]*|[a-z0-9]+", name)]
+    content = [w for w in words if w not in _AUX_WORDS]
+    if content:
+        return " ".join(_stem_word(w) for w in content)
+    return " ".join(_AUX_LEMMA[w] if w in _AUX_LEMMA else w for w in words)
+
 
 def _normalize_symbols(nodes: list[FOLNode]) -> tuple[list[FOLNode], list[dict]]:
-    """Collapse casing/plural variants of the same symbol across the whole problem.
+    """Collapse casing/plural/verb-form variants of the same symbol across the problem.
 
     The 1.7B parser names predicates and constants per-sentence, so the same
-    concept can appear as ``PhDDegree``/``PhdDegree`` or ``Student``/``Students``.
-    Group every predicate (by lowercased name + arity) and every constant (by
-    lowercased name), and rewrite each conflicting group to one canonical spelling
+    concept can appear as ``PhDDegree``/``PhdDegree``, ``Student``/``Students`` or
+    ``Complete``/``HasCompleted``. Group every predicate (by morphological stem +
+    arity) and every constant (by stem), and rewrite each conflicting group to one
+    canonical spelling
     so Z3 can chain — without any LLM call. Variables (x, y, z) are left alone.
 
     Returns (normalized_nodes, change_log).
@@ -297,10 +351,10 @@ def _collect_symbols(
     const_variants: dict[str, Counter],
 ) -> None:
     if isinstance(node, AtomicNode):
-        pred_variants[(node.predicate.name.lower(), len(node.arguments))][node.predicate.name] += 1
+        pred_variants[(_symbol_stem(node.predicate.name), len(node.arguments))][node.predicate.name] += 1
         for arg in node.arguments:
             if not _VAR_RE.match(arg):
-                const_variants[arg.lower()][arg] += 1
+                const_variants[_symbol_stem(arg)][arg] += 1
         return
     if isinstance(node, QuantifiedNode):
         _collect_symbols(node.body, pred_variants, const_variants)
@@ -316,9 +370,9 @@ def _rewrite_symbols(
     const_canon: dict[str, str],
 ) -> FOLNode:
     if isinstance(node, AtomicNode):
-        name = pred_canon.get((node.predicate.name.lower(), len(node.arguments)), node.predicate.name)
+        name = pred_canon.get((_symbol_stem(node.predicate.name), len(node.arguments)), node.predicate.name)
         args = [
-            a if _VAR_RE.match(a) else const_canon.get(a.lower(), a)
+            a if _VAR_RE.match(a) else const_canon.get(_symbol_stem(a), a)
             for a in node.arguments
         ]
         pred = Predicate(name=name, arg_sorts=node.predicate.arg_sorts, aliases=node.predicate.aliases)
@@ -422,6 +476,31 @@ def _align_predicates(
 
 
 # ---------------------------------------------------------------------------
+# Question normalisation
+# ---------------------------------------------------------------------------
+
+# A YNU question references "the premises" and opens with an interrogative
+# auxiliary; both confuse the per-sentence parser (it hallucinated a ``Premises``
+# argument and turned the subject ``Sophia`` into a predicate). Strip the
+# meta-reference and the leading yes/no auxiliary so the question parses as the
+# plain declarative claim under test ("Sophia qualify for the scholarship").
+_PREMISE_REF_RE = re.compile(
+    r"\s*,?\s*(according to|based on)(\s+the)?(\s+above)?\s+premises\b\.?",
+    re.IGNORECASE,
+)
+_YN_AUX_RE = re.compile(
+    r"^(does|do|did|is|are|was|were|can|could|will|would|has|have|had|should)\s+",
+    re.IGNORECASE,
+)
+
+
+def _clean_question(question: str) -> str:
+    cleaned = _PREMISE_REF_RE.sub("", question).strip().rstrip("?").strip()
+    cleaned = _YN_AUX_RE.sub("", cleaned, count=1).strip()
+    return cleaned or question
+
+
+# ---------------------------------------------------------------------------
 # Option normalisation
 # ---------------------------------------------------------------------------
 
@@ -432,6 +511,9 @@ def _normalize_options(options: Any) -> dict[str, str]:
     if isinstance(options, dict):
         return {str(k): str(v) for k, v in options.items()}
     if isinstance(options, list):
+        labels = {str(value).strip().lower() for value in options}
+        if labels in ({"yes", "no", "uncertain"}, {"yes", "no", "unknown"}):
+            return {}
         return {chr(ord("A") + i): str(v) for i, v in enumerate(options) if i < 5}
     return {}
 
