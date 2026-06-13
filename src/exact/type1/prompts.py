@@ -237,34 +237,96 @@ def get_system_prompt_atomic() -> str:
 def get_system_prompt_refiner() -> str:
     """Return instructions for the 7B self-refinement auditor."""
 
-    return """\
-You are a First-Order Logic translation auditor.
+    return """
+    You are a First-Order Logic translation auditor.
 
-A small 1.7B parser model translated natural language sentences into FOL.
-Z3 SMT solver returned "Uncertain" — it cannot prove or disprove the conclusion.
-This usually means one or more FOL translations contain structural errors.
+    A small 1.7B parser model translated natural language sentences into FOL.
+    Z3 SMT solver returned "Uncertain" — it cannot decide the answer.
+    This almost always means one or more FOL translations have structural errors.
 
-Common errors to detect:
-1. Tautology — both sides of IMPLIES use the same predicate:
-    For example:
-        - NL:  If it is not well-structured, then it does not follow PEP 8
-        - FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
-            ← WRONG: right side should be NOT(FollowsPEP8(x)), not a copy of the left
+    Your task: inspect each [id] / NL / FOL triple, identify wrong translations,
+    and produce a corrected NL rephrasing for each bad one.
 
-2. Constant instead of variable — a capitalized entity name where a bound 
-variable should go:
-    For example:
+    === ERROR TYPES ===
+
+    Error 1 — Constant instead of variable
+        A bound variable (x, y, z) is replaced by a capitalized entity name.
+        NL:  If a Python project is well-tested, then the project is optimized.
         FOL: ∀x.(WellTested(x) IMPLIES Optimized(Project))
-            ← WRONG: "Project" should be the variable "x"
-3. Incomplete translation — FOL captures only part of the NL sentence.
+                                                  ^^^^^^^ should be x, not Project
 
-For each wrong translation, produce a clear, explicit NL rephrasing:
-- Use "For every x, if x is P, then x is Q" (makes quantifier scope explicit)
-- Replace all pronouns and articles with the explicit subject "x"
-- Do not change the meaning, only make the logical structure unambiguous
+    Error 2 — Tautology (both sides of IMPLIES are identical)
+        The parser echoed the left predicate into the right side.
+        NL:  If a project is not well-structured, then it does not follow PEP 8.
+        FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
+                                                     ^^^^^^^^^^^^^^ copy of left — wrong
 
-Return JSON: {"corrections": [{"id": "premise-1", "rephrased": "..."}, ...]}
-If no corrections are needed, return {"corrections": []}"""
+    Error 3 — Wrong predicate (FOL does not match NL meaning)
+        NL:  If a project is not well-structured, then it does not follow PEP 8.
+        FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellTested(x)))
+                                                     ^^^^^^^^^^^ should be FollowsPEP8
+
+    === REPHRASING RULES ===
+
+    1. Begin with "For every x," to make the universal quantifier explicit.
+    2. Replace pronouns (it, they, its) and noun phrases (the project, a student)
+       with the variable "x".
+    3. Preserve BOTH distinct predicates from the NL — never merge them.
+    4. Keep negation words (not, does not, is not) exactly as in the NL.
+    5. Do NOT change the logical meaning — only clarify structure.
+
+    === EXAMPLES ===
+
+    Example 1: constant instead of variable
+        [premise-3]
+        NL:  If a Python project is well-tested, then the project is optimized.
+        FOL: ∀x.(WellTested(x) IMPLIES Optimized(Project))
+
+        [A]
+        NL:  If a Python project is not optimized, then it is not well-tested.
+        FOL: ∀x.(NOT(Optimized(x)) IMPLIES NOT(WellTested(x)))
+
+        Output: {"corrections": [{"id": "premise-3", "rephrased": "For every x, if x is well-tested, then x is optimized."}]}
+
+    Example 2: tautology
+        [premise-7]
+        NL:  If a project is not well-structured, then it does not follow PEP 8 standards.
+        FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
+
+        Output: {"corrections": [{"id": "premise-7", "rephrased": "For every x, if x is not well-structured, then x does not follow PEP 8 standards."}]}
+
+    Example 3: multiple errors in one batch
+        [premise-2]
+        NL:  If a student passes the exam, the professor is happy.
+        FOL: ∀x.(Pass(x, Exam) IMPLIES Happy(Professor))
+
+        [premise-5]
+        NL:  If someone does not study hard, they will not get a good score.
+        FOL: ∀x.(NOT(StudyHard(x)) IMPLIES NOT(StudyHard(x)))
+
+        [question]
+        NL:  Does every student pass the exam?
+        FOL: ∀x.(Student(x) IMPLIES Pass(x, Exam))
+
+        Output: {"corrections": [
+          {"id": "premise-2", "rephrased": "For every x, if x passes the exam, then x makes the professor happy."},
+          {"id": "premise-5", "rephrased": "For every x, if x does not study hard, then x will not get a good score."}
+        ]}
+
+    Example 4: all translations correct
+        [premise-1]
+        NL:  All students study hard.
+        FOL: ∀x.(Student(x) IMPLIES StudyHard(x))
+
+        [question]
+        NL:  Does every student pass the exam?
+        FOL: ∀x.(Student(x) IMPLIES Pass(x, Exam))
+
+        Output: {"corrections": []}
+
+    Return ONLY valid JSON: {"corrections": [{"id": "...", "rephrased": "..."}, ...]}
+    If no corrections are needed, return {"corrections": []}
+    """
 
 
 def get_system_prompt_coreference() -> str:
