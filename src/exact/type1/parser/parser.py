@@ -75,13 +75,35 @@ class FOLParser:
             self._rephrase_if_quantified(s) for s in sentence_list
         ))
 
-        return list(await asyncio.gather(*(self.parse(s) for s in rephrased)))
+        return list(await asyncio.gather(*(self._safe_parse(s) for s in rephrased)))
+
+    async def _safe_parse(self, sentence: str) -> FOLNode:
+        """Parse one sentence; on any failure return an opaque atomic placeholder.
+
+        A premise/conclusion that cannot be parsed (e.g. the recursive splitter
+        produced an empty operand) must not crash the whole request. The
+        placeholder is an unconstrained 0-arity predicate, so Z3 simply treats it
+        as unknown rather than entailing anything from it.
+        """
+        try:
+            return await self.parse(sentence)
+        except Exception:
+            return self._fallback_node(sentence)
+
+    @staticmethod
+    def _fallback_node(sentence: str) -> FOLNode:
+        words = re.findall(r"[A-Za-z0-9]+", sentence)
+        name = "".join(w.capitalize() for w in words)[:60] or "Unparsed"
+        return AtomicNode(predicate=Predicate(name=name, arg_sorts=[], aliases=[]), arguments=[])
 
     async def _rephrase_if_quantified(self, sentence: str) -> str:
         """Rephrase a quantified sentence to IF-THEN; return others unchanged."""
         if fast_classify(sentence) != "quantified":
             return sentence
-        rephrased = await self.rephrase(sentence)
+        try:
+            rephrased = await self.rephrase(sentence)
+        except Exception:
+            return sentence
         return rephrased if fast_classify(rephrased) == "logical" else sentence
 
     async def parse(
