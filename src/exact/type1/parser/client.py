@@ -24,6 +24,36 @@ ParserResult = TypeVar("ParserResult", bound=BaseModel)
 ChatMessage = dict[str, Any]
 
 
+def _extract_json(text: str) -> str:
+    """Return the first complete JSON object found in text, or the text itself."""
+    text = text.strip()
+    start = text.find("{")
+    if start == -1:
+        return text
+    depth = 0
+    in_string = False
+    escaped = False
+    for i in range(start, len(text)):
+        ch = text[i]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+        else:
+            if ch == '"':
+                in_string = True
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return text[start : i + 1]
+    return text[start:]
+
+
 class ParserClient:
     """Call a dedicated self-hosted vLLM parser model asynchronously.
 
@@ -102,7 +132,7 @@ class ParserClient:
             raise ValueError("vLLM parser response has an invalid chat-completion shape") from exc
 
         try:
-            return schema.model_validate_json(content)
+            return schema.model_validate_json(_extract_json(content))
         except ValidationError as exc:
             raise ValueError(f"Parser output does not match {schema.__name__}: {exc}") from exc
 
@@ -191,8 +221,12 @@ class ParserClient:
         }
 
     async def _post_with_retries(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Post one request with bounded retries for transient server failures."""
+        """Post one request with bounded retries for transient server failures.
 
+        On 400 with ``response_format`` present (vLLM rejected the JSON schema),
+        strips the constraint and retries as free text — matching the behaviour of
+        VLLMJsonClient for guided_json rejections.
+        """
         last_error: Exception | None = None
         for attempt in range(self.max_retries + 1):
             try:
@@ -203,6 +237,11 @@ class ParserClient:
                 if attempt == self.max_retries:
                     raise
                 await asyncio.sleep(2**attempt)
+                continue
+
+            # vLLM rejected the json_schema constraint → retry without it.
+            if response.status_code == 400 and "response_format" in payload:
+                payload = {k: v for k, v in payload.items() if k != "response_format"}
                 continue
 
             if response.status_code != 429 and response.status_code < 500:

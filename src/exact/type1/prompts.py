@@ -234,6 +234,39 @@ def get_system_prompt_atomic() -> str:
         Output: {"predicate":"LovesBooks","arguments":["Rina"],"negated":false}
 """
 
+def get_system_prompt_refiner() -> str:
+    """Return instructions for the 7B self-refinement auditor."""
+
+    return """\
+You are a First-Order Logic translation auditor.
+
+A small 1.7B parser model translated natural language sentences into FOL.
+Z3 SMT solver returned "Uncertain" — it cannot prove or disprove the conclusion.
+This usually means one or more FOL translations contain structural errors.
+
+Common errors to detect:
+1. Tautology — both sides of IMPLIES use the same predicate:
+    For example:
+        - NL:  If it is not well-structured, then it does not follow PEP 8
+        - FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
+            ← WRONG: right side should be NOT(FollowsPEP8(x)), not a copy of the left
+
+2. Constant instead of variable — a capitalized entity name where a bound 
+variable should go:
+    For example:
+        FOL: ∀x.(WellTested(x) IMPLIES Optimized(Project))
+            ← WRONG: "Project" should be the variable "x"
+3. Incomplete translation — FOL captures only part of the NL sentence.
+
+For each wrong translation, produce a clear, explicit NL rephrasing:
+- Use "For every x, if x is P, then x is Q" (makes quantifier scope explicit)
+- Replace all pronouns and articles with the explicit subject "x"
+- Do not change the meaning, only make the logical structure unambiguous
+
+Return JSON: {"corrections": [{"id": "premise-1", "rephrased": "..."}, ...]}
+If no corrections are needed, return {"corrections": []}"""
+
+
 def get_system_prompt_coreference() -> str:
     """Return instructions for resolving pronouns between two clauses."""
 

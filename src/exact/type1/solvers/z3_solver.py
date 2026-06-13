@@ -12,11 +12,20 @@ Typical use:
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 import z3
 
 from exact.type1.ast.nodes import AtomicNode, FOLNode, LogicalNode, QuantifiedNode
+
+
+def _sanitize_name(name: str) -> str:
+    """Strip characters Z3 rejects in symbol names; ensure non-empty."""
+    sanitized = re.sub(r"[^A-Za-z0-9_]", "_", name)
+    if not sanitized or sanitized[0].isdigit():
+        sanitized = "P_" + sanitized
+    return sanitized
 
 # Shared sort for every entity in the domain.  Must be a module-level singleton:
 # calling DeclareSort('Entity') twice creates two *distinct* sorts in Z3.
@@ -111,11 +120,17 @@ class FOLSolver:
     # ------------------------------------------------------------------
 
     def _predicate(self, name: str, arity: int) -> z3.FuncDeclRef:
-        key = (name, arity)
+        # Z3 symbol names must be valid identifiers; strip anything unsafe.
+        safe_name = _sanitize_name(name)
+        key = (safe_name, arity)
         if key not in self._func_cache:
-            self._func_cache[key] = z3.Function(
-                name, *([_ENTITY] * arity), z3.BoolSort()
-            )
+            if arity == 0:
+                # 0-arity "function" → Z3 boolean constant
+                self._func_cache[key] = z3.Function(safe_name, z3.BoolSort())
+            else:
+                self._func_cache[key] = z3.Function(
+                    safe_name, *([_ENTITY] * arity), z3.BoolSort()
+                )
         return self._func_cache[key]
 
     def _term(self, name: str, var_map: dict[str, z3.ExprRef]) -> z3.ExprRef:

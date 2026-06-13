@@ -8,8 +8,8 @@ from fastapi import FastAPI
 from exact.app.router import api_router
 from exact.llm_client import build_json_client_from_settings
 from exact.logger import setup_logging
-from exact.type1.llm_head import Type1LLMHead
 from exact.type1.parser import FOLParser, build_parser_client_from_settings
+from exact.type1.refiner import Type1Refiner
 from exact.type1.solvers import FOLSolver
 
 
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.type1_fol_parser = FOLParser(parser_client) if parser_client is not None else None
     app.state.type1_solver = FOLSolver()
     llm_client = build_json_client_from_settings()
-    app.state.type1_llm_head = Type1LLMHead(llm_client) if llm_client is not None else None
+    app.state.type1_refiner = Type1Refiner(llm_client) if llm_client is not None else None
     try:
         yield
     finally:
