@@ -65,8 +65,9 @@ class Type1Refiner:
                 max_tokens=1024,
                 json_schema=_REFINE_SCHEMA,
             )
-        except Exception:
-            return {}
+        except Exception as exc:
+            import traceback
+            return {"_error": f"LLM client exception: {exc}\n{traceback.format_exc()}"}
 
         corrections = data.get("corrections") or []
         originals = {item["id"]: item["nl"] for item in items}

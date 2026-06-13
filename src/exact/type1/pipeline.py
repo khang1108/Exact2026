@@ -243,6 +243,9 @@ async def _refine_and_retry(
     if not corrections:
         return premise_fols, conclusion_fols, premises, conclusion_sentences, []
 
+    if "_error" in corrections:
+        return premise_fols, conclusion_fols, premises, conclusion_sentences, [{"id": "refiner-error", "error": corrections["_error"]}]
+
     # Collect (target, idx, new_text) jobs in order so parse_many returns in sync.
     jobs: list[tuple[str, int, str]] = []
     for id_str, rephrased in corrections.items():
