@@ -3,11 +3,12 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from exact.app.router import api_router
 from exact.llm_client import build_json_client_from_settings
-from exact.logger import setup_logging
+from exact.logger import get_logger, setup_logging
 from exact.type1.parser import FOLParser, build_parser_client_from_settings
 from exact.type1.refiner import Type1Refiner
 from exact.type1.solvers import FOLSolver
@@ -46,6 +47,18 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+
+    @app.exception_handler(Exception)
+    async def _log_unhandled_exception(request: Request, exc: Exception) -> JSONResponse:
+        # uvicorn's error logger has propagate=False, so its 500 traceback never
+        # reaches api.log. Log it through the app logger (which does) so failures
+        # are diagnosable from the same file as the rest of the app.
+        get_logger("exact.app").error(
+            f"Unhandled exception on {request.method} {request.url.path}: {exc!r}",
+            exc_info=True,
+        )
+        return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
+
     app.include_router(api_router)
     return app
 
