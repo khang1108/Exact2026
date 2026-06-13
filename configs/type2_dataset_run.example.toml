@@ -18,6 +18,7 @@ progress_every = 1
 
 [type2_pipeline]
 # Runtime knobs read by `build_settings_from_config()`.
+<<<<<<< HEAD
 # Domain routing: use the configured LLM first; fallback to ID/keyword heuristics if unavailable.
 use_llm_domain_routing = true
 # Question-kind routing: numerical | conceptual | mixed is LLM-owned.
@@ -25,6 +26,8 @@ use_llm_question_kind_routing = true
 # Final safety loop: if the deterministic/PoT path fails, ask the LLM for a direct answer.
 use_agent_loop = true
 
+=======
+>>>>>>> 63253f041c4f0dbbf0c41f56b22c451b5a81b3ca
 # `extraction_mode`: merge | llm_only | heuristic_only
 extraction_mode = "merge"
 use_extraction_verifier = true
@@ -41,6 +44,7 @@ use_executable_fallback = true
 use_unit_verifier = true
 use_concept_bank = true
 
+<<<<<<< HEAD
 # Skip the final explanation LLM call when false. Keep false for fast runs; enable only for polished explanations.
 generate_final_explanation = false
 
@@ -54,17 +58,35 @@ conceptual_max_tokens = 1024
 pot_code_max_tokens = 3072
 pot_repair_max_tokens = 2048
 final_explanation_max_tokens = 512
+=======
+# Skip the final explanation LLM call when false.
+generate_final_explanation = true
+
+# Per-task LLM output budgets
+extraction_max_tokens = 512
+formula_selection_max_tokens = 1024
+conceptual_max_tokens = 1024
+pot_code_max_tokens = 3072
+pot_repair_max_tokens = 2048
+final_explanation_max_tokens = 1024
+>>>>>>> 63253f041c4f0dbbf0c41f56b22c451b5a81b3ca
 
 # Debugging: dump the exact PoT coding/repair prompts before sending them to the LLM.
 # debug_log_pot_prompts = true
 # debug_pot_prompt_log_path = "artifacts/debug/type2_pot_prompts.jsonl"
 
+<<<<<<< HEAD
 pot_max_retries = 1
 agent_loop_max_attempts = 2
 pot_batch_size = 1
 pot_batch_temperature = 0.4
 formula_limit = 10
 rerank_limit = 6
+=======
+pot_max_retries = 3
+formula_limit = 24
+rerank_limit = 8
+>>>>>>> 63253f041c4f0dbbf0c41f56b22c451b5a81b3ca
 pot_timeout = 10.0
 
 [evaluation]
