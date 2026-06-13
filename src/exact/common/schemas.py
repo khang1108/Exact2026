@@ -26,7 +26,6 @@ class QuestionType(str, Enum):
     MCQ = "mcq"
     YNU = "ynu" # yes no uncertain
 
-    OPEN_ENDED = "open_ended"
     NUMERICAL = "numerical"
     UNKNOWN = "unknown"
 

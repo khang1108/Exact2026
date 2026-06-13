@@ -99,11 +99,37 @@ class FOLSolver:
                 return z3.And(z3.Implies(left, right), z3.Implies(right, left))  # type: ignore[return-value]
             raise ValueError(f"Unknown operator: {node.operator!r}")
 
+        # if isinstance(node, QuantifiedNode):
+        #     var = z3.Const(node.variable, _ENTITY)
+        #     body = self._to_z3(node.body, {**var_map, node.variable: var})
+        #     if node.quantifier == "FORALL":
+        #         return z3.ForAll([var], body)
+        #     return z3.Exists([var], body)
+        """That makes the parser lose the noun class:
+            - student, curriculum, course, faculty, applicant, etc.
+
+        For EXACT, that is dangerous because educational regulations are full of restricted groups:
+
+        All students who miss the lab exam fail the course.
+        Students with GPA above 8.0 qualify for scholarship.
+        A course with a final exam requires attendance."""
         if isinstance(node, QuantifiedNode):
             var = z3.Const(node.variable, _ENTITY)
-            body = self._to_z3(node.body, {**var_map, node.variable: var})
+            local_vars = {**var_map, node.variable: var}
+
+            body = self._to_z3(node.body, local_vars)
+
+            if node.restrictor is not None:
+                restrictor = self._to_z3(node.restrictor, local_vars)
+
+                if node.quantifier == "FORALL":
+                    return z3.ForAll([var], z3.Implies(restrictor, body))
+
+                return z3.Exists([var], z3.And(restrictor, body))
+
             if node.quantifier == "FORALL":
                 return z3.ForAll([var], body)
+
             return z3.Exists([var], body)
 
     # ------------------------------------------------------------------

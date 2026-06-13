@@ -1,0 +1,3109 @@
+[
+  {
+    "id": "logic_0000_00",
+    "options": {
+      "A": "If a Python project is not optimized, then it is not well-tested",
+      "B": "If all Python projects are optimized, then all Python projects are well-structured",
+      "C": "If a Python project is well-tested, then it must be clean and readable",
+      "D": "If a Python project is not optimized, then it does not follow PEP 8 standards"
+    }
+  },
+  {
+    "id": "logic_0001_00",
+    "options": {
+      "A": "Sophia qualifies for the university scholarship",
+      "B": "Sophia needs a faculty recommendation to qualify for the scholarship",
+      "C": "Sophia is eligible for the international program",
+      "D": "Sophia needs to pass the language proficiency exam to get an honors diploma"
+    }
+  },
+  {
+    "id": "logic_0002_00",
+    "options": {
+      "A": "Sophia qualifies for the university scholarship",
+      "B": "Sophia needs a faculty recommendation to qualify for the scholarship",
+      "C": "Sophia is eligible for the international program",
+      "D": "Sophia needs to pass the language proficiency exam to get an honors diploma"
+    }
+  },
+  {
+    "id": "logic_0003_00",
+    "options": {
+      "A": "John qualifies for the graduate fellowship program",
+      "B": "John needs faculty recommendation for the fellowship",
+      "C": "John must complete an internship to qualify",
+      "D": "John’s GPA is insufficient for honors"
+    }
+  },
+  {
+    "id": "logic_0004_00",
+    "options": {
+      "A": "He can teach undergraduate courses but cannot supervise graduates",
+      "B": "He can serve on curriculum committees but cannot propose courses",
+      "C": "He can propose new courses",
+      "D": "He needs more publications to serve on committees"
+    }
+  },
+  {
+    "id": "logic_0005_00",
+    "options": {
+      "A": "He can access restricted archives but cannot submit proposals",
+      "B": "He can apply for collaborative research projects",
+      "C": "He needs more publications to access archives",
+      "D": "He is eligible for extended library access but cannot apply for projects"
+    }
+  },
+  {
+    "id": "logic_0006_00",
+    "options": {
+      "A": "John can transport hazardous materials but cannot cross state lines",
+      "B": "John can cross state lines with hazardous cargo",
+      "C": "John cannot transport hazardous materials",
+      "D": "John is not qualified to transport any kind of goods"
+    }
+  },
+  {
+    "id": "logic_0007_00",
+    "options": {
+      "A": "Can teach undergraduate courses only",
+      "B": "Can be a research mentor",
+      "C": "Cannot teach graduate courses",
+      "D": "Needs additional certification to mentor"
+    }
+  },
+  {
+    "id": "logic_0008_00",
+    "options": {
+      "A": "It enhances student engagement but not critical thinking",
+      "B": "It enhances critical thinking",
+      "C": "It needs more resources to enhance critical thinking",
+      "D": "It is well-structured but lacks exercises"
+    }
+  },
+  {
+    "id": "logic_0009_00",
+    "options": {
+      "A": "It enhances student engagement but not critical thinking",
+      "B": "It enhances critical thinking",
+      "C": "It needs more resources to enhance critical thinking",
+      "D": "It is well-structured but lacks exercises"
+    }
+  },
+  {
+    "id": "logic_0010_00",
+    "options": {
+      "A": "Eligible for Course C but not the internship",
+      "B": "Eligible for the internship program",
+      "C": "Needs to pass Course B first",
+      "D": "Only eligible for Course B"
+    }
+  },
+  {
+    "id": "logic_0011_00",
+    "options": {
+      "A": "Alex can use equipment but cannot book training without a trainer",
+      "B": "Alex can book personal training sessions if assigned a trainer",
+      "C": "Alex needs a longer membership duration",
+      "D": "Alex must pay additional fees"
+    }
+  },
+  {
+    "id": "logic_0012_00",
+    "options": {
+      "A": "She can take advanced classes because she has approval",
+      "B": "She cannot take advanced classes due to insufficient completed courses",
+      "C": "She is eligible but lacks approval",
+      "D": "Her active status alone qualifies her"
+    }
+  },
+  {
+    "id": "logic_0013_00",
+    "options": {
+      "A": "Can teach graduate courses but cannot supervise research",
+      "B": "Can supervise Master's students but not graduate research",
+      "C": "Can both teach graduate courses and supervise research",
+      "D": "Needs additional certification to supervise"
+    }
+  },
+  {
+    "id": "logic_0014_00",
+    "options": {
+      "A": "He can teach undergraduate courses",
+      "B": "He qualifies as department head but cannot teach",
+      "C": "He needs a Master's degree to teach undergraduates",
+      "D": "His PhD is insufficient for teaching"
+    }
+  },
+  {
+    "id": "logic_0015_00",
+    "options": {
+      "A": "He can prescribe medication",
+      "B": "He needs more clinical hours",
+      "C": "He isn't registered",
+      "D": "He can't prescribe without additional certification"
+    }
+  },
+  {
+    "id": "logic_0016_00",
+    "options": {
+      "A": "Alex can use equipment but can't book training",
+      "B": "Alex can book personal training sessions",
+      "C": "Alex needs longer membership duration",
+      "D": "Alex must pay additional fees"
+    }
+  },
+  {
+    "id": "logic_0017_00",
+    "options": {
+      "A": "Minh has met the criteria to pursue Biochemistry",
+      "B": "Minh cannot take Biochemistry without Lab Safety Certification",
+      "C": "Minh is not eligible to enroll in Organic Chemistry",
+      "D": "Minh needs to repeat Chemistry 101"
+    }
+  },
+  {
+    "id": "logic_0020_00",
+    "options": {
+      "A": "A student with low attendance, assignment completion, and professor approval can pass the course if they complete the exam.",
+      "B": "A student with less than 80% attendance who doesn’t complete the assignment can still take the exam.",
+      "C": "A student with 60% attendance and a scholarship automatically passes all courses.",
+      "D": "A student who attends every class but doesn’t complete the exam can still pass."
+    }
+  },
+  {
+    "id": "logic_0021_00",
+    "options": {
+      "A": "A student who studies >12 hours, doesn’t debate, and writes a high-quality essay in political studies can qualify for a fellowship",
+      "B": "A student studying <6 hours who avoids both debates and essays will pass",
+      "C": "Understanding ideologies without policy analysis leads to automatic recognition",
+      "D": "All students must participate in debates regardless of their study hours"
+    }
+  },
+  {
+    "id": "logic_0022_00",
+    "options": {
+      "A": "A student mastering superposition who writes an original research paper in quantum mechanics qualifies for a scholarship",
+      "B": "Limited study time (<8h) doesn’t impair superposition understanding",
+      "C": "Merely explaining quantum measurement guarantees recognition",
+      "D": "All students must analyze entanglement regardless of their expertise"
+    }
+  },
+  {
+    "id": "logic_0023_00",
+    "options": {
+      "A": "A student who develops through the quantum theory chain, from duality to advanced research preparation, can make academic contributions through publication or seminar",
+      "B": "Laboratory access is independent of publication/seminar participation",
+      "C": "Interpretation critique alone qualifies for research positions",
+      "D": "Understanding wave-particle duality guarantees lab access"
+    }
+  },
+  {
+    "id": "logic_0024_00",
+    "options": {
+      "A": "Spaced repetition improves both memory and academic performance",
+      "B": "Excessively long intervals preserve knowledge without review",
+      "C": "AI cannot optimize study schedules for memory retention",
+      "D": "Passive reading is more effective than active recall"
+    }
+  },
+  {
+    "id": "logic_0024_01",
+    "options": {
+      "A": "Review timing has no impact on retention",
+      "B": "Optimal intervals prevent both premature review and excessive forgetting",
+      "C": "Sleep has no effect on memory consolidation",
+      "D": "All learning methods yield identical results"
+    }
+  },
+  {
+    "id": "logic_0025_00",
+    "options": {
+      "A": "Spaced repetition improves both memory and academic performance",
+      "B": "Excessively long intervals preserve knowledge without review",
+      "C": "AI cannot optimize study schedules for memory retention",
+      "D": "Passive reading is more effective than active recall"
+    }
+  },
+  {
+    "id": "logic_0025_01",
+    "options": {
+      "A": "Review timing has no impact on retention",
+      "B": "Optimal intervals prevent both premature review and excessive forgetting",
+      "C": "Sleep has no effect on memory consolidation",
+      "D": "All learning methods yield identical results"
+    }
+  },
+  {
+    "id": "logic_0026_00",
+    "options": {
+      "A": "A quadrilateral with opposite angles summing to 180° and a perpendicular bisecting diagonal must be a cyclic trapezium",
+      "B": "All quadrilaterals with perpendicular diagonals are cyclic",
+      "C": "Only rectangles can have opposite angles summing to 180°",
+      "D": "A quadrilateral cannot be both cyclic and have perpendicular diagonals"
+    }
+  },
+  {
+    "id": "logic_0026_01",
+    "options": {
+      "A": "Premises 1, 3, 7",
+      "B": "Premises 2, 5, 6",
+      "C": "Premises 4, 8",
+      "D": "Premises 1, 2, 5"
+    }
+  },
+  {
+    "id": "logic_0027_00",
+    "options": {
+      "A": "Procrastination + passive review + sleep deprivation",
+      "B": "Clear deadlines + high stress",
+      "C": "Pomodoro technique + overwhelming task size",
+      "D": "Task breakdown + excessive distractions"
+    }
+  },
+  {
+    "id": "logic_0028_00",
+    "options": {
+      "A": "Flawless simulations, minor trajectory tweak, routine rover check, brief signal delay",
+      "B": "Failed simulations, audit rejection, high radiation, equipment breakdown",
+      "C": "Incomplete training, miscalculated trajectory, unsafe landing, delayed return",
+      "D": "Perfect execution, instant breakthrough, permanent Mars base"
+    }
+  },
+  {
+    "id": "logic_0029_00",
+    "options": {
+      "A": "A student with 6h downtime must retake a rescheduled exam",
+      "B": "A student with 6h downtime earns a certificate despite failing courses",
+      "C": "External proctors block exam rescheduling after 6h downtime",
+      "D": "100% live attendance overrides 6h downtime effects"
+    }
+  },
+  {
+    "id": "logic_0030_00",
+    "options": {
+      "A": "Structured plan + hands-on experiments + visualization",
+      "B": "Interactive tools + excessive screen time + cognitive fatigue",
+      "C": "Minimal distractions + historical perspectives + leisure overload",
+      "D": "Physical exercise + parallel subjects + scattered focus"
+    }
+  },
+  {
+    "id": "logic_0037_00",
+    "options": {
+      "A": "All students complete all assigned exercises",
+      "B": "Some students seek help from teaching assistants when needed",
+      "C": "All students have a consistent study routine",
+      "D": "Some students do not attend class regularly"
+    }
+  },
+  {
+    "id": "logic_0038_00",
+    "options": {
+      "A": "At least one student attends lectures regularly.",
+      "B": "There exists a student who attends lectures but does not complete assignments on time.",
+      "C": "All students understand the material."
+    }
+  },
+  {
+    "id": "logic_0039_00",
+    "options": {
+      "A": "At least one student graduates.",
+      "B": "Some students actively participate in class discussions but do not submit homework on time.",
+      "C": "All students fail the exams."
+    }
+  },
+  {
+    "id": "logic_0040_00",
+    "options": {
+      "A": "Students who solve math problems correctly must have practiced them.",
+      "B": "Some students ask questions in math class even if they do not attend lectures.",
+      "C": "All students who practice math problems ask questions in class."
+    }
+  },
+  {
+    "id": "logic_0041_00",
+    "options": {
+      "A": "Anyone with experience in their field must be hardworking.",
+      "B": "Some people are responsible but not punctual.",
+      "C": "All hardworking people are responsible."
+    }
+  },
+  {
+    "id": "logic_0042_00",
+    "options": {
+      "A": "There exists at least one student who is eligible for a scholarship.",
+      "B": "Submitting all assignments on time never improves GPA.",
+      "C": "All students on the honor roll never have high GPAs."
+    }
+  },
+  {
+    "id": "logic_0043_00",
+    "options": {
+      "A": "Attending lectures leads to performing well in exams.",
+      "B": "A student with a scholarship always has high grades.",
+      "C": "If a student does not understand the material, they cannot perform well in exams.",
+      "D": "More study time guarantees high achievement."
+    }
+  },
+  {
+    "id": "logic_0044_00",
+    "options": {
+      "A": "Failing to secure an internship prevents improved job prospects.",
+      "B": "Attending lectures regularly leads to a high GPA.",
+      "C": "Financial benefits imply participation in research projects.",
+      "D": "Practical experience guarantees eligibility for academic awards."
+    }
+  },
+  {
+    "id": "logic_0045_00",
+    "options": {
+      "A": "Students who do not perform well in internships will never receive full-time job offers.",
+      "B": "Having industry connections can help a student gain practical experience indirectly.",
+      "C": "Building a strong resume directly increases a student’s earning potential.",
+      "D": "Students who do not have a mentor cannot make any career decisions."
+    }
+  },
+  {
+    "id": "logic_0046_00",
+    "options": {
+      "A": "Students who attend career workshops are guaranteed to get hired after interviews.",
+      "B": "Building a strong resume directly leads to financial stability.",
+      "C": "Having a career mentor leads to better long-term career growth.",
+      "D": "Gaining relevant work experience prevents the need for strong interview performance."
+    }
+  },
+  {
+    "id": "logic_0047_00",
+    "options": {
+      "A": "If a student manages their time effectively, they receive feedback on assignments.",
+      "B": "A student who uses feedback improves their grades.",
+      "C": "If a student has high academic performance, they are less likely to get job opportunities.",
+      "D": "If a student does not attend lectures, they definitely cannot understand the subject."
+    }
+  },
+  {
+    "id": "logic_0048_00",
+    "options": {
+      "A": "If a student gains academic recognition, they must have received a research grant.",
+      "B": "A student who does not publish research can still receive a research grant.",
+      "C": "If a student does not engage in independent study, they will never publish research.",
+      "D": "If a student engages in independent study, they are likely to publish research and may gain academic recognition."
+    }
+  },
+  {
+    "id": "logic_0049_00",
+    "options": {
+      "A": "Engaging in research improves a student's chances of gaining academic recognition.",
+      "B": "A student who does not win an academic competition can still receive a merit award.",
+      "C": "If a student participates in academic competitions, they will receive academic recognition."
+    }
+  },
+  {
+    "id": "logic_0050_00",
+    "options": {
+      "A": "If a student maintains a high GPA, they are more likely to receive a scholarship.",
+      "B": "A student who does not maintain a high GPA can still qualify for a merit-based scholarship.",
+      "C": "If a student does not engage in extracurricular activities, they will never receive a scholarship."
+    }
+  },
+  {
+    "id": "logic_0051_00",
+    "options": {
+      "A": "If a student applies for financial aid and qualifies, they are more likely to receive support and reduce financial stress.",
+      "B": "If a student has less financial stress, they are more likely to perform better academically.",
+      "C": "If a student does not qualify for any aid and takes no counseling, they are guaranteed to take on student loans.",
+      "D": "If a student receives financial aid, their tuition burden remains the same."
+    }
+  },
+  {
+    "id": "logic_0052_00",
+    "options": {
+      "A": "Practicing Python regularly always results in worse coding skills.",
+      "B": "Practicing Python regularly improves coding skills.",
+      "C": "Students who do not practice Python regularly become proficient in Python.",
+      "D": "Practicing Python has no effect on a student’s coding abilities."
+    }
+  },
+  {
+    "id": "logic_0053_00",
+    "options": {
+      "A": "If a Python project is not optimized, then it is unlikely to be well-tested.",
+      "B": "If all Python projects are well-structured, then all Python projects are optimized.",
+      "C": "If a Python project follows PEP 8 standards, then it must be well-tested.",
+      "D": "If a Python project is not well-structured, then it might not follow PEP 8 standards."
+    }
+  },
+  {
+    "id": "logic_0054_00",
+    "options": {
+      "A": "A cost-effective Raspberry Pi system may fail to support all versatile use-cases if it is not thoroughly tested and well-documented.",
+      "B": "Every Raspberry Pi system is necessarily versatile if it is cost-effective.",
+      "C": "If a Raspberry Pi system is cost-effective but not thoroughly tested and well-documented, then it is still versatile.",
+      "D": "A Raspberry Pi system is necessarily versatile even if it is not cost-effective."
+    }
+  },
+  {
+    "id": "logic_0055_00",
+    "options": {
+      "A": "It is not the case that if an EV charging station being not widely available implies that it is not thoroughly maintained then every EV charging station meets safety standards.",
+      "B": "If it is true that if an EV charging station being not widely available implies that it is not thoroughly maintained then every EV charging station meets safety standards, then it follows that if an EV charging station being not widely available implies that it is not thoroughly maintained then every EV charging station meets safety standards.",
+      "C": "Both that if an EV charging station being not widely available implies that it is not thoroughly maintained then every EV charging station meets safety standards, and that it is not the case that if an EV charging station being not widely available implies that it is not thoroughly maintained then every EV charging station meets safety standards.",
+      "D": "If an EV charging station being not widely available implies that it is not thoroughly maintained, then every EV charging station meets safety standards."
+    }
+  },
+  {
+    "id": "logic_0056_00",
+    "options": {
+      "A": "If it is the case that if a microchip not being functional implies that it does not have a stable power supply then there exists at least one microchip that meets performance standards, then it follows that if a microchip not being functional implies that it does not have a stable power supply then there exists at least one microchip that meets performance standards.",
+      "B": "If a microchip not being functional implies that it does not have a stable power supply, then there exists at least one microchip that meets performance standards.",
+      "C": "Both the statement that if a microchip not being functional implies that it does not have a stable power supply then there exists at least one microchip that meets performance standards and the statement that it is not the case that if a microchip not being functional implies that it does not have a stable power supply then there exists at least one microchip that meets performance standards are true.",
+      "D": "It is not the case that if a microchip not being functional implies that it does not have a stable power supply, then there exists at least one microchip that meets performance standards."
+    }
+  },
+  {
+    "id": "logic_0057_00",
+    "options": {
+      "A": "It is false that if every transportation system in the city is safe, then there exists at least one transportation system that is cost-effective.",
+      "B": "Both (every transportation system in the city is safe implies there exists at least one cost-effective transportation system) and its negation hold, leading to a contradiction.",
+      "C": "If every transportation system in the city is safe implies there exists at least one cost-effective transportation system, then this implication is always true.",
+      "D": "If every transportation system in the city is safe, then there exists at least one transportation system that is cost-effective."
+    }
+  },
+  {
+    "id": "logic_0073_00",
+    "options": {
+      "A": "If a student receives a scholarship, they must be excellent.",
+      "B": "If a student does not participate in extracurricular activities, then they receive a scholarship.",
+      "C": "If a student does not submit their research paper, then they are excellent.",
+      "D": "If all enrolled students are excellent, then no student without excellence can receive a scholarship."
+    }
+  },
+  {
+    "id": "logic_0074_00",
+    "options": {
+      "A": "If a school does not have a principal, then it cannot have students.",
+      "B": "If a school has students, then it must also have staff and teachers.",
+      "C": "If a school has staff, then it must have a principal.",
+      "D": "Every school has both students and teachers."
+    }
+  },
+  {
+    "id": "logic_0075_00",
+    "options": {
+      "A": "If everyone is a student, and if someone not being a student implies they are not a teacher, then everyone is a university staff member.",
+      "B": "If there is at least one researcher, then there is no university staff member.",
+      "C": "If everyone is a teacher, then there is no researcher.",
+      "D": "If someone is not a student, then they are a researcher."
+    }
+  },
+  {
+    "id": "logic_0076_00",
+    "options": {
+      "A": "If someone does not fully participate in conduct training, then they are not eligible for graduation.",
+      "B": "If someone does not fully participate in social work, then everyone is a student.",
+      "C": "If everyone in the university is a student, then there is at least one student eligible for graduation.",
+      "D": "If there exists a student eligible for graduation, then no student fully participates in conduct training."
+    }
+  },
+  {
+    "id": "logic_0077_00",
+    "options": {
+      "A": "If a student participates in social work, then they meet academic requirements.",
+      "B": "If someone participates in social work, then they meet extracurricular requirements.",
+      "C": "If someone meets academic requirements, then they are not a student.",
+      "D": "If a student meets academic requirements, they are not eligible for graduation."
+    }
+  },
+  {
+    "id": "logic_0078_00",
+    "options": {
+      "A": "If a student does not attend review sessions, then they do not earn extra credit.",
+      "B": "If a student does not participate in study groups, they will fail.",
+      "C": "If a student submits assignments on time, they do not achieve good grades.",
+      "D": "If a student does not complete fundamental courses, then they did not attend review sessions."
+    }
+  },
+  {
+    "id": "logic_0079_00",
+    "options": {
+      "A": "If a student attends classes, then they receive extra credit.",
+      "B": "If a student receives extra credit, then they do not study regularly.",
+      "C": "If a student studies regularly, then they do not achieve good grades.",
+      "D": "If a student submits assignments on time, then they do not receive extra credit."
+    }
+  },
+  {
+    "id": "logic_0080_00",
+    "options": {
+      "A": "If a student does not complete their assignments, then they do not achieve high scores.",
+      "B": "If a student submits homework on time, then they receive bonus points.",
+      "C": "If a student does not attend class, they will achieve high scores.",
+      "D": "If a student achieves high scores, then they did not study regularly."
+    }
+  },
+  {
+    "id": "logic_0081_00",
+    "options": {
+      "A": "If a student submits assignments on time, then they receive extra credit.",
+      "B": "If a student receives extra credit, then they study regularly.",
+      "C": "If a student achieves good grades, then they do not receive extra credit.",
+      "D": "If a student does not submit assignments on time, then they study regularly."
+    }
+  },
+  {
+    "id": "logic_0082_00",
+    "options": {
+      "A": "If a student does not achieve good grades, then they do not receive extra credit.",
+      "B": "If a student receives extra credit, then they achieve good grades.",
+      "C": "If a student does not attend class, they receive extra credit.",
+      "D": "If a student submits assignments on time, then they do not receive extra credit."
+    }
+  },
+  {
+    "id": "logic_0083_00",
+    "options": {
+      "A": "If every student participates in research, then every student takes advanced courses.",
+      "B": "If a student does not participate in research, then they do not win a scholarship.",
+      "C": "If a student takes advanced courses, then they participate in research.",
+      "D": "If every student wins a scholarship, then no student participates in research."
+    }
+  },
+  {
+    "id": "logic_0084_00",
+    "options": {
+      "A": "If a student wins a scholarship, then they publish research.",
+      "B": "If a student publishes research, then they take advanced courses.",
+      "C": "If a student is not a student, then they do not win a scholarship.",
+      "D": "If someone does not take advanced courses, then they cannot publish research."
+    }
+  },
+  {
+    "id": "logic_0085_00",
+    "options": {
+      "A": "If someone is a researcher, then they are qualified.",
+      "B": "If someone is a professor, then they are not qualified.",
+      "C": "If someone is qualified, then they are a student.",
+      "D": "If someone takes courses, then they are a professor."
+    }
+  },
+  {
+    "id": "logic_0086_00",
+    "options": {
+      "A": "If someone passes the exam, they are qualified.",
+      "B": "If someone takes courses, then they are qualified.",
+      "C": "If someone is not a student, they take courses.",
+      "D": "If someone understands the lecture, then they are not a student."
+    }
+  },
+  {
+    "id": "logic_0087_00",
+    "options": {
+      "A": "If someone takes the course, then they are a student.",
+      "B": "If someone is a student, then they understand the lecture.",
+      "C": "If someone is not registered for the course, they pass the exam.",
+      "D": "If someone understands the lecture, then they are not a student."
+    }
+  },
+  {
+    "id": "logic_0088_00",
+    "options": {
+      "A": "A person is qualified if and only if they are registered.",
+      "B": "A person is qualified only if they are not registered.",
+      "C": "A person is registered only if they do not study.",
+      "D": "A person is qualified only if they do not train."
+    }
+  },
+  {
+    "id": "logic_0089_00",
+    "options": {
+      "A": "Everyone studies.",
+      "B": "Everyone is not registered.",
+      "C": "If someone is registered, then they are not an undergraduate.",
+      "D": "No one is qualified."
+    }
+  },
+  {
+    "id": "logic_0090_00",
+    "options": {
+      "A": "'If a student does not attend all lectures and does not participate in class discussions, they will fail the final exam and receive a low participation grade.'",
+      "B": "'If a student attends a tutoring session and completes at least 80% of the assignments, they are more likely to improve their grades and pass the course.'",
+      "C": "'Every teacher in the school has at least a doctoral degree in their subject area and provides detailed feedback on assignments.'",
+      "D": "'If a student does not complete at least 80% of the assignments and does not submit their research paper, they will fail the course and be placed on academic probation.'"
+    }
+  },
+  {
+    "id": "logic_0091_00",
+    "options": {
+      "A": "If students who do not complete foundational courses cannot graduate, then all students must complete the foundational courses.",
+      "B": "If failing to complete foundational courses leads to ineligibility for graduation, then all students must complete the foundational courses.",
+      "C": "If students who do not submit their research papers cannot receive a passing grade, then all students must participate in group projects.",
+      "D": "If a student does not participate in extracurricular activities, they will develop leadership skills."
+    }
+  },
+  {
+    "id": "logic_0092_00",
+    "options": {
+      "A": "If attending academic conferences leads to gaining knowledge, then maintaining a high GPA leads to eligibility for scholarships.",
+      "B": "If attending academic conferences leads to gaining knowledge, then students who do not maintain a high GPA will not be eligible for scholarships.",
+      "C": "If attending academic conferences leads to gaining knowledge, then all students must complete their coursework.",
+      "D": "If attending academic conferences leads to gaining knowledge, then students who do not receive academic recognition will not be selected for advanced research programs."
+    }
+  },
+  {
+    "id": "logic_0093_00",
+    "options": {
+      "A": "If all students must complete assignments and if a student does not attend classes, they will not complete assignments, then students who do not attend classes will not pass the exams.",
+      "B": "If all students must complete assignments and if a student does not attend classes, they will not complete assignments, then students who do not attend classes will pass the exams.",
+      "C": "If all students must complete assignments and if a student does not attend classes, they will not complete assignments, then all students will not pass the exams.",
+      "D": "If all students must complete assignments and if a student does not attend classes, they will not complete assignments, then some students will not pass the exams."
+    }
+  },
+  {
+    "id": "logic_0094_00",
+    "options": {
+      "A": "If all students pass the test and if a student passing the test implies they have studied, then all students have studied.",
+      "B": "If all students pass the test and if a student passing the test implies they have studied, then not all students have studied.",
+      "C": "If all students pass the test and if a student passing the test implies they have studied, then some students have not studied.",
+      "D": "If all students pass the test and if a student passing the test implies they have studied, then no students have studied."
+    }
+  },
+  {
+    "id": "logic_0095_00",
+    "options": {
+      "A": "If there exists at least one student who submits assignments and if at least one student submits assignments, then this is always true, then the statement 'If at least one student submits assignments, then this is always true' holds.",
+      "B": "If there exists at least one student who submits assignments and if at least one student submits assignments, then this is always true, then the statement 'If at least one student submits assignments, then this is always true' does not hold.",
+      "C": "If there exists at least one student who submits assignments and if at least one student submits assignments, then this is always true, then the statement 'If at least one student submits assignments, then this is always true' holds in some cases but not all.",
+      "D": "If there exists at least one student who submits assignments and if at least one student submits assignments, then this is always true, then the statement 'If at least one student submits assignments, then this is always true' is both true and false at the same time."
+    }
+  },
+  {
+    "id": "logic_0096_00",
+    "options": {
+      "A": "If all students qualifying for advanced placement must have high academic performance and if this ensures coursework completion, then students who qualify for advanced placement must have completed their coursework.",
+      "B": "If all students qualifying for advanced placement must have high academic performance and if this ensures coursework completion, then students who qualify for advanced placement may not have completed their coursework.",
+      "C": "If all students qualifying for advanced placement must have high academic performance and if this ensures coursework completion, then some students who qualify for advanced placement must have completed their coursework.",
+      "D": "If all students qualifying for advanced placement must have high academic performance and if this ensures coursework completion, then students who qualify for advanced placement have both completed and not completed their coursework."
+    }
+  },
+  {
+    "id": "logic_0097_00",
+    "options": {
+      "A": "If all students must comply with the university's rules and regulations and students who do not comply with the rules will be subject to disciplinary action, then all students must complete the mandatory courses in the curriculum.",
+      "B": "If all students must comply with the university's rules and regulations and students who do not comply with the rules will be subject to disciplinary action, then all students do not need to complete the mandatory courses in the curriculum.",
+      "C": "If all students must comply with the university's rules and regulations and students who do not comply with the rules will be subject to disciplinary action, then some students must complete the mandatory courses in the curriculum.",
+      "D": "If all students must comply with the university's rules and regulations and students who do not comply with the rules will be subject to disciplinary action, then no students must complete the mandatory courses in the curriculum."
+    }
+  },
+  {
+    "id": "logic_0098_00",
+    "options": {
+      "A": "If at least one student has received a scholarship and if failing to follow academic policies results in no scholarship, then failing to follow academic policies prevents students from receiving scholarships.",
+      "B": "If at least one student has received a scholarship and if failing to follow academic policies results in no scholarship, then failing to follow academic policies does not prevent students from receiving scholarships.",
+      "C": "If at least one student has received a scholarship and if failing to follow academic policies results in no scholarship, then failing to follow academic policies sometimes prevents students from receiving scholarships.",
+      "D": "If at least one student has received a scholarship and if failing to follow academic policies results in no scholarship, then failing to follow academic policies prevents students from receiving scholarships in some cases but not all."
+    }
+  },
+  {
+    "id": "logic_0099_00",
+    "options": {
+      "A": "If at least one student has achieved outstanding academic performance and if having at least one student achieve outstanding academic performance leads to at least one student receiving a scholarship, then all students must comply with the examination regulations.",
+      "B": "If at least one student has achieved outstanding academic performance and if having at least one student achieve outstanding academic performance leads to at least one student receiving a scholarship, then not all students must comply with the examination regulations.",
+      "C": "If at least one student has achieved outstanding academic performance and if having at least one student achieve outstanding academic performance leads to at least one student receiving a scholarship, then some students must comply with the examination regulations.",
+      "D": "If at least one student has achieved outstanding academic performance and if having at least one student achieve outstanding academic performance leads to at least one student receiving a scholarship, then no students must comply with the examination regulations."
+    }
+  },
+  {
+    "id": "logic_0100_00",
+    "options": {
+      "A": "If at least one student participates in an academic competition and if joining the research group requires contributing to a published paper, then at least one student must be involved in research, and this leads to contributing to at least one published paper.",
+      "B": "If at least one student participates in an academic competition and if joining the research group requires contributing to a published paper, then at least one student must be involved in research, and this leads to not contributing to at least one published paper.",
+      "C": "If at least one student participates in an academic competition and if joining the research group requires contributing to a published paper, then at least one student must be involved in research, and this leads to sometimes contributing to at least one published paper.",
+      "D": "If at least one student participates in an academic competition and if joining the research group requires contributing to a published paper, then at least one student must be involved in research, and this leads to contributing to at least one published paper in some cases but not all."
+    }
+  },
+  {
+    "id": "logic_0101_00",
+    "options": {
+      "A": "If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then at least one research student has a scholarship.",
+      "B": "If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then at least one research student does not have a scholarship.",
+      "C": "If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then some research students have scholarships while others do not.",
+      "D": "If at least one student who received a full scholarship has participated in research and if research participation improves scholarship chances, then at least one research student has a scholarship in some cases but not all."
+    }
+  },
+  {
+    "id": "logic_0102_00",
+    "options": {
+      "A": "If a student does not follow the school rules and if a student violates the school rules, they will be disciplined and banned from extracurricular activities, and if a student does not follow the dress code, they will be asked to change their clothes.",
+      "B": "If a student does not follow the school rules and if a student violates the school rules, they will not be disciplined and banned from extracurricular activities, and if a student does not follow the dress code, they will be asked to change their clothes.",
+      "C": "If a student does not follow the school rules and if a student violates the school rules, they will be disciplined and banned from extracurricular activities, and if a student does not follow the dress code, they will not be asked to change their clothes.",
+      "D": "If a student does not follow the school rules and if a student violates the school rules, they will be disciplined and banned from extracurricular activities, and if a student does not follow the dress code, they will be asked to change their clothes in some cases but not all."
+    }
+  },
+  {
+    "id": "logic_0103_00",
+    "options": {
+      "A": "'If a student participates in extracurricular activities and completes assignments, they will receive points and gain additional points.'",
+      "B": "'If a student does not complete assignments and does not follow the attendance policy, they will lose points and lose participation points.'",
+      "C": "'If a student participates in extracurricular activities and violates the school policy on mobile phones, they will gain additional points and receive a warning.'",
+      "D": "'If a student participates in group projects and completes their final project, they will be penalized and eligible for extra participation points.'"
+    }
+  },
+  {
+    "id": "logic_0104_00",
+    "options": {
+      "A": "'If a student participates in extracurricular activities and follows the attendance policy, they will gain extra credit and be eligible for participation points.'",
+      "B": "'If a student does not complete assignments and does not follow the study plan, they will not pass the exam and not be eligible for extra credit.'",
+      "C": "'If a student participates in group projects and does not follow the attendance policy, they will gain extra credit and lose participation points.'",
+      "D": "'If a student follows the study plan and completes assignments, they will pass the exam and not be eligible for extra credit.'"
+    }
+  },
+  {
+    "id": "logic_0108_00",
+    "options": {
+      "A": "((ForAll(x, ResearchProject(x)) → (ForAll(x, Extracurricular(x)) → (Enrolled(x) → Resources(x)))) ∧ ¬(ForAll(x, ResearchProject(x)) → (ForAll(x, Extracurricular(x)) → (Enrolled(x) → Resources(x))))",
+      "B": "((ForAll(x, ResearchProject(x)) → (ForAll(x, Extracurricular(x)) → (Enrolled(x) → Resources(x)))) → (ForAll(x, ResearchProject(x)) → (ForAll(x, Extracurricular(x)) → (Enrolled(x) → Resources(x))))",
+      "C": "¬(ForAll(x, ResearchProject(x)) → (ForAll(x, Extracurricular(x)) → (Enrolled(x) → Resources(x))))",
+      "D": "(ForAll(x, ResearchProject(x)) → (ForAll(x, Extracurricular(x)) → (Enrolled(x) → Resources(x))))"
+    }
+  },
+  {
+    "id": "logic_0109_00",
+    "options": {
+      "A": "(Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x)))",
+      "B": "((Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x))) ∧ ¬(Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x))))",
+      "C": "¬(Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x)))",
+      "D": "((Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x))) → (Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x))))"
+    }
+  },
+  {
+    "id": "logic_0110_00",
+    "options": {
+      "A": "If the lack of motivation leads to not participating in discussions, then all students attending class regularly ensures that attending class implies completing assignments.",
+      "B": "It is false that if the lack of motivation leads to not participating in discussions, then all students attending class regularly ensures that attending class implies completing assignments.",
+      "C": "Both statement A and its negation are true at the same time, leading to a contradiction.",
+      "D": "If the lack of motivation leads to not participating in discussions, then all students attending class regularly ensures that attending class implies completing assignments, and this always holds."
+    }
+  },
+  {
+    "id": "logic_0111_00",
+    "options": {
+      "A": "((∀x U(x) → (R(x) → P(x))) ∧ ¬(∀x U(x) → (R(x) → P(x))))",
+      "B": "¬(∀x U(x) → (R(x) → P(x)))",
+      "C": "(∀x U(x) → (R(x) → P(x)))",
+      "D": "((∀x U(x) → (R(x) → P(x))) → (∀x U(x) → (R(x) → P(x))))"
+    }
+  },
+  {
+    "id": "logic_0112_00",
+    "options": {
+      "A": "If not doing homework leads to failing the course, then all students attend class regularly.",
+      "B": "It is false that if not doing homework leads to failing the course, then all students attend class regularly.",
+      "C": "The statement 'If not doing homework leads to failing the course, then all students attend class regularly' is both true and false simultaneously.",
+      "D": "The statement 'If not doing homework leads to failing the course, then all students attend class regularly' is a tautology."
+    }
+  },
+  {
+    "id": "logic_0113_00",
+    "options": {
+      "A": "If all students attend class, then at least one student is conducting research.",
+      "B": "It is false that if all students attend class, then at least one student is conducting research.",
+      "C": "The statement 'If all students attend class, then at least one student is conducting research' is always true.",
+      "D": "The statement 'If all students attend class, then at least one student is conducting research' is both true and false at the same time."
+    }
+  },
+  {
+    "id": "logic_0114_00",
+    "options": {
+      "A": "The statement 'If studying leads to passing the exam, then the previous rule (if taking a test leads to passing the exam, then studying also leads to passing the exam) holds' is both true and false at the same time.",
+      "B": "If the statement 'If studying leads to passing the exam, then the previous rule holds' is true, then it is always true.",
+      "C": "The statement 'If studying leads to passing the exam, then the previous rule holds' is true.",
+      "D": "The statement 'If studying leads to passing the exam, then the previous rule holds' is false."
+    }
+  },
+  {
+    "id": "logic_0118_00",
+    "options": {
+      "A": "'If the statement “If studying leads to understanding, then all students must complete their assignments” holds, but at the same time does not hold, it creates a contradiction.'",
+      "B": "'If studying leads to understanding, then at least one student will join a study group.'",
+      "C": "'It is not true that if studying leads to understanding, then at least one student will join a study group.'",
+      "D": "'If the previous statement is true, then it must be true in all cases where the same reasoning applies.'"
+    }
+  },
+  {
+    "id": "logic_0125_00",
+    "options": {
+      "A": "All AI models have sufficient data.",
+      "B": "All AI models are untrained.",
+      "C": "If an AI model is trained, then it does not have sufficient data.",
+      "D": "No AI models use deep learning."
+    }
+  },
+  {
+    "id": "logic_0126_00",
+    "options": {
+      "A": "If a programmer understands loops, then they understand object-oriented programming.",
+      "B": "If a programmer does not understand recursion, then they do not understand loops.",
+      "C": "If a programmer does not study regularly, they will not improve debugging skills.",
+      "D": "If a programmer does not use functions, then they do not understand modular programming."
+    }
+  },
+  {
+    "id": "logic_0127_00",
+    "options": {
+      "A": "If a student scores above 90%, then they are honored.",
+      "B": "If a student is honored, then they scored above 90%.",
+      "C": "If a student is not honored, then they did not receive a certificate of excellence.",
+      "D": "If a student receives a certificate of excellence, then they have a distinction."
+    }
+  },
+  {
+    "id": "logic_0128_00",
+    "options": {
+      "A": "If a student completes a final project, then they receive a diploma.",
+      "B": "If a student completes an internship, then they receive a certificate of excellence.",
+      "C": "If a student receives a diploma, then they have completed a final project.",
+      "D": "If a student is eligible for graduation, then they have graduated with distinction."
+    }
+  },
+  {
+    "id": "logic_0129_00",
+    "options": {
+      "A": "All Python code is optimized.",
+      "B": "All optimized code is not well-tested.",
+      "C": "If a Python code is optimized, then it is not well-tested.",
+      "D": "No Python code follows PEP 8 standards."
+    }
+  },
+  {
+    "id": "logic_0130_00",
+    "options": {
+      "A": "All stoichiometrically correct reactions are balanced.",
+      "B": "If a reaction is balanced, then it is not stoichiometrically correct.",
+      "C": "A reaction is stoichiometrically correct if and only if it is unbalanced.",
+      "D": "No reaction can follow the law of conservation of mass."
+    }
+  },
+  {
+    "id": "logic_0131_00",
+    "options": {
+      "A": "A person gains knowledge if and only if they understand the content.",
+      "B": "A person gains knowledge if and only if they have read a book.",
+      "C": "A person who gains knowledge does not necessarily understand the content.",
+      "D": "A person understands content if and only if they gain wisdom."
+    }
+  },
+  {
+    "id": "logic_0133_00",
+    "options": {
+      "A": "I ate a Banh Mi.",
+      "B": "I passed the test.",
+      "C": "It is raining.",
+      "D": "I slept."
+    }
+  },
+  {
+    "id": "logic_0167_00",
+    "options": {
+      "A": "If there exists a student, then someone has submitted a scholarship application, but not everyone who submitted a scholarship application meets the scholarship eligibility criteria.",
+      "B": "If there exists a student, then someone has submitted a scholarship application, and every person who submitted a scholarship application meets the scholarship eligibility criteria.",
+      "C": "If there exists a student, then someone has submitted a scholarship application, and every person is a student.",
+      "D": "If there exists a student, then someone has submitted a scholarship application, but not every person is a student."
+    }
+  },
+  {
+    "id": "logic_0168_00",
+    "options": {
+      "A": "If everyone is allowed to attend class, then if a person has not complied with the new attendance rule, they are not allowed to attend class, and there exists someone who has not complied with the new attendance rule.",
+      "B": "If a person received a warning for previous absences, then they acknowledged the new attendance policy, and if they acknowledged the new attendance policy, then not complying with the new rule implies they are not allowed to attend class.",
+      "C": "If everyone is allowed to attend class, then if a person has not complied with the new attendance rule, they are allowed to attend class.",
+      "D": "If a person received a warning for previous absences, then they acknowledged the new attendance policy, and if they acknowledged the new attendance policy, then they are allowed to attend class even if they have not complied with the new rule."
+    }
+  },
+  {
+    "id": "logic_0169_00",
+    "options": {
+      "A": "If a person did not submit the seminar participation form, then they did not register to attend the seminar, and there exists someone who did not submit the form.",
+      "B": "If a person did not submit the seminar participation form, then they did not register to attend the seminar, and if they registered, they are allowed to attend the seminar.",
+      "C": "If a person did not submit the seminar participation form, then they are allowed to attend the seminar even if they did not register.",
+      "D": "If a person did not submit the seminar participation form, then they did not register to attend the seminar, and if they did not register, they are still allowed to attend the seminar."
+    }
+  },
+  {
+    "id": "logic_0170_00",
+    "options": {
+      "A": "If everyone attends the English club, then if a person attends the club, they improve their communication skills, and there exists someone who signed up for the club.",
+      "B": "If a person was invited by a teacher, then they attend the English club, and if they attend the club, they improve their communication skills.",
+      "C": "If everyone improves their English communication skills, then there exists someone who signed up for the club.",
+      "D": "If a person was invited by a teacher, then they attend the English club, and if they attend the club, they do not improve their communication skills."
+    }
+  },
+  {
+    "id": "logic_0171_00",
+    "options": {
+      "A": "If a person applied for the exchange opportunity, then they are eligible for the exchange program, and if they are eligible, they were selected for the exchange program.",
+      "B": "If a person applied for the exchange opportunity, then they are eligible for the exchange program, and if they are not eligible, they were not selected for the exchange program.",
+      "C": "If a person applied for the exchange opportunity, then they are eligible for the exchange program, but if they are eligible, they were not selected for the exchange program.",
+      "D": "If a person applied for the exchange opportunity, then they are eligible for the exchange program, and if they are eligible, they were not selected for the exchange program."
+    }
+  },
+  {
+    "id": "logic_0172_00",
+    "options": {
+      "A": "If a person did not participate in organizing the cultural festival, then they did not present any performance or exhibit, and there exists someone who attended the festival.",
+      "B": "If a person did not participate in organizing the cultural festival, then they did not present any performance or exhibit, and if someone attended the festival, then someone learned about different cultures.",
+      "C": "If a person did not participate in organizing the cultural festival, then they did not present any performance or exhibit, and everyone learned about different cultures through the festival.",
+      "D": "If a person did not participate in organizing the cultural festival, then they did not present any performance or exhibit, and if they did not present, they did not learn about different cultures."
+    }
+  },
+  {
+    "id": "logic_0173_00",
+    "options": {
+      "A": "If a person did not follow the school’s physical activity schedule, then they did not avoid penalty points, and everyone received bonus points.",
+      "B": "If a person did not follow the school’s physical activity schedule, then they did not avoid penalty points, but not everyone received bonus points.",
+      "C": "If a person did not follow the school’s physical activity schedule, then they did not avoid penalty points, and if they did not avoid penalty points, they did not receive bonus points.",
+      "D": "If a person did not follow the school’s physical activity schedule, then they did not avoid penalty points, and if they did not avoid penalty points, they received bonus points."
+    }
+  },
+  {
+    "id": "logic_0174_00",
+    "options": {
+      "A": "If all students are active in school activities, then participating in the workshop implies teamwork improvement, and there exists someone who received positive feedback from peers.",
+      "B": "If all students are active in school activities, then participating in the workshop implies teamwork improvement, and if a person participated in the workshop, they improved their teamwork ability.",
+      "C": "If all students are active in school activities, then participating in the workshop implies teamwork improvement, but if a person participated in the workshop, they did not improve their teamwork ability.",
+      "D": "If all students are active in school activities, then participating in the workshop implies teamwork improvement, and if a person did not improve their teamwork ability, they were not selected to represent the class in a school event."
+    }
+  },
+  {
+    "id": "logic_0175_00",
+    "options": {
+      "A": "If all individuals attend soft skill seminars, then learning new skills implies improving communication or leadership skills, and everyone learns new soft skills in the seminar.",
+      "B": "If all individuals attend soft skill seminars, then learning new skills implies improving communication or leadership skills, but not everyone learns new soft skills in the seminar.",
+      "C": "If all individuals attend soft skill seminars, then learning new skills implies improving communication or leadership skills, and if a person learns new skills, they improve their communication or leadership skills.",
+      "D": "If all individuals attend soft skill seminars, then learning new skills implies improving communication or leadership skills, but if a person learns new skills, they do not improve their communication or leadership skills."
+    }
+  },
+  {
+    "id": "logic_0176_00",
+    "options": {
+      "A": "If there exists someone who attended the midterm exam, then all students attend the course, and there exists someone who attended the final exam.",
+      "B": "If there exists someone who attended the midterm exam, then all students attend the course, and if a person did not complete the required attendance, then they did not attend the course.",
+      "C": "If there exists someone who attended the midterm exam, then all students attend the course, but if a person did not complete the required attendance, they still attended the course.",
+      "D": "If there exists someone who attended the midterm exam, then all students attend the course, and if a person did not attend the course, they did not attend the final exam."
+    }
+  },
+  {
+    "id": "logic_0177_00",
+    "options": {
+      "A": "If there exists someone who lends money to a friend, then a person having the maturity to lend money implies they lend money to a friend, and if a person lends money to a friend, they have learned from the experience.",
+      "B": "If there exists someone who lends money to a friend, then a person having the maturity to lend money implies they lend money to a friend, but if a person lends money to a friend, they have not learned from the experience.",
+      "C": "If there exists someone who lends money to a friend, then a person having the maturity to lend money implies they lend money to a friend, and if a person is reckless with money, they cannot make responsible financial decisions.",
+      "D": "If there exists someone who lends money to a friend, then a person having the maturity to lend money implies they lend money to a friend, but if a person is reckless with money, they can still make responsible financial decisions."
+    }
+  },
+  {
+    "id": "logic_0178_00",
+    "options": {
+      "A": "If there exists someone who uses university facilities responsibly, then a person having the maturity to use facilities responsibly implies they use them responsibly, and if a person uses university facilities responsibly, they respect the university’s policies.",
+      "B": "If there exists someone who uses university facilities responsibly, then a person having the maturity to use facilities responsibly implies they use them responsibly, but if a person uses university facilities responsibly, they do not respect the university’s policies.",
+      "C": "If there exists someone who uses university facilities responsibly, then a person having the maturity to use facilities responsibly implies they use them responsibly, and if a person misuses university facilities, they cannot understand the proper rules and usage.",
+      "D": "If there exists someone who uses university facilities responsibly, then a person having the maturity to use facilities responsibly implies they use them responsibly, but if a person misuses university facilities, they can still understand the proper rules and usage."
+    }
+  },
+  {
+    "id": "logic_0179_00",
+    "options": {
+      "A": "If everyone engages in self-study regularly, then there exists someone who has the discipline to self-study at home, and if there exists someone with the discipline to self-study at home, then everyone studies independently at home.",
+      "B": "If everyone engages in self-study regularly, then there exists someone who has the discipline to self-study at home, but if there exists someone with the discipline to self-study at home, then not everyone studies independently at home.",
+      "C": "If everyone engages in self-study regularly, then there exists someone who has the discipline to self-study at home, and if a person does not engage in self-study regularly, then they do not improve their academic performance.",
+      "D": "If everyone engages in self-study regularly, then there exists someone who has the discipline to self-study at home, but if a person does not engage in self-study regularly, then they still improve their academic performance."
+    }
+  },
+  {
+    "id": "logic_0180_00",
+    "options": {
+      "A": "If a person has permission to borrow books from the library, then they are a student allowed to borrow books, and if there exists a student who is allowed to borrow books, then there exists someone who has not borrowed more than 5 books at once.",
+      "B": "If a person has permission to borrow books from the library, then they are a student allowed to borrow books, but if there exists a student who is allowed to borrow books, then there exists someone who has borrowed more than 5 books at once.",
+      "C": "If a person has permission to borrow books from the library, then they are a student allowed to borrow books, and if a person does not have permission to borrow books, then they are not allowed to borrow books.",
+      "D": "If a person has permission to borrow books from the library, then they are a student allowed to borrow books, but if a person does not have permission to borrow books, then they are still allowed to borrow books."
+    }
+  },
+  {
+    "id": "logic_0181_00",
+    "options": {
+      "A": "If all students are participating in the buddy program, then if a person is participating in the buddy program, they gain 5 bonus points and money, and there exists a student who gains 5 bonus points and money through the program.",
+      "B": "If all students are participating in the buddy program, then if a person is participating in the buddy program, they gain 5 bonus points and money, but there does not exist a student who gains 5 bonus points and money through the program.",
+      "C": "If all students are participating in the buddy program, then if a person is participating in the buddy program, they gain 5 bonus points and money, and if a person is participating in the buddy program, they are a student receiving help.",
+      "D": "If all students are participating in the buddy program, then if a person is participating in the buddy program, they gain 5 bonus points and money, but if a person is participating in the buddy program, they are not a student receiving help."
+    }
+  },
+  {
+    "id": "logic_0182_00",
+    "options": {
+      "A": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who is enrolled in the PE course.",
+      "B": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, but there does not exist a student who is enrolled in the PE course.",
+      "C": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and if a person has not attended the PE course, they have not fulfilled all course requirements.",
+      "D": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, but if a person has not attended the PE course, they have fulfilled all course requirements."
+    }
+  },
+  {
+    "id": "logic_0183_00",
+    "options": {
+      "A": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who is enrolled in the PE course.",
+      "B": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, but there does not exist a student who is enrolled in the PE course.",
+      "C": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and if a person has not attended the PE course, they have not fulfilled all course requirements.",
+      "D": "If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, but if a person has not attended the PE course, they have fulfilled all course requirements."
+    }
+  },
+  {
+    "id": "logic_0184_00",
+    "options": {
+      "A": "If there exists someone who has successfully obtained the English certificate, then everyone is required to have the English certificate, and if a person has an English certificate, then they have at least 6.0 IELTS or a TOEFL score above 600.",
+      "B": "If there exists someone who has successfully obtained the English certificate, then everyone is required to have the English certificate, but if a person has an English certificate, then they do not have at least 6.0 IELTS or a TOEFL score above 600.",
+      "C": "If there exists someone who has successfully obtained the English certificate, then everyone is required to have the English certificate, and there exists someone who has completed the language proficiency test.",
+      "D": "If there exists someone who has successfully obtained the English certificate, then everyone is required to have the English certificate, but there does not exist someone who has completed the language proficiency test."
+    }
+  },
+  {
+    "id": "logic_0185_00",
+    "options": {
+      "A": "If someone is eligible for the seminar, they have completed registration requirements.",
+      "B": "Everyone who submits a report has both certifications.",
+      "C": "Someone eligible for the seminar has both certifications.",
+      "D": "Not registering for the seminar means you have certifications."
+    }
+  },
+  {
+    "id": "logic_0186_00",
+    "options": {
+      "A": "All students are eligible to register.",
+      "B": "Some students are not eligible to register.",
+      "C": "No students are eligible to register.",
+      "D": "Eligibility to register depends on year level."
+    }
+  },
+  {
+    "id": "logic_0187_00",
+    "options": {
+      "A": "All individuals are eligible for healthcare services.",
+      "B": "Some individuals are not eligible for healthcare services.",
+      "C": "No individuals are eligible for healthcare services.",
+      "D": "Eligibility depends on attending the appointment."
+    }
+  },
+  {
+    "id": "logic_0188_00",
+    "options": {
+      "A": "If a student is enrolled, they complete the subject successfully.",
+      "B": "If a student attends the lab, they are not enrolled.",
+      "C": "All students are required to attend the lab.",
+      "D": "No student completes the subject successfully."
+    }
+  },
+  {
+    "id": "logic_0189_00",
+    "options": {
+      "A": "If a student attends classes regularly, they successfully find lectures.",
+      "B": "If a student is engaged in studying, they improve their understanding.",
+      "C": "All students actively search for lectures.",
+      "D": "No student finds lectures to help in studying."
+    }
+  },
+  {
+    "id": "logic_0190_00",
+    "options": {
+      "A": "If a student has feedback, they completed the internship requirements.",
+      "B": "If a student has the stamp, they have feedback.",
+      "C": "All students have the company stamp.",
+      "D": "No student has feedback."
+    }
+  },
+  {
+    "id": "logic_0191_00",
+    "options": {
+      "A": "All students are eligible for training.",
+      "B": "All students raised issues about paying fees.",
+      "C": "No students received confirmation of payment.",
+      "D": "All students are not eligible for training."
+    }
+  },
+  {
+    "id": "logic_0192_00",
+    "options": {
+      "A": "All students have passed the course.",
+      "B": "All students complete exercises but not assignments.",
+      "C": "No students complete assignments.",
+      "D": "No students have passed the course."
+    }
+  },
+  {
+    "id": "logic_0193_00",
+    "options": {
+      "A": "All students receive social work points.",
+      "B": "All students are eligible for social work points.",
+      "C": "No students are involved in social work.",
+      "D": "No students donate blood."
+    }
+  },
+  {
+    "id": "logic_0194_00",
+    "options": {
+      "A": "All students are allowed to continue studying.",
+      "B": "All students do not pay the required fees.",
+      "C": "No students are allowed to continue studying.",
+      "D": "Some students pay the fees but cannot continue studying."
+    }
+  },
+  {
+    "id": "logic_0195_00",
+    "options": {
+      "A": "All students are eligible for the final exam.",
+      "B": "All students have not completed course requirements.",
+      "C": "No students are eligible for the final exam.",
+      "D": "Some students complete quizzes but are not eligible."
+    }
+  },
+  {
+    "id": "logic_0196_00",
+    "options": {
+      "A": "All students have met the safety requirements for the lab.",
+      "B": "All students are not enrolled in the chemistry course.",
+      "C": "No students are required to wear a blouse in the lab.",
+      "D": "Some students meet safety requirements but do not wear a blouse."
+    }
+  },
+  {
+    "id": "logic_0197_00",
+    "options": {
+      "A": "All students who eat food from the canteen get sick.",
+      "B": "All students are careful with the food at the canteen.",
+      "C": "No students eat food from the canteen.",
+      "D": "Some students do not get sick from eating canteen food."
+    }
+  },
+  {
+    "id": "logic_0198_00",
+    "options": {
+      "A": "All students are eligible for graduation.",
+      "B": "All students are enrolled in a course.",
+      "C": "No students complete the course successfully.",
+      "D": "Some students complete the course but are not eligible for graduation."
+    }
+  },
+  {
+    "id": "logic_0199_00",
+    "options": {
+      "A": "All students are enrolled in a course.",
+      "B": "All students have passed the course.",
+      "C": "Some students are eligible for the next course.",
+      "D": "Some students work on a project but don’t complete it."
+    }
+  },
+  {
+    "id": "logic_0200_00",
+    "options": {
+      "A": "All students sleep in the library during the designated time.",
+      "B": "All students are allowed to sleep in the library.",
+      "C": "No students use the library for sleeping.",
+      "D": "Some students are not allowed to sleep in the library."
+    }
+  },
+  {
+    "id": "logic_0201_00",
+    "options": {
+      "A": "Some students complete their studies successfully",
+      "B": "All students are enrolled in the university",
+      "C": "Some students are not actively studying",
+      "D": "Some students do not attend all required lectures"
+    }
+  },
+  {
+    "id": "logic_0202_00",
+    "options": {
+      "A": "All individuals complete assignments",
+      "B": "All individuals are enrolled in a course",
+      "C": "Some individuals do not complete tasks",
+      "D": "Some individuals are not engaged in educational activities"
+    }
+  },
+  {
+    "id": "logic_0203_00",
+    "options": {
+      "A": "All students applying for a scholarship have completed all required tasks",
+      "B": "All students have received a scholarship",
+      "C": "Some students apply but have not received a scholarship",
+      "D": "Some students are eligible but have not received a scholarship"
+    }
+  },
+  {
+    "id": "logic_0204_00",
+    "options": {
+      "A": "Some students study offline",
+      "B": "All students complete online study tasks",
+      "C": "Some students do not complete offline tasks",
+      "D": "All students manage offline and online study time effectively"
+    }
+  },
+  {
+    "id": "logic_0205_00",
+    "options": {
+      "A": "Some students study offline",
+      "B": "All students study online",
+      "C": "Some students do not complete offline tasks",
+      "D": "All students manage offline and online study time effectively"
+    }
+  },
+  {
+    "id": "logic_0206_00",
+    "options": {
+      "A": "((¬certified(x) → ¬can_teach(x)) ∧ ¬(¬can_teach(x) → ¬research_foundation(x)))",
+      "B": "((¬certified(x) → ¬can_teach(x)) → (¬can_teach(x) → ¬research_foundation(x)))",
+      "C": "((¬can_teach(x) → ¬research_foundation(x)) → (¬certified(x) → ¬can_teach(x)))",
+      "D": "¬((¬certified(x) → ¬can_teach(x)) → (¬can_teach(x) → ¬research_foundation(x)))"
+    }
+  },
+  {
+    "id": "logic_0207_00",
+    "options": {
+      "A": "∀x (publishes_papers(x) → teaches(x))",
+      "B": "(∀x (teaches(x) → publishes_papers(x)) ∧ ¬∀x (teaches(x) → publishes_papers(x)))",
+      "C": "∀x (teaches(x) → publishes_papers(x))",
+      "D": "¬∀x (teaches(x) → publishes_papers(x))"
+    }
+  },
+  {
+    "id": "logic_0208_00",
+    "options": {
+      "A": "∀x (R(x) → P(x))",
+      "B": "(∀x (P(x) → R(x)) ∧ ¬∀x (P(x) → R(x)))",
+      "C": "∀x (P(x) → R(x))",
+      "D": "¬∀x (P(x) → R(x))"
+    }
+  },
+  {
+    "id": "logic_0209_00",
+    "options": {
+      "A": "∀x (S(x) → Q(x))",
+      "B": "(∀x (Q(x) → S(x)) ∧ ¬∀x (Q(x) → S(x)))",
+      "C": "∀x (Q(x) → S(x))",
+      "D": "¬∀x (Q(x) → S(x))"
+    }
+  },
+  {
+    "id": "logic_0210_00",
+    "options": {
+      "A": "∀x (P(x) → S(x))",
+      "B": "∀x (S(x) → P(x))",
+      "C": "¬∀x (S(x) → P(x))",
+      "D": "(∀x (S(x) → P(x)) ∧ ¬∀x (S(x) → P(x)))"
+    }
+  },
+  {
+    "id": "logic_0211_00",
+    "options": {
+      "A": "∀x (T(x) → R(x))",
+      "B": "∀x (S(x) → P(x))",
+      "C": "¬∀x (S(x) → P(x))",
+      "D": "(∀x (S(x) → P(x)) ∧ ¬∀x (S(x) → P(x)))"
+    }
+  },
+  {
+    "id": "logic_0212_00",
+    "options": {
+      "A": "∀x (T(x) → R(x))",
+      "B": "¬∀x (S(x) → P(x))",
+      "C": "∀x (S(x) → P(x))",
+      "D": "(∀x (S(x) → P(x)) ∧ ¬∀x (S(x) → P(x)))"
+    }
+  },
+  {
+    "id": "logic_0213_00",
+    "options": {
+      "A": "∀x (R(x) → Q(x))",
+      "B": "∀x (Q(x) → R(x))",
+      "C": "¬∀x (R(x) → Q(x))",
+      "D": "(∀x (R(x) → Q(x)) ∧ ¬∀x (R(x) → Q(x)))"
+    }
+  },
+  {
+    "id": "logic_0214_00",
+    "options": {
+      "A": "∀x (S(x) → R(x))",
+      "B": "∀x (R(x) → S(x))",
+      "C": "¬∀x (S(x) → R(x))",
+      "D": "(∀x (S(x) → R(x)) ∧ ¬∀x (S(x) → R(x)))"
+    }
+  },
+  {
+    "id": "logic_0215_00",
+    "options": {
+      "A": "∀x (S(x) → R(x))",
+      "B": "∀x (P(x) → T(x))",
+      "C": "¬∀x (S(x) → R(x))",
+      "D": "(∀x (S(x) → R(x)) ∧ ¬∀x (S(x) → R(x)))"
+    }
+  },
+  {
+    "id": "logic_0216_00",
+    "options": {
+      "A": "∀x (R(x) → T(x))",
+      "B": "¬∀x (T(x) → R(x))",
+      "C": "∀x (T(x) → R(x))",
+      "D": "(∀x (T(x) → R(x)) ∧ ¬∀x (T(x) → R(x)))"
+    }
+  },
+  {
+    "id": "logic_0217_00",
+    "options": {
+      "A": "∀x (K(x) → S(x))",
+      "B": "¬∀x (S(x) → K(x))",
+      "C": "∀x (S(x) → K(x))",
+      "D": "(∀x (S(x) → K(x)) ∧ ¬∀x (S(x) → K(x)))"
+    }
+  },
+  {
+    "id": "logic_0218_00",
+    "options": {
+      "A": "∀x (S(x) → R(x))",
+      "B": "∀x (R(x) → S(x))",
+      "C": "¬∀x (R(x) → S(x))",
+      "D": "(∀x (R(x) → S(x)) ∧ ¬∀x (R(x) → S(x)))"
+    }
+  },
+  {
+    "id": "logic_0219_00",
+    "options": {
+      "A": "∀x (U(x) → P(x))",
+      "B": "¬∀x (P(x) → U(x))",
+      "C": "∀x (P(x) → U(x))",
+      "D": "(∀x (P(x) → U(x)) ∧ ¬∀x (P(x) → U(x)))"
+    }
+  },
+  {
+    "id": "logic_0220_00",
+    "options": {
+      "A": "∀x (R(x) → T(x))",
+      "B": "∀x (T(x) → R(x))",
+      "C": "¬∀x (R(x) → T(x))",
+      "D": "(∀x (R(x) → T(x)) ∧ ¬∀x (R(x) → T(x)))"
+    }
+  },
+  {
+    "id": "logic_0221_00",
+    "options": {
+      "A": "If a student is familiar with HCMUT's code of conduct, then they adhere to HCMUT's code of conduct, and if they adhere to the code of conduct, they uphold HCMUT's values.",
+      "B": "If a student is familiar with HCMUT's code of conduct, then they adhere to HCMUT's code of conduct, but if they adhere to the code of conduct, they do not uphold HCMUT's values.",
+      "C": "If a student is familiar with HCMUT's code of conduct, then they adhere to HCMUT's code of conduct, and if there are vibrant student clubs at HCMUT, then all students adhere to HCMUT's code of conduct.",
+      "D": "If a student is familiar with HCMUT's code of conduct, then they adhere to HCMUT's code of conduct, but if there are vibrant student clubs at HCMUT, then not all students adhere to HCMUT's code of conduct."
+    }
+  },
+  {
+    "id": "logic_0222_00",
+    "options": {
+      "A": "If a student is enrolled in a university program and has access to academic resources, then there exists at least one student who has completed a research project, and there exists at least one student who is participating in an internship program.",
+      "B": "If a student is enrolled in a university program and has access to academic resources, then there exists at least one student who has completed a research project, but there does not exist at least one student who is participating in an internship program.",
+      "C": "If a student is enrolled in a university program and has access to academic resources, then there exists at least one student who has completed a research project, and if a student is conducting research, then the student has completed a research project.",
+      "D": "If a student is enrolled in a university program and has access to academic resources, then there exists at least one student who has completed a research project, but if a student is conducting research, then the student has not completed a research project."
+    }
+  },
+  {
+    "id": "logic_0223_00",
+    "options": {
+      "A": "If a student is enrolled in a course, then they have access to study materials, and if every student has access to study materials, then there exists at least one student who is enrolled in a course.",
+      "B": "If a student is enrolled in a course, then they have access to study materials, but if every student has access to study materials, then there does not exist at least one student who is enrolled in a course.",
+      "C": "If a student is enrolled in a course, then they have access to study materials, and if a student doesn’t have a scholarship, then they don’t pay full tuition.",
+      "D": "If a student is enrolled in a course, then they have access to study materials, but if a student doesn’t have a scholarship, then they pay full tuition."
+    }
+  },
+  {
+    "id": "logic_0224_00",
+    "options": {
+      "A": "If a student is not studying, then they are not revising, and if a student is not understanding the material, then they are not revising.",
+      "B": "If a student is not studying, then they are not revising, but if a student is not understanding the material, then they are revising.",
+      "C": "If a student is not studying, then they are not revising, and if a student is revising, then they are taking an exam.",
+      "D": "If a student is not studying, then they are not revising, but if a student is revising, then they are not taking an exam."
+    }
+  },
+  {
+    "id": "logic_0225_00",
+    "options": {
+      "A": "If there exists at least one student who is studying, then there exists at least one student who is preparing for an exam, and if there exists at least one student who is preparing for an exam, then there exists at least one student who is studying.",
+      "B": "If there exists at least one student who is studying, then there exists at least one student who is preparing for an exam, but if there exists at least one student who is preparing for an exam, then there does not exist at least one student who is studying.",
+      "C": "If there exists at least one student who is studying, then there exists at least one student who is preparing for an exam, and every student is asking questions.",
+      "D": "If there exists at least one student who is studying, then there exists at least one student who is preparing for an exam, but not every student is asking questions."
+    }
+  },
+  {
+    "id": "logic_0226_00",
+    "options": {
+      "A": "If there exists at least one student who is revising, then if a student is revising, they are studying, and if a student is studying, then they are revising.",
+      "B": "If there exists at least one student who is revising, then if a student is revising, they are studying, but if a student is studying, then they are not revising.",
+      "C": "If there exists at least one student who is revising, then if a student is revising, they are studying, and every student is attending tutorials.",
+      "D": "If there exists at least one student who is revising, then if a student is revising, they are studying, but not every student is attending tutorials."
+    }
+  },
+  {
+    "id": "logic_0227_00",
+    "options": {
+      "A": "If a student is preparing for an exam, then they are asking questions, and if a student is not studying, then they are not attending tutorials.",
+      "B": "If a student is preparing for an exam, then they are asking questions, but if a student is not studying, then they are attending tutorials.",
+      "C": "If a student is preparing for an exam, then they are asking questions, and if a student is not revising, then they are not preparing for an exam.",
+      "D": "If a student is preparing for an exam, then they are asking questions, but if a student is not revising, then they are preparing for an exam."
+    }
+  },
+  {
+    "id": "logic_0228_00",
+    "options": {
+      "A": "If a student is preparing for an exam, then they are understanding the material, and every student is attending tutorials.",
+      "B": "If a student is preparing for an exam, then they are understanding the material, but not every student is attending tutorials.",
+      "C": "If a student is preparing for an exam, then they are understanding the material, and if a student is understanding the material, then they are revising.",
+      "D": "If a student is preparing for an exam, then they are understanding the material, but if a student is understanding the material, then they are not revising."
+    }
+  },
+  {
+    "id": "logic_0229_00",
+    "options": {
+      "A": "If there exists at least one student who is attending tutorials, then if a student is not asking questions, they are not attending tutorials, and every student is preparing for an exam.",
+      "B": "If there exists at least one student who is attending tutorials, then if a student is not asking questions, they are not attending tutorials, but not every student is preparing for an exam.",
+      "C": "If there exists at least one student who is attending tutorials, then if a student is not asking questions, they are not attending tutorials, and every student is understanding the material.",
+      "D": "If there exists at least one student who is attending tutorials, then if a student is not asking questions, they are not attending tutorials, but not every student is understanding the material."
+    }
+  },
+  {
+    "id": "logic_0230_00",
+    "options": {
+      "A": "If there exists at least one student who is asking questions, then if a student is not revising, they are not studying, and if a student is not revising, then they are not asking questions.",
+      "B": "If there exists at least one student who is asking questions, then if a student is not revising, they are not studying, but if a student is not revising, then they are asking questions.",
+      "C": "If there exists at least one student who is asking questions, then if a student is not revising, they are not studying, and if a student is asking questions, then they are revising.",
+      "D": "If there exists at least one student who is asking questions, then if a student is not revising, they are not studying, but if a student is asking questions, then they are not revising."
+    }
+  },
+  {
+    "id": "logic_0231_00",
+    "options": {
+      "A": "If a student is attending tutorials, then they are understanding the material, and there exists at least one student who is asking questions.",
+      "B": "If a student is attending tutorials, then they are understanding the material, but there does not exist at least one student who is asking questions.",
+      "C": "If a student is attending tutorials, then they are understanding the material, and every student is studying.",
+      "D": "If a student is attending tutorials, then they are understanding the material, but not every student is studying."
+    }
+  },
+  {
+    "id": "logic_0232_00",
+    "options": {
+      "A": "If there exists at least one student who is understanding the material, then if a student is attending tutorials, they are understanding the material, and every student is studying.",
+      "B": "If there exists at least one student who is understanding the material, then if a student is attending tutorials, they are understanding the material, but not every student is studying.",
+      "C": "If there exists at least one student who is understanding the material, then if a student is attending tutorials, they are understanding the material, and if a student is revising, then they are studying.",
+      "D": "If there exists at least one student who is understanding the material, then if a student is attending tutorials, they are understanding the material, but if a student is revising, then they are not studying."
+    }
+  },
+  {
+    "id": "logic_0233_00",
+    "options": {
+      "A": "All students are both revising and understanding the material.",
+      "B": "Some students are revising but not understanding the material.",
+      "C": "No students are revising or understanding the material.",
+      "D": "Understanding the material implies not revising."
+    }
+  },
+  {
+    "id": "logic_0234_00",
+    "options": {
+      "A": "If a student is not understanding the material, then they are not revising, and if a student is attending tutorials, then they are revising.",
+      "B": "If a student is not understanding the material, then they are not revising, but if a student is attending tutorials, then they are not revising.",
+      "C": "If a student is not understanding the material, then they are not revising, and every student is revising.",
+      "D": "If a student is not understanding the material, then they are not revising, but not every student is revising."
+    }
+  },
+  {
+    "id": "logic_0235_00",
+    "options": {
+      "A": "If a university student is revising, then they are preparing for an exam, and if a university student is studying, then they are understanding the material.",
+      "B": "If a university student is revising, then they are preparing for an exam, but if a university student is studying, then they are not understanding the material.",
+      "C": "If a university student is revising, then they are preparing for an exam, and if a university student is understanding the material, then they are asking questions.",
+      "D": "If a university student is revising, then they are preparing for an exam, but if a university student is understanding the material, then they are not asking questions."
+    }
+  },
+  {
+    "id": "logic_0236_00",
+    "options": {
+      "A": "If there exists at least one student who is revising, then every student is studying, and every student is attending tutorials.",
+      "B": "If there exists at least one student who is revising, then every student is studying, but not every student is attending tutorials.",
+      "C": "If there exists at least one student who is revising, then every student is studying, and if a student is not revising, then they are not asking questions.",
+      "D": "If there exists at least one student who is revising, then every student is studying, but if a student is not revising, then they are asking questions."
+    }
+  },
+  {
+    "id": "logic_0237_00",
+    "options": {
+      "A": "If a high school student is not proficient in algebra, then they will not ace calculus, and if a high school student studies math diligently, then they understand trigonometry.",
+      "B": "If a high school student is not proficient in algebra, then they will not ace calculus, but if a high school student studies math diligently, then they do not understand trigonometry.",
+      "C": "If a high school student is not proficient in algebra, then they will not ace calculus, and there exists at least one high school student who understands trigonometry.",
+      "D": "If a high school student is not proficient in algebra, then they will not ace calculus, but there does not exist at least one high school student who understands trigonometry."
+    }
+  },
+  {
+    "id": "logic_0238_00",
+    "options": {
+      "A": "Every high school student is studious, and if every high school student is studious, then every high school student upholds school values.",
+      "B": "Every high school student is studious, but if every high school student is studious, then every high school student does not uphold school values.",
+      "C": "Every high school student is studious, and every high school student participates in extracurricular activities.",
+      "D": "Every high school student is studious, but not every high school student participates in extracurricular activities."
+    }
+  },
+  {
+    "id": "logic_0239_00",
+    "options": {
+      "A": "If a high school student attends tutoring sessions, then they improve their grades, and every high school student is diligent.",
+      "B": "If a high school student attends tutoring sessions, then they improve their grades, but not every high school student is diligent.",
+      "C": "If a high school student attends tutoring sessions, then they improve their grades, and every high school student is inquisitive.",
+      "D": "If a high school student attends tutoring sessions, then they improve their grades, but not every high school student is inquisitive."
+    }
+  },
+  {
+    "id": "logic_0240_00",
+    "options": {
+      "A": "Some students meet professional teaching standards",
+      "B": "Some students do not possess basic teaching skills",
+      "C": "All students have completed the Educational Psychology course",
+      "D": "Some students are not enrolled in the Teacher Education program"
+    }
+  },
+  {
+    "id": "logic_0241_00",
+    "options": {
+      "A": "Some students have submitted a research proposal",
+      "B": "All students have passed the Research Methodology course",
+      "C": "Some students are not enrolled in a thesis-based program",
+      "D": "All students are eligible to apply for graduate scholarships"
+    }
+  },
+  {
+    "id": "logic_0242_00",
+    "options": {
+      "A": "Some online students have viewed at least one lecture video",
+      "B": "All online students have completed a module quiz",
+      "C": "Some online students have not logged into the platform",
+      "D": "All online students have submitted a course feedback form"
+    }
+  },
+  {
+    "id": "logic_0243_00",
+    "options": {
+      "A": "Some students are members of the student council",
+      "B": "All students complete all assignments on time",
+      "C": "Some students do not follow the classroom rules",
+      "D": "Some students do not receive positive participation marks"
+    }
+  },
+  {
+    "id": "logic_0244_00",
+    "options": {
+      "A": "Some students are eligible to take the end-of-term quiz",
+      "B": "All students are qualified for the academic achievement award",
+      "C": "Some students have not submitted all required assignments",
+      "D": "All students have volunteered in school activities"
+    }
+  },
+  {
+    "id": "logic_0245_00",
+    "options": {
+      "A": "All students have reviewed the course materials",
+      "B": "Some students have not participated actively in class",
+      "C": "Some students are not well-prepared for class discussions",
+      "D": "All students have joined a study group"
+    }
+  },
+  {
+    "id": "logic_0246_00",
+    "options": {
+      "A": "All participants have signed the liability waiver",
+      "B": "Some participants have not received the safety briefing",
+      "C": "Some participants are not equipped with proper outdoor gear",
+      "D": "All participants have not completed the registration form"
+    }
+  },
+  {
+    "id": "logic_0247_00",
+    "options": {
+      "A": "All students have been invited to the group",
+      "B": "Some students have not agreed to join a group",
+      "C": "Some students are not considered active group members",
+      "D": "All students have submitted the group contract"
+    }
+  },
+  {
+    "id": "logic_0248_00",
+    "options": {
+      "A": "All students meet the seminar's eligibility criteria",
+      "B": "Some students do not meet the seminar's eligibility criteria",
+      "C": "Some students have not submitted a complete seminar application",
+      "D": "Some students have not shown interest in the seminar"
+    }
+  },
+  {
+    "id": "logic_0249_00",
+    "options": {
+      "A": "All students have received a festival invitation",
+      "B": "Some students do not have access to festival activities",
+      "C": "Some students are not attending the university festival",
+      "D": "All students have not registered for the festival"
+    }
+  },
+  {
+    "id": "logic_0250_00",
+    "options": {
+      "A": "Some students are eligible for the scholarship",
+      "B": "All students have maintained a good academic standing",
+      "C": "Some students will not be shortlisted for an interview",
+      "D": "All students have submitted a scholarship application"
+    }
+  },
+  {
+    "id": "logic_0251_00",
+    "options": {
+      "A": "All students are officially granted permission to be absent",
+      "B": "Some students have not requested permission to be absent",
+      "C": "Some students are not granted permission to be absent",
+      "D": "All students provided a valid reason for absence"
+    }
+  },
+  {
+    "id": "logic_0252_00",
+    "options": {
+      "A": "Some students have formed a team",
+      "B": "All students have submitted a competition application",
+      "C": "Some students are not registered for the competition",
+      "D": "All students have shown interest in the competition"
+    }
+  },
+  {
+    "id": "logic_0253_00",
+    "options": {
+      "A": "All persons have been trained to recognize scams",
+      "B": "Some persons are vulnerable to scammers",
+      "C": "Some persons have not been trained to recognize scams",
+      "D": "All persons are vulnerable to scammers"
+    }
+  },
+  {
+    "id": "logic_0254_00",
+    "options": {
+      "A": "Some students gain more knowledge",
+      "B": "All students do not use online documents",
+      "C": "Some students do not gain more knowledge",
+      "D": "All students use online documents and do not gain knowledge"
+    }
+  },
+  {
+    "id": "logic_0255_00",
+    "options": {
+      "A": "Some students have received clearance from the academic office",
+      "B": "All students have not submitted the exam eligibility form",
+      "C": "Some students are not allowed to attend the final exam",
+      "D": "All students have confirmed their exam schedule"
+    }
+  },
+  {
+    "id": "logic_0256_00",
+    "options": {
+      "A": "Some students behaved suspiciously during the exam",
+      "B": "All students were caught using unauthorized materials",
+      "C": "Some students were not reported for cheating",
+      "D": "All students are summoned for a disciplinary hearing"
+    }
+  },
+  {
+    "id": "logic_0257_00",
+    "options": {
+      "A": "All students have improved their communication skills",
+      "B": "Some students did not participate in group projects",
+      "C": "All students have developed leadership abilities",
+      "D": "Some students have not attended soft skills workshops"
+    }
+  },
+  {
+    "id": "logic_0258_00",
+    "options": {
+      "A": "Some students have created a personal study-work schedule",
+      "B": "All students are employed part-time",
+      "C": "Some students do not maintain consistent academic performance",
+      "D": "All students report feeling balanced between work and study"
+    }
+  },
+  {
+    "id": "logic_0259_00",
+    "options": {
+      "A": "Some students have gained international experience",
+      "B": "All students have received support from the international office",
+      "C": "Some students are not ready to join the international community",
+      "D": "All students have applied for an exchange program"
+    }
+  },
+  {
+    "id": "logic_0260_00",
+    "options": {
+      "A": "∃x G(x)",
+      "B": "∀x ¬S(x)",
+      "C": "∀x ¬F(x)",
+      "D": "∀x A(x)"
+    }
+  },
+  {
+    "id": "logic_0261_00",
+    "options": {
+      "A": "¬∀x (R(x) → E(x))",
+      "B": "∀x (S(x) → C(x))",
+      "C": "∀x ¬S(x)",
+      "D": "∀x (E(x) → ¬R(x))"
+    }
+  },
+  {
+    "id": "logic_0262_00",
+    "options": {
+      "A": "∃x S(x)",
+      "B": "∀x ¬N(x)",
+      "C": "∀x ¬T(x)",
+      "D": "∃x I(x)"
+    }
+  },
+  {
+    "id": "logic_0263_00",
+    "options": {
+      "A": "∀x W(x)",
+      "B": "∀x (¬C(x) → ¬P(x))",
+      "C": "∀x (¬J(x) → ¬F(x))",
+      "D": "∀x (N(x) → K(x))"
+    }
+  },
+  {
+    "id": "logic_0264_00",
+    "options": {
+      "A": "∀x (S(x) → T(x))",
+      "B": "∀x (T(x) → S(x))",
+      "C": "¬∀x (S(x) → T(x))",
+      "D": "∀x (S(x) → ¬T(x))"
+    }
+  },
+  {
+    "id": "logic_0265_00",
+    "options": {
+      "A": "There exists a student who does not study regularly.",
+      "B": "There exists a student who does not qualify for a scholarship.",
+      "C": "All students attend training.",
+      "D": "No student understands the material."
+    }
+  },
+  {
+    "id": "logic_0266_00",
+    "options": {
+      "A": "There exists a student who does not receive a recommendation letter.",
+      "B": "There exists a student who does not pass the exam.",
+      "C": "All students attend tutoring sessions.",
+      "D": "All students do not study regularly."
+    }
+  },
+  {
+    "id": "logic_0267_00",
+    "options": {
+      "A": "There exists a student who does not receive a recommendation letter.",
+      "B": "There exists a student who does not attend tutoring sessions.",
+      "C": "All students pass the exam.",
+      "D": "All students do not study regularly."
+    }
+  },
+  {
+    "id": "logic_0268_00",
+    "options": {
+      "A": "There exists a student who does not receive an award.",
+      "B": "There exists a student who does not pass the exam.",
+      "C": "All students study regularly.",
+      "D": "There exists a student who does not attend tutoring sessions."
+    }
+  },
+  {
+    "id": "logic_0269_00",
+    "options": {
+      "A": "There exists a student who does not qualify for a scholarship.",
+      "B": "There exists a student who does not receive an award.",
+      "C": "All students pass the exam.",
+      "D": "There exists a student who does not study regularly."
+    }
+  },
+  {
+    "id": "logic_0270_00",
+    "options": {
+      "A": "There exists a student who does not understand the material.",
+      "B": "There exists a student who does not study regularly.",
+      "C": "All students complete assignments.",
+      "D": "There exists a student who does not pass the exam."
+    }
+  },
+  {
+    "id": "logic_0271_00",
+    "options": {
+      "A": "There exists a student who does not attend tutoring sessions.",
+      "B": "There exists a student who does not study regularly.",
+      "C": "All students qualify for a scholarship.",
+      "D": "There exists a student who does not pass the exam."
+    }
+  },
+  {
+    "id": "logic_0272_00",
+    "options": {
+      "A": "There exists a student who does not receive a recommendation letter.",
+      "B": "There exists a student who does not attend tutoring sessions.",
+      "C": "All students qualify for a scholarship.",
+      "D": "There exists a student who does not study regularly."
+    }
+  },
+  {
+    "id": "logic_0273_00",
+    "options": {
+      "A": "There exists a student who is not prepared.",
+      "B": "There exists a student who does not ask questions.",
+      "C": "All students attend university.",
+      "D": "There exists a student who does not study regularly."
+    }
+  },
+  {
+    "id": "logic_0274_00",
+    "options": {
+      "A": "There exists a student who does not study regularly.",
+      "B": "There exists a student who does not pass the exam.",
+      "C": "All students qualify for a scholarship.",
+      "D": "There exists a student who does not receive a recommendation letter."
+    }
+  },
+  {
+    "id": "logic_0275_00",
+    "options": {
+      "A": "If a broader understanding implies mentoring, then investing time in project-based learning implies a broader understanding.",
+      "B": "If a broader understanding implies mentoring, and we deny that implication, both remain true.",
+      "C": "It is impossible that a broader understanding implies mentoring leads to investing time in project-based learning implying a broader understanding.",
+      "D": "If a broader understanding implies mentoring, then investing time in project-based learning implies a broader understanding."
+    }
+  },
+  {
+    "id": "logic_0276_00",
+    "options": {
+      "A": "If a researcher writes a publication and provides novel insights, then if students enrolled in advanced courses excel, they will remain successful.",
+      "B": "It is not the case that researchers who write publications provide novel insights that sustain student excellence in advanced courses.",
+      "C": "If a researcher writes a publication, then the researcher provides novel insights, ensuring that students who excel continue to excel.",
+      "D": "If publishing a paper leads to providing novel insights, then publishing a paper leads to providing novel insights."
+    }
+  },
+  {
+    "id": "logic_0277_00",
+    "options": {
+      "A": "If studying regularly implies understanding course material, then there exists a student who passes the course.",
+      "B": "If studying regularly implies understanding course material and simultaneously it's not the case that studying regularly implies understanding course material, then there exists a student who passes the course.",
+      "C": "It is not the case that if studying regularly implies understanding course material, then there exists a student who passes the course.",
+      "D": "If it's true that studying regularly implying understanding course material implies the existence of a student who passes, then it's true that studying regularly implying understanding course material implies the existence of a student who passes."
+    }
+  },
+  {
+    "id": "logic_0278_00",
+    "options": {
+      "A": "It is not the case that if regular attendance implies understanding course material, then there exists a student qualified for graduation.",
+      "B": "If it's true that regular attendance implies understanding course material, then there exists at least one student who is qualified for graduation.",
+      "C": "If it's true that regular attendance implying understanding material implies the existence of qualified students, then it's true that regular attendance implying understanding material implies the existence of qualified students.",
+      "D": "It's simultaneously true and false that if regular attendance implies understanding course material, then there exists at least one student who is qualified for graduation."
+    }
+  },
+  {
+    "id": "logic_0279_00",
+    "options": {
+      "A": "It is not the case that if there is a specialized computer science learner, then an independent research project leads to an academic distinction.",
+      "B": "If having a specialized computer science learner implies an independent research project leads to an academic distinction, then having a specialized computer science learner implies an independent research project leads to an academic distinction.",
+      "C": "If having a specialized computer science learner implies an independent research project leads to an academic distinction, and it is also not the case, then both conditions hold simultaneously.",
+      "D": "If there is a specialized computer science learner, then an independent research project leads to an academic distinction."
+    }
+  },
+  {
+    "id": "logic_0280_00",
+    "options": {
+      "A": "If not attending lectures regularly results in not receiving top grades, then submitting all assignments on time leads to passing with distinction.",
+      "B": "It is not the case that if not attending lectures regularly results in not receiving top grades, then submitting all assignments on time leads to passing with distinction.",
+      "C": "Both the statement that 'not attending lectures regularly results in not receiving top grades implies submitting assignments on time leads to passing with distinction' and its negation are simultaneously true.",
+      "D": "The statement 'if not attending lectures regularly results in not receiving top grades, then submitting all assignments on time leads to passing with distinction' implies itself."
+    }
+  },
+  {
+    "id": "logic_0281_00",
+    "options": {
+      "A": "It is not the case that if there exists a research participant, then if the existence of research participants implies non-submitters don't receive honors, there must be a teaching assistant.",
+      "B": "If it's true that the existence of research participants implies that when research participants exist, non-submitters don't get honors leads to teaching assistants existing, then it's the same statement repeated again.",
+      "C": "Both the statement that if research participants exist then there being research participants implying non-submitters don't get honors leads to teaching assistants existing and its negation are simultaneously true.",
+      "D": "If there exists a research participant, then if the existence of research participants implies non-submitters don't receive honors, there must be a teaching assistant."
+    }
+  },
+  {
+    "id": "logic_0282_00",
+    "options": {
+      "A": "If contributing to open-source enhances portfolios implies that all bootcamp participants completing exercises develops coding skills implies itself.",
+      "B": "It is not the case that contributing to open-source projects enhancing portfolios means bootcamp participation develops coding skills.",
+      "C": "Both the statement about open-source contributions enhancing portfolios leading to bootcamp exercise completion developing coding skills and its negation are simultaneously true.",
+      "D": "If contributing to open-source projects enhances portfolios, then if all bootcamp participants complete daily exercises, this develops practical coding skills."
+    }
+  },
+  {
+    "id": "logic_0283_00",
+    "options": {
+      "A": "If all students submitting assignments implies that an educational technology lab existing means students participate in collaborative learning implies itself.",
+      "B": "Both the statement that all students submitting assignments means tech labs lead to collaborative learning and its negation are simultaneously true.",
+      "C": "If all students submit required assignments, then if there exists an educational technology laboratory, all students take part in collaborative learning activities.",
+      "D": "It is not the case that all students submitting assignments implies that tech labs lead to collaborative learning."
+    }
+  },
+  {
+    "id": "logic_0284_00",
+    "options": {
+      "A": "If qualifying for honors means participating in group projects, then if participating in projects means receiving feedback, all students participate in projects.",
+      "B": "The statement 'if qualifying for honors means participating in group projects, then if participating in projects means receiving feedback, all students participate in projects' implies itself.",
+      "C": "Both the statement 'if qualifying for honors means participating in group projects implies that participating in projects means receiving feedback leads to universal participation' and its negation are simultaneously true.",
+      "D": "It is not the case that qualifying for honors meaning participation in group projects implies that participation meaning feedback receipt leads to universal project participation."
+    }
+  },
+  {
+    "id": "logic_0285_00",
+    "options": {
+      "A": "Both the statement that all students qualifying for graduation implies all programs use digital resources and its negation are simultaneously true.",
+      "B": "It is not the case that all students qualifying for graduation implies all educational programs use digital resources.",
+      "C": "The statement that all students qualifying for graduation implies all programs use digital resources implies itself.",
+      "D": "If all students qualify for graduation, then all educational programs use digital resources."
+    }
+  },
+  {
+    "id": "logic_0286_00",
+    "options": {
+      "A": "The statement 'if software development skills implying professional application production implies regular coding practice leads to software development skills' implies itself.",
+      "B": "If having software development skills meaning capable of producing professional applications implies that regular coding practice leads to software skill, then the reverse implication also holds.",
+      "C": "It is not the case that software development skills implying professional application capability implies that coding practice leads to software development skills.",
+      "D": "Both the statement about software skills implying application capability leading to coding practice implying software skills and its negation are simultaneously true."
+    }
+  },
+  {
+    "id": "logic_0287_00",
+    "options": {
+      "A": "The statement 'if all students take required courses, then at least one student graduates on time' implies itself.",
+      "B": "It is not the case that all students taking required courses implies at least one student graduates on time.",
+      "C": "Both the statement that all students taking required courses implies someone graduates on time and its negation are simultaneously true.",
+      "D": "If all university students take required core curriculum courses, then there exists at least one student who graduates on time."
+    }
+  },
+  {
+    "id": "logic_0288_00",
+    "options": {
+      "A": "The necessary connection between native speaker engagement, immersion program completion, and conversational fluency is logically inconsistent.",
+      "B": "It is not the case that failure to engage with native speakers preventing immersion program completion implies completing immersion programs develops conversational fluency.",
+      "C": "If not engaging with native speakers prevents completing immersion programs, then completing immersion programs leads to achieving conversational fluency.",
+      "D": "Language students who engage with native speakers both do and do not achieve conversational fluency through immersion programs."
+    }
+  },
+  {
+    "id": "logic_0289_00",
+    "options": {
+      "A": "The statement that online resource utilization implying team project participation leads to universal online resource utilization implies itself.",
+      "B": "If it's true that the existence of a student utilizing online resources implies all students take part in team projects, then all students utilize online learning resources.",
+      "C": "Both the statement that students utilizing online resources implying team project participation leads to universal online resource utilization and its negation are simultaneously true.",
+      "D": "It is not the case that online resource utilization implying team project participation leads to universal online resource utilization."
+    }
+  },
+  {
+    "id": "logic_0290_00",
+    "options": {
+      "A": "It is not the case that thesis-incorporating programs being research-based implies the existence of students qualifying for honors distinction.",
+      "B": "If programs incorporating thesis requirements are research-based, then there exists a student who qualifies for honors distinction.",
+      "C": "Both the statement that thesis-requiring programs being research-based implies honors-qualifying students exist and its negation are simultaneously true.",
+      "D": "The statement that thesis-incorporating programs being research-based implies honors-qualifying students exist implies itself."
+    }
+  },
+  {
+    "id": "logic_0291_00",
+    "options": {
+      "A": "The given implication is self-implying.",
+      "B": "Both the statement and its negation are true.",
+      "C": "If not practicing with natives implies not completing immersion, then certification implies exchange qualification.",
+      "D": "The given implication is false."
+    }
+  },
+  {
+    "id": "logic_0292_00",
+    "options": {
+      "A": "At least one student can borrow library books",
+      "B": "Every student is enrolled in an advanced course",
+      "C": "Some students don’t pay tuition fees",
+      "D": "All students have finished their graduation requirements"
+    }
+  },
+  {
+    "id": "logic_0293_00",
+    "options": {
+      "A": "Excessive competition leads to stress and prioritizing grades.",
+      "B": "Excessive competition improves motivation and performance.",
+      "C": "Excessive competition has no impact on students.",
+      "D": "Excessive competition enhances deep understanding."
+    }
+  },
+  {
+    "id": "logic_0294_00",
+    "options": {
+      "A": "Some policies are effective.",
+      "B": "All policies are effective.",
+      "C": "No policies are effective.",
+      "D": "Effectiveness is unrelated to engagement."
+    }
+  },
+  {
+    "id": "logic_0295_00",
+    "options": {
+      "A": "Some teaching methods are effective.",
+      "B": "All teaching methods are effective.",
+      "C": "No teaching methods are effective.",
+      "D": "Effectiveness requires modern facilities."
+    }
+  },
+  {
+    "id": "logic_0296_00",
+    "options": {
+      "A": "Some students solve complex problems.",
+      "B": "All students solve complex problems.",
+      "C": "No students solve complex problems.",
+      "D": "Problem-solving depends on mock tests."
+    }
+  },
+  {
+    "id": "logic_0297_00",
+    "options": {
+      "A": "Some universities increase accessibility.",
+      "B": "All universities increase accessibility.",
+      "C": "No universities increase accessibility.",
+      "D": "Accessibility depends on research programs."
+    }
+  },
+  {
+    "id": "logic_0298_00",
+    "options": {
+      "A": "Some students improve academic performance.",
+      "B": "All students develop teamwork skills.",
+      "C": "No students are motivated.",
+      "D": "Students struggle with critical thinking."
+    }
+  },
+  {
+    "id": "logic_0299_00",
+    "options": {
+      "A": "Some students develop better problem-solving skills.",
+      "B": "All students lack engagement.",
+      "C": "No students improve cultural awareness.",
+      "D": "Students neglect creativity."
+    }
+  },
+  {
+    "id": "logic_0300_00",
+    "options": {
+      "A": "Some students enhance creativity.",
+      "B": "Some students improve reasoning.",
+      "C": "No students improve reasoning.",
+      "D": "Students struggle with progress tracking."
+    }
+  },
+  {
+    "id": "logic_0301_00",
+    "options": {
+      "A": "Some students handle workloads efficiently.",
+      "B": "All students struggle with critical thinking.",
+      "C": "No students achieve better outcomes.",
+      "D": "Some students improve academic performance."
+    }
+  },
+  {
+    "id": "logic_0302_00",
+    "options": {
+      "A": "Some students improve cognitive function.",
+      "B": "All students lack motivation.",
+      "C": "No students apply practical knowledge.",
+      "D": "Some students set better academic goals."
+    }
+  },
+  {
+    "id": "logic_0303_00",
+    "options": {
+      "A": "All students install the software.",
+      "B": "All students update the software.",
+      "C": "There exists a student with access to the latest features.",
+      "D": "All students’ software is secure."
+    }
+  },
+  {
+    "id": "logic_0304_00",
+    "options": {
+      "A": "There exists a student who is not enrolled.",
+      "B": "There exists a student who does not complete assignments.",
+      "C": "All students attend lectures.",
+      "D": "There exists a student who does not study consistently."
+    }
+  },
+  {
+    "id": "logic_0305_00",
+    "options": {
+      "A": "All books are available.",
+      "B": "There exists a book that is not cataloged.",
+      "C": "There exists a book that is returned.",
+      "D": "All books are borrowable."
+    }
+  },
+  {
+    "id": "logic_0306_00",
+    "options": {
+      "A": "There exists a student who has not mastered Calculus.",
+      "B": "There exists a student who does not practice exercises.",
+      "C": "All students attend lectures.",
+      "D": "There exists a student who does not perform well in exams."
+    }
+  },
+  {
+    "id": "logic_0307_00",
+    "options": {
+      "A": "There exists a student who does not pass the test.",
+      "B": "There exists a student who does not submit assignments.",
+      "C": "There exists a student who attends lectures.",
+      "D": "Every student completes the project."
+    }
+  },
+  {
+    "id": "logic_0308_00",
+    "options": {
+      "A": "Every student attends office hours.",
+      "B": "There exists a student with no good chance to pass the exam.",
+      "C": "There exists a student likely to pass the exam.",
+      "D": "Every student participates in a study group."
+    }
+  },
+  {
+    "id": "logic_0309_00",
+    "options": {
+      "A": "There exists a script without error handling.",
+      "B": "There exists a program that does not produce reliable outputs.",
+      "C": "All Python programs are optimized.",
+      "D": "There exists a program that does not follow best practices."
+    }
+  },
+  {
+    "id": "logic_0310_00",
+    "options": {
+      "A": "There exists a function that is not differentiable.",
+      "B": "There exists a function that satisfies the Intermediate Value Theorem.",
+      "C": "All functions are integrable.",
+      "D": "There exists a function that is not continuous."
+    }
+  },
+  {
+    "id": "logic_0311_00",
+    "options": {
+      "A": "There exists a student not attending the course.",
+      "B": "There exists a student who passes the course.",
+      "C": "All students attend lectures regularly.",
+      "D": "There exists a student not completing assignments."
+    }
+  },
+  {
+    "id": "logic_0312_00",
+    "options": {
+      "A": "Frieren is required to pay the tutor fee.",
+      "B": "Frieren must register for the BKA program due to her status as an OISP student.",
+      "C": "Frieren can choose to delay the tutor fee.",
+      "D": "Frieren must register for the BKA program."
+    }
+  },
+  {
+    "id": "logic_0313_00",
+    "options": {
+      "A": "Sarifi failed due to absence.",
+      "B": "Sarifi didn’t fail and wasn’t absent.",
+      "C": "Sarifi failed despite bringing a paper.",
+      "D": "Sarifi was absent but didn’t fail."
+    }
+  },
+  {
+    "id": "logic_0314_00",
+    "options": {
+      "A": "Mia lacked knowledge.",
+      "B": "Mia received help from others.",
+      "C": "Mia did well due to knowledge.",
+      "D": "Mia didn’t study hard."
+    }
+  },
+  {
+    "id": "logic_0315_00",
+    "options": {
+      "A": "Mia lacked knowledge but got help.",
+      "B": "Mia studied hard.",
+      "C": "Mia helped others.",
+      "D": "Mia did well without helping others."
+    }
+  },
+  {
+    "id": "logic_0316_00",
+    "options": {
+      "A": "Iruma completed a graduation project.",
+      "B": "Iruma gained enough labor days.",
+      "C": "Iruma’s graduation status is uncertain.",
+      "D": "Iruma is eligible for the graduation project."
+    }
+  },
+  {
+    "id": "logic_0317_00",
+    "options": {
+      "A": "Yashiro passed the course.",
+      "B": "Yashiro failed the course.",
+      "C": "Yashiro did not redo the assignment.",
+      "D": "It is uncertain whether Yashiro passed the course."
+    }
+  },
+  {
+    "id": "logic_0318_00",
+    "options": {
+      "A": "Ponko passed the final exam.",
+      "B": "Ponko failed due to low exam score.",
+      "C": "Ponko’s failure depends on quiz attendance.",
+      "D": "Ponko failed due to missing a class."
+    }
+  },
+  {
+    "id": "logic_0319_00",
+    "options": {
+      "A": "Dio is not hardworking.",
+      "B": "Dio did not gain knowledge.",
+      "C": "Dio read books.",
+      "D": "It is uncertain whether Dio read books."
+    }
+  },
+  {
+    "id": "logic_0320_00",
+    "options": {
+      "A": "Rillance skipped classes.",
+      "B": "Rillance stayed on the basketball team.",
+      "C": "Rillance scored high without attending.",
+      "D": "Rillance got external help."
+    }
+  },
+  {
+    "id": "logic_0321_00",
+    "options": {
+      "A": "No student develops skills.",
+      "B": "All students achieve success.",
+      "C": "Some student contributes to society.",
+      "D": "No student accesses education."
+    }
+  },
+  {
+    "id": "logic_0322_00",
+    "options": {
+      "A": "Ruri failed the assignment.",
+      "B": "Ruri did the assignment by herself.",
+      "C": "Ruri did not gain experience.",
+      "D": "It is uncertain whether Ruri did the assignment by herself."
+    }
+  },
+  {
+    "id": "logic_0323_00",
+    "options": {
+      "A": "They don’t learn.",
+      "B": "Some have motivation.",
+      "C": "They don’t improve.",
+      "D": "They lack experience."
+    }
+  },
+  {
+    "id": "logic_0324_00",
+    "options": {
+      "A": "Knowledge.",
+      "B": "No skills.",
+      "C": "Movies.",
+      "D": "Certificates."
+    }
+  },
+  {
+    "id": "logic_0325_00",
+    "options": {
+      "A": "Some like sports.",
+      "B": "All gain knowledge.",
+      "C": "None solve problems.",
+      "D": "Some skip education."
+    }
+  },
+  {
+    "id": "logic_0326_00",
+    "options": {
+      "A": "Overfitting captures noise.",
+      "B": "Clustering predicts outputs.",
+      "C": "Underfitting enhances generalization.",
+      "D": "Regression groups data."
+    }
+  },
+  {
+    "id": "logic_0327_00",
+    "options": {
+      "A": "Indexes speed up retrieval.",
+      "B": "DELETE adds records.",
+      "C": "PRIMARY KEY groups rows.",
+      "D": "INSERT sorts data."
+    }
+  },
+  {
+    "id": "logic_0328_00",
+    "options": {
+      "A": "If a student cannot apply concepts, they cannot engage in the learning process.",
+      "B": "If a student does not engage, they do not understand the core concepts.",
+      "C": "All students apply concepts.",
+      "D": "There exists a student who does not apply concepts but engages in the learning process."
+    }
+  },
+  {
+    "id": "logic_0329_00",
+    "options": {
+      "A": "∀x (U(x) → R(x))",
+      "B": "¬∀x (R(x) → U(x))",
+      "C": "∀x (Q(x) → R(x))",
+      "D": "¬∀x (U(x) → R(x))"
+    }
+  },
+  {
+    "id": "logic_0330_00",
+    "options": {
+      "A": "∀x (U(x) → S(x))",
+      "B": "¬∀x (U(x) → S(x))",
+      "C": "∀x (¬P(x) → ¬S(x))",
+      "D": "∀x (S(x) → ¬P(x))"
+    }
+  },
+  {
+    "id": "logic_0331_00",
+    "options": {
+      "A": "∀x (P(x) → S(x))",
+      "B": "¬∀x (P(x) → S(x))",
+      "C": "∀x (P(x) → ¬S(x))",
+      "D": "∀x (S(x) → ¬P(x))"
+    }
+  },
+  {
+    "id": "logic_0332_00",
+    "options": {
+      "A": "∀x (R(x) → S(x))",
+      "B": "¬∀x (R(x) → S(x))",
+      "C": "∀x (R(x) → ¬S(x))",
+      "D": "∀x (S(x) → ¬R(x))"
+    }
+  },
+  {
+    "id": "logic_0333_00",
+    "options": {
+      "A": "∀x (¬S(x) → (¬P(x) ∧ ¬A(x)))",
+      "B": "∀x (L(x) → ¬C(x))",
+      "C": "∀x (¬S(x) → V(x))",
+      "D": "∀x (¬(T(x) → V(x)))"
+    }
+  },
+  {
+    "id": "logic_0334_00",
+    "options": {
+      "A": "∀x (B(x) → P2(x))",
+      "B": "∀x (G(x) → ¬V(x))",
+      "C": "∀x (F(x) → ¬D(x))",
+      "D": "∀x (T2(x) → ¬L2(x))"
+    }
+  },
+  {
+    "id": "logic_0335_00",
+    "options": {
+      "A": "∀x ((B(x) ∧ A(x) ∧ (S(x) ∨ T(x))) → (R(x) ∧ L(x)))",
+      "B": "∀x ((R2(x) ∧ T3(x)) → B3(x))",
+      "C": "∀x ((I(x) ∧ O(x)) → K(x))",
+      "D": "∀x (¬V(x) → ¬U(x))"
+    }
+  },
+  {
+    "id": "logic_0336_00",
+    "options": {
+      "A": "If all students pass Philosophy, all are admitted to the Honors program.",
+      "B": "It is false that passing Philosophy guarantees Honors admission.",
+      "C": "The statement 'If all pass Philosophy, all join Honors' is tautologically true.",
+      "D": "The policy about Honors admission is contradictory."
+    }
+  },
+  {
+    "id": "logic_0337_00",
+    "options": {
+      "A": "The policy linking Thesis and Scholarships is contradictory.",
+      "B": "The policy is both true and false.",
+      "C": "The policy 'No Thesis → No Philosophy' implies 'Thesis → Scholarship'.",
+      "D": "The policy is a tautology."
+    }
+  },
+  {
+    "id": "logic_0338_00",
+    "options": {
+      "A": "'Mandatory Thesis implies Research grants' is a tautology.",
+      "B": "The policy is contradictory.",
+      "C": "Mandatory Thesis completion ensures at least one Research grant.",
+      "D": "The policy is both true and false."
+    }
+  },
+  {
+    "id": "logic_0339_00",
+    "options": {
+      "A": "Research grant availability ensuring universal housing.",
+      "B": "The housing policy is contradictory.",
+      "C": "The policy is a tautology.",
+      "D": "Research grants do not guarantee housing."
+    }
+  },
+  {
+    "id": "logic_0340_00",
+    "options": {
+      "A": "Philosophy enabling Quantum enrollment ensures some students get Research grants.",
+      "B": "The Research grant policy is contradictory.",
+      "C": "The policy is a tautology.",
+      "D": "Philosophy and Quantum enrollment are unrelated to grants."
+    }
+  },
+  {
+    "id": "logic_0341_00",
+    "options": {
+      "A": "The Thesis-Research rule is a tautology.",
+      "B": "The policy is contradictory.",
+      "C": "The rule 'No Research → No Thesis' ensures Thesis completion.",
+      "D": "The rule is both true and false."
+    }
+  },
+  {
+    "id": "logic_0342_00",
+    "options": {
+      "A": "The Research-Thesis policy is contradictory.",
+      "B": "The Research-Thesis rule enforces Philosophy-Research compliance.",
+      "C": "The policy is both true and false.",
+      "D": "The rule is a tautology."
+    }
+  },
+  {
+    "id": "logic_0343_00",
+    "options": {
+      "A": "The housing-Scholarship policy is contradictory.",
+      "B": "Universal housing ensures Scholarship-Thesis compliance under Quantum enrollment.",
+      "C": "The policy is a tautology.",
+      "D": "Housing and Quantum enrollment are unrelated."
+    }
+  },
+  {
+    "id": "logic_0344_00",
+    "options": {
+      "A": "Thesis existence doesn't affect research rules.",
+      "B": "Policy contradiction exists.",
+      "C": "Thesis submissions activate research-quantum link.",
+      "D": "The rule is tautological."
+    }
+  },
+  {
+    "id": "logic_0345_00",
+    "options": {
+      "A": "Universal advisor approval → (No enrollment → No registration)",
+      "B": "Policy contradiction exists",
+      "C": "Tautological redundancy",
+      "D": "Logical inconsistency"
+    }
+  },
+  {
+    "id": "logic_0346_00",
+    "options": {
+      "A": "¬((¬P(x) → ¬R(x)) → (U(x) → P(x)))",
+      "B": "((¬P(x) → ¬R(x)) → (U(x) → P(x)))",
+      "C": "(((¬P(x) → ¬R(x)) → (U(x) → P(x))) ∧ ¬((¬P(x) → ¬R(x)) → (U(x) → P(x))))",
+      "D": "(((¬P(x) → ¬R(x)) → (U(x) → P(x))) → ((¬P(x) → ¬R(x)) → (U(x) → P(x))))"
+    }
+  },
+  {
+    "id": "logic_0347_00",
+    "options": {
+      "A": "The policy is tautological.",
+      "B": "Philosophy-dorm rules contradict proposals.",
+      "C": "Philosophy failures → Advanced seminar seats.",
+      "D": "The system is inconsistent."
+    }
+  },
+  {
+    "id": "logic_0348_00",
+    "options": {
+      "A": "It is not true that if an object having property T implies it has property Q then all objects have property T.",
+      "B": "If it is true that if an object having property T implies it has property Q then all objects have property T, then it is indeed true that if an object having property T implies it has property Q then all objects have property T.",
+      "C": "It is both true and not true that if an object having property T implies it has property Q then all objects have property T.",
+      "D": "If an object having property T implies it has property Q then all objects have property T."
+    }
+  },
+  {
+    "id": "logic_0349_00",
+    "options": {
+      "A": "Denial of Quantum-Research link.",
+      "B": "Contradictory policies.",
+      "C": "Quantum students → Research requires Philosophy.",
+      "D": "Tautological redundancy."
+    }
+  },
+  {
+    "id": "logic_0350_00",
+    "options": {
+      "A": "It is not the case that if there exists an object with property U then if an object lacks property S it does not have property P.",
+      "B": "If it is true that if there exists an object with property U then if an object lacks property S it does not have property P, then it is indeed true that if there exists an object with property U then if an object lacks property S it does not have property P.",
+      "C": "If there exists an object with property U then if an object lacks property S it does not have property P.",
+      "D": "It is both true and not true that if there exists an object with property U then if an object lacks property S it does not have property P."
+    }
+  },
+  {
+    "id": "logic_0351_00",
+    "options": {
+      "A": "If there exists at least one object with property R, then every object has property P.",
+      "B": "It is not true that if there exists at least one object with property R then every object has property P.",
+      "C": "It is both true and not true that if there exists at least one object with property R then every object has property P.",
+      "D": "If it is true that if there exists at least one object with property R then every object has property P, then if there exists at least one object with property R every object has property P."
+    }
+  },
+  {
+    "id": "logic_0352_00",
+    "options": {
+      "A": "Tautological redundancy.",
+      "B": "Philosophy failures → Research-dormitory link.",
+      "C": "Contradictory rules.",
+      "D": "Logical inconsistency."
+    }
+  },
+  {
+    "id": "logic_0353_00",
+    "options": {
+      "A": "Exam-Research rule → Quantum policy activation.",
+      "B": "Contradiction in rules.",
+      "C": "Tautological redundancy.",
+      "D": "Policy denial."
+    }
+  },
+  {
+    "id": "logic_0354_00",
+    "options": {
+      "A": "It is not true that if an object having property U implies it has property T then every object has property P.",
+      "B": "If it is true that if an object having property U implies it has property T then every object has property P, then every object has property P.",
+      "C": "It is both true and not true that if an object having property U implies it has property T then every object has property P.",
+      "D": "If it is true that if an object having property U implies it has property T then every object has property P, then it is indeed true that if an object having property U implies it has property T then every object has property P."
+    }
+  },
+  {
+    "id": "logic_0355_00",
+    "options": {
+      "A": "It is not true that if participating in extracurricular activities helps students develop social skills, then understanding the material will help them perform well in exams.",
+      "B": "Both the statement 'if participating in extracurricular activities helps students develop social skills, then understanding the material will help them perform well in exams' and its negation are true.",
+      "C": "If participating in extracurricular activities helps students develop social skills, then understanding the material will not help them perform well in exams.",
+      "D": "If participating in extracurricular activities helps students develop social skills, then understanding the material will help them perform well in exams."
+    }
+  },
+  {
+    "id": "logic_0355_01",
+    "options": {
+      "A": "Attending classes regularly, participating in extracurricular activities.",
+      "B": "Developing social skills, pursuing interests.",
+      "C": "Accessing quality education, understanding material.",
+      "D": "Participating in extracurricular activities, pursuing interests."
+    }
+  },
+  {
+    "id": "logic_0356_00",
+    "options": {
+      "A": "It is both true and false that if there exists at least one student who has completed the Thesis Writing course, then all students are enrolled in Research Methods.",
+      "B": "It is false that if there exists at least one student who has completed the Thesis Writing course, then all students are enrolled in Research Methods.",
+      "C": "If there exists at least one student who has completed the Thesis Writing course, then all students are enrolled in Research Methods.",
+      "D": "If there exists at least one student who has completed the Thesis Writing course, then all students can't enroll in Research Methods."
+    }
+  },
+  {
+    "id": "logic_0357_00",
+    "options": {
+      "A": "If a student doesn't complete the Thesis Writing course, then all students are enrolled in Research Methods.",
+      "B": "If a student completes the Thesis Writing course, then all students are enrolled in Research Methods.",
+      "C": "It is false that if a student completes the Thesis Writing course, then all students are enrolled in Research Methods.",
+      "D": "It is both true and false that if a student completes the Thesis Writing course, then all students are enrolled in Research Methods."
+    }
+  },
+  {
+    "id": "logic_0358_00",
+    "options": {
+      "A": "It is false that if all students have access to online learning resources, then they are all enrolled in at least one online course.",
+      "B": "If all students have not access to online learning resources, then they are all enrolled in at least one online course, and this statement is true.",
+      "C": "If all students have access to online learning resources, then they are all enrolled in at least one online course.",
+      "D": "It is both true and false that if all students have access to online learning resources, then they are all enrolled in at least one online course."
+    }
+  },
+  {
+    "id": "logic_0359_00",
+    "options": {
+      "A": "Studying less than 10 hours.",
+      "B": "Failing to gain knowledge.",
+      "C": "Studying 15 hours or completing a project.",
+      "D": "Taking an assessment."
+    }
+  },
+  {
+    "id": "logic_0360_00",
+    "options": {
+      "A": "No, he lacks enrollment.",
+      "B": "Yes.",
+      "C": "No, he failed Linear Algebra.",
+      "D": "Only if he takes another prerequisite."
+    }
+  },
+  {
+    "id": "logic_0361_00",
+    "options": {
+      "A": "No, insufficient credits.",
+      "B": "Yes.",
+      "C": "No, low GPA.",
+      "D": "Only with special approval."
+    }
+  },
+  {
+    "id": "logic_0362_00",
+    "options": {
+      "A": "Yes, he has five A grades.",
+      "B": "No.",
+      "C": "Only with A+ grades.",
+      "D": "Only if friends understand."
+    }
+  },
+  {
+    "id": "logic_0363_00",
+    "options": {
+      "A": "Yes, all mastered the subject.",
+      "B": "Uncertain.",
+      "C": "No, only some earn A+.",
+      "D": "Only if they explain it."
+    }
+  },
+  {
+    "id": "logic_0364_00",
+    "options": {
+      "A": "If a student wants to understand the lesson, then there exists at least one student who listens to the teacher's instructions.",
+      "B": "It is both true and false that if a student wants to understand the lesson, then there exists at least one student who does extra exercises at home.",
+      "C": "It is false that if a student wants to understand the lesson, then there exists at least one student who does extra exercises at home.",
+      "D": "If a student wants to understand the lesson, then there exists at least one student who does extra exercises at home."
+    }
+  },
+  {
+    "id": "logic_0365_01",
+    "options": {
+      "A": "Failing Algorithms, not completing Capstone Project.",
+      "B": "Not enrolled in Data Structures, failing Algorithms.",
+      "C": "Not completing Programming Fundamentals, not completing Capstone Project.",
+      "D": "Failing Software Engineering, failing Algorithms."
+    }
+  },
+  {
+    "id": "logic_0366_00",
+    "options": {
+      "A": "If fairness leads to trustworthiness, then transparency implies auditability.",
+      "B": "It is false that if fairness leads to trustworthiness, then transparency implies auditability.",
+      "C": "It is both true and false that if fairness leads to trustworthiness, then transparency implies auditability.",
+      "D": "Not all AI systems are trustworthy."
+    }
+  },
+  {
+    "id": "logic_0367_01",
+    "options": {
+      "A": "Programming Fundamentals, Mathematics for Computer Science.",
+      "B": "Advanced Programming, Programming Fundamentals.",
+      "C": "Mathematics for Computer Science, Advanced Programming.",
+      "D": "Programming Fundamentals, Advanced Programming, Mathematics for Computer Science."
+    }
+  },
+  {
+    "id": "logic_0368_01",
+    "options": {
+      "A": "Meeting the standard, completing the assignment, receiving a passing grade.",
+      "B": "Meeting the standard, attending the course, receiving a passing grade.",
+      "C": "Completing the assignment, assessment process, attending the course.",
+      "D": "Receiving a passing grade, meeting the standard, completing training."
+    }
+  },
+  {
+    "id": "logic_0369_00",
+    "options": {
+      "A": "∀x (R(x) → (H(x) ∧ W(x)))",
+      "B": "∀x (P(x) → ¬W(x))",
+      "C": "∀x (R(x) → ¬H(x))",
+      "D": "∀x (¬P(x) → (H(x) ∧ ¬S(x)))"
+    }
+  },
+  {
+    "id": "logic_0370_00",
+    "options": {
+      "A": "∀x (L(x) → (C(x) ∧ P(x) ∧ G(x)))",
+      "B": "∀x (L(x) → ¬G(x))",
+      "C": "∀x (S(x) → ¬L(x))",
+      "D": "∀x (K(x) → ¬E(x))"
+    }
+  },
+  {
+    "id": "logic_0371_00",
+    "options": {
+      "A": "∀x (S(x) ∧ A(x) → F(x))",
+      "B": "¬K(John)",
+      "C": "∀x (M(x) > 0 → ¬K(x))",
+      "D": "A(Sarah)"
+    }
+  },
+  {
+    "id": "logic_0372_00",
+    "options": {
+      "A": "∀x (O(x) → ¬B(x))",
+      "B": "B(An)",
+      "C": "¬F(An)",
+      "D": "¬O(An)"
+    }
+  },
+  {
+    "id": "logic_0373_00",
+    "options": {
+      "A": "∀x (P(x) → (A(x) ∧ T(x)))",
+      "B": "∀x (P(x) → ¬A(x))",
+      "C": "¬∀x P(x)",
+      "D": "∀x (E(x) → ¬T(x))"
+    }
+  },
+  {
+    "id": "logic_0374_00",
+    "options": {
+      "A": "∀x (¬A(x) → (¬R(x) ∧ ¬P(x)))",
+      "B": "∃x (¬A(x) ∧ F(x))",
+      "C": "∀x (A(x) → ¬R(x))",
+      "D": "∀x (¬S(x) → F(x))"
+    }
+  },
+  {
+    "id": "logic_0375_00",
+    "options": {
+      "A": "∀x (P(x) → E(x))",
+      "B": "∀x (F(x) → ¬E(x))",
+      "C": "∃x (¬R(x) ∧ J(x))",
+      "D": "∀x (¬P(x) → A(x))"
+    }
+  },
+  {
+    "id": "logic_0376_00",
+    "options": {
+      "A": "Kelvin is allowed to take the exam for CH3002.",
+      "B": "Liam is allowed to take the exam for CH3002.",
+      "C": "Kelvin must submit a project for CH3002.",
+      "D": "Kelvin’s Homework score in CH3001 affects his eligibility for CH3002’s exam."
+    }
+  },
+  {
+    "id": "logic_0377_00",
+    "options": {
+      "A": "Lan is allowed to enter the laboratory for Chemistry 101.",
+      "B": "Lan is not allowed to enter the laboratory for Chemistry 101.",
+      "C": "Kai is allowed to enter the laboratory for Chemistry 101.",
+      "D": "Lan must reserve lab equipment for Chemistry 101."
+    }
+  },
+  {
+    "id": "logic_0378_00",
+    "options": {
+      "A": "Linh is not meeting the credit requirements for full-time students.",
+      "B": "Linh is meeting the credit requirements for full-time students.",
+      "C": "Linh needs to take more than 12 credits to meet the credit requirements.",
+      "D": "Linh is a part-time student."
+    }
+  },
+  {
+    "id": "logic_0379_00",
+    "options": {
+      "A": "Hà is eligible for an internship because she has accumulated 80 credits.",
+      "B": "Hà is not eligible for an internship due to insufficient credits.",
+      "C": "Hà must take remedial courses before applying for the internship.",
+      "D": "Hà’s internship application was submitted after June 1st."
+    }
+  },
+  {
+    "id": "logic_0380_00",
+    "options": {
+      "A": "Phong has an Excellent ranking.",
+      "B": "Phong has a Good ranking.",
+      "C": "Phong has an Average ranking.",
+      "D": "Phong is ranked Poor."
+    }
+  },
+  {
+    "id": "logic_0381_00",
+    "options": {
+      "A": "Tâm is a second-year student.",
+      "B": "Tâm is in an accelerated program.",
+      "C": "Nam meets the language standard for year two.",
+      "D": "Tâm is eligible for the mentorship program."
+    }
+  },
+  {
+    "id": "logic_0382_00",
+    "options": {
+      "A": "Phong is a third-year student.",
+      "B": "Phong has not met the foreign language standard for year three.",
+      "C": "Lan is eligible for study abroad.",
+      "D": "Phong has not completed the capstone project."
+    }
+  },
+  {
+    "id": "logic_0383_00",
+    "options": {
+      "A": "If students work in groups, then their performance improves.",
+      "B": "If students work in groups, then their performance does not improve.",
+      "C": "Students working in groups neither gain nor lose performance.",
+      "D": "None of the above can be concluded."
+    }
+  },
+  {
+    "id": "logic_0384_00",
+    "options": {
+      "A": "It is not true that if every teacher is respected, then someone is prepared.",
+      "B": "Teachers are respected if they graduate from famous universities.",
+      "C": "All teachers are disrespected.",
+      "D": "If every teacher is respected, then someone must be prepared."
+    }
+  },
+  {
+    "id": "logic_0385_00",
+    "options": {
+      "A": "It is not true that If a student attends the seminar, they will be eligible for the certification.",
+      "B": "It is both true and false that If a student attends the seminar, they will be eligible for the certification.",
+      "C": "If a student attends the seminar, they will be eligible for the certification.",
+      "D": "If a student attends the seminar, they won't be eligible for the certification."
+    }
+  },
+  {
+    "id": "logic_0386_00",
+    "options": {
+      "A": "All students have attended the Software Engineering workshop.",
+      "B": "It is not true that All students have attended the Software Engineering workshop.",
+      "C": "It is both true and false that All students have attended the Software Engineering workshop.",
+      "D": "There are 2 students who have not attended the Software Engineering workshop."
+    }
+  },
+  {
+    "id": "logic_0387_00",
+    "options": {
+      "A": "If the implication from completing the Data Science course to being eligible for the Machine Learning course is valid, then completing the Data Science course leads to passing the Data Analytics exam.",
+      "B": "The negation of that implication.",
+      "C": "Both the implication and its negation are assumed true, which is a contradiction.",
+      "D": "The implication is assumed true and false at the same time."
+    }
+  },
+  {
+    "id": "logic_0388_00",
+    "options": {
+      "A": "All students in the AI program can build trustworthy systems.",
+      "B": "Some students who study AI ethics cannot build trustworthy systems.",
+      "C": "Following ethical guidelines ensures trustworthy systems.",
+      "D": "Studying AI ethics is optional for AI program students."
+    }
+  },
+  {
+    "id": "logic_0389_00",
+    "options": {
+      "A": "It is a tautology that completing the prerequisite course implies eligibility for the advanced courses.",
+      "B": "Completing the prerequisite course implies eligibility for advanced courses.",
+      "C": "If completing the prerequisite course implies eligibility for advanced courses and its negation holds, then there is a contradiction.",
+      "D": "It is not true that completing the prerequisite course implies eligibility for the advanced courses."
+    }
+  },
+  {
+    "id": "logic_0390_01",
+    "options": {
+      "A": "Participating in research, taking thesis course, being registered, receiving scholarship.",
+      "B": "Participating in research, being registered, honors program.",
+      "C": "Taking thesis course, receiving scholarship, honors program.",
+      "D": "Participating in research, taking thesis course, honors program."
+    }
+  },
+  {
+    "id": "logic_0391_01",
+    "options": {
+      "A": "Problem-solving, communication, critical thinking, teamwork, research skills.",
+      "B": "Problem-solving, communication, completing capstone project.",
+      "C": "Critical thinking, teamwork, research skills.",
+      "D": "Communication, critical thinking, completing capstone project."
+    }
+  },
+  {
+    "id": "logic_0392_01",
+    "options": {
+      "A": "Theoretical knowledge, presentation skills, writing thesis, receiving certificate.",
+      "B": "Completing final project, writing thesis, practical experience.",
+      "C": "Presentation skills, receiving certificate, practical experience.",
+      "D": "Theoretical knowledge, completing final project, presentation skills."
+    }
+  },
+  {
+    "id": "logic_0393_01",
+    "options": {
+      "A": "Good performance, high attendance, submitting thesis, submitting assignments.",
+      "B": "Good performance, submitting thesis, receiving feedback.",
+      "C": "High attendance, submitting assignments, receiving feedback.",
+      "D": "Passing course, good performance, submitting thesis."
+    }
+  },
+  {
+    "id": "logic_0394_01",
+    "options": {
+      "A": "Completing training module, participating in project, giving seminar, earning certification.",
+      "B": "Completing training module, writing paper, giving seminar.",
+      "C": "Participating in project, earning certification, writing paper.",
+      "D": "Completing training module, giving seminar, receiving recommendation."
+    }
+  },
+  {
+    "id": "logic_0395_01",
+    "options": {
+      "A": "Completing training module, participating in project, giving seminar, earning certification.",
+      "B": "Completing training module, writing paper, giving seminar.",
+      "C": "Participating in project, earning certification, writing paper.",
+      "D": "Completing training module, giving seminar, receiving recommendation."
+    }
+  },
+  {
+    "id": "logic_0396_01",
+    "options": {
+      "A": "Attending university, taking exam, submitting assignment, passing course, qualifying for graduation.",
+      "B": "Attending university, submitting assignment, completing research project.",
+      "C": "Taking exam, passing course, completing research project.",
+      "D": "Submitting assignment, qualifying for graduation, completing research project."
+    }
+  },
+  {
+    "id": "logic_0397_01",
+    "options": {
+      "A": "GPA ≥ 3.7, eligible for scholarship, submitted personal statement, participated in extracurricular activities, submitted recommendation letter.",
+      "B": "GPA ≥ 3.7, submitted personal statement, participated in extracurricular activities, published research paper.",
+      "C": "Eligible for scholarship, submitted personal statement, submitted recommendation letter, published research paper.",
+      "D": "GPA ≥ 3.7, eligible for scholarship, participated in extracurricular activities, strong academic commitment."
+    }
+  },
+  {
+    "id": "logic_0398_01",
+    "options": {
+      "A": "Completing training session, submitting research proposal, presenting at seminar, meeting qualification criteria.",
+      "B": "Completing training session, submitting research proposal, enrolling in research program.",
+      "C": "Submitting research proposal, presenting at seminar, meeting qualification criteria.",
+      "D": "Completing training session, presenting at seminar, enrolling in research program."
+    }
+  },
+  {
+    "id": "logic_0399_01",
+    "options": {
+      "A": "Writing a motivation letter, participating in the exchange program, having a high TOEFL score.",
+      "B": "Writing a motivation letter, participating in the exchange program, applying for exchange.",
+      "C": "Having a high TOEFL score, receiving a scholarship, writing a motivation letter.",
+      "D": "Participating in the exchange program, having a high TOEFL score, receiving a scholarship."
+    }
+  },
+  {
+    "id": "logic_0400_01",
+    "options": {
+      "A": "In dual degree program, GPA of 3.5 or higher, completing capstone project, completing thesis, qualifying for second degree.",
+      "B": "In dual degree program, completing capstone project, completing thesis, participating in leadership activities.",
+      "C": "Completing capstone project, completing thesis, qualifying for second degree, eligible for exchange.",
+      "D": "In dual degree program, GPA of 3.5 or higher, completing thesis, eligible for exchange."
+    }
+  },
+  {
+    "id": "logic_0401_01",
+    "options": {
+      "A": "Enrolling in an online course, accessing LMS, attending live sessions, viewing lecture recordings.",
+      "B": "Enrolling in an online course, accessing LMS, attending live sessions, joining discussion forums.",
+      "C": "Enrolling in an online course, viewing lecture recordings, joining discussion forums.",
+      "D": "Accessing LMS, attending live sessions, submitting final assignments."
+    }
+  },
+  {
+    "id": "logic_0402_01",
+    "options": {
+      "A": "Completed foundational course, eligible for advanced coursework, submitted thesis, passed public speaking module, but not academic communication skills.",
+      "B": "Completed foundational course, eligible for advanced coursework, submitted thesis, academic communication skills, passed public speaking module.",
+      "C": "Completed foundational course, submitted thesis, academic communication skills, but not eligible for advanced coursework.",
+      "D": "Eligible for advanced coursework, academic communication skills, passed public speaking module, but not completed foundational course."
+    }
+  },
+  {
+    "id": "logic_0403_00",
+    "options": {
+      "A": "It is not true that if missing the deadline prevents course registration, then all students submitted their registration requests.",
+      "B": "If the statement that missing the deadline prevents registration implies all students submitted registration requests, then that implication holds.",
+      "C": "If missing the deadline prevents registering for courses, then all students submitted their registration requests.",
+      "D": "The statement that missing the deadline prevents registration implies all students submitted registration requests is both true and false."
+    }
+  },
+  {
+    "id": "logic_0404_00",
+    "options": {
+      "A": "If the existence of a student allowed to enroll implies that passing Classical Mechanics allows taking Data Structures, then that same implication holds.",
+      "B": "It is not true that if some student is allowed to enroll, then passing Classical Mechanics allows taking Data Structures.",
+      "C": "If some student is allowed to enroll, then passing Classical Mechanics implies they can take Data Structures.",
+      "D": "The statement that if some student is allowed to enroll, then passing Classical Mechanics implies they can take Data Structures is both true and false."
+    }
+  },
+  {
+    "id": "logic_0405_00",
+    "options": {
+      "A": "∀x (F(x) → (W(x) ∧ R(x)))",
+      "B": "∀x (¬F(x) → W(x))",
+      "C": "∃x (¬A(x) ∧ W(x))",
+      "D": "∀x (R(x) → ¬G(x))"
+    }
+  },
+  {
+    "id": "logic_0406_00",
+    "options": {
+      "A": "∀x (A(x) → (R(x) ∧ P(x)))",
+      "B": "∀x (¬A(x) → R(x))",
+      "C": "∃x (¬R(x) ∧ P(x))",
+      "D": "∀x (S(x) → ¬P(x))"
+    }
+  },
+  {
+    "id": "logic_0407_00",
+    "options": {
+      "A": "∀x (E(x) → (A(x) ∧ N(x)))",
+      "B": "∃x (¬F(x) ∧ L(x))",
+      "C": "∀x (¬S(x) → A(x))",
+      "D": "∀x (N(x) → ¬E(x))"
+    }
+  },
+  {
+    "id": "logic_0408_00",
+    "options": {
+      "A": "∀x (H(x) → (E(x) ∧ A(x)))",
+      "B": "∃x (¬E(x) ∧ H(x))",
+      "C": "∀x (¬G(x) → A(x))",
+      "D": "∀x (P(x) → ¬I(x))"
+    }
+  },
+  {
+    "id": "logic_0409_00",
+    "options": {
+      "A": "∀x (C(x) → (U(x) ∧ W(x)))",
+      "B": "∃x (¬T(x) ∧ S(x))",
+      "C": "∀x (¬F(x) → W(x))",
+      "D": "∀x (S(x) → ¬U(x))"
+    }
+  },
+  {
+    "id": "logic_0410_00",
+    "options": {
+      "A": "∀x (G(x) → (S(x) ∧ C(x)))",
+      "B": "∃x (¬O(x) ∧ R(x))",
+      "C": "∀x (¬B(x) → C(x))",
+      "D": "∀x (R(x) → ¬G(x))"
+    }
+  }
+]

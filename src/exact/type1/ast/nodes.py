@@ -49,6 +49,7 @@ class QuantifiedNode:
     quantifier: Literal["FORALL", "EXISTS"]
     variable: str
     body: FOLNode
+    restrictor: FOLNode | None = None
 
     @property
     def scope(self) -> FOLNode:
