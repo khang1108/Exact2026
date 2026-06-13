@@ -97,9 +97,14 @@ class FOLParser:
         return AtomicNode(predicate=Predicate(name=name, arg_sorts=[], aliases=[]), arguments=[])
 
     async def _rephrase_if_quantified(self, sentence: str) -> str:
-        """Rephrase a sentence to IF-THEN if it is not already logical."""
-        if fast_classify(sentence) == "logical":
+        """Rephrase a quantified/necessity sentence to IF-THEN; return others unchanged."""
+        c = fast_classify(sentence)
+        if c == "logical":
             return sentence
+        if c == "atomic":
+            lowered = sentence.lower()
+            if not any(word in lowered for word in ("need", "require", "necessary", "must")):
+                return sentence
         try:
             rephrased = await self.rephrase(sentence)
         except Exception:
