@@ -98,6 +98,15 @@ class ParsePremisesResponse(AppBaseModel):
     premises: list[ParsedPremise]
 
 
+class ParserResponse(AppBaseModel):
+    """Full parse result from the /parser endpoint."""
+
+    premises: list[ParsedPremise]
+    verified: bool
+    issues: list[str]
+    renames: list[dict[str, Any]]
+
+
 class PredictionResponse(AppBaseModel):
     """Competition-facing prediction plus local metadata for debugging."""
 

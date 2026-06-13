@@ -6,6 +6,7 @@ from exact.common.schemas import (
     ParsePremisesRequest,
     ParsePremisesResponse,
     ParsedPremise,
+    ParserResponse,
     PredictionRequest,
     PredictionResponse,
     TaskType,
@@ -45,6 +46,31 @@ async def z3_predict(payload: PredictionRequest, request: Request) -> Prediction
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
     return await run_type1_pipeline(payload, premise_parser, solver)
+
+
+@api_router.post("/parser", response_model=ParserResponse)
+async def parser(payload: ParsePremisesRequest, request: Request) -> ParserResponse:
+    """Translate NL premises to FOL; returns ASTs, verification status, and schema renames."""
+    premise_parser = getattr(request.app.state, "type1_premise_parser", None)
+    if premise_parser is None:
+        raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
+
+    bundle = await premise_parser.parse_premises(payload.premises)
+
+    return ParserResponse(
+        premises=[
+            ParsedPremise(
+                id=f"premise-{i}",
+                original_text=text,
+                fol=repr(tree),
+                ast=fol_node_to_dict(tree),
+            )
+            for i, (text, tree) in enumerate(zip(bundle.premises, bundle.trees), start=1)
+        ],
+        verified=bundle.verified,
+        issues=list(bundle.verification_issues),
+        renames=bundle.predicate_renames,
+    )
 
 
 @api_router.post("/premises", response_model=ParsePremisesResponse)
