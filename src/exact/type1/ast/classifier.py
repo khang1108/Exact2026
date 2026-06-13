@@ -12,6 +12,13 @@ _NOUN_STOP_WORDS = {
     'if','then','and','or','but','not','that','which','who',
     'follows','requires','studies','passes','loves','gives',
     'takes','makes','needs','wants','likes','hates','knows',
+    'completes','complete','completed','qualifies','qualify','qualified',
+    'receives','receive','received','earns','earn','earned',
+    'grants','grant','granted','holds','hold','held',
+    'teaches','teach','taught','attends','attend','attended',
+    'pays','pay','paid','enrolled','enrolls','enroll',
+    'awards','award','awarded','meets','meet','met',
+    'satisfies','satisfy','satisfied','submits','submit','submitted',
 }
 
 PRONOUNS = re.compile(
