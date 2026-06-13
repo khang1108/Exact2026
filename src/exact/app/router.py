@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import asyncio
-
 from fastapi import APIRouter, HTTPException, Request
 
 from exact.common.schemas import (
@@ -12,10 +10,8 @@ from exact.common.schemas import (
     PredictionResponse,
     TaskType,
 )
-from exact.type1.pipeline import fol_node_to_dict
 from exact.logger import get_request_logger
-from exact.type1.pipeline import run_type1_pipeline
-from exact.type2.pipeline import run_type2_pipeline
+from exact.type1.pipeline import fol_node_to_dict, run_type1_pipeline
 
 api_router = APIRouter()
 
@@ -31,16 +27,9 @@ async def predict(payload: PredictionRequest, request: Request) -> PredictionRes
     logger = get_request_logger(
         name="api_router.predict",
         request_id=payload.query_id,
-        task_type=TaskType.TYPE1_LOGIC if payload.type == "type1" else TaskType.TYPE2_PHYSICS,
+        task_type=TaskType.TYPE1_LOGIC,
     )
-
     logger.info(f"Received prediction request: {payload}")
-
-    if payload.type == "type2":
-        logger.info("Running Type 2 pipeline")
-        return await asyncio.to_thread(run_type2_pipeline, payload)
-
-    logger.info("Running Type 1 pipeline")
     premise_parser = getattr(request.app.state, "type1_premise_parser", None)
     if premise_parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
