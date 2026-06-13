@@ -326,15 +326,27 @@ def _stem_word(word: str) -> str:
     return w
 
 
+_GENERIC_SUFFIX_WORDS = frozenset({
+    "course", "courses", "program", "programs", "exam", "exams", 
+    "assessment", "assessments", "test", "tests", "class", "classes", 
+    "hour", "hours", "session", "sessions", "project", "projects", 
+    "activity", "activities", "requirement", "requirements", 
+    "credential", "credentials"
+})
+
+
 def _symbol_stem(name: str) -> str:
     """Order-preserving morphological key for a predicate/constant name.
 
     Drops leading auxiliaries so ``HasCompleted`` and ``Complete`` share the key
     ``complet``. An all-auxiliary name (``Has`` / ``Have``) is lemmatised instead
     of dropped so those still unify.
+    Also strips trailing generic suffix words like 'Course' or 'Exam'.
     """
     words = [w.lower() for w in re.findall(r"[A-Z][a-z0-9]*|[a-z0-9]+", name)]
     content = [w for w in words if w not in _AUX_WORDS]
+    while content and content[-1] in _GENERIC_SUFFIX_WORDS:
+        content.pop()
     if content:
         return " ".join(_stem_word(w) for w in content)
     return " ".join(_AUX_LEMMA[w] if w in _AUX_LEMMA else w for w in words)
