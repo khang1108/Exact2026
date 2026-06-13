@@ -8,6 +8,7 @@ from exact.common.schemas import (
     PredictionRequest,
     PredictionResponse,
     TaskType,
+    UnifiedPredictionRequest,
 )
 from exact.logger import get_request_logger
 from exact.type1.pipeline import run_type1_pipeline
@@ -22,19 +23,23 @@ def health_check() -> dict[str, str]:
 
 
 @api_router.post("/predict", response_model=PredictionResponse)
-async def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
-    """Run the full EXACT pipeline and return the merged prediction payload."""
+async def predict(payload: UnifiedPredictionRequest, request: Request) -> PredictionResponse:
+    """Route one unified request to the Type 1 or Type 2 pipeline."""
+    task_type = _resolve_task_type(payload)
     logger = get_request_logger(
         name="api_router.predict",
         request_id=payload.query_id,
-        task_type=TaskType.TYPE1_LOGIC if payload.type == "type1" else TaskType.TYPE2_PHYSICS,
+        task_type=task_type,
     )
 
     logger.info(f"Received prediction request: {payload}")
 
-    if payload.type == "type2":
+    if task_type == TaskType.TYPE2_PHYSICS:
         logger.info("Running Type 2 pipeline")
         return await asyncio.to_thread(run_type2_pipeline, payload)
+
+    if not payload.premises:
+        raise HTTPException(status_code=422, detail="Type 1 requests require non-empty premises")
 
     logger.info("Running Type 1 pipeline")
     parser = getattr(request.app.state, "type1_fol_parser", None)
@@ -43,6 +48,16 @@ async def predict(payload: PredictionRequest, request: Request) -> PredictionRes
     solver = getattr(request.app.state, "type1_solver", None)
     refiner = getattr(request.app.state, "type1_refiner", None)
     return await run_type1_pipeline(payload, parser, solver, refiner)
+
+
+def _resolve_task_type(payload: PredictionRequest) -> TaskType:
+    """Resolve explicit unified-schema types, with a legacy inference fallback."""
+
+    if payload.type == "type1":
+        return TaskType.TYPE1_LOGIC
+    if payload.type == "type2":
+        return TaskType.TYPE2_PHYSICS
+    return TaskType.TYPE1_LOGIC if payload.premises else TaskType.TYPE2_PHYSICS
 
 
 @api_router.post("/z3", response_model=PredictionResponse)

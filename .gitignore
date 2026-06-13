@@ -21,7 +21,8 @@ venv/
 .claude/
 .pytest_cache/
 docs/
-tests/
+tests/*
+!tests/test_unified_predict_endpoint.py
 outputs/
 tmp/
 
