@@ -48,6 +48,8 @@ DETERMINISTIC_RULES: list[tuple[str, list[str]]] = [
         r"\bthere\s+is\s+a\b",
         r"\bfor\s+all\b",
         r"\bfor\s+every\b",
+        r"\bwho\s+(have|has|is|are|can|does|do|completed|passed|studied)\b",  # "students who have..."
+        r"^[a-z]+s\s+who\b",                    # plural noun at start + who
     ]),
     ("logical", [                                 # P3: remaining connectives
         r"\band\b",

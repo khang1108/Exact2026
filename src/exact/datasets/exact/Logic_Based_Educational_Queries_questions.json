@@ -1,0 +1,3234 @@
+[
+  {
+    "id": "logic_0000_00",
+    "question": "Which conclusion follows with the fewest premises?"
+  },
+  {
+    "id": "logic_0000_01",
+    "question": "Does it follow that if all Python projects are well-structured, then all Python projects are optimized, according to the premises?"
+  },
+  {
+    "id": "logic_0001_00",
+    "question": "Based on the above premises, which is the strongest conclusion?"
+  },
+  {
+    "id": "logic_0001_01",
+    "question": "Does Sophia qualify for the university scholarship, according to the premises?"
+  },
+  {
+    "id": "logic_0002_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0002_01",
+    "question": "Does Sophia qualify for the university scholarship, according to the premises?"
+  },
+  {
+    "id": "logic_0003_00",
+    "question": "Based on the above premises, which conclusion logically follows?"
+  },
+  {
+    "id": "logic_0003_01",
+    "question": "Does John receive academic distinction, according to the premises?"
+  },
+  {
+    "id": "logic_0004_00",
+    "question": "Based on the premises, what is the correct conclusion about Professor John?"
+  },
+  {
+    "id": "logic_0004_01",
+    "question": "Does Professor John meet all requirements to propose new courses, according to the premises?"
+  },
+  {
+    "id": "logic_0005_00",
+    "question": "Based on the premises, what is the correct conclusion about Professor John?"
+  },
+  {
+    "id": "logic_0005_01",
+    "question": "Does the logical chain demonstrate that Professor John meets all requirements for collaborative research projects?"
+  },
+  {
+    "id": "logic_0006_00",
+    "question": "Based on the premises, what can we conclude about John’s qualifications?"
+  },
+  {
+    "id": "logic_0006_01",
+    "question": "Does John meet all requirements to cross state lines with hazardous cargo, according to the premises?"
+  },
+  {
+    "id": "logic_0007_00",
+    "question": "Based on the premises, which capabilities does Dr. John have?"
+  },
+  {
+    "id": "logic_0007_01",
+    "question": "Does Dr. John’s PhD qualification make him eligible to be a research mentor, according to the premises?"
+  },
+  {
+    "id": "logic_0008_00",
+    "question": "Based on the premises, what can we conclude about the curriculum?"
+  },
+  {
+    "id": "logic_0008_01",
+    "question": "Does the combination of faculty priorities and curriculum features lead to enhanced critical thinking, according to the premises?"
+  },
+  {
+    "id": "logic_0009_00",
+    "question": "Based on the premises, what can we conclude about the curriculum?"
+  },
+  {
+    "id": "logic_0009_01",
+    "question": "Does the combination of faculty priorities and curriculum features lead to enhanced critical thinking, according to the premises?"
+  },
+  {
+    "id": "logic_0010_00",
+    "question": "Based on the prerequisites, what is David’s current eligibility status?"
+  },
+  {
+    "id": "logic_0010_01",
+    "question": "Does the logical progression demonstrate that David meets all requirements for the internship?"
+  },
+  {
+    "id": "logic_0011_00",
+    "question": "Based on Alex's status, which statement is correct?"
+  },
+  {
+    "id": "logic_0011_01",
+    "question": "Does Alex meet all requirements for booking training sessions, according to the premises?"
+  },
+  {
+    "id": "logic_0012_00",
+    "question": "Based on the requirements, which statement about Sarah is correct?"
+  },
+  {
+    "id": "logic_0012_01",
+    "question": "Does Sarah meet all requirements to take advanced classes, according to the premises?"
+  },
+  {
+    "id": "logic_0013_00",
+    "question": "Based on Professor John's qualifications, which capabilities does he have?"
+  },
+  {
+    "id": "logic_0013_01",
+    "question": "Can Professor John supervise graduate-level research based on his PhD qualification, according to the premises?"
+  },
+  {
+    "id": "logic_0014_00",
+    "question": "Based on Dr. John's qualifications, which statement is correct?"
+  },
+  {
+    "id": "logic_0014_01",
+    "question": "Can Dr. John teach undergraduate courses, according to the premises?"
+  },
+  {
+    "id": "logic_0015_00",
+    "question": "Based on Nurse John's qualifications, which statement is correct?"
+  },
+  {
+    "id": "logic_0015_01",
+    "question": "Can Nurse John prescribe medication, according to the premises?"
+  },
+  {
+    "id": "logic_0016_00",
+    "question": "Based on Alex's status, which statement is correct?"
+  },
+  {
+    "id": "logic_0016_01",
+    "question": "Does the logical sequence demonstrate that Alex meets all requirements for booking training sessions?"
+  },
+  {
+    "id": "logic_0017_00",
+    "question": "Based on Minh's academic progress, which of the following is logically supported?"
+  },
+  {
+    "id": "logic_0017_01",
+    "question": "Does Minh qualify to take Biochemistry based on her completed coursework, according to the premises?"
+  },
+  {
+    "id": "logic_0018_00",
+    "question": "Have all employees paid?"
+  },
+  {
+    "id": "logic_0018_01",
+    "question": "Are all employees registered?"
+  },
+  {
+    "id": "logic_0019_00",
+    "question": "Do all employees receive a bonus?"
+  },
+  {
+    "id": "logic_0019_01",
+    "question": "Are all employees suitable for a senior role?"
+  },
+  {
+    "id": "logic_0020_00",
+    "question": "Based on the premises, which conclusion is logically valid?"
+  },
+  {
+    "id": "logic_0020_01",
+    "question": "Is it true that a student who completes 3 courses with scores above 8.5 will graduate, according to the premises?"
+  },
+  {
+    "id": "logic_0021_00",
+    "question": "Based on the premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0021_01",
+    "question": "Does writing a high-quality analytical essay guarantee qualification for a research fellowship, according to the premises?"
+  },
+  {
+    "id": "logic_0022_00",
+    "question": "Based on the premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0022_01",
+    "question": "Is producing original research while avoiding presentations sufficient to qualify for a scholarship, according to the premises?"
+  },
+  {
+    "id": "logic_0023_00",
+    "question": "Based on the premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0023_01",
+    "question": "According to the premises, is the following statement true?\nStatement: A student who reaches advanced research preparation but avoids both publication and seminar opportunities will still qualify for laboratory access"
+  },
+  {
+    "id": "logic_0024_00",
+    "question": "Based on the learning science principles, which statement is correct?"
+  },
+  {
+    "id": "logic_0024_01",
+    "question": "Which of these conclusions is supported by the forgetting curve research?"
+  },
+  {
+    "id": "logic_0025_00",
+    "question": "Based on the learning science principles, which statement is correct?"
+  },
+  {
+    "id": "logic_0025_01",
+    "question": "Which of these conclusions is supported by the forgetting curve research?"
+  },
+  {
+    "id": "logic_0026_00",
+    "question": "Based on the geometric principles, which statement about quadrilaterals is correct?"
+  },
+  {
+    "id": "logic_0026_01",
+    "question": "Which premises support that a quadrilateral with opposite angles summing to 180° and a perpendicular bisecting diagonal is a cyclic trapezium?"
+  },
+  {
+    "id": "logic_0027_00",
+    "question": "Based on the learning principles, which combination of factors most significantly decreases learning efficiency?"
+  },
+  {
+    "id": "logic_0027_01",
+    "question": "Which premises directly support the conclusion about decreased learning efficiency?"
+  },
+  {
+    "id": "logic_0028_00",
+    "question": "Based on the mission parameters, which scenario accurately describes Luna's Mars expedition?"
+  },
+  {
+    "id": "logic_0029_00",
+    "question": "Based on the online learning rules, which scenario is correct?"
+  },
+  {
+    "id": "logic_0030_00",
+    "question": "Based on the learning strategies, which combination is most effective for comprehension and retention?"
+  },
+  {
+    "id": "logic_0030_01",
+    "question": "Do the premises support that a student using structured plans, hands-on experiments, and visualization will have improved comprehension and retention?"
+  },
+  {
+    "id": "logic_0031_00",
+    "question": "If a student engages in play-based learning, participates in simulations, receives immediate and constructive feedback, and reflects on their learning, they will retain knowledge more effectively and develop problem-solving skills. Is this statement true?"
+  },
+  {
+    "id": "logic_0032_00",
+    "question": "Do schools that implement structured disciplinary policies, restorative justice, and positive reinforcement strategies experience fewer infractions, higher student morale, and improved academic performance?"
+  },
+  {
+    "id": "logic_0033_00",
+    "question": "Does Alex earn a scholarship despite initial fears of fund depletion that were unfounded, attend university and gain internship opportunities through a professional network that nearly dissolved but was saved, complete an internship with mentorship despite initial mentor shortages that were resolved, develop professional skills and secure job offers at career fairs that were almost canceled but proceeded, and start a successful career after graduating with honors despite a competitive job market that improved just in time?"
+  },
+  {
+    "id": "logic_0033_01",
+    "question": "Does Alex not secure job offers because the job market weakened unexpectedly, and fail to start a successful career despite graduating with honors?"
+  },
+  {
+    "id": "logic_0034_00",
+    "question": "Can Mai successfully change majors from Information Technology to Biomedical Engineering, considering the entrance exam score, scholarship, and make-up course requirements, while assessing the risks of academic warnings or scholarship loss if she doesn't meet the requirements within 1 year after the transfer?"
+  },
+  {
+    "id": "logic_0035_00",
+    "question": "Can Lan participate in the flight practice session, and if not, does she have to take a make-up session within 2 weeks to retain her flight exam eligibility, considering the weather, absent instructor, and cancellation notification time?"
+  },
+  {
+    "id": "logic_0036_00",
+    "question": "Should Student A be confirmed as cheating and suspended from the exam, considering the signs from the exam, behavior during the exam, AI analysis, personal history, and the possibility of appeal being denied, and assessing additional penalties if there is evidence from the camera?"
+  },
+  {
+    "id": "logic_0037_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0037_01",
+    "question": "Is the following statement true? Statement: If there exists at least one student who attends class regularly, then there exists at least one student who completes all assigned exercises"
+  },
+  {
+    "id": "logic_0038_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0038_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: All students attend lectures regularly."
+  },
+  {
+    "id": "logic_0039_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0039_01",
+    "question": "According to the premises, is the following statement true?\nStatement: If a student is registered for an advanced course, they will achieve success."
+  },
+  {
+    "id": "logic_0040_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0040_01",
+    "question": "According to the premises, is the following statement true?\nStatement: If a student passes the math exam, they will excel in mathematics."
+  },
+  {
+    "id": "logic_0041_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0041_01",
+    "question": "According to the premises, is the following statement true?\nStatement: If a person is promoted, they will become a leader in their organization."
+  },
+  {
+    "id": "logic_0042_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0042_01",
+    "question": "According to the premises, is the following statement true?\nStatement: There exists at least one student on the honor roll who is eligible for a scholarship."
+  },
+  {
+    "id": "logic_0043_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0043_01",
+    "question": "Is the following statement true according to the premises?\nStatement: There exists a positive feedback loop where improved grades lead to scholarship eligibility which leads to more study time and further grade improvement."
+  },
+  {
+    "id": "logic_0044_00",
+    "question": "Based on the premises, which statement is best supported?"
+  },
+  {
+    "id": "logic_0044_01",
+    "question": "Does attending lectures initiate a causal chain leading to increased earning potential, according to the premises?"
+  },
+  {
+    "id": "logic_0045_00",
+    "question": "Based on the above premises, which conclusion is most supported?"
+  },
+  {
+    "id": "logic_0045_01",
+    "question": "Is there a logical chain from applying for internships to increasing one’s earning potential, according to the premises?"
+  },
+  {
+    "id": "logic_0046_00",
+    "question": "Based on the premises, which of the following is best supported?"
+  },
+  {
+    "id": "logic_0046_01",
+    "question": "Is there a logical path from attending career workshops to achieving financial stability, according to the premises?"
+  },
+  {
+    "id": "logic_0047_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0047_01",
+    "question": "According to the premises, is the following statement true?\nStatement: There exists a complete pathway from attending lectures regularly to receiving job opportunities."
+  },
+  {
+    "id": "logic_0048_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0048_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: If a student engages in independent study, they have a higher chance of accessing advanced research opportunities."
+  },
+  {
+    "id": "logic_0049_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0049_01",
+    "question": "According to the premises, is the following statement true?\nStatement: There exists a complete pathway from engaging in research to receiving academic recognition."
+  },
+  {
+    "id": "logic_0050_00",
+    "question": "Based on the premises, which statement is correct?"
+  },
+  {
+    "id": "logic_0050_01",
+    "question": "According to the premises, is the following statement true?\nStatement: There exists a complete pathway from maintaining a high GPA to receiving a scholarship."
+  },
+  {
+    "id": "logic_0051_00",
+    "question": "Based on the premises above, which of the following statements can be logically concluded?"
+  },
+  {
+    "id": "logic_0051_01",
+    "question": "Based on the premises, is the following rule enforced?\nRule: If a student applies for financial aid, and they have a low family income, they increase their chances of receiving support and reducing tuition burden."
+  },
+  {
+    "id": "logic_0052_00",
+    "question": "Based on the above premises, which statement can be logically inferred?"
+  },
+  {
+    "id": "logic_0052_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student never practices coding, they will still become proficient in Python."
+  },
+  {
+    "id": "logic_0053_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0053_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: If all Python projects are well-structured, then all Python projects are optimized."
+  },
+  {
+    "id": "logic_0054_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0054_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a Raspberry Pi system is cost-effective, then it is necessarily versatile."
+  },
+  {
+    "id": "logic_0055_00",
+    "question": "Based on the above premises, which of the following conclusions can be inferred?"
+  },
+  {
+    "id": "logic_0055_01",
+    "question": "Based on the above premises, answer the following: Is the following statement true?\n\"If an EV charging station being not widely available implies that it is not thoroughly maintained, then every EV charging station that is widely available supports fast charging.\""
+  },
+  {
+    "id": "logic_0056_00",
+    "question": "Based on the above premises, which of the following conclusions can be inferred?"
+  },
+  {
+    "id": "logic_0056_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a microchip is not functional, then it does not have a stable power supply."
+  },
+  {
+    "id": "logic_0057_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0057_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a transportation system is safe, then it is necessarily cost-effective."
+  },
+  {
+    "id": "logic_0058_00",
+    "question": "Does it follow that every hardware component is thoroughly validated?"
+  },
+  {
+    "id": "logic_0059_00",
+    "question": "Does every drone have a GPS system?"
+  },
+  {
+    "id": "logic_0059_01",
+    "question": "Are all drones operating safely?"
+  },
+  {
+    "id": "logic_0060_00",
+    "question": "Does every IoT device provide accurate data?"
+  },
+  {
+    "id": "logic_0060_01",
+    "question": "Are all IoT devices energy-efficient?"
+  },
+  {
+    "id": "logic_0061_00",
+    "question": "Are all VR games thoroughly tested?"
+  },
+  {
+    "id": "logic_0061_01",
+    "question": "Is the following statement true? \"If a VR game is not thoroughly tested, then it is not engaging, which means any engaging VR game is stable.\""
+  },
+  {
+    "id": "logic_0062_00",
+    "question": "Are all blockchain networks efficient?"
+  },
+  {
+    "id": "logic_0062_01",
+    "question": "Are all blockchain networks scalable?"
+  },
+  {
+    "id": "logic_0063_00",
+    "question": "Are all autonomous vehicles safe?"
+  },
+  {
+    "id": "logic_0063_01",
+    "question": "Are all autonomous vehicles market-adopted?"
+  },
+  {
+    "id": "logic_0064_00",
+    "question": "Does every AI application receive notable academic recognition?"
+  },
+  {
+    "id": "logic_0064_01",
+    "question": "Are all AI applications rigorously tested?"
+  },
+  {
+    "id": "logic_0065_00",
+    "question": "Are all cloud services reliable?"
+  },
+  {
+    "id": "logic_0065_01",
+    "question": "Are all cloud services cost-effective?"
+  },
+  {
+    "id": "logic_0066_00",
+    "question": "Are there any energy-efficient smart home devices?"
+  },
+  {
+    "id": "logic_0066_01",
+    "question": "Are all smart home devices user-friendly?"
+  },
+  {
+    "id": "logic_0067_00",
+    "question": "Are all smartphones highly efficient?"
+  },
+  {
+    "id": "logic_0067_01",
+    "question": "Do all smartphones support advanced camera features?"
+  },
+  {
+    "id": "logic_0068_00",
+    "question": "Do all courses meet curriculum standards?"
+  },
+  {
+    "id": "logic_0068_01",
+    "question": "Are there any courses offered online?"
+  },
+  {
+    "id": "logic_0069_00",
+    "question": "Are all research projects successful?"
+  },
+  {
+    "id": "logic_0069_01",
+    "question": "Are all research projects highly cited?"
+  },
+  {
+    "id": "logic_0070_00",
+    "question": "Are all academic works current?"
+  },
+  {
+    "id": "logic_0070_01",
+    "question": "Do all academic works meet quality standards?"
+  },
+  {
+    "id": "logic_0071_00",
+    "question": "Do all C++ projects adhere to modern C++ standards?"
+  },
+  {
+    "id": "logic_0071_01",
+    "question": "Are all C++ projects portable?"
+  },
+  {
+    "id": "logic_0072_00",
+    "question": "Are all biometric systems secure?"
+  },
+  {
+    "id": "logic_0072_01",
+    "question": "Are all biometric systems portable?"
+  },
+  {
+    "id": "logic_0073_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0073_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student receives a scholarship, they must be excellent."
+  },
+  {
+    "id": "logic_0074_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0074_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a school has students, then it has teachers."
+  },
+  {
+    "id": "logic_0075_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0075_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If everyone is a teacher, then there is at least one researcher."
+  },
+  {
+    "id": "logic_0076_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0076_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If someone does not fully participate in social work, then everyone fully participates in conduct training."
+  },
+  {
+    "id": "logic_0077_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0077_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If someone meets academic requirements, then if they fully participate in conduct training, they are eligible for graduation."
+  },
+  {
+    "id": "logic_0078_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0078_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If submitting assignments on time implies achieving good grades, then not attending review sessions implies not completing the fundamental courses."
+  },
+  {
+    "id": "logic_0079_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0079_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If achieving good grades implies studying regularly, then not receiving extra credit implies that the student does not submit assignments on time."
+  },
+  {
+    "id": "logic_0080_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0080_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student studies regularly, then they complete their assignments."
+  },
+  {
+    "id": "logic_0081_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0081_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student submits assignments on time, then they receive extra credit."
+  },
+  {
+    "id": "logic_0082_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0082_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student attends classes, then they receive extra credit."
+  },
+  {
+    "id": "logic_0083_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0083_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If every student wins a scholarship, then at least one student wins a scholarship."
+  },
+  {
+    "id": "logic_0084_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0084_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: There exists someone who wins a scholarship."
+  },
+  {
+    "id": "logic_0085_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0085_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: There exists someone who is qualified."
+  },
+  {
+    "id": "logic_0086_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0086_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: Everyone is a student."
+  },
+  {
+    "id": "logic_0087_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0087_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If someone understands the lecture, then they pass the exam."
+  },
+  {
+    "id": "logic_0088_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0088_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If someone studies, then they are registered."
+  },
+  {
+    "id": "logic_0089_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0089_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If someone is an undergraduate, then they are registered."
+  },
+  {
+    "id": "logic_0090_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0090_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: 'If a student does not submit their research paper and fails two or more courses in a semester, they automatically fail the course and are placed on academic probation.'"
+  },
+  {
+    "id": "logic_0091_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0091_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: If students who do not complete foundational courses cannot graduate, then all students must complete the foundational courses."
+  },
+  {
+    "id": "logic_0092_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0092_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If all students must complete their coursework, then students who do not receive academic recognition will not be selected for advanced research programs."
+  },
+  {
+    "id": "logic_0093_00",
+    "question": "Based on the premises, which statement can be logically inferred?"
+  },
+  {
+    "id": "logic_0093_01",
+    "question": "According to the premises, is the following statement true?\nStatement: If all students must complete assignments and if a student completes assignments, they will pass the exams, then all students will pass the exams."
+  },
+  {
+    "id": "logic_0094_00",
+    "question": "Based on the premises, which statement can be logically inferred?"
+  },
+  {
+    "id": "logic_0094_01",
+    "question": "According to the premises, is the following statement true?\nStatement: 'If all students pass the test and if a student passing the test implies they have studied, then all students have studied.'"
+  },
+  {
+    "id": "logic_0095_00",
+    "question": "Based on the above premises, which of the following statements can be inferred?"
+  },
+  {
+    "id": "logic_0095_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who submits assignments and if at least one student submits assignments, then this is always true, then the statement 'If at least one student submits assignments, then this is always true' holds."
+  },
+  {
+    "id": "logic_0096_00",
+    "question": "Based on the above premises, which of the following statements can be inferred?"
+  },
+  {
+    "id": "logic_0096_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all students have high academic performance and if a student qualifies for an advanced placement class, then they must have completed their coursework."
+  },
+  {
+    "id": "logic_0097_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0097_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all students must complete the mandatory courses in the curriculum, then students who do not complete the mandatory courses will not be eligible for graduation."
+  },
+  {
+    "id": "logic_0098_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0098_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If at least one student has received a scholarship and if failing to follow academic policies results in no scholarship, then at least one student follows the university’s academic policies."
+  },
+  {
+    "id": "logic_0099_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0099_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If at least one student has been found violating the examination regulations and if a student violates the examination regulations, they will be subject to disciplinary action, then the university will take disciplinary action."
+  },
+  {
+    "id": "logic_0100_00",
+    "question": "Based on the premises, which of the following conclusions is correct?"
+  },
+  {
+    "id": "logic_0100_01",
+    "question": "According to the premises, is the following statement true?\nStatement: If a student attends all lectures and submits assignments on time, then they will pass the course, but attending lectures alone is not sufficient to pass the course."
+  },
+  {
+    "id": "logic_0101_00",
+    "question": "Based on the premises, which of the following statements is correct?"
+  },
+  {
+    "id": "logic_0101_01",
+    "question": "According to the premises, is the following statement true?\nStatement: If there exists at least one student who has received a full scholarship and at least one student who has lost a scholarship due to a GPA drop, then a student who has received a full scholarship must have demonstrated academic excellence."
+  },
+  {
+    "id": "logic_0102_00",
+    "question": "Based on the rules above, which of the following statements is true?"
+  },
+  {
+    "id": "logic_0102_01",
+    "question": "Based on the rules above, is the following statement true?\nStatement: If there exists at least one student who has been disciplined for violating the school rules, then a student who violates the traffic safety rules will be fined according to the school's regulations."
+  },
+  {
+    "id": "logic_0103_00",
+    "question": "Based on the premises above, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0103_01",
+    "question": "Based on the premises above, is the following statement true?\nStatement: 'If a student violates the school policy on mobile phones, the student will receive a warning and be penalized.'"
+  },
+  {
+    "id": "logic_0104_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0104_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: 'If a student does not complete assignments and does not follow the study plan, they will not pass the exam and not be eligible for extra credit.'"
+  },
+  {
+    "id": "logic_0105_00",
+    "question": "Do all students graduate?"
+  },
+  {
+    "id": "logic_0105_01",
+    "question": "Are all students enrolled in an advanced seminar?"
+  },
+  {
+    "id": "logic_0106_00",
+    "question": "Do all individuals ask questions?"
+  },
+  {
+    "id": "logic_0106_01",
+    "question": "Are all individuals skilled?"
+  },
+  {
+    "id": "logic_0107_00",
+    "question": "Do all students participate in extracurricular activities?"
+  },
+  {
+    "id": "logic_0107_01",
+    "question": "Are all students part of a research group?"
+  },
+  {
+    "id": "logic_0108_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0108_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ForAll(x, ResearchProject(x))"
+  },
+  {
+    "id": "logic_0109_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0109_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (Exists(x, Enrolled(x)) → ForAll(x, Enrolled(x)))"
+  },
+  {
+    "id": "logic_0110_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0110_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is not motivated, then they do not participate in discussions."
+  },
+  {
+    "id": "logic_0111_00",
+    "question": "Based on the premises above, which of the following statements can be logically concluded?"
+  },
+  {
+    "id": "logic_0111_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: ∃x U(x)"
+  },
+  {
+    "id": "logic_0112_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0112_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: All students complete their homework."
+  },
+  {
+    "id": "logic_0113_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0113_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student does not do their homework, then they will not attend class."
+  },
+  {
+    "id": "logic_0114_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0114_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: There exists at least one student who does research."
+  },
+  {
+    "id": "logic_0115_00",
+    "question": "Do all students excel academically?"
+  },
+  {
+    "id": "logic_0115_01",
+    "question": "Do all students take advanced courses?"
+  },
+  {
+    "id": "logic_0116_00",
+    "question": "Do all students understand the material?"
+  },
+  {
+    "id": "logic_0116_01",
+    "question": "Do all students pass?"
+  },
+  {
+    "id": "logic_0117_00",
+    "question": "Do all students qualify for the scholarship?"
+  },
+  {
+    "id": "logic_0117_01",
+    "question": "Do all students graduate?"
+  },
+  {
+    "id": "logic_0118_00",
+    "question": "Based on the premises above, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0118_01",
+    "question": "Do all students join a study group?"
+  },
+  {
+    "id": "logic_0119_00",
+    "question": "Are all students ready?"
+  },
+  {
+    "id": "logic_0119_01",
+    "question": "Are all students questioning?"
+  },
+  {
+    "id": "logic_0120_00",
+    "question": "Does at least one student submit a thesis?"
+  },
+  {
+    "id": "logic_0120_01",
+    "question": "Do all students take a qualifying exam?"
+  },
+  {
+    "id": "logic_0121_00",
+    "question": "Do all students receive a scholarship?"
+  },
+  {
+    "id": "logic_0121_01",
+    "question": "Are all students enrolled in a specific course?"
+  },
+  {
+    "id": "logic_0122_00",
+    "question": "Are all students eligible for a scholarship?"
+  },
+  {
+    "id": "logic_0122_01",
+    "question": "Do all students participate in extracurricular activities?"
+  },
+  {
+    "id": "logic_0123_00",
+    "question": "Are all students eligible for a scholarship?"
+  },
+  {
+    "id": "logic_0123_01",
+    "question": "Do all students pass the qualifying exam?"
+  },
+  {
+    "id": "logic_0124_00",
+    "question": "Have all employees signed the safety compliance form?"
+  },
+  {
+    "id": "logic_0124_01",
+    "question": "Have all employees taken the advanced training course?"
+  },
+  {
+    "id": "logic_0125_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0125_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If an AI model performs classification, then it requires training data."
+  },
+  {
+    "id": "logic_0126_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0126_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: There exists at least one programmer who understands object-oriented programming."
+  },
+  {
+    "id": "logic_0127_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0127_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: If a student scores exactly 100%, then they have a high academic standing."
+  },
+  {
+    "id": "logic_0128_00",
+    "question": "Based on the above premises, which conclusion is correct?"
+  },
+  {
+    "id": "logic_0128_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: If all students must meet the academic requirements, then all students must complete a final project."
+  },
+  {
+    "id": "logic_0129_00",
+    "question": "Based on the above premises, which conclusion can be inferred?"
+  },
+  {
+    "id": "logic_0129_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a Python code is optimized, then it is well-tested."
+  },
+  {
+    "id": "logic_0130_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0130_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a chemical reaction occurs, then it is balanced."
+  },
+  {
+    "id": "logic_0131_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0131_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person gains both knowledge and wisdom, they have mastered the content."
+  },
+  {
+    "id": "logic_0132_00",
+    "question": "Can the variable 'Math' be accessed in the class 'Science_subject'?"
+  },
+  {
+    "id": "logic_0133_00",
+    "question": "Based on the premises, which of the following must be true?"
+  },
+  {
+    "id": "logic_0134_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Bob will graduate the school because he studies hard.\nB) Bob will be happy because he studies hard and graduates the school.\nC) Bob will pass the test because he studies hard and is never lazy.\nD) Bob will never graduate the school because he is never lazy."
+  },
+  {
+    "id": "logic_0134_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Bob will be happy because he studies hard and graduates the school."
+  },
+  {
+    "id": "logic_0135_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Jake passed Calculus 1 because he is a freshman.\nB) Jake cannot attend Calculus 2 because he did not pass Calculus 1.\nC) Jake is a freshman student and has passed Calculus 1 and Calculus 2.\nD) Jake has attended Calculus 2, implying he passed Calculus 1 and scored at least 4 points on it."
+  },
+  {
+    "id": "logic_0135_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Jake passed Calculus 1 and scored at least 4 points on it because he attended Calculus 2."
+  },
+  {
+    "id": "logic_0136_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) John has enough social work days to graduate.\nB) John cannot graduate because he didn't gain enough social work days and has spent 6 years at BK university.\nC) John will have to study more if he does not graduate within 6 years and is out of school.\nD) John can graduate as long as he has 15 social work days and has not spent 6 years at BK university."
+  },
+  {
+    "id": "logic_0136_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: John has to study more if he does not graduate within 6 years and is out of school."
+  },
+  {
+    "id": "logic_0137_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Mary failed the subject because her average score was less than 8.\nB) Mary received an A grade due to her scores on the midterm, project, and final exams.\nC) The average score of Mary is less than 8 because she scored 7 on the midterm.\nD) The scores of Mary don't add up to more than 8 because her midterm score was low."
+  },
+  {
+    "id": "logic_0137_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Mary got an A grade because her average score from the midterm, project, and final exams was higher than 8."
+  },
+  {
+    "id": "logic_0138_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Peter Griffin can register for PE2 because he passed PE1.\nB) Peter Griffin cannot graduate until he registers for PE2 and passes it.\nC) Peter Griffin has already graduated because he passed PE1.\nD) Peter Griffin must take PE1 again because he is a freshman."
+  },
+  {
+    "id": "logic_0138_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Peter Griffin can graduate after registering for PE2 and passing both PE1 and PE2."
+  },
+  {
+    "id": "logic_0139_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Tu has gained experience and improved their skills.\nB) Tu is not confident yet because they have not improved their skills.\nC) Tu has attended fewer than 2 events, so they have not gained experience.\nD) Tu has improved their skills but has not gained experience."
+  },
+  {
+    "id": "logic_0139_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Tu is confident because they have gained experience and improved their skills."
+  },
+  {
+    "id": "logic_0140_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Tuan can stay in the BK dormitory because he is in the first semester and has a studying schedule.\nB) Tuan failed a subject, so he cannot stay in the BK dormitory.\nC) Tuan is not allowed to register in the dormitory because he has not registered subjects.\nD) Tuan has registered subjects for the semester, so he can stay in the BK dormitory."
+  },
+  {
+    "id": "logic_0140_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Tuan can register for the BK dormitory because he is in the first semester and has a studying schedule."
+  },
+  {
+    "id": "logic_0141_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Kahne will not receive guidance because they are not a BK student.\nB) Kahne can write a science article if they receive guidance and broaden their knowledge through training.\nC) Kahne will not get plus points in their graduation thesis because they have not published an article.\nD) Kahne needs to complete more training before they can write the article, even though they are a lab member."
+  },
+  {
+    "id": "logic_0141_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Kahne will receive plus points for their graduation thesis if they write a science article and it is successfully published."
+  },
+  {
+    "id": "logic_0142_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) Coke can get an internship or go to work because they are a fourth-year student.\nB) Coke is guaranteed to get a job because they are a fourth-year student.\nC) Coke has a good CV because they are a fourth-year student.\nD) Coke doesn't need a CV to get a job because they are a fourth-year student."
+  },
+  {
+    "id": "logic_0142_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: Coke will have a good CV and easily get a job if they choose to intern because they are a fourth-year student."
+  },
+  {
+    "id": "logic_0143_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) The Titan computer is likely to have a strong cooling unit because it runs complex software and supports multitasking efficiently.\nB) The Titan computer does not support multitasking efficiently because it lacks enough RAM.\nC) The Titan computer does not require a cooling unit because it runs complex software.\nD) The Titan computer has enough RAM because it supports multitasking efficiently."
+  },
+  {
+    "id": "logic_0143_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: The Titan computer remains stable during heavy use because it runs complex software and supports multitasking efficiently."
+  },
+  {
+    "id": "logic_0144_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) The AlphaNet model does not require hyperparameter tuning because it achieves high accuracy.\nB) The AlphaNet model has been extensively tuned because it achieves high accuracy and processes data quickly.\nC) The AlphaNet model uses a weak GPU because it processes data quickly.\nD) The AlphaNet model achieves high accuracy because it uses a powerful GPU and processes data quickly."
+  },
+  {
+    "id": "logic_0144_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: The AlphaNet model performs consistently on new data because it achieves high accuracy and processes data quickly."
+  },
+  {
+    "id": "logic_0145_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) A variable declared with 'let' is immutable and block-scoped.\nB) A function can be declared with either the 'function' keyword or arrow syntax, making it callable.\nC) If a promise is rejected, the 'then' block will be executed before the 'catch' block.\nD) The DOM in JavaScript is used for network requests and manipulation of HTML elements."
+  },
+  {
+    "id": "logic_0145_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: JavaScript supports event handling to respond to user actions and manipulate HTML elements on the page."
+  },
+  {
+    "id": "logic_0146_00",
+    "question": "Based on the premises, which of the following can be inferred?\nA) C++ does not support exception handling because it does not use 'try', 'catch', and 'throw' keywords.\nB) C++ uses pointers to reference memory locations and can dynamically allocate memory.\nC) C++ functions cannot return values because they are not declared with a return type.\nD) The STL in C++ does not contain vectors or maps because it does not support templates."
+  },
+  {
+    "id": "logic_0146_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: In C++, 'new' is used to dynamically allocate memory and 'delete' is used to deallocate it, allowing for memory management through pointers."
+  },
+  {
+    "id": "logic_0147_00",
+    "question": "Are all students eligible for a raise?"
+  },
+  {
+    "id": "logic_0147_01",
+    "question": "Are all students eligible for a senior job?"
+  },
+  {
+    "id": "logic_0148_00",
+    "question": "Do all students complete their assignments?"
+  },
+  {
+    "id": "logic_0148_01",
+    "question": "Are all students registered?"
+  },
+  {
+    "id": "logic_0149_00",
+    "question": "Do all students attend the tutorial?"
+  },
+  {
+    "id": "logic_0149_01",
+    "question": "Do all students pass the prerequisite?"
+  },
+  {
+    "id": "logic_0150_00",
+    "question": "Do all employees work in the security department?"
+  },
+  {
+    "id": "logic_0150_01",
+    "question": "Are all employees managers?"
+  },
+  {
+    "id": "logic_0151_00",
+    "question": "Are all employees skilled?"
+  },
+  {
+    "id": "logic_0151_01",
+    "question": "Are all employees productive?"
+  },
+  {
+    "id": "logic_0152_00",
+    "question": "Do all students take the test?"
+  },
+  {
+    "id": "logic_0152_01",
+    "question": "Do all students complete the quiz?"
+  },
+  {
+    "id": "logic_0153_00",
+    "question": "Are all students responsible?"
+  },
+  {
+    "id": "logic_0153_01",
+    "question": "Are all students unemployed?"
+  },
+  {
+    "id": "logic_0154_00",
+    "question": "Do all students graduate?"
+  },
+  {
+    "id": "logic_0154_01",
+    "question": "Are all students recommended?"
+  },
+  {
+    "id": "logic_0155_00",
+    "question": "Do all committee members approve the methodology?"
+  },
+  {
+    "id": "logic_0155_01",
+    "question": "Do all faculty members think the topic is weak?"
+  },
+  {
+    "id": "logic_0156_00",
+    "question": "Are all library users allowed to take books home?"
+  },
+  {
+    "id": "logic_0156_01",
+    "question": "Do all library users have valid reservations?"
+  },
+  {
+    "id": "logic_0157_00",
+    "question": "Do all students understand the reading material?"
+  },
+  {
+    "id": "logic_0157_01",
+    "question": "Do all students study using the official guide?"
+  },
+  {
+    "id": "logic_0158_00",
+    "question": "Are all students eligible for a scholarship?"
+  },
+  {
+    "id": "logic_0158_01",
+    "question": "Have all students received a university offer?"
+  },
+  {
+    "id": "logic_0159_00",
+    "question": "Do all people study?"
+  },
+  {
+    "id": "logic_0159_01",
+    "question": "Are all people motivated?"
+  },
+  {
+    "id": "logic_0160_00",
+    "question": "Do all students understand the material?"
+  },
+  {
+    "id": "logic_0160_01",
+    "question": "Do all students review regularly?"
+  },
+  {
+    "id": "logic_0161_00",
+    "question": "Do all students understand the material?"
+  },
+  {
+    "id": "logic_0161_01",
+    "question": "Do all students review regularly?"
+  },
+  {
+    "id": "logic_0162_00",
+    "question": "Do all people take the training?"
+  },
+  {
+    "id": "logic_0162_01",
+    "question": "Are all people recommended?"
+  },
+  {
+    "id": "logic_0163_00",
+    "question": "Are all employees certified to operate machinery?"
+  },
+  {
+    "id": "logic_0163_01",
+    "question": "Are all employees eligible for a leadership role?"
+  },
+  {
+    "id": "logic_0164_00",
+    "question": "Do all people understand technology?"
+  },
+  {
+    "id": "logic_0164_01",
+    "question": "Do all people solve real-world problems?"
+  },
+  {
+    "id": "logic_0165_00",
+    "question": "Are all employees certified?"
+  },
+  {
+    "id": "logic_0165_01",
+    "question": "Are all employees assigned to a department?"
+  },
+  {
+    "id": "logic_0166_00",
+    "question": "Can all employees operate machinery?"
+  },
+  {
+    "id": "logic_0166_01",
+    "question": "Do all employees have safety certification?"
+  },
+  {
+    "id": "logic_0167_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0167_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: There exists at least one person who has submitted a scholarship application and meets the scholarship eligibility criteria."
+  },
+  {
+    "id": "logic_0168_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0168_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person received a warning for previous absences, then they acknowledged the new attendance policy, and if they acknowledged the new attendance policy, then not complying with the new rule implies they are not allowed to attend class."
+  },
+  {
+    "id": "logic_0169_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0169_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person did not submit the seminar participation form, then they did not register to attend the seminar, and if they registered, they are allowed to attend the seminar."
+  },
+  {
+    "id": "logic_0170_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0170_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If everyone attends the English club, then everyone improves their English communication skills."
+  },
+  {
+    "id": "logic_0171_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0171_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person applied for the exchange opportunity, then they are eligible for the exchange program, and if they are not eligible, they were not selected for the exchange program."
+  },
+  {
+    "id": "logic_0172_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0172_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person did not participate in organizing the cultural festival, then they did not present any performance or exhibit, and if someone attended the festival, then someone learned about different cultures."
+  },
+  {
+    "id": "logic_0173_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0173_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person did not follow the school’s physical activity schedule, then they did not avoid penalty points, and everyone received bonus points."
+  },
+  {
+    "id": "logic_0174_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0174_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all students are active in school activities, then participating in the workshop implies teamwork improvement, and if a person participated in the workshop, they improved their teamwork ability."
+  },
+  {
+    "id": "logic_0175_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0175_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all individuals attend soft skill seminars, then learning new skills implies improving communication or leadership skills, and everyone learns new soft skills in the seminar."
+  },
+  {
+    "id": "logic_0176_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0176_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists someone who attended the midterm exam, then all students attend the course, and there exists someone who attended the final exam."
+  },
+  {
+    "id": "logic_0177_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0177_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists someone who lends money to a friend, then a person having the maturity to lend money implies they lend money to a friend, and if a person lends money to a friend, they have learned from the experience."
+  },
+  {
+    "id": "logic_0178_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0178_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists someone who uses university facilities responsibly, then a person having the maturity to use facilities responsibly implies they use them responsibly, and if a person uses university facilities responsibly, they respect the university’s policies."
+  },
+  {
+    "id": "logic_0179_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0179_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If everyone engages in self-study regularly, then there exists someone who has the discipline to self-study at home, and if there exists someone with the discipline to self-study at home, then everyone studies independently at home."
+  },
+  {
+    "id": "logic_0180_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0180_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a person has permission to borrow books from the library, then they are a student allowed to borrow books, and if there exists a student who is allowed to borrow books, then there exists someone who has not borrowed more than 5 books at once."
+  },
+  {
+    "id": "logic_0181_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0181_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all students are participating in the buddy program, then if a person is participating in the buddy program, they gain 5 bonus points and money, and there exists a student who gains 5 bonus points and money through the program."
+  },
+  {
+    "id": "logic_0182_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0182_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who attended at least 2 PE courses during the 9 semesters."
+  },
+  {
+    "id": "logic_0183_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0183_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If all students are enrolled in the PE course, then if a person has not attended the PE course, they are not attending the PE course this semester, and there exists a student who attended at least 2 PE courses during the 9 semesters."
+  },
+  {
+    "id": "logic_0184_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0184_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists someone who has successfully obtained the English certificate, then everyone is required to have the English certificate, and if a person has an English certificate, then they have at least 6.0 IELTS or a TOEFL score above 600."
+  },
+  {
+    "id": "logic_0185_00",
+    "question": "Based on the premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0185_01",
+    "question": "Is it true that registering for the seminar does not imply completing all requirements to register, according to the premises?"
+  },
+  {
+    "id": "logic_0186_00",
+    "question": "Which of the following can be inferred about student eligibility?"
+  },
+  {
+    "id": "logic_0186_01",
+    "question": "Are there any students who are not required to attend the orientation?"
+  },
+  {
+    "id": "logic_0187_00",
+    "question": "Which of the following can be inferred about healthcare eligibility?"
+  },
+  {
+    "id": "logic_0187_01",
+    "question": "Are all individuals attending the healthcare appointment?"
+  },
+  {
+    "id": "logic_0188_00",
+    "question": "Which of the following can be inferred about students and the subject?"
+  },
+  {
+    "id": "logic_0188_01",
+    "question": "Is the statement true?\nStatement: It is not true that: if a student is enrolled in the subject, then attending the lab is a requirement."
+  },
+  {
+    "id": "logic_0189_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0189_01",
+    "question": "Is it true that all students who improve their understanding have actively searched for lectures?"
+  },
+  {
+    "id": "logic_0190_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0190_01",
+    "question": "Is it true that all students with feedback have the company stamp?"
+  },
+  {
+    "id": "logic_0191_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0191_01",
+    "question": "Is it true that all students who did not raise an issue have paid the fees?"
+  },
+  {
+    "id": "logic_0192_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0192_01",
+    "question": "Is it true that all students who complete exercises have passed the course?"
+  },
+  {
+    "id": "logic_0193_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0193_01",
+    "question": "Is it true that all students are involved in social work activities?"
+  },
+  {
+    "id": "logic_0194_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0194_01",
+    "question": "Is it true that all students who pay the required fees are allowed to continue studying?"
+  },
+  {
+    "id": "logic_0195_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0195_01",
+    "question": "Is it true that all students have completed all course requirements?"
+  },
+  {
+    "id": "logic_0196_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0196_01",
+    "question": "Is it true that all students are required to wear a blouse in the chemistry lab?"
+  },
+  {
+    "id": "logic_0197_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0197_01",
+    "question": "Is it true that some students are careful with food generally?"
+  },
+  {
+    "id": "logic_0198_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0198_01",
+    "question": "Is it true that some students are enrolled in a course?"
+  },
+  {
+    "id": "logic_0199_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0199_01",
+    "question": "Is it true that some students have passed the course?"
+  },
+  {
+    "id": "logic_0200_00",
+    "question": "Which of the following can be inferred about students based on the premises?"
+  },
+  {
+    "id": "logic_0200_01",
+    "question": "Is it true that all students are allowed to sleep in the library?"
+  },
+  {
+    "id": "logic_0201_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0201_01",
+    "question": "Is it true that there exists a student who is actively studying?"
+  },
+  {
+    "id": "logic_0202_00",
+    "question": "Which of the following can be inferred about individuals?"
+  },
+  {
+    "id": "logic_0202_01",
+    "question": "Is it true that some individuals are enrolled in a course?"
+  },
+  {
+    "id": "logic_0203_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0203_01",
+    "question": "Is it true that some students have received a scholarship?"
+  },
+  {
+    "id": "logic_0204_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0204_01",
+    "question": "Is it true that some students successfully complete online study tasks?"
+  },
+  {
+    "id": "logic_0205_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0205_01",
+    "question": "Is it true that some students study online?"
+  },
+  {
+    "id": "logic_0206_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0206_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: All students receive training."
+  },
+  {
+    "id": "logic_0207_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0207_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student publishes papers, then they conduct research."
+  },
+  {
+    "id": "logic_0208_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0208_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: (¬T(x) → ¬P(x))"
+  },
+  {
+    "id": "logic_0209_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0209_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: There exists at least one student who is engaged in training."
+  },
+  {
+    "id": "logic_0210_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0210_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∃x T(x)"
+  },
+  {
+    "id": "logic_0211_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0211_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: There exists at least one student who is engaged in training."
+  },
+  {
+    "id": "logic_0212_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0212_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: ((R(x) → S(x)) → (S(x) → P(x)))"
+  },
+  {
+    "id": "logic_0213_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0213_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: There exists at least one student who has completed prerequisite courses."
+  },
+  {
+    "id": "logic_0214_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0214_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student does not undergo training, then they do not engage in self-study."
+  },
+  {
+    "id": "logic_0215_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0215_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student meets a certain qualification, then they engage in self-study."
+  },
+  {
+    "id": "logic_0216_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0216_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: All students have understanding."
+  },
+  {
+    "id": "logic_0217_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0217_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: All students have access to resources."
+  },
+  {
+    "id": "logic_0218_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0218_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: All students have qualifications."
+  },
+  {
+    "id": "logic_0219_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0219_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ((If lacking training leads to lacking proficiency) → (Proficiency leads to training))"
+  },
+  {
+    "id": "logic_0220_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0220_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: All students have skills."
+  },
+  {
+    "id": "logic_0221_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0221_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there are vibrant student clubs at HCMUT, then all students adhere to HCMUT's code of conduct, and all students adhere to HCMUT's code of conduct."
+  },
+  {
+    "id": "logic_0222_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0222_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is enrolled in a university program, then there exists at least one student who is participating in an internship program, and there exists at least one student who has completed a research project."
+  },
+  {
+    "id": "logic_0223_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0223_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is enrolled in a course, then they have access to study materials, and every student has access to study materials."
+  },
+  {
+    "id": "logic_0224_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0224_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is not studying, then they are not revising, and if a student is not understanding the material, then they are not revising."
+  },
+  {
+    "id": "logic_0225_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0225_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is studying, then there exists at least one student who is preparing for an exam, and if there exists at least one student who is preparing for an exam, then there exists at least one student who is studying."
+  },
+  {
+    "id": "logic_0226_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0226_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is revising, then if a student is revising, they are studying, and every student is attending tutorials."
+  },
+  {
+    "id": "logic_0227_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0227_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is preparing for an exam, then they are asking questions, and if a student is not studying, then they are not attending tutorials."
+  },
+  {
+    "id": "logic_0228_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0228_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is preparing for an exam, then they are understanding the material, and every student is attending tutorials."
+  },
+  {
+    "id": "logic_0229_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0229_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is attending tutorials, then if a student is not asking questions, they are not attending tutorials, and every student is preparing for an exam."
+  },
+  {
+    "id": "logic_0230_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0230_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is asking questions, then if a student is not revising, they are not studying, and if a student is not revising, then they are not asking questions."
+  },
+  {
+    "id": "logic_0231_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0231_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is attending tutorials, then they are understanding the material, and there exists at least one student who is asking questions."
+  },
+  {
+    "id": "logic_0232_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0232_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is understanding the material, then if a student is attending tutorials, they are understanding the material, and every student is studying."
+  },
+  {
+    "id": "logic_0233_00",
+    "question": "Based on the premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0233_01",
+    "question": "Do all students both understand the material and ask questions, according to the premises?"
+  },
+  {
+    "id": "logic_0234_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0234_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student is not understanding the material, then they are not revising, and if a student is attending tutorials, then they are revising."
+  },
+  {
+    "id": "logic_0235_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0235_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a university student is revising, then they are preparing for an exam, and if a university student is studying, then they are understanding the material."
+  },
+  {
+    "id": "logic_0236_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0236_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If there exists at least one student who is revising, then every student is studying, and every student is attending tutorials."
+  },
+  {
+    "id": "logic_0237_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0237_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a high school student is not proficient in algebra, then they will not ace calculus, and there exists at least one high school student who understands trigonometry."
+  },
+  {
+    "id": "logic_0238_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0238_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: Every high school student is studious, and every high school student participates in extracurricular activities."
+  },
+  {
+    "id": "logic_0239_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0239_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a high school student attends tutoring sessions, then they improve their grades, and there exists at least one high school student who attends tutoring sessions."
+  },
+  {
+    "id": "logic_0240_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0240_01",
+    "question": "Is the following statement true? Statement: If all students are enrolled in the Teacher Education program, then there exists at least one student who has completed the Educational Psychology course"
+  },
+  {
+    "id": "logic_0241_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0241_01",
+    "question": "Is the following statement true? Statement: If the statement 'if all students are enrolled in a thesis-based program, then at least one student has participated in a research project' is true, then all students are enrolled in a thesis-based program"
+  },
+  {
+    "id": "logic_0242_00",
+    "question": "Which of the following can be inferred about online students?"
+  },
+  {
+    "id": "logic_0242_01",
+    "question": "Is the following statement true? Statement: There exists at least one online student who has completed a module quiz"
+  },
+  {
+    "id": "logic_0243_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0243_01",
+    "question": "Is the following statement true? Statement: All students follow the classroom rules"
+  },
+  {
+    "id": "logic_0244_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0244_01",
+    "question": "Is the following statement true? Statement: If a student has not attended the required number of classes, then they are not eligible to take the end-of-term quiz"
+  },
+  {
+    "id": "logic_0245_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0245_01",
+    "question": "Is the following statement true? Statement: All students participate actively in class"
+  },
+  {
+    "id": "logic_0246_00",
+    "question": "Which of the following can be inferred about participants?"
+  },
+  {
+    "id": "logic_0246_01",
+    "question": "Is the following statement true? Statement: If a participant has completed the registration form, then they have received the necessary safety briefing"
+  },
+  {
+    "id": "logic_0247_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0247_01",
+    "question": "Is the following statement true? Statement: If a student has been invited to the group, then it implies that if at least one student has agreed to join, then those who haven't submitted the contract aren't active members"
+  },
+  {
+    "id": "logic_0248_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0248_01",
+    "question": "Is the following statement true? Statement: If there exists at least one student who has shown interest in the seminar, then all students meet the seminar's eligibility criteria"
+  },
+  {
+    "id": "logic_0249_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0249_01",
+    "question": "Is the following statement true? Statement: At least one student is attending the university festival"
+  },
+  {
+    "id": "logic_0250_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0250_01",
+    "question": "Is the following statement true? Statement: If a student has not maintained a good academic standing, then they will not be shortlisted for an interview"
+  },
+  {
+    "id": "logic_0251_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0251_01",
+    "question": "Is the following statement true? Statement: There exists at least one student who has requested permission to be absent from class"
+  },
+  {
+    "id": "logic_0252_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0252_01",
+    "question": "Is the following statement true? Statement: If a student has not formed a team, then they are not registered for the start-up competition"
+  },
+  {
+    "id": "logic_0253_00",
+    "question": "Which of the following can be inferred about persons?"
+  },
+  {
+    "id": "logic_0253_01",
+    "question": "Is the following statement true? Statement: If a person has not been trained to recognize scams, then they are vulnerable to scammers"
+  },
+  {
+    "id": "logic_0254_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0254_01",
+    "question": "Is the following statement true? Statement: If x does not use online documents from the library, then x does not gain more knowledge"
+  },
+  {
+    "id": "logic_0255_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0255_01",
+    "question": "Is the following statement true? Statement: If submitting the eligibility form leads to receiving clearance, then confirming the exam schedule leads to being allowed to attend the final exam"
+  },
+  {
+    "id": "logic_0256_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0256_01",
+    "question": "Is the following statement true? Statement: If a student behaved suspiciously during the exam, then they were caught using unauthorized materials"
+  },
+  {
+    "id": "logic_0257_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0257_01",
+    "question": "Is the following statement true? Statement: If the implication from workshop attendance to communication improvement implies all students attended workshops, then all students did attend the workshops"
+  },
+  {
+    "id": "logic_0258_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0258_01",
+    "question": "Is the following statement true? Statement: If a student is employed part-time, then they report feeling balanced between work and study"
+  },
+  {
+    "id": "logic_0259_00",
+    "question": "Which of the following can be inferred about students?"
+  },
+  {
+    "id": "logic_0259_01",
+    "question": "Is the following statement true? Statement: If a student has received support from the international office, then they have gained international experience"
+  },
+  {
+    "id": "logic_0260_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0260_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student does not participate in extracurricular activities, they cannot develop leadership skills."
+  },
+  {
+    "id": "logic_0261_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0261_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If an advanced seminar exists, then students who do not maintain academic excellence are removed from the advanced research program."
+  },
+  {
+    "id": "logic_0262_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0262_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student is in the machine learning specialization, they gain practical coding experience."
+  },
+  {
+    "id": "logic_0263_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0263_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student receives a research grant, they automatically maintain academic excellence."
+  },
+  {
+    "id": "logic_0264_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0264_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: If a student obtains academic credits, they meet course requirements."
+  },
+  {
+    "id": "logic_0265_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0265_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ((QualifiesForScholarship(x) → AttendsTraining(x)) → ForAll(x, StudiesRegularly(x)))"
+  },
+  {
+    "id": "logic_0266_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0266_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ((QualifiesForScholarship(x) → AttendsTutoring(x)) → ForAll(x, StudiesRegularly(x)))"
+  },
+  {
+    "id": "logic_0267_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0267_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (¬ReceivesRecommendation(x) → ¬AttendsTutoring(x))"
+  },
+  {
+    "id": "logic_0268_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0268_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (¬ReceivesAward(x) → ¬AttendsTutoring(x))"
+  },
+  {
+    "id": "logic_0269_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0269_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ForAll(x, QualifiesScholarship(x))"
+  },
+  {
+    "id": "logic_0270_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0270_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ForAll(x, StudiesRegularly(x))"
+  },
+  {
+    "id": "logic_0271_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0271_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ((AttendsTutoring(x) → QualifiesScholarship(x)) → (ReceivesRecommendation(x) → StudiesRegularly(x)))"
+  },
+  {
+    "id": "logic_0272_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0272_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (StudiesRegularly(x) → AttendsTutoring(x))"
+  },
+  {
+    "id": "logic_0273_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0273_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (¬TakesTest(x) → ¬AsksQuestions(x))"
+  },
+  {
+    "id": "logic_0274_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0274_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: Exists(x, AttendsTutoring(x))"
+  },
+  {
+    "id": "logic_0275_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all students complete the end-of-term research paper?"
+  },
+  {
+    "id": "logic_0275_01",
+    "question": "If all students complete the end-of-term research paper, does it follow that if a broader understanding implies mentoring, then investing time in project-based learning implies a broader understanding?"
+  },
+  {
+    "id": "logic_0276_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all researchers write publications?"
+  },
+  {
+    "id": "logic_0277_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who passes the course?"
+  },
+  {
+    "id": "logic_0277_01",
+    "question": "If it's true that not understanding course material implies not taking detailed notes, does it follow that there exists at least one student who takes detailed notes?"
+  },
+  {
+    "id": "logic_0278_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all students are qualified for graduation?"
+  },
+  {
+    "id": "logic_0278_01",
+    "question": "If all students are qualified for graduation, does it follow that there exists at least one student who takes advanced courses?"
+  },
+  {
+    "id": "logic_0279_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there is at least one learner who successfully undertakes an independent research project?"
+  },
+  {
+    "id": "logic_0279_01",
+    "question": "If there is at least one learner who successfully undertakes an independent research project, does it follow that if there is a specialized computer science learner, then an independent research project leads to an academic distinction?"
+  },
+  {
+    "id": "logic_0280_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that everyone in the program regularly attends lectures?"
+  },
+  {
+    "id": "logic_0281_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one teaching assistant in the computer science department?"
+  },
+  {
+    "id": "logic_0281_01",
+    "question": "If there exists at least one teaching assistant in the computer science department, does it follow that if there exists a student who participates in research projects, then it is true that students who don't submit all assignments won't receive academic honors?"
+  },
+  {
+    "id": "logic_0282_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all students contribute to open-source projects?"
+  },
+  {
+    "id": "logic_0283_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all students submit all required assignments?"
+  },
+  {
+    "id": "logic_0283_01",
+    "question": "If all students submit all required assignments, does it follow that if there exists an educational technology laboratory, all students take part in collaborative learning activities?"
+  },
+  {
+    "id": "logic_0284_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who qualifies for the honors program?"
+  },
+  {
+    "id": "logic_0284_01",
+    "question": "If there exists at least one student who qualifies for the honors program, does it follow that if participating in group projects means receiving constructive feedback, then all students participate in group projects?"
+  },
+  {
+    "id": "logic_0285_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all students take final examinations?"
+  },
+  {
+    "id": "logic_0285_01",
+    "question": "If all students take final examinations, does it follow that if there is a research program at the university, then there is at least one student who takes final examinations?"
+  },
+  {
+    "id": "logic_0286_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that all computer science students are skilled in software development?"
+  },
+  {
+    "id": "logic_0286_01",
+    "question": "If all computer science students are skilled in software development, does it follow that if having software development skills meaning capable of producing professional applications implies that regular coding practice leads to software skill, then the reverse implication also holds?"
+  },
+  {
+    "id": "logic_0287_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who graduates on time?"
+  },
+  {
+    "id": "logic_0287_01",
+    "question": "If there exists at least one student who graduates on time, does it follow that if a student doesn't understand foundational concepts, then that student won't graduate on time?"
+  },
+  {
+    "id": "logic_0288_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who has completed an immersion program?"
+  },
+  {
+    "id": "logic_0289_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who utilizes online learning resources?"
+  },
+  {
+    "id": "logic_0289_01",
+    "question": "If there exists at least one student who utilizes online learning resources, does it follow that if it's true that the existence of a student utilizing online resources implies all students take part in team projects, then all students utilize online learning resources?"
+  },
+  {
+    "id": "logic_0290_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who qualifies for honors distinction?"
+  },
+  {
+    "id": "logic_0290_01",
+    "question": "If there exists at least one student who qualifies for honors distinction, does it follow that if a program incorporates thesis requirements, then it is research-based?"
+  },
+  {
+    "id": "logic_0291_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one student who earns language certification?"
+  },
+  {
+    "id": "logic_0291_01",
+    "question": "If there exists at least one student who earns language certification, does it follow that there exists at least one student who earns language certification?"
+  },
+  {
+    "id": "logic_0292_00",
+    "question": "What can we figure out about students?"
+  },
+  {
+    "id": "logic_0292_01",
+    "question": "Can we say that every enrolled student has access to the university library?"
+  },
+  {
+    "id": "logic_0293_00",
+    "question": "Which can be inferred about excessive competition’s effects?"
+  },
+  {
+    "id": "logic_0293_01",
+    "question": "Can students with excessive competition mitigate stress through self-reflection?"
+  },
+  {
+    "id": "logic_0294_00",
+    "question": "Which can be inferred about effective policies?"
+  },
+  {
+    "id": "logic_0294_01",
+    "question": "Do well-structured curricula improve learning outcomes?"
+  },
+  {
+    "id": "logic_0295_00",
+    "question": "Which can be inferred about teaching methods in innovative schools?"
+  },
+  {
+    "id": "logic_0295_01",
+    "question": "Do modern facilities enhance learning environments?"
+  },
+  {
+    "id": "logic_0296_00",
+    "question": "Which can be inferred about students who attend lectures?"
+  },
+  {
+    "id": "logic_0296_01",
+    "question": "Do students who practice excel in exams?"
+  },
+  {
+    "id": "logic_0297_00",
+    "question": "Which can be inferred about universities with online courses?"
+  },
+  {
+    "id": "logic_0297_01",
+    "question": "Do well-ranked universities improve student satisfaction?"
+  },
+  {
+    "id": "logic_0298_00",
+    "question": "Which can be inferred about students with personalized support?"
+  },
+  {
+    "id": "logic_0298_01",
+    "question": "Can students avoid burnout by managing time effectively?"
+  },
+  {
+    "id": "logic_0299_00",
+    "question": "Which can be inferred about students in interactive learning environments?"
+  },
+  {
+    "id": "logic_0299_01",
+    "question": "Can students with metacognitive skills avoid academic pressure’s negative effects?"
+  },
+  {
+    "id": "logic_0300_00",
+    "question": "Which can be inferred about students with self-directed learning?"
+  },
+  {
+    "id": "logic_0300_01",
+    "question": "Can students with open-ended projects avoid rigid curriculum struggles?"
+  },
+  {
+    "id": "logic_0301_00",
+    "question": "Which can be inferred about students with personalized learning plans?"
+  },
+  {
+    "id": "logic_0301_01",
+    "question": "Can students in flexible learning environments improve decision-making?"
+  },
+  {
+    "id": "logic_0302_00",
+    "question": "Which can be inferred about students with clear learning objectives?"
+  },
+  {
+    "id": "logic_0302_01",
+    "question": "Can students in problem-based learning improve self-learning?"
+  },
+  {
+    "id": "logic_0303_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0303_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (Exists(x, InstallsSoftware(x)) → (¬UpdatesSoftware(x) → ¬SecureSoftware(x)))"
+  },
+  {
+    "id": "logic_0304_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0304_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (¬AttendsLectures(x) → ¬CompletesAssignments(x))"
+  },
+  {
+    "id": "logic_0305_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0305_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ForAll(x, Cataloged(x))"
+  },
+  {
+    "id": "logic_0306_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0306_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: (PracticeExercises(x) → PerformWell(x))"
+  },
+  {
+    "id": "logic_0307_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0307_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ((Exists(x, SubmitsAssignments(x)) → ForAll(x, PassesTest(x))) → ForAll(x, SubmitsAssignments(x)))"
+  },
+  {
+    "id": "logic_0308_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0308_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: Exists(x, ParticipatesInStudyGroup(x))"
+  },
+  {
+    "id": "logic_0309_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0309_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ForAll(x, (PythonScript(x) → HasErrorHandling(x)))"
+  },
+  {
+    "id": "logic_0310_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0310_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: Exists(x, Differentiable(x))"
+  },
+  {
+    "id": "logic_0311_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0311_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: Exists(x, CompletingAssignments(x))"
+  },
+  {
+    "id": "logic_0312_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0312_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: Frieren must register for the BKA program."
+  },
+  {
+    "id": "logic_0313_00",
+    "question": "Which can be inferred about Sarifi’s academic status?"
+  },
+  {
+    "id": "logic_0313_01",
+    "question": "Did Sarifi avoid failing by not being absent?"
+  },
+  {
+    "id": "logic_0314_00",
+    "question": "Which can be inferred about Mia’s preparation?"
+  },
+  {
+    "id": "logic_0314_01",
+    "question": "Did Mia pass due to not helping others?"
+  },
+  {
+    "id": "logic_0315_00",
+    "question": "How did Mia pass the course?"
+  },
+  {
+    "id": "logic_0315_01",
+    "question": "Did Mia rely on her own performance to pass?"
+  },
+  {
+    "id": "logic_0316_00",
+    "question": "What can be inferred about Iruma’s academic progress?"
+  },
+  {
+    "id": "logic_0316_01",
+    "question": "Can Iruma do a graduation project?"
+  },
+  {
+    "id": "logic_0317_00",
+    "question": "Which statement can be inferred about Yashiro?"
+  },
+  {
+    "id": "logic_0317_01",
+    "question": "Did Yashiro redo the assignment?"
+  },
+  {
+    "id": "logic_0318_00",
+    "question": "What can be inferred about Ponko’s class status?"
+  },
+  {
+    "id": "logic_0318_01",
+    "question": "Will Ponko fail the class?"
+  },
+  {
+    "id": "logic_0319_00",
+    "question": "Which statement can be inferred about Dio?"
+  },
+  {
+    "id": "logic_0319_01",
+    "question": "Did Dio pass by reading books?"
+  },
+  {
+    "id": "logic_0320_00",
+    "question": "What enabled Rillance to qualify for a scholarship?"
+  },
+  {
+    "id": "logic_0320_01",
+    "question": "Did Rillance’s basketball team status help qualify for a scholarship?"
+  },
+  {
+    "id": "logic_0321_00",
+    "question": "What can be inferred about students’ societal impact?"
+  },
+  {
+    "id": "logic_0321_01",
+    "question": "Do students guided by teachers contribute to society?"
+  },
+  {
+    "id": "logic_0322_00",
+    "question": "Which statement can be inferred about Ruri?"
+  },
+  {
+    "id": "logic_0322_01",
+    "question": "Did Ruri gain experience from the assignment?"
+  },
+  {
+    "id": "logic_0323_00",
+    "question": "What can be inferred about students taught by teachers?"
+  },
+  {
+    "id": "logic_0323_01",
+    "question": "Does Mia have motivation?"
+  },
+  {
+    "id": "logic_0324_00",
+    "question": "What do students gain from attending school?"
+  },
+  {
+    "id": "logic_0324_01",
+    "question": "Do all students gain knowledge?"
+  },
+  {
+    "id": "logic_0325_00",
+    "question": "What follows from students attending school?"
+  },
+  {
+    "id": "logic_0325_01",
+    "question": "Do students contribute to society?"
+  },
+  {
+    "id": "logic_0326_00",
+    "question": "What affects model performance?"
+  },
+  {
+    "id": "logic_0326_01",
+    "question": "How do supervised learning models function?"
+  },
+  {
+    "id": "logic_0327_00",
+    "question": "What optimizes SQL query performance?"
+  },
+  {
+    "id": "logic_0327_01",
+    "question": "What does the GROUP BY clause achieve in SQL queries?"
+  },
+  {
+    "id": "logic_0328_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0328_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: ForAll(x, (¬EngagesInLearningProcess(x) → ¬SucceedsInAssessments(x)))"
+  },
+  {
+    "id": "logic_0329_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0329_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student does not meet academic standards, they will not be able to advance to further educational opportunities."
+  },
+  {
+    "id": "logic_0330_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0330_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student demonstrates competence in one subject, they are qualified to advance to a more challenging subject."
+  },
+  {
+    "id": "logic_0331_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0331_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student demonstrates competence in one subject, they are qualified to advance to a more challenging subject."
+  },
+  {
+    "id": "logic_0332_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0332_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∃x T(x) → ∀x T(x)"
+  },
+  {
+    "id": "logic_0333_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0333_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If an AI model is not trained, it cannot generalize to unseen data."
+  },
+  {
+    "id": "logic_0334_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0334_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: A student who uses security measures will protect user data on their website."
+  },
+  {
+    "id": "logic_0335_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0335_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: A student who manages their time and sets goals will study effectively."
+  },
+  {
+    "id": "logic_0336_00",
+    "question": "Based on the premises above, which of the following statements can be logically concluded if we know that all students have passed the Philosophy prerequisite?"
+  },
+  {
+    "id": "logic_0336_01",
+    "question": "If all students have passed the Philosophy prerequisite, does it follow that passing Philosophy (P) requires enrollment in Research Methods (R)?"
+  },
+  {
+    "id": "logic_0337_00",
+    "question": "Based on the university policies above, which conclusion is logically valid if we know that all students x have passed the Philosophy prerequisite?"
+  },
+  {
+    "id": "logic_0337_01",
+    "question": "If there exists at least one student x who has completed Thesis Writing, does it follow that all students receive Scholarships?"
+  },
+  {
+    "id": "logic_0338_00",
+    "question": "Based on the university policies, which conclusion is valid if we know that all students are required to complete a Thesis?"
+  },
+  {
+    "id": "logic_0338_01",
+    "question": "If all students are required to complete a Thesis, does it follow that students with low GPAs lose housing access?"
+  },
+  {
+    "id": "logic_0339_00",
+    "question": "Based on university policies, which conclusion is valid if we know that there is at least one recipient of the Research grant?"
+  },
+  {
+    "id": "logic_0339_01",
+    "question": "If all students have completed their Thesis, does it follow that all students have University housing access?"
+  },
+  {
+    "id": "logic_0340_00",
+    "question": "Based on university policies, which conclusion is valid if we know that all students are enrolled in Quantum Physics?"
+  },
+  {
+    "id": "logic_0340_01",
+    "question": "If all students are guaranteed University housing, does it follow that students without Scholarships are denied Research grants?"
+  },
+  {
+    "id": "logic_0341_00",
+    "question": "Based on university policies, which conclusion is valid if we know that all students are required to submit a Research project?"
+  },
+  {
+    "id": "logic_0341_01",
+    "question": "If all students are required to submit a Research project, does it follow that Research project completion grants housing access?"
+  },
+  {
+    "id": "logic_0342_00",
+    "question": "Based on university policies, which conclusion is valid if we know that every student must submit a Research project?"
+  },
+  {
+    "id": "logic_0342_01",
+    "question": "If all students are guaranteed University housing, does it follow that passing Philosophy grants University housing access?"
+  },
+  {
+    "id": "logic_0343_00",
+    "question": "Based on university policies, which conclusion is valid if we know that all students are guaranteed University housing?"
+  },
+  {
+    "id": "logic_0343_01",
+    "question": "If all students are guaranteed University housing, does it follow that universal housing guarantees Scholarship checks for Thesis under Quantum enrollment?"
+  },
+  {
+    "id": "logic_0344_00",
+    "question": "Based on university policies, which conclusion follows if we know that some students have submitted theses?"
+  },
+  {
+    "id": "logic_0344_01",
+    "question": "If some students have submitted theses, does it follow that dormitory access requires thesis submission?"
+  },
+  {
+    "id": "logic_0345_00",
+    "question": "Based on registration policies, which rule is enforced if we know that every registration has advisor approval?"
+  },
+  {
+    "id": "logic_0345_01",
+    "question": "If all students have cleared tuition payments, does it follow that all students satisfy prerequisite requirements?"
+  },
+  {
+    "id": "logic_0346_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that there exists at least one object x that has property R?"
+  },
+  {
+    "id": "logic_0346_01",
+    "question": "If there exists at least one object x that has property R, does it follow that there exists at least one object x that has property R?"
+  },
+  {
+    "id": "logic_0347_00",
+    "question": "Based on university policies, which conclusion is valid if we know that failing Philosophy revokes dormitory access?"
+  },
+  {
+    "id": "logic_0347_01",
+    "question": "If submitting a research proposal requires advisor review, does it follow that advisor-reviewed work guarantees dorm access?"
+  },
+  {
+    "id": "logic_0348_00",
+    "question": "Considering the above premises from the University of Technology, which of the following statements can be logically deduced if we know that every object x has property T?"
+  },
+  {
+    "id": "logic_0348_01",
+    "question": "If every object x has property Q, does it follow that if an object does not have property Q, then it does not have property P?"
+  },
+  {
+    "id": "logic_0349_00",
+    "question": "Based on university policies, which conclusion is valid if we know that some students qualify for Quantum Physics?"
+  },
+  {
+    "id": "logic_0349_01",
+    "question": "If all students have dormitory access, does it follow that some students completed Research projects?"
+  },
+  {
+    "id": "logic_0350_00",
+    "question": "Considering the above premises from the University of Technology, which of the following statements can be logically deduced if we know that there exists at least one object x that has property U?"
+  },
+  {
+    "id": "logic_0350_01",
+    "question": "If every object x has property P, does it follow that if it is the case that if an object lacks property S then it does not have property P, then there exists at least one object with property P?"
+  },
+  {
+    "id": "logic_0351_00",
+    "question": "Based on the above premises provided in the context of a university, which of the following statements can be logically deduced if we know that there exists at least one object x that has property R?"
+  },
+  {
+    "id": "logic_0351_01",
+    "question": "If there exists at least one object x that has property R, does it follow that every object has property P?"
+  },
+  {
+    "id": "logic_0352_00",
+    "question": "Which policy is validated by university regulations if we know that failing Philosophy blocks Quantum Physics enrollment?"
+  },
+  {
+    "id": "logic_0352_01",
+    "question": "If submitting a thesis proposal requires advisor approval, does it follow that the thesis approval → research-dormitory rule holds?"
+  },
+  {
+    "id": "logic_0353_00",
+    "question": "Based on university policies, which conclusion is valid if we know that no entrance exam pass → No Research completion?"
+  },
+  {
+    "id": "logic_0353_01",
+    "question": "If some students completed Research projects, does it follow that the existence of Research completers enforces Quantum Physics requirements?"
+  },
+  {
+    "id": "logic_0354_00",
+    "question": "Based on the above premises provided in the context of a university, which of the following statements can be logically deduced if we know that if an object x has property U, then it has property T?"
+  },
+  {
+    "id": "logic_0354_01",
+    "question": "If every object has property R, does it follow that there exists at least one object with property Q?"
+  },
+  {
+    "id": "logic_0355_00",
+    "question": "Which statement can be inferred?"
+  },
+  {
+    "id": "logic_0355_01",
+    "question": "Which activities contribute to students performing well in exams?"
+  },
+  {
+    "id": "logic_0356_00",
+    "question": "Which statement can be inferred?"
+  },
+  {
+    "id": "logic_0356_01",
+    "question": "Do all students qualify for the Quantum Physics competition?"
+  },
+  {
+    "id": "logic_0357_00",
+    "question": "Which statement can be inferred?"
+  },
+  {
+    "id": "logic_0357_01",
+    "question": "Do all students qualify for the Quantum Physics competition?"
+  },
+  {
+    "id": "logic_0358_00",
+    "question": "Which statement can be inferred?"
+  },
+  {
+    "id": "logic_0358_01",
+    "question": "Do all students enroll in online courses?"
+  },
+  {
+    "id": "logic_0359_00",
+    "question": "What ensures a student avoids taking an exam?"
+  },
+  {
+    "id": "logic_0359_01",
+    "question": "What qualifies a student for a scholarship?"
+  },
+  {
+    "id": "logic_0360_00",
+    "question": "Can Tuan take the Machine Learning 101 course?"
+  },
+  {
+    "id": "logic_0360_01",
+    "question": "What allows a student to take a course?"
+  },
+  {
+    "id": "logic_0361_00",
+    "question": "Can Nam apply for early graduation?"
+  },
+  {
+    "id": "logic_0361_01",
+    "question": "Can Nam register for Advanced Algorithms?"
+  },
+  {
+    "id": "logic_0362_00",
+    "question": "Can Tuan receive a scholarship?"
+  },
+  {
+    "id": "logic_0362_01",
+    "question": "Does Tuan have knowledge of his A-grade subjects?"
+  },
+  {
+    "id": "logic_0363_00",
+    "question": "Do all students earn an A or A+?"
+  },
+  {
+    "id": "logic_0363_01",
+    "question": "What follows if a student earns an A?"
+  },
+  {
+    "id": "logic_0364_00",
+    "question": "Which statement can be inferred?"
+  },
+  {
+    "id": "logic_0364_01",
+    "question": "Do all students who want to understand the lesson pay attention?"
+  },
+  {
+    "id": "logic_0365_00",
+    "question": "Do all students pass Algorithms?"
+  },
+  {
+    "id": "logic_0365_01",
+    "question": "Which conditions would prevent a student from meeting Software Engineering requirements?"
+  },
+  {
+    "id": "logic_0366_00",
+    "question": "Which statement can be inferred?"
+  },
+  {
+    "id": "logic_0366_01",
+    "question": "Are all AI systems trustworthy?"
+  },
+  {
+    "id": "logic_0367_00",
+    "question": "Do all students attend Programming Fundamentals?"
+  },
+  {
+    "id": "logic_0367_01",
+    "question": "Which courses have all students passed?"
+  },
+  {
+    "id": "logic_0368_00",
+    "question": "Do all students receive a passing grade?"
+  },
+  {
+    "id": "logic_0368_01",
+    "question": "Which outcomes are guaranteed for all students?"
+  },
+  {
+    "id": "logic_0369_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0369_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If students receive low grades, they will seek additional support."
+  },
+  {
+    "id": "logic_0370_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0370_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: It is not true that if a student learns, they will grow."
+  },
+  {
+    "id": "logic_0371_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0371_01",
+    "question": "Based on the premises, is the following statement true?\nStatement: John has missed more than 3 classes this semester."
+  },
+  {
+    "id": "logic_0372_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0372_01",
+    "question": "Based on the premises, is An allowed to borrow books from the school library?"
+  },
+  {
+    "id": "logic_0373_00",
+    "question": "Based on the above premises, which of the following statements can be inferred?"
+  },
+  {
+    "id": "logic_0373_01",
+    "question": "According to the above premises, is the following statement true?\nStatement: If every student participates in a course, then if a student is enrolled, they must complete the assignments."
+  },
+  {
+    "id": "logic_0374_00",
+    "question": "Based on the above premises, which statement can be logically inferred?"
+  },
+  {
+    "id": "logic_0374_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If a student did not sign the academic integrity agreement, then they did not receive course recognition."
+  },
+  {
+    "id": "logic_0375_00",
+    "question": "Based on the above premises, which statement can be logically inferred?"
+  },
+  {
+    "id": "logic_0375_01",
+    "question": "Based on the above premises, is the following statement true?\nStatement: If students fail to meet the standards, they must take up the project the following semester."
+  },
+  {
+    "id": "logic_0376_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Kelvin submitted his CH3002 lab report on time?"
+  },
+  {
+    "id": "logic_0376_01",
+    "question": "If Kelvin submitted his CH3002 lab report on time, does it follow that Kelvin is allowed to take the exam for CH3002?"
+  },
+  {
+    "id": "logic_0377_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Lan is enrolled in Chemistry 101?"
+  },
+  {
+    "id": "logic_0377_01",
+    "question": "If Lan is enrolled in Chemistry 101, does it follow that Lan is allowed to enter the laboratory for Chemistry 101?"
+  },
+  {
+    "id": "logic_0378_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Linh is a full-time student with health issues?"
+  },
+  {
+    "id": "logic_0378_01",
+    "question": "If Linh is taking exactly 12 credits this semester, does it follow that Linh is eligible for the tuition discount?"
+  },
+  {
+    "id": "logic_0379_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Hà has accumulated 80 credits in the training program?"
+  },
+  {
+    "id": "logic_0379_01",
+    "question": "If Hà has accumulated 80 credits in the training program, does it follow that Hà has accumulated more than 65% of the total credits required for the internship?"
+  },
+  {
+    "id": "logic_0380_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Phong has an average semester score of 2.3?"
+  },
+  {
+    "id": "logic_0380_01",
+    "question": "If Phong has an average semester score of 2.3, does it follow that Phong’s academic ranking is Average?"
+  },
+  {
+    "id": "logic_0381_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Tâm has accumulated 40 credits and has met the foreign language standard for year two?"
+  },
+  {
+    "id": "logic_0381_01",
+    "question": "If Tâm has met the foreign language standard for year two, does it follow that Tâm is eligible for the mentorship program?"
+  },
+  {
+    "id": "logic_0382_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that Phong has accumulated 70 credits and has met the foreign language standard for year three?"
+  },
+  {
+    "id": "logic_0382_01",
+    "question": "If Phong has met the foreign language standard for year three, does it follow that Phong is eligible to apply for study abroad?"
+  },
+  {
+    "id": "logic_0383_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that students work in groups?"
+  },
+  {
+    "id": "logic_0383_01",
+    "question": "If students work in groups, does it follow that it is not true that group work improves student performance?"
+  },
+  {
+    "id": "logic_0384_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that if a person is a teacher, then that person is respected?"
+  },
+  {
+    "id": "logic_0384_01",
+    "question": "If every teacher is respected, does it follow that someone is prepared?"
+  },
+  {
+    "id": "logic_0385_00",
+    "question": "Based on the above premises, which statement can be inferred if we know that every student is participating in the training session?"
+  },
+  {
+    "id": "logic_0385_01",
+    "question": "If every student is participating in the training session, does it follow that if there exists a student participating in the training session, then all students are participating in the training session?"
+  },
+  {
+    "id": "logic_0386_00",
+    "question": "Based on the above premises, which statement can be logically inferred if we know that all students have attended the Software Engineering workshop?"
+  },
+  {
+    "id": "logic_0386_01",
+    "question": "If there exists at least one student who has submitted the final project, does it follow that if a student has submitted the final project, then they have passed the Technical Writing course?"
+  },
+  {
+    "id": "logic_0387_00",
+    "question": "Based on the above premises, which statement can be logically inferred if we know that there exists at least one student who has completed the Data Science course?"
+  },
+  {
+    "id": "logic_0387_01",
+    "question": "If there exists at least one student who has completed the Data Science course, does it follow that if a student has completed the Data Science course, then they have passed the Data Analytics exam?"
+  },
+  {
+    "id": "logic_0388_00",
+    "question": "Based on the premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0388_01",
+    "question": "Do all students in the AI program build trustworthy systems, according to the premises?"
+  },
+  {
+    "id": "logic_0389_00",
+    "question": "Based on the above premises, which statement can be logically inferred if we know that all students must meet the eligibility requirements to enroll in the advanced courses?"
+  },
+  {
+    "id": "logic_0389_01",
+    "question": "If all students must meet the eligibility requirements to enroll in the advanced courses, does it follow that if a student has failed to meet the standards for a course, they are not allowed to participate in the final project preparation?"
+  },
+  {
+    "id": "logic_0390_00",
+    "question": "Do all students participate in research?"
+  },
+  {
+    "id": "logic_0390_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0391_00",
+    "question": "Do all students complete the capstone project?"
+  },
+  {
+    "id": "logic_0391_01",
+    "question": "Which skills do all students possess?"
+  },
+  {
+    "id": "logic_0392_00",
+    "question": "Do all students write a thesis?"
+  },
+  {
+    "id": "logic_0392_01",
+    "question": "Which qualifications do all students possess?"
+  },
+  {
+    "id": "logic_0393_00",
+    "question": "Do all students submit their thesis?"
+  },
+  {
+    "id": "logic_0393_01",
+    "question": "Which traits do all students possess?"
+  },
+  {
+    "id": "logic_0394_00",
+    "question": "Do all students receive a recommendation?"
+  },
+  {
+    "id": "logic_0394_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0395_00",
+    "question": "Do all students receive a recommendation?"
+  },
+  {
+    "id": "logic_0395_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0396_00",
+    "question": "Do all students submit their assignment?"
+  },
+  {
+    "id": "logic_0396_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0397_00",
+    "question": "Do all students submit a personal statement?"
+  },
+  {
+    "id": "logic_0397_01",
+    "question": "Which qualifications do all students possess?"
+  },
+  {
+    "id": "logic_0398_00",
+    "question": "Do all students complete the training session?"
+  },
+  {
+    "id": "logic_0398_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0399_00",
+    "question": "Do all students write a motivation letter?"
+  },
+  {
+    "id": "logic_0399_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0400_00",
+    "question": "Do all students participate in leadership activities?"
+  },
+  {
+    "id": "logic_0400_01",
+    "question": "Which achievements have all students accomplished?"
+  },
+  {
+    "id": "logic_0401_00",
+    "question": "Do all students submit their final assignment?"
+  },
+  {
+    "id": "logic_0401_01",
+    "question": "Which activities do all students perform?"
+  },
+  {
+    "id": "logic_0402_00",
+    "question": "Do all students complete the seminar?"
+  },
+  {
+    "id": "logic_0402_01",
+    "question": "Which qualifications do all students possess?"
+  },
+  {
+    "id": "logic_0403_00",
+    "question": "Which statement follows from the premises?"
+  },
+  {
+    "id": "logic_0403_01",
+    "question": "Do all students meet the registration deadline?"
+  },
+  {
+    "id": "logic_0404_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0404_01",
+    "question": "Is it true that if all students enrolled in Calculus I, then all students are allowed to enroll in courses?"
+  },
+  {
+    "id": "logic_0405_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0405_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∀x (¬H(x) → ¬W(x))"
+  },
+  {
+    "id": "logic_0406_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0406_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∀x (¬W(x) → ¬P(x))"
+  },
+  {
+    "id": "logic_0407_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0407_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∀x L(x)"
+  },
+  {
+    "id": "logic_0408_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0408_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∀x H(x)"
+  },
+  {
+    "id": "logic_0409_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0409_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ∀x W(x)"
+  },
+  {
+    "id": "logic_0410_00",
+    "question": "Based on the above premises, which statement can be inferred?"
+  },
+  {
+    "id": "logic_0410_01",
+    "question": "Based on the above premises, is the statement true?\nStatement: ¬∀x O(x)"
+  }
+]

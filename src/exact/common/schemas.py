@@ -52,13 +52,26 @@ class InboundBaseModel(BaseModel):
 
 
 class PredictionRequest(InboundBaseModel):
-    """Normalized input sample."""
+    """Unified Type 1 / Type 2 prediction input.
 
-    query_id: str | None = Field(default=None, validation_alias=AliasChoices("id", "query_id"))
-    question: str = Field(validation_alias=AliasChoices("question", "query"))
+    The public API uses ``query_id`` and ``query``. Legacy callers may still
+    send ``id`` and ``question``.
+    """
+
+    query_id: str | None = Field(default=None, validation_alias=AliasChoices("query_id", "id"))
+    question: str = Field(validation_alias=AliasChoices("query", "question"))
     type: Literal["type1", "type2"] | None = None
-    premises: list[str] | None = None
-    options: Any | None = None
+    premises: list[str] | None = Field(
+        default=None,
+        validation_alias=AliasChoices("premises", "premises-NL", "premises_nl"),
+    )
+    options: list[str] | dict[str, str] | None = None
+
+    @property
+    def id(self) -> str | None:
+        """Compatibility alias used by existing Type 2 pipelines."""
+
+        return self.query_id
 
     @field_validator("question")
     @classmethod
@@ -67,10 +80,19 @@ class PredictionRequest(InboundBaseModel):
             raise ValueError("question must not be empty")
         return value
 
-    @property
-    def id(self) -> str | None:
-        """Backward-compatible request identifier alias used by older runners."""
-        return self.query_id
+    @field_validator("premises")
+    @classmethod
+    def clean_premises(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        return [item.strip() for item in value if item and item.strip()]
+
+
+class UnifiedPredictionRequest(PredictionRequest):
+    """Strict public ``/predict`` contract for routing both task types."""
+
+    query_id: str = Field(validation_alias=AliasChoices("query_id", "id"))
+    type: Literal["type1", "type2"]
 
 
 class ParsePremisesRequest(InboundBaseModel):
@@ -112,6 +134,7 @@ class PredictionResponse(AppBaseModel):
     fol: str | None = None
     cot: list[str] | None = None
     premises: list[str] | None = None
+    premises_used: list[str] | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     id: str | None = None
     task_type: TaskType | None = None
@@ -130,5 +153,6 @@ def to_official_response(response: PredictionResponse) -> dict[str, Any]:
         "fol": response.fol,
         "cot": response.cot,
         "premises": response.premises,
+        "premises_used": response.premises_used,
         "confidence": response.confidence,
     }

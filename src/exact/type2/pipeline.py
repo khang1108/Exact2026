@@ -16,6 +16,7 @@ from exact.type2.extraction.llm_structured import (
 from exact.type2.extraction.verifier import verify_type2_extraction
 from exact.type2.deterministic import merge_routing_diagnostics, run_deterministic_stage
 from exact.type2.formulas.knowledge import retrieve_formula_context
+from exact.type2.geometry_context import build_geometry_prompt_context
 from exact.type2.routing import build_routing_diagnostics, mark_current_solver_used
 from exact.type2.schemas import (
     Extraction,
@@ -337,6 +338,7 @@ def _agent_loop_response(
             limit=settings.type2_formula_limit,
             settings=settings,
         )
+        geometry_prompt_context = build_geometry_prompt_context(extraction)
 
         result = solve_with_pot(
             extraction,
@@ -372,6 +374,7 @@ def _agent_loop_response(
                     attempt,
                     attempts,
                     result.error if result.error else None,
+                    geometry_prompt_context=geometry_prompt_context,
                 ),
                 settings=settings,
                 temperature=_agent_loop_temperature(settings, attempt),
@@ -461,6 +464,7 @@ def _agent_loop_failure_context(
     attempt: int,
     attempts: list[dict[str, Any]],
     latest_solver_error: str | None = None,
+    geometry_prompt_context: str | None = None,
 ) -> str:
     guidance = (
         "If the structured pipeline context is incomplete or wrong, solve directly from the "
@@ -468,6 +472,11 @@ def _agent_loop_failure_context(
         "Infer the relevant physics principle, compute the answer when possible, and return the "
         "best direct answer. Prefer a concise numeric answer with a unit when the question asks "
         "for a calculation."
+    )
+    geometry_payload = (
+        {"geometry_prompt_context": geometry_prompt_context}
+        if geometry_prompt_context
+        else {}
     )
     if previous_response is None:
         return str(
@@ -477,6 +486,7 @@ def _agent_loop_failure_context(
                 "previous_attempts": attempts,
                 "latest_solver_error": latest_solver_error,
                 "guidance": guidance,
+                **geometry_payload,
             }
         )
     payload = {
@@ -488,6 +498,7 @@ def _agent_loop_failure_context(
         "previous_explanation": previous_response.explanation,
         "latest_solver_error": latest_solver_error,
         "guidance": guidance,
+        **geometry_payload,
     }
     return str(payload)
 

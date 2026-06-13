@@ -31,28 +31,32 @@ def build_execution_policy(
     solver_family: str | None = None,
     solve_method: str | None = None,
 ) -> ExecutionPolicy:
-    if isinstance(answer_mode, str):
-        try:
-            answer_mode = Type2QuestionKind(answer_mode)
-        except ValueError:
-            return ExecutionPolicy(pot_mode=PotMode.DISABLED, solver_family=solver_family, solve_method=solve_method)
+    kind = _kind_value(answer_mode)
 
-    if answer_mode == Type2QuestionKind.SCALAR_NUMERIC:
-        return ExecutionPolicy(pot_mode=PotMode.NUMERIC_SINGLE, solver_family=solver_family, solve_method=solve_method)
+    if kind in {
+        Type2QuestionKind.NUMERICAL.value,
+        "scalar_numeric",
+        Type2QuestionKind.MIXED.value,
+    }:
+        return ExecutionPolicy(
+            pot_mode=PotMode.NUMERIC_SINGLE,
+            solver_family=solver_family,
+            solve_method=solve_method,
+        )
 
-    if answer_mode == Type2QuestionKind.MULTI_VALUE_NUMERIC:
+    if kind == "multi_value_numeric":
         return ExecutionPolicy(pot_mode=PotMode.NUMERIC_MULTI_JSON, solver_family=solver_family, solve_method=solve_method)
 
-    if answer_mode == Type2QuestionKind.SYMBOLIC_FORMULA:
+    if kind == "symbolic_formula":
         return ExecutionPolicy(pot_mode=PotMode.SYMBOLIC_EXPR_JSON, solver_family=solver_family, solve_method=solve_method)
 
-    if answer_mode == Type2QuestionKind.LOCATION_OR_ANGLE_NUMERIC:
+    if kind == "location_or_angle_numeric":
         return ExecutionPolicy(pot_mode=PotMode.LOCATION_OR_ANGLE_NUMERIC, solver_family=solver_family, solve_method=solve_method)
 
-    if answer_mode == Type2QuestionKind.DIRECTIONAL_OUTPUT:
+    if kind == "directional_output":
         return ExecutionPolicy(pot_mode=PotMode.DISABLED, use_direction_classifier=True, solver_family=solver_family, solve_method=solve_method)
 
-    if answer_mode == Type2QuestionKind.QUALITATIVE_CONCEPTUAL:
+    if kind in {Type2QuestionKind.CONCEPTUAL.value, "qualitative_conceptual"}:
         return ExecutionPolicy(pot_mode=PotMode.DISABLED, use_conceptual_classifier=True, solver_family=solver_family, solve_method=solve_method)
 
     return ExecutionPolicy(pot_mode=PotMode.DISABLED, solver_family=solver_family, solve_method=solve_method)
@@ -61,32 +65,36 @@ def build_execution_policy(
 def validate_fallback_output(kind: Type2QuestionKind | str, output: Any) -> bool:
     if not output:
         return False
-        
-    if isinstance(kind, str):
-        try:
-            kind = Type2QuestionKind(kind)
-        except ValueError:
-            return False
 
-    if kind == Type2QuestionKind.SCALAR_NUMERIC:
+    kind_value = _kind_value(kind)
+
+    if kind_value in {
+        Type2QuestionKind.NUMERICAL.value,
+        "scalar_numeric",
+        Type2QuestionKind.MIXED.value,
+    }:
         return is_single_numeric_answer(output)
 
-    if kind == Type2QuestionKind.MULTI_VALUE_NUMERIC:
+    if kind_value == "multi_value_numeric":
         return is_parts_json(output)
 
-    if kind == Type2QuestionKind.SYMBOLIC_FORMULA:
+    if kind_value == "symbolic_formula":
         return is_parseable_sympy_expression(output)
 
-    if kind == Type2QuestionKind.LOCATION_OR_ANGLE_NUMERIC:
+    if kind_value == "location_or_angle_numeric":
         return is_numeric_with_expected_target(output)
 
-    if kind == Type2QuestionKind.DIRECTIONAL_OUTPUT:
+    if kind_value == "directional_output":
         return is_canonical_direction(output)
 
-    if kind == Type2QuestionKind.QUALITATIVE_CONCEPTUAL:
+    if kind_value in {Type2QuestionKind.CONCEPTUAL.value, "qualitative_conceptual"}:
         return is_short_text_answer(output)
 
     return False
+
+
+def _kind_value(kind: Type2QuestionKind | str) -> str:
+    return kind.value if isinstance(kind, Type2QuestionKind) else str(kind)
 
 
 def is_single_numeric_answer(output: Any) -> bool:

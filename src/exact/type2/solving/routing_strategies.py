@@ -1,7 +1,6 @@
 from typing import Any
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 from exact.type2.deterministic import run_deterministic_stage, DeterministicStageResult
-from exact.type2.extraction.llm_structured import extract_semantic_contract
 
 from exact.type2.solver_contract.models import SolverContract
 from exact.type2.execution_policy import ExecutionPolicy

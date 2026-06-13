@@ -7,21 +7,20 @@ from fastapi import FastAPI
 
 from exact.app.router import api_router
 from exact.logger import setup_logging
-from exact.type1.parser import FOLParser, build_parser_client_from_settings
+from exact.type1.parser import PremiseParser, build_parser_client_from_settings
+from exact.type1.solvers import FOLSolver
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Create shared model clients at startup and close them at shutdown.
-
-    The parser client owns a persistent HTTP connection pool and concurrency
-    semaphore. Keeping one instance on ``app.state`` allows every Type 1 request
-    to reuse those resources instead of reopening connections per premise.
-    """
+    """Create shared model clients at startup and close them at shutdown."""
 
     parser_client = build_parser_client_from_settings()
     app.state.type1_parser_client = parser_client
-    app.state.type1_fol_parser = FOLParser(parser_client) if parser_client is not None else None
+    app.state.type1_premise_parser = (
+        PremiseParser.from_parser_client(parser_client) if parser_client is not None else None
+    )
+    app.state.type1_solver = FOLSolver()
     try:
         yield
     finally:

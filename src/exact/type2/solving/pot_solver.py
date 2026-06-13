@@ -10,6 +10,7 @@ from typing import Any
 from exact.config import Settings, get_settings
 from exact.datasets.type2_taxonomy import classify_type2_taxonomy
 from exact.llm_client import has_json_llm_client_config
+from exact.type2.geometry_context import build_geometry_prompt_context
 from exact.type2.extraction.llm_structured import (
     PotCodeSpec,
     generate_final_explanation,
@@ -267,6 +268,12 @@ def solve_with_pot(
         )
 
     prompt_context = _build_solver_context(extraction, formula_context)
+    geometry_prompt_context = build_geometry_prompt_context(
+        extraction,
+        unit_hint=_formula_context_unit_hint(formula_context),
+    )
+    if geometry_prompt_context:
+        prompt_context = f"{prompt_context}\n\n{geometry_prompt_context}"
     try:
         candidate_count = max(1, settings.type2_pot_batch_size)
         candidates = generate_pot_code_candidates(
@@ -281,6 +288,7 @@ def solve_with_pot(
                 "batch_size": candidate_count,
                 "max_repair_attempts": settings.type2_pot_max_retries,
                 "trigger": "initial_generation",
+                "geometry_context_included": bool(geometry_prompt_context),
             },
         )
     except Exception as exc:
@@ -299,6 +307,7 @@ def solve_with_pot(
         candidates,
         formula_context,
         settings,
+        solver_context=prompt_context,
     )
     if selected is None:
         reason = _candidate_failure_reason(failed_attempts)
@@ -381,6 +390,7 @@ def _select_verified_pot_candidate(
     candidates: list[PotCodeSpec],
     formula_context: RetrievedFormulaContext,
     settings: Settings,
+    solver_context: str = "",
 ) -> tuple[PotCandidateAttempt | None, list[PotCandidateAttempt]]:
     attempts: list[PotCandidateAttempt] = []
     verified_attempts: list[PotCandidateAttempt] = []
@@ -391,6 +401,7 @@ def _select_verified_pot_candidate(
             candidate,
             formula_context,
             settings,
+            repair_context=solver_context,
         )
         if repair_error is not None:
             attempts.append(
@@ -516,6 +527,7 @@ def _execute_with_repair_loop(
     code_spec: PotCodeSpec,
     formula_context: RetrievedFormulaContext,
     settings: Settings,
+    repair_context: str = "",
 ) -> tuple[PotCodeSpec, ExecutionResult, int, str | None]:
     code_spec = _canonicalize_formula_ids(code_spec, formula_context)
     execution = _execute_code_spec(code_spec, settings.type2_pot_timeout)
@@ -535,6 +547,7 @@ def _execute_with_repair_loop(
                 code_spec.code,
                 err_msg,
                 settings=settings,
+                repair_context=repair_context,
                 debug_metadata={
                     "attempt": repair_attempts,
                     "max_repair_attempts": max_retries,

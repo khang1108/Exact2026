@@ -4,6 +4,7 @@
 
 # Core
 pydantic>=2.0
+z3-solver>=4.12
 pydantic-settings>=2.10.6
 sympy>=1.12
 pint>=0.23
