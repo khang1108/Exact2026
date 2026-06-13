@@ -1,10 +1,12 @@
 """Public interfaces for Type 1 natural-language parsing."""
 
 from exact.type1.parser.client import ParserClient, build_parser_client_from_settings
+from exact.type1.parser.frame_parser import PremiseFrameCompiler, PremiseFrameParser
 from exact.type1.parser.parser import FOLParser
 from exact.type1.parser.premise_parser import PremiseParser
 from exact.type1.parser.schemas import (
     PredicateSignature,
+    PremiseFrameResult,
     PremiseParseBundle,
     PremiseSchema,
 )
@@ -32,6 +34,9 @@ __all__ = [
     "ParserKind",
     "ParserRequest",
     "PredicateSignature",
+    "PremiseFrameCompiler",
+    "PremiseFrameParser",
+    "PremiseFrameResult",
     "PremiseParseBundle",
     "PremiseParser",
     "PremiseSchema",

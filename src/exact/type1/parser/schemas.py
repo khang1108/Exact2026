@@ -67,6 +67,53 @@ class CoreferenceResult(ParserResult):
 
     resolved_right: str
 
+
+class PremiseFrameResult(ParserResult):
+    """Structural decomposition of one premise before FOL generation.
+
+    The frame identifies the logical role of each text fragment so the
+    compiler can build the correct quantifier / operator skeleton deterministically.
+    All text fragments must reference the entity through ``variable``.
+    """
+
+    kind: Literal[
+        "fact",
+        "universal_rule",
+        "existential_fact",
+        "equivalence",
+        "numeric_fact",
+        "numeric_rule",
+        "deontic_rule",
+        "permission_rule",
+        "prohibition_rule",
+        "temporal_rule",
+        "meta_rule",
+        "unsupported",
+    ]
+
+    variable: str | None = None
+    restrictor_text: str | None = None
+
+    condition_texts: list[str] = []
+    conclusion_texts: list[str] = []
+    fact_texts: list[str] = []
+    numeric_constraints: list[str] = []
+    temporal_constraints: list[str] = []
+
+    modality: Literal[
+        "none",
+        "must",
+        "can",
+        "may",
+        "allowed",
+        "required",
+        "prohibited",
+        "not_necessarily",
+    ] = "none"
+
+    confidence: float = 1.0
+
+
 # ------------------------------------------------------------------
 # Schemas for Premise Parser
 # ------------------------------------------------------------------

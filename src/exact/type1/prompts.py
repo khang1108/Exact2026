@@ -234,6 +234,81 @@ def get_system_prompt_atomic() -> str:
         Output: {"predicate":"LovesBooks","arguments":["Rina"],"negated":false}
 """
 
+def get_system_prompt_premise_frame() -> str:
+    """Return instructions for decomposing a premise into its logical frame."""
+
+    return """
+Decompose a natural-language premise into its logical structure. Do NOT generate FOL.
+
+# TASK
+Identify the premise kind and extract its structural components.
+All text fragments must reference the entity using the stated variable (e.g. "x is a student").
+
+# PREMISE KINDS
+- fact            : ground truth about specific named individuals (no universal quantifier)
+- universal_rule  : "All/every/each X that satisfies conditions → conclusions"
+- existential_fact: "There exists / some X with properties"
+- equivalence     : "X is P if and only if X is Q"
+- numeric_fact    : ground fact involving a count or number about a named individual
+- numeric_rule    : universal rule with a numeric threshold condition
+- deontic_rule    : rule with must/should/required
+- permission_rule : rule with can/may/allowed
+- prohibition_rule: rule with cannot/prohibited/must not
+- temporal_rule   : rule with before/after/until/during/when
+- meta_rule       : rule about how other rules interact (too complex to decompose)
+- unsupported     : anything that cannot be cleanly decomposed
+
+# OUTPUT FORMAT (return ONLY valid JSON)
+{
+  "kind": "<kind>",
+  "variable": "<single lowercase letter or null for fact>",
+  "restrictor_text": "<sentence with variable typing the domain, e.g. 'x is a student', or null>",
+  "condition_texts": ["<extra condition 1 with variable>", ...],
+  "conclusion_texts": ["<conclusion 1 with variable>", ...],
+  "fact_texts": ["<atomic fact about named individual>", ...],
+  "numeric_constraints": ["<numeric condition with variable>", ...],
+  "temporal_constraints": ["<temporal condition with variable>", ...],
+  "modality": "none"|"must"|"can"|"may"|"allowed"|"required"|"prohibited"|"not_necessarily",
+  "confidence": 1.0
+}
+
+# RULES
+1. Every text fragment must be a single simple sentence — no "if/then", no sub-clauses.
+2. Use the variable consistently across ALL fragments.
+3. restrictor_text = the TYPE or CATEGORY of the subject ("x is a student").
+4. condition_texts = extra conditions besides the type that the subject must satisfy.
+5. conclusion_texts = what is concluded about the subject.
+6. fact_texts = atomic facts about named individuals (for "fact"/"numeric_fact" only).
+7. numeric_constraints = numeric thresholds ("x has completed at least 5 courses").
+8. temporal_constraints = temporal conditions ("x enrolled before the deadline").
+9. Do NOT include quantifier phrases in text fragments.
+10. One simple predication per item — do NOT combine multiple facts in one string.
+
+# EXAMPLES
+
+Input: "All students must pass the final exam."
+Output: {"kind":"deontic_rule","variable":"x","restrictor_text":"x is a student","condition_texts":[],"conclusion_texts":["x must pass the final exam"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":[],"modality":"must","confidence":1.0}
+
+Input: "Students with active status who have completed at least 5 courses are eligible for advanced classes."
+Output: {"kind":"numeric_rule","variable":"x","restrictor_text":"x is a student","condition_texts":["x has active status"],"conclusion_texts":["x is eligible for advanced classes"],"fact_texts":[],"numeric_constraints":["x has completed at least 5 courses"],"temporal_constraints":[],"modality":"none","confidence":1.0}
+
+Input: "Alice is a graduate student."
+Output: {"kind":"fact","variable":null,"restrictor_text":null,"condition_texts":[],"conclusion_texts":[],"fact_texts":["Alice is a graduate student"],"numeric_constraints":[],"temporal_constraints":[],"modality":"none","confidence":1.0}
+
+Input: "Every student who has an active status and has paid tuition can enroll in courses."
+Output: {"kind":"permission_rule","variable":"x","restrictor_text":"x is a student","condition_texts":["x has an active status","x has paid tuition"],"conclusion_texts":["x can enroll in courses"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":[],"modality":"can","confidence":1.0}
+
+Input: "A course is required if and only if it is in the core curriculum."
+Output: {"kind":"equivalence","variable":"x","restrictor_text":"x is a course","condition_texts":["x is in the core curriculum"],"conclusion_texts":["x is required"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":[],"modality":"none","confidence":1.0}
+
+Input: "There exists a student who has completed all required courses."
+Output: {"kind":"existential_fact","variable":"x","restrictor_text":"x is a student","condition_texts":["x has completed all required courses"],"conclusion_texts":[],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":[],"modality":"none","confidence":1.0}
+
+Input: "Students who enroll after the add/drop deadline cannot withdraw without penalty."
+Output: {"kind":"prohibition_rule","variable":"x","restrictor_text":"x is a student","condition_texts":[],"conclusion_texts":["x cannot withdraw without penalty"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":["x enrolled after the add/drop deadline"],"modality":"prohibited","confidence":1.0}
+"""
+
+
 def get_system_prompt_coreference() -> str:
     """Return instructions for resolving pronouns between two clauses."""
 
