@@ -5,7 +5,8 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from exact.type1.ast.nodes import ComparisonNode, FOLNode, LogicalNode, QuantifiedNode
+from exact.type1.ast.nodes import AtomicNode, ComparisonNode, FOLNode, LogicalNode, QuantifiedNode
+from exact.type1.models.schemas import Predicate
 from exact.type1.parser.frame_parser import ConstraintParser, PremiseFrameCompiler, PremiseFrameParser
 from exact.type1.parser.parser import FOLParser
 from exact.type1.parser.schemas import (
@@ -14,6 +15,8 @@ from exact.type1.parser.schemas import (
     PremiseSchema,
     _INTERROGATIVE_START,
     _OPTION_LINE,
+    is_generic_class_constant,
+    singularize_class_constant,
 )
 
 if TYPE_CHECKING:
@@ -71,6 +74,11 @@ class PremiseParser:
             draft_trees = await self.frame_compiler.compile_many(normalized, frames)
         else:
             draft_trees = await self.fol_parser.parse_many(normalized)
+        if frames is not None:
+            draft_trees = [
+                _repair_generic_class_constants(tree, frame)
+                for tree, frame in zip(draft_trees, frames)  # type: ignore[arg-type]
+            ]
         schema = PremiseSchema.from_trees(draft_trees)
         trees, renames = schema.canonicalize(draft_trees)
         issues = _verify_bundle(normalized, trees, schema, frames)
@@ -102,7 +110,15 @@ def _normalize_premise(premise: str) -> str:
 
 _ONLY_IF_RE = re.compile(r"\bonly\s+(?:if|when)\b", re.IGNORECASE)
 _NOT_NECESSARILY_RE = re.compile(r"\bnot\s+necessarily\b", re.IGNORECASE)
-_NON_BLOCKING_SCHEMA_DIAGNOSTICS = ("SCHEMA_SIMILAR_PREDICATES:",)
+_NON_BLOCKING_SCHEMA_DIAGNOSTICS = (
+    "SCHEMA_SIMILAR_PREDICATES:",
+    "GENERIC_CLASS_USED_AS_CONSTANT:",  # auto-repaired before schema build; residual only
+)
+
+_RULE_LIKE_KINDS = frozenset({
+    "universal_rule", "deontic_rule", "permission_rule",
+    "prohibition_rule", "numeric_rule", "temporal_rule", "equivalence",
+})
 
 _NUMERIC_SIGNAL_RE = re.compile(
     r"\b(?:at\s+least|at\s+most|more\s+than|fewer\s+than|less\s+than|"
@@ -116,6 +132,45 @@ _TEMPORAL_SIGNAL_RE = re.compile(
     r"\s*\d{1,2})\b",
     re.IGNORECASE,
 )
+
+
+def _repair_generic_class_constants(
+    tree: FOLNode,
+    frame: PremiseFrameResult,
+) -> FOLNode:
+    """Promote a generic class-constant argument to a ForAll quantifier.
+
+    Only applied when the frame identifies a rule-like premise AND the compiled
+    tree is a bare AtomicNode (the fallback path produced something like
+    ``Register(Students, BKDorm)`` instead of ``∀x[Student(x)].Register(x, BKDorm)``).
+    The first matching class-constant argument becomes the domain restrictor.
+    """
+    if frame.kind not in _RULE_LIKE_KINDS:
+        return tree
+    if not isinstance(tree, AtomicNode):
+        return tree
+
+    for i, arg in enumerate(tree.arguments):
+        if not is_generic_class_constant(arg):
+            continue
+        var = "x"
+        restrictor_name = singularize_class_constant(arg)
+        restrictor_pred = Predicate(
+            name=restrictor_name,
+            arg_sorts=["Entity"],
+            aliases=[arg],
+        )
+        restrictor = AtomicNode(predicate=restrictor_pred, arguments=[var])
+        new_args = list(tree.arguments)
+        new_args[i] = var
+        body = AtomicNode(predicate=tree.predicate, arguments=new_args)
+        return QuantifiedNode(
+            quantifier="FORALL",
+            variable=var,
+            body=body,
+            restrictor=restrictor,
+        )
+    return tree
 
 
 def _has_comparison_node(tree: FOLNode) -> bool:

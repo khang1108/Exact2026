@@ -93,18 +93,20 @@ _TOKEN_EQUIVALENTS = {
 }
 _PLURAL_CLASS_NOUNS = frozenset(
     {
-        "applicants",
-        "classes",
-        "courses",
-        "curricula",
-        "employees",
-        "faculty",
-        "members",
-        "people",
-        "programs",
-        "requirements",
-        "students",
-        "teachers",
+        "applicants", "applications", "assessments",
+        "classes", "components", "conditions", "constraints",
+        "controls", "courses", "criteria", "curricula",
+        "departments", "documents",
+        "employees", "entities",
+        "faculty", "files",
+        "items",
+        "materials", "members", "methods", "models",
+        "objects", "operations",
+        "people", "policies", "processes", "programs",
+        "records", "requests", "requirements", "resources", "rules",
+        "services", "students", "subjects", "systems",
+        "tasks", "teachers",
+        "units", "users",
     }
 )
 _DEONTIC_PREDICATE_PREFIXES = frozenset({"allowed", "can", "required", "requires"})
@@ -541,8 +543,9 @@ def _build_schema_diagnostics(trees: list[FOLNode]) -> tuple[str, ...]:
     for name, arities in arities_by_name.items():
         if len(arities) > 1:
             issues.append(
-                "SCHEMA_PREDICATE_ARITY_CONFLICT: "
-                f"predicate {name} appears with arities {', '.join(map(str, sorted(arities)))}"
+                "ARITY_DRIFT: "
+                f"{name} appears as "
+                + ", ".join(f"/{a}" for a in sorted(arities))
             )
 
     signatures_by_semantics: dict[tuple[str, ...], list[tuple[str, int]]] = {}
@@ -581,8 +584,8 @@ def _build_schema_diagnostics(trees: list[FOLNode]) -> tuple[str, ...]:
             )
         elif _is_plural_class_constant(constant):
             issues.append(
-                "SCHEMA_PLURAL_CLASS_CONSTANT: "
-                f"{constant} is a plural class noun encoded as a constant in premises {introduced}"
+                "GENERIC_CLASS_USED_AS_CONSTANT: "
+                f"{constant} is a generic class noun used as a constant in premises {introduced}"
             )
 
     return tuple(issues)
@@ -623,3 +626,46 @@ def _is_plural_class_constant(value: str) -> bool:
 
 def _unique(values: Iterable[str]) -> list[str]:
     return list(dict.fromkeys(values))
+
+
+def is_generic_class_constant(name: str) -> bool:
+    """Return True when a CamelCase constant name ends in a plural class noun.
+
+    Examples: Students, AIModels, TransportationSystems, EligibleStudents.
+    """
+    return _is_plural_class_constant(name)
+
+
+_IRREGULAR_SINGULARS = {
+    "curricula": "curriculum",
+    "criteria": "criterion",
+    "people": "person",
+    "faculty": "faculty",
+}
+
+
+def singularize_class_constant(name: str) -> str:
+    """Return the singular CamelCase form of a plural class constant name.
+
+    Examples:
+        Students         → Student
+        AIModels         → AIModel
+        Applications     → Application
+        EligibleStudents → EligibleStudent
+        Curricula        → Curriculum
+    """
+    raw_words = re.findall(r"[A-Z]+(?=[A-Z][a-z]|\d|\b)|[A-Z]?[a-z]+|\d+", name)
+    if not raw_words:
+        return name
+    last = raw_words[-1].lower()
+    singular = _IRREGULAR_SINGULARS.get(last)
+    if singular is None:
+        if last.endswith("ies") and len(last) > 3:
+            singular = last[:-3] + "y"
+        elif last.endswith("ses") and len(last) > 4:
+            singular = last[:-2]
+        elif last.endswith("s") and not last.endswith("ss") and len(last) > 2:
+            singular = last[:-1]
+        else:
+            singular = last
+    return "".join(raw_words[:-1]) + singular.capitalize()

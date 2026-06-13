@@ -202,7 +202,16 @@ def get_system_prompt_atomic() -> str:
         3. Include ALL arguments — subject AND all objects.
         4. If negative (does not / is not / never), set negated=true,
             extract the POSITIVE predicate and all arguments.
-        5. Do NOT generate any Code Block.
+        5. PREFER UNARY for properties and traits: Safe(x), Reliable(x), CostEffective(x),
+            EcoFriendly(x), RequiresTrainingData(x), IsEligible(x).
+            Do NOT add a constant argument just to describe the type of x.
+        6. PREFER BINARY for true subject-object relations that vary per instance:
+            Program(x, ProgramName), ApplyingFor(x, Cycle), SubmittedBy(x, Date).
+        7. When a binary argument is always the same constant across all premises,
+            fuse it into the predicate name instead:
+            Requires(x, TrainingData) → RequiresTrainingData(x)
+            CostEffective(x, TransportationSystem) → CostEffective(x)
+        8. Do NOT generate any Code Block.
 
         Return ONLY valid JSON.
         Output: {"predicate":"...","arguments":["..."],"negated":false}
@@ -259,6 +268,18 @@ def get_system_prompt_atomic() -> str:
 
         Input:  "Rina loves books"
         Output: {"predicate":"LovesBooks","arguments":["Rina"],"negated":false}
+
+        Input:  "x is cost-effective"
+        Output: {"predicate":"CostEffective","arguments":["x"],"negated":false}
+
+        Input:  "x requires training data"
+        Output: {"predicate":"RequiresTrainingData","arguments":["x"],"negated":false}
+
+        Input:  "AI models are safe"
+        Output: {"predicate":"Safe","arguments":["x"],"negated":false}
+
+        Input:  "x is reliable"
+        Output: {"predicate":"Reliable","arguments":["x"],"negated":false}
 """
 
 def get_system_prompt_premise_frame() -> str:
