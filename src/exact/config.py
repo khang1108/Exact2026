@@ -112,6 +112,12 @@ class Settings(BaseSettings):
     type1_parser_timeout_seconds: float = Field(default=30.0, gt=0)
     type1_parser_max_retries: int = Field(default=2, ge=0)
     type1_parser_max_tokens: int = Field(default=512, ge=1)
+    # Hard end-to-end deadline for one Type 1 request. If the parse → solve →
+    # refine pipeline exceeds this, the request returns "Uncertain" instead of
+    # running unbounded. Keep it below any upstream proxy/tunnel timeout.
+    type1_request_deadline_seconds: float = Field(
+        default=55.0, gt=0, validation_alias="EXACT_TYPE1_DEADLINE_SECONDS"
+    )
 
     # Type 2 Physics Pipeline Settings
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
