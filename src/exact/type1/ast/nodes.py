@@ -59,7 +59,9 @@ class QuantifiedNode:
 
     def __repr__(self) -> str:
         symbol = "∀" if self.quantifier == "FORALL" else "∃"
-        # LogicalNode repr already wraps itself in parens; avoid doubling.
+        if self.restrictor is not None:
+            body_str = str(self.body) if isinstance(self.body, LogicalNode) else f"({self.body})"
+            return f"{symbol}{self.variable}[{self.restrictor}].{body_str}"
         if isinstance(self.body, LogicalNode):
             return f"{symbol}{self.variable}.{self.body}"
         return f"{symbol}{self.variable}.({self.body})"
@@ -91,7 +93,12 @@ def simplify(node: FOLNode) -> FOLNode:
     if isinstance(node, AtomicNode):
         return node
     if isinstance(node, QuantifiedNode):
-        return QuantifiedNode(node.quantifier, node.variable, simplify(node.body))
+        return QuantifiedNode(
+            node.quantifier,
+            node.variable,
+            simplify(node.body),
+            simplify(node.restrictor) if node.restrictor is not None else None,
+        )
     # LogicalNode
     if node.operator == "NOT":
         inner = simplify(node.left)

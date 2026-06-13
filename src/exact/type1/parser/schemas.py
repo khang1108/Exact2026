@@ -43,6 +43,7 @@ class QuantifiedResult(ParserResult):
 
     quantifier: Literal["ForAll", "ThereExists"]
     variable: str
+    restrictor_sentence: str | None = None
     scope_sentence: str
 
 

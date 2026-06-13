@@ -171,10 +171,21 @@ class FOLParser:
                 parent=sentence,
                 used_variables=used_variables | {result.variable},
             )
+
+        restrictor = None
+        if result.restrictor_sentence:
+            restrictor = await self.parse(
+                result.restrictor_sentence,
+                depth=depth + 1,
+                parent=sentence,
+                used_variables=used_variables | {result.variable},
+            )
+
         return QuantifiedNode(
             quantifier="FORALL" if quantifier == "ForAll" else "EXISTS",
             variable=result.variable,
             body=body,
+            restrictor=restrictor,
         )
 
     async def _parse_logical(
@@ -248,6 +259,7 @@ class FOLParser:
                 quantifier=left.quantifier,
                 variable=left.variable,
                 body=LogicalNode(operator=result.operator, left=left.body, right=right),
+                restrictor=left.restrictor,
             )
         return LogicalNode(operator=result.operator, left=left, right=right)
 

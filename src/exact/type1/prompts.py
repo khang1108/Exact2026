@@ -49,54 +49,49 @@ def get_system_prompt_quantified() -> str:
             ForAll    → all, every, each, no, no one, nobody
             ThereExists → some, there is, there exists, a, an (indefinite article)
 
-        2. scope_sentence — rewrite WITHOUT the quantifier.
-            Replace the quantified noun with the variable directly.
-            Do NOT add any domain constraint or type predicate.
-            The scope should contain only the logical content of the sentence.
-
-        3. variable — use x if unused, then y, z, x1, y1.
+        2. variable — use x if unused, then y, z, x1, y1.
             Respect [Already used variables: ...] hint if provided.
 
-        4. scope_sentence — rewrite WITHOUT the outermost quantifier:
+        3. restrictor_sentence — the noun class or type that restricts the domain.
+            - Write as "x is a [noun]" using the chosen variable.
+            - Set to null when the quantifier ranges over ALL entities with no domain
+              restriction (e.g. "no one", "everything", "something", "someone").
+
+        4. scope_sentence — rewrite WITHOUT the outer quantifier AND the noun class.
             - Replace ALL references to the quantified noun with the variable.
             - PRESERVE ALL negation words (not, does not, is not, never) exactly.
-            - Remove ONLY the quantifier phrase. Change nothing else.
-            - Do NOT prepend domain constraint — that is handled separately.
+            - Do NOT include the noun class — it belongs in restrictor_sentence.
+            - Remove ONLY the quantifier phrase and its noun class. Change nothing else.
 
         5. Do NOT generate any Code Block.
 
     Return ONLY valid JSON.
-    Output: {"quantifier":"ForAll"|"ThereExists","variable":"x","scope_sentence":"..."}
+    Output: {"quantifier":"ForAll"|"ThereExists","variable":"x","restrictor_sentence":"..."|null,"scope_sentence":"..."}
 
     Examples:
         Input:  "All students study hard."
-        Output: {"quantifier":"ForAll","variable":"x","scope_sentence":"x studies hard."}
+        Output: {"quantifier":"ForAll","variable":"x","restrictor_sentence":"x is a student","scope_sentence":"x studies hard"}
 
         Input:  "There exists a person who loves books."
-        Output: {"quantifier":"ThereExists","variable":"y","scope_sentence":"y loves books."}
+        Output: {"quantifier":"ThereExists","variable":"y","restrictor_sentence":"y is a person","scope_sentence":"y loves books"}
 
         Input:  "No one likes being ignored."
-        Output: {"quantifier":"ForAll","variable":"z","scope_sentence":"z does not like being ignored."}
+        Output: {"quantifier":"ForAll","variable":"z","restrictor_sentence":null,"scope_sentence":"z does not like being ignored"}
 
         Input:  "If someone studies hard, he will get a good score."
-        Output: {"quantifier":"ForAll","variable":"x",
-                "scope_sentence":"If x studies hard, x will get a good score."}
+        Output: {"quantifier":"ForAll","variable":"x","restrictor_sentence":null,"scope_sentence":"if x studies hard, x will get a good score"}
 
         Input:  "a Python code does not follow PEP 8 standards."
-        Output: {"quantifier":"ThereExists","variable":"x",
-                "scope_sentence":"x does not follow PEP 8 standards."}
+        Output: {"quantifier":"ThereExists","variable":"x","restrictor_sentence":"x is a Python code","scope_sentence":"x does not follow PEP 8 standards"}
 
         Input:  "No student passes the exam."
-        Output: {"quantifier":"ForAll","variable":"x",
-                "scope_sentence":"x does not pass the exam."}
+        Output: {"quantifier":"ForAll","variable":"x","restrictor_sentence":"x is a student","scope_sentence":"x does not pass the exam"}
 
         Input:  "Some book is interesting."
-        Output: {"quantifier":"ThereExists","variable":"z",
-                "scope_sentence":"z is interesting."}
+        Output: {"quantifier":"ThereExists","variable":"z","restrictor_sentence":"z is a book","scope_sentence":"z is interesting"}
 
         Input:  "Every dog barks loudly."
-        Output: {"quantifier":"ForAll","variable":"x",
-                "scope_sentence":"x barks loudly."}
+        Output: {"quantifier":"ForAll","variable":"x","restrictor_sentence":"x is a dog","scope_sentence":"x barks loudly"}
     """
 
 
