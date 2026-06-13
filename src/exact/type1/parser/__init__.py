@@ -2,6 +2,12 @@
 
 from exact.type1.parser.client import ParserClient, build_parser_client_from_settings
 from exact.type1.parser.parser import FOLParser
+from exact.type1.parser.premise_parser import PremiseParser
+from exact.type1.parser.schemas import (
+    PredicateSignature,
+    PremiseParseBundle,
+    PremiseSchema,
+)
 from exact.type1.parser.router import (
     ParserKind,
     ParserRequest,
@@ -25,6 +31,10 @@ __all__ = [
     "ParserClient",
     "ParserKind",
     "ParserRequest",
+    "PredicateSignature",
+    "PremiseParseBundle",
+    "PremiseParser",
+    "PremiseSchema",
     "QuantifiedResult",
     "RephraseResult",
     "build_coreference_request",
