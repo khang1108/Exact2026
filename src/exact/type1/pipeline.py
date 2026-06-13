@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+from collections import Counter, defaultdict
 from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
@@ -75,6 +76,10 @@ async def _run_type1_core(
     conclusion_sentences = list(options_dict.values()) if is_mcq else [payload.question]
 
     all_trees = await parser.parse_many(premises + conclusion_sentences)
+    # Deterministic, no-LLM step: collapse casing/plural variants of the same
+    # symbol across the whole problem (PhDDegree/PhdDegree, Student/Students) so
+    # Z3 can chain without the refiner. Only true synonyms (Has/Hold) remain.
+    all_trees, symbol_norm = _normalize_symbols(all_trees)
     premise_fols = all_trees[: len(premises)]
     conclusion_fols, renames = _align_predicates(all_trees[len(premises):], premise_fols)
 
@@ -91,8 +96,10 @@ async def _run_type1_core(
                 refiner, parser,
             )
         )
-        renames_after, _ = _align_predicates(conclusion_fols, premise_fols)
-        conclusion_fols = renames_after
+        n_prem = len(premise_fols)
+        combined, _ = _normalize_symbols(premise_fols + conclusion_fols)
+        premise_fols = combined[:n_prem]
+        conclusion_fols, _ = _align_predicates(combined[n_prem:], premise_fols)
         answer = _z3_check(solver, is_mcq, options_dict, premise_fols, conclusion_fols)
 
     answered_by = "z3"
@@ -136,6 +143,7 @@ async def _run_type1_core(
             "solver_available": solver is not None,
             "refiner_available": refiner is not None,
             "predicate_renames": renames,
+            "symbol_normalizations": symbol_norm,
             "refinement_log": refinement_log,
             "parsed_premises": premise_items,
             "parsed_conclusions": conclusion_items,
@@ -233,6 +241,93 @@ async def _refine_and_retry(
             new_conclusion_fols[idx] = tree
 
     return new_premise_fols, new_conclusion_fols, new_premises, new_conclusion_sentences, refinement_log
+
+
+# ---------------------------------------------------------------------------
+# Deterministic symbol normalization (no LLM)
+# ---------------------------------------------------------------------------
+
+_VAR_RE = re.compile(r"^[xyz]\d*$")
+
+
+def _normalize_symbols(nodes: list[FOLNode]) -> tuple[list[FOLNode], list[dict]]:
+    """Collapse casing/plural variants of the same symbol across the whole problem.
+
+    The 1.7B parser names predicates and constants per-sentence, so the same
+    concept can appear as ``PhDDegree``/``PhdDegree`` or ``Student``/``Students``.
+    Group every predicate (by lowercased name + arity) and every constant (by
+    lowercased name), and rewrite each conflicting group to one canonical spelling
+    so Z3 can chain — without any LLM call. Variables (x, y, z) are left alone.
+
+    Returns (normalized_nodes, change_log).
+    """
+    pred_variants: dict[tuple[str, int], Counter] = defaultdict(Counter)
+    const_variants: dict[str, Counter] = defaultdict(Counter)
+    for node in nodes:
+        _collect_symbols(node, pred_variants, const_variants)
+
+    # Only rewrite groups that actually have >1 spelling. Canonical = most common
+    # (ties resolve to first-seen, which Counter.most_common preserves).
+    pred_canon = {
+        key: variants.most_common(1)[0][0]
+        for key, variants in pred_variants.items()
+        if len(variants) > 1
+    }
+    const_canon = {
+        key: variants.most_common(1)[0][0]
+        for key, variants in const_variants.items()
+        if len(variants) > 1
+    }
+    if not pred_canon and not const_canon:
+        return nodes, []
+
+    log: list[dict] = [
+        {"kind": "predicate", "variants": list(pred_variants[k]), "to": v}
+        for k, v in pred_canon.items()
+    ] + [
+        {"kind": "constant", "variants": list(const_variants[k]), "to": v}
+        for k, v in const_canon.items()
+    ]
+    return [_rewrite_symbols(n, pred_canon, const_canon) for n in nodes], log
+
+
+def _collect_symbols(
+    node: FOLNode,
+    pred_variants: dict[tuple[str, int], Counter],
+    const_variants: dict[str, Counter],
+) -> None:
+    if isinstance(node, AtomicNode):
+        pred_variants[(node.predicate.name.lower(), len(node.arguments))][node.predicate.name] += 1
+        for arg in node.arguments:
+            if not _VAR_RE.match(arg):
+                const_variants[arg.lower()][arg] += 1
+        return
+    if isinstance(node, QuantifiedNode):
+        _collect_symbols(node.body, pred_variants, const_variants)
+        return
+    _collect_symbols(node.left, pred_variants, const_variants)
+    if node.right is not None:
+        _collect_symbols(node.right, pred_variants, const_variants)
+
+
+def _rewrite_symbols(
+    node: FOLNode,
+    pred_canon: dict[tuple[str, int], str],
+    const_canon: dict[str, str],
+) -> FOLNode:
+    if isinstance(node, AtomicNode):
+        name = pred_canon.get((node.predicate.name.lower(), len(node.arguments)), node.predicate.name)
+        args = [
+            a if _VAR_RE.match(a) else const_canon.get(a.lower(), a)
+            for a in node.arguments
+        ]
+        pred = Predicate(name=name, arg_sorts=node.predicate.arg_sorts, aliases=node.predicate.aliases)
+        return AtomicNode(predicate=pred, arguments=args)
+    if isinstance(node, QuantifiedNode):
+        return QuantifiedNode(node.quantifier, node.variable, _rewrite_symbols(node.body, pred_canon, const_canon))
+    left = _rewrite_symbols(node.left, pred_canon, const_canon)
+    right = _rewrite_symbols(node.right, pred_canon, const_canon) if node.right is not None else None
+    return LogicalNode(node.operator, left, right)
 
 
 # ---------------------------------------------------------------------------
