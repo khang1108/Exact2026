@@ -14,22 +14,52 @@ def get_system_prompt_rephrase() -> str:
 
     Rules:
         1. Replace pronouns (he, she, it, they, his, her) with the noun they refer to.
-        2. If the sentence is already clear with named entities or uses "a/the" naturally, keep it unchanged.
-        3. Do NOT introduce quantifier phrases like "For every x" or "There exists".
-        4. Do NOT add variables. Keep original noun phrases.
-        5. Do NOT generate any Code Block.
+        2. If a sentence is a simple quantified claim (e.g., "All Python projects are easy to maintain", "All Python code is well-tested", "Every student studies hard") without relative clauses ("who", "which", "that"), complex conditions, or permissions, keep it UNCHANGED.
+        3. If a sentence makes a general conditional claim or rule (often using relative clauses, e.g. "Anyone who...", "Students who...", "Faculty members with...", "Those who...", "A registered nurse with...", "... must hold ..."), rewrite it as an explicit conditional statement starting with "If a/an [singular noun] ..., then the [singular noun] ...".
+        4. If a sentence has multiple conditions connected by "and" in the antecedent or a relative clause (e.g., "If a student is X and does Y, they do Z", or "Students who are X and do Y are Z"), rewrite it using logically equivalent nested implications of the form "If [Condition A], then if [Condition B], then [Consequent]".
+           For example: "If a student is X, then if the student does Y, then the student does Z." (Do NOT use "and" to join multiple antecedent conditions, as this breaks quantifier lifting).
+        5. If a sentence states a general capability or permission rule (e.g., "Completing X grants Y", "Enrollment in X makes a student Y"), rewrite it into an explicit conditional: "If a person/student completes/enrolls in X, then the person/student is Y."
+        6. Do NOT introduce quantifier symbols (∀, ∃) or variables (x, y, z). Keep natural language noun phrases.
+        7. Do NOT generate any Code Block.
 
     Return ONLY valid JSON. Output: {"rephrased": "..."}
 
     Examples:
+        Input:  "Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses."
+        Output: {"rephrased": "If a student completes the core curriculum, then if the student passes the science assessment, then the student is qualified for advanced courses."}
+
+        Input:  "Faculty members with a degree higher than BA can teach undergraduate courses."
+        Output: {"rephrased": "If a faculty member has a degree higher than BA, then the faculty member can teach undergraduate courses."}
+
+        Input:  "Anyone who teaches graduate courses can be a research mentor."
+        Output: {"rephrased": "If a person teaches graduate courses, then the person can be a research mentor."}
+
+        Input:  "Department heads must hold a degree higher than a Bachelor's."
+        Output: {"rephrased": "If a person is a department head, then the person holds a degree higher than a Bachelor's."}
+
+        Input:  "All registered nurses with Advanced Practice certification are authorized to prescribe medication."
+        Output: {"rephrased": "If a registered nurse has Advanced Practice certification, then the registered nurse is authorized to prescribe medication."}
+
+        Input:  "If a student is eligible for graduation and maintains a GPA above 3.5, they graduate with honors."
+        Output: {"rephrased": "If a student is eligible for graduation, then if the student maintains a GPA above 3.5, then the student graduates with honors."}
+
+        Input:  "If someone has extended library access and has published at least one academic paper, they can access restricted archives."
+        Output: {"rephrased": "If a person has extended library access, then if the person has published at least one academic paper, then the person can access restricted archives."}
+
+        Input:  "Completing 500 clinical hours grants Advanced Practice certification."
+        Output: {"rephrased": "If a nurse completes 500 clinical hours, then the nurse is granted Advanced Practice certification."}
+
+        Input:  "Enrollment in Course C makes a student eligible for the internship program."
+        Output: {"rephrased": "If a student enrolls in Course C, then the student is eligible for the internship program."}
+
         Input:  "If a course requires a major assignment, the student must complete it or take the final exam."
-        Output: {"rephrased": "If a course requires a major assignment, the student must complete the major assignment or take the final exam."}
+        Output: {"rephrased": "If a course requires a major assignment, then the student must complete the major assignment or take the final exam."}
 
         Input:  "Alice sings and she dances."
         Output: {"rephrased": "Alice sings and Alice dances."}
 
         Input:  "If someone is happy, he will eat more food."
-        Output: {"rephrased": "If someone is happy, the person will eat more food."}
+        Output: {"rephrased": "If a person is happy, then the person will eat more food."}
 
         Input:  "Budi is not happy."
         Output: {"rephrased": "Budi is not happy."}

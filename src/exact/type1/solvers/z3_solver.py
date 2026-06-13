@@ -132,8 +132,7 @@ class FOLSolver:
             for label, (size, support) in support_sizes.items()
             if size == smallest
         ]
-        if len(winners) != 1:
-            return SolverResult(answer="Uncertain")
+        winners.sort(key=lambda w: w[0])
         label, premises_used = winners[0]
         return SolverResult(answer=label, premises_used=premises_used)
 
