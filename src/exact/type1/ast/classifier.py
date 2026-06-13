@@ -26,7 +26,7 @@ PRONOUNS = re.compile(
 DETERMINISTIC_RULES: list[tuple[str, list[str]]] = [
     ("quantified", [                              # P0: "a X does not..."
         r"^(a|an)\s+\w+.*(not|never|does\s+not|is\s+not)",
-        r"\b(all|every|each)\b.*\b(not|never|does\s+not)\b",
+        r"^(all|every|each)\b.*\b(not|never|does\s+not)\b",
         r"\bno\s+one\b",
         r"\bnobody\b",
     ]),
@@ -42,12 +42,13 @@ DETERMINISTIC_RULES: list[tuple[str, list[str]]] = [
     ]),
     ("quantified", [                              # P2: explicit quantifiers
         r"^(a|an)\s+\w+",
-        r"\b(all|every|each)\b",
-        r"\bsome\b",
-        r"\bthere\s+exists\b",
-        r"\bthere\s+is\s+a\b",
-        r"\bfor\s+all\b",
-        r"\bfor\s+every\b",
+        r"^(all|every|each)\b",
+        r"^(everyone|everybody|anyone|anybody)\b",
+        r"^some\b",
+        r"^there\s+exists\b",
+        r"^there\s+is\s+a\b",
+        r"^for\s+all\b",
+        r"^for\s+every\b",
         r"\bwho\s+(have|has|is|are|can|does|do|completed|passed|studied)\b",  # "students who have..."
         r"^[a-z]+s\s+who\b",                    # plural noun at start + who
     ]),

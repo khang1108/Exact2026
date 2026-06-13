@@ -13,6 +13,7 @@ Typical use:
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from typing import Literal
 
 import z3
@@ -67,6 +68,12 @@ _ENTITY = z3.DeclareSort("Entity")
 Answer = Literal["Yes", "No", "Uncertain"]
 
 
+@dataclass(frozen=True)
+class SolverResult:
+    answer: str
+    premises_used: list[str] | None = None
+
+
 class FOLSolver:
     """Translate FOL AST trees to Z3 and check semantic entailment.
 
@@ -85,9 +92,11 @@ class FOLSolver:
     # Public API
     # ------------------------------------------------------------------
 
-    def check_ynu(self, premises: list[FOLNode], conclusion: FOLNode) -> Answer:
+    def check_ynu(self, premises: list[FOLNode], conclusion: FOLNode) -> SolverResult:
         """Return Yes / No / Uncertain for a yes-no-uncertain question."""
         p = [self._to_z3(_close_universally(n)) for n in premises]
+        if not self._premises_are_consistent(p):
+            return SolverResult(answer="Uncertain")
         c = self._to_z3(conclusion)
         return self._entails(p, c)
 
@@ -95,19 +104,38 @@ class FOLSolver:
         self,
         premises: list[FOLNode],
         options: dict[str, FOLNode],
-    ) -> str:
-        """Return the label (A/B/C/D/…) of the entailed option, or 'Uncertain'.
+    ) -> SolverResult:
+        """Return the best-supported entailed option, or ``Uncertain``.
 
-        options: {"A": fol_node, "B": fol_node, ...}
+        Dataset MCQs commonly contain multiple true conclusions and ask for the
+        one following with the fewest premises. Ignore premise-independent
+        tautologies, then rank entailed options by a minimized Z3 unsat core.
         """
         p = [self._to_z3(_close_universally(n)) for n in premises]
-        entailed = [
-            label
-            for label, node in options.items()
-            if self._entails(p, self._to_z3(node)) == "Yes"
+        if not self._premises_are_consistent(p):
+            return SolverResult(answer="Uncertain")
+
+        support_sizes: dict[str, tuple[int, list[str]]] = {}
+        for label, node in options.items():
+            conclusion = self._to_z3(node)
+            if self._entails([], conclusion).answer == "Yes":
+                continue
+            support = self._minimum_support(p, conclusion)
+            if support is not None:
+                support_sizes[label] = (len(support), support)
+
+        if not support_sizes:
+            return SolverResult(answer="Uncertain")
+        smallest = min(size for size, _ in support_sizes.values())
+        winners = [
+            (label, support)
+            for label, (size, support) in support_sizes.items()
+            if size == smallest
         ]
-        # Exactly one entailed option → confident answer; otherwise uncertain.
-        return entailed[0] if len(entailed) == 1 else "Uncertain"
+        if len(winners) != 1:
+            return SolverResult(answer="Uncertain")
+        label, premises_used = winners[0]
+        return SolverResult(answer=label, premises_used=premises_used)
 
     # ------------------------------------------------------------------
     # FOL AST → Z3
@@ -177,18 +205,75 @@ class FOLSolver:
         s.set("timeout", self._timeout_ms)
         return s
 
-    def _entails(self, premises_z3: list[z3.ExprRef], conclusion_z3: z3.ExprRef) -> Answer:
-        # Yes  → premises ∧ ¬conclusion is UNSAT (negation of conclusion impossible)
+    def _premises_are_consistent(self, premises_z3: list[z3.ExprRef]) -> bool:
+        """Trust entailment only when the premise set is satisfiable."""
+
         s = self._solver()
-        s.add(*premises_z3, z3.Not(conclusion_z3))
-        if s.check() == z3.unsat:
-            return "Yes"
+        s.add(*premises_z3)
+        return s.check() == z3.sat
+
+    def _minimum_support(
+        self,
+        premises_z3: list[z3.ExprRef],
+        conclusion_z3: z3.ExprRef,
+    ) -> list[str] | None:
+        """Return a subset-minimal premise list proving ``conclusion_z3``."""
+
+        assumptions = [z3.FreshBool("premise") for _ in premises_z3]
+        s = self._solver()
+        s.add(
+            *(
+                z3.Implies(assumption, premise)
+                for assumption, premise in zip(assumptions, premises_z3)
+            ),
+            z3.Not(conclusion_z3),
+        )
+        if s.check(*assumptions) != z3.unsat:
+            return None
+
+        core = list(s.unsat_core())
+        index = 0
+        while index < len(core):
+            candidate = core[:index] + core[index + 1 :]
+            if s.check(*candidate) == z3.unsat:
+                core = candidate
+            else:
+                index += 1
+        return self._core_to_premise_ids(assumptions, core)
+
+    def _core_to_premise_ids(
+        self,
+        assumptions: list[z3.BoolRef],
+        core: list[z3.BoolRef],
+    ) -> list[str]:
+        premise_ids = [
+            f"premise-{index}"
+            for index, assumption in enumerate(assumptions, start=1)
+            if assumption in core
+        ]
+        return premise_ids
+
+    def _entails(self, premises_z3: list[z3.ExprRef], conclusion_z3: z3.ExprRef) -> SolverResult:
+        # Yes  → premises ∧ ¬conclusion is UNSAT (negation of conclusion impossible)
+        support = self._minimum_support(premises_z3, conclusion_z3)
+        if support is not None:
+            return SolverResult(answer="Yes", premises_used=support)
 
         # No   → premises ∧ conclusion is UNSAT (conclusion contradicts premises)
+        assumptions = [z3.FreshBool("premise") for _ in premises_z3]
         s = self._solver()
-        s.add(*premises_z3, conclusion_z3)
-        if s.check() == z3.unsat:
-            return "No"
+        s.add(
+            *(
+                z3.Implies(assumption, premise)
+                for assumption, premise in zip(assumptions, premises_z3)
+            ),
+            conclusion_z3,
+        )
+        if s.check(*assumptions) == z3.unsat:
+            return SolverResult(
+                answer="No",
+                premises_used=self._core_to_premise_ids(assumptions, list(s.unsat_core())),
+            )
 
         # unknown / sat → not enough information to decide
-        return "Uncertain"
+        return SolverResult(answer="Uncertain")

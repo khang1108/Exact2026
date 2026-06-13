@@ -247,9 +247,9 @@ def get_system_prompt_refiner() -> str:
     name. Z3 returned "Uncertain", which almost always means the symbols do not
     line up.
 
-    Your task: read ALL [id] / NL / FOL triples together, then rewrite the NATURAL
-    LANGUAGE of the inconsistent sentences so the whole set shares ONE vocabulary.
-    Output corrected NL only — never FOL, never an answer.
+    Your task: read ALL [id] / NL / FOL triples together, then rewrite only the
+    NATURAL LANGUAGE of inconsistent PREMISES so the whole premise set shares ONE
+    vocabulary. Output corrected NL only — never FOL, never an answer.
 
     === WHAT TO FIX ===
 
@@ -257,10 +257,10 @@ def get_system_prompt_refiner() -> str:
         Has(x, PhDDegree)   vs   Hold(ProfessorJohn, PhDDegree)
         → pick ONE verb ("has") and rewrite the other sentence to use it.
 
-    2. Concept mismatch — premises and conclusion name the same idea differently:
-        premises:   Qualified(x, GraduateCourses)
-        conclusion: Teach(x, GraduateCourses)
-        → rewrite the conclusion to the premise wording ("is qualified for").
+    2. Premise vocabulary mismatch — two premises name the same idea differently:
+        premise-1: Qualified(x, GraduateCourses)
+        premise-4: Teach(x, GraduateCourses)
+        → rewrite only the outlier premise to the majority wording.
 
     3. Entity-name drift — the same thing spelled differently:
         Supervise(x, Research)   vs   Supervise(x, GraduateLevelResearch)
@@ -277,8 +277,10 @@ def get_system_prompt_refiner() -> str:
       genuinely DIFFERENT concepts, leave them — never force a false match.
     - Align the OUTLIER to the MAJORITY wording (rewrite the fewest sentences).
       When unsure which is canonical, prefer the wording used in the PREMISES.
-    - Begin rewritten conditionals with "For every x," and replace pronouns and
-      noun phrases with the variable x.
+    - Only rewrite IDs named premise-N. Never rewrite question or option IDs.
+    - Preserve the original natural-language shape. Never introduce variables
+      such as x/y/z or phrases such as "For every x".
+    - Do not rewrite a correct sentence merely to standardize its style.
     - Preserve meaning and all negation words (not, does not, is not) exactly.
     - Only output an entry for a sentence you actually change.
 
@@ -300,18 +302,18 @@ def get_system_prompt_refiner() -> str:
         NL:  Anyone qualified for graduate courses supervises graduate-level research.
         FOL: ∀x.(Qualified(x, GraduateCourses) IMPLIES Supervise(x, GraduateLevelResearch))
 
-        [B]
+        [premise-4]
         NL:  If someone is qualified for graduate courses, they supervise research.
         FOL: ∀x.(Qualified(x, GraduateCourses) IMPLIES Supervise(x, Research))
 
-        Output: {"corrections": [{"id": "B", "rephrased": "For every x, if x is qualified for graduate courses, then x supervises graduate-level research."}]}
+        Output: {"corrections": [{"id": "premise-4", "rephrased": "If someone is qualified for graduate courses, they supervise graduate-level research."}]}
 
     Example 3 — tautology (structural)
         [premise-7]
         NL:  If a project is not well-structured, then it does not follow PEP 8 standards.
         FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
 
-        Output: {"corrections": [{"id": "premise-7", "rephrased": "For every x, if x is not well-structured, then x does not follow PEP 8 standards."}]}
+        Output: {"corrections": [{"id": "premise-7", "rephrased": "If a project is not well-structured, then it does not follow PEP 8 standards."}]}
 
     Example 4 — already consistent
         [premise-1]

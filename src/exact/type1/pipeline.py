@@ -86,23 +86,51 @@ async def _run_type1_core(
     conclusion_fols, renames = _align_predicates(all_trees[len(premises):], premise_fols)
 
     # --- Z3 entailment -------------------------------------------------------
-    answer = _z3_check(solver, is_mcq, options_dict, premise_fols, conclusion_fols)
+    solver_result = _z3_check(solver, is_mcq, options_dict, premise_fols, conclusion_fols)
+    answer = solver_result["answer"]
+    premises_used = solver_result["premises_used"]
+    initial_answer = answer
 
     # --- Self-refinement loop (only when Z3 is Uncertain) --------------------
     refinement_log: list[dict] = []
+    refined_answer: str | None = None
+    refinement_applied = False
     if answer == "Uncertain" and refiner is not None:
-        premise_fols, conclusion_fols, premises, conclusion_sentences, refinement_log = (
+        candidate_premise_fols, candidate_conclusion_fols, candidate_premises, (
+            candidate_conclusion_sentences
+        ), refinement_log = (
             await _refine_and_retry(
                 premises, premise_fols,
                 option_labels, conclusion_sentences, conclusion_fols,
                 refiner, parser,
             )
         )
-        n_prem = len(premise_fols)
-        combined, _ = _normalize_symbols(premise_fols + conclusion_fols)
-        premise_fols = combined[:n_prem]
-        conclusion_fols, _ = _align_predicates(combined[n_prem:], premise_fols)
-        answer = _z3_check(solver, is_mcq, options_dict, premise_fols, conclusion_fols)
+        n_prem = len(candidate_premise_fols)
+        combined, _ = _normalize_symbols(candidate_premise_fols + candidate_conclusion_fols)
+        candidate_premise_fols = combined[:n_prem]
+        candidate_conclusion_fols, candidate_renames = _align_predicates(
+            combined[n_prem:],
+            candidate_premise_fols,
+        )
+        refined_result = _z3_check(
+            solver,
+            is_mcq,
+            options_dict,
+            candidate_premise_fols,
+            candidate_conclusion_fols,
+        )
+        refined_answer = refined_result["answer"]
+        refinement_applied = refined_answer != "Uncertain"
+        for entry in refinement_log:
+            entry["accepted"] = refinement_applied
+        if refinement_applied:
+            premise_fols = candidate_premise_fols
+            conclusion_fols = candidate_conclusion_fols
+            premises = candidate_premises
+            conclusion_sentences = candidate_conclusion_sentences
+            renames = candidate_renames
+            answer = refined_answer
+            premises_used = refined_result["premises_used"]
 
     answered_by = "z3"
 
@@ -138,12 +166,16 @@ async def _run_type1_core(
         fol=fol_text,
         cot=["Parsed all sentences concurrently.", f"Z3 solver returned: {answer}"],
         premises=premises,
+        premises_used=premises_used,
         confidence=None,
         routing_diagnostics={
             "stage": "z3_entailment",
             "answered_by": answered_by,
             "solver_available": solver is not None,
             "refiner_available": refiner is not None,
+            "initial_answer": initial_answer,
+            "refined_answer": refined_answer,
+            "refinement_applied": refinement_applied,
             "predicate_renames": renames,
             "symbol_normalizations": symbol_norm,
             "refinement_log": refinement_log,
@@ -176,15 +208,17 @@ def _z3_check(
     options_dict: dict[str, str],
     premise_fols: list[FOLNode],
     conclusion_fols: list[FOLNode],
-) -> str:
+) -> dict[str, str | list[str] | None]:
     if solver is None:
-        return "Uncertain"
+        return {"answer": "Uncertain", "premises_used": None}
     try:
         if is_mcq:
-            return solver.check_mcq(premise_fols, dict(zip(options_dict.keys(), conclusion_fols)))
-        return solver.check_ynu(premise_fols, conclusion_fols[0])
+            result = solver.check_mcq(premise_fols, dict(zip(options_dict.keys(), conclusion_fols)))
+        else:
+            result = solver.check_ynu(premise_fols, conclusion_fols[0])
+        return {"answer": result.answer, "premises_used": result.premises_used}
     except Exception:
-        return "Uncertain"
+        return {"answer": "Uncertain", "premises_used": None}
 
 
 async def _refine_and_retry(
@@ -218,8 +252,6 @@ async def _refine_and_retry(
             if 0 <= idx < len(premises):
                 jobs.append(("p", idx, rephrased))
             continue
-        if id_str in option_labels:
-            jobs.append(("c", option_labels.index(id_str), rephrased))
 
     if not jobs:
         return premise_fols, conclusion_fols, premises, conclusion_sentences, []
@@ -234,13 +266,15 @@ async def _refine_and_retry(
 
     for (target, idx, text), tree in zip(jobs, new_trees):
         if target == "p":
-            refinement_log.append({"id": f"premise-{idx+1}", "original": new_premises[idx], "rephrased": text})
+            refinement_log.append({
+                "id": f"premise-{idx+1}",
+                "original": new_premises[idx],
+                "rephrased": text,
+                "original_fol": repr(new_premise_fols[idx]),
+                "rephrased_fol": repr(tree),
+            })
             new_premises[idx] = text
             new_premise_fols[idx] = tree
-        else:
-            refinement_log.append({"id": option_labels[idx], "original": new_conclusion_sentences[idx], "rephrased": text})
-            new_conclusion_sentences[idx] = text
-            new_conclusion_fols[idx] = tree
 
     return new_premise_fols, new_conclusion_fols, new_premises, new_conclusion_sentences, refinement_log
 
@@ -495,7 +529,15 @@ _YN_AUX_RE = re.compile(
 
 
 def _clean_question(question: str) -> str:
-    cleaned = _PREMISE_REF_RE.sub("", question).strip().rstrip("?").strip()
+    statement = re.search(r"\bstatement\s*:\s*(.+)$", question, re.IGNORECASE | re.DOTALL)
+    cleaned = statement.group(1) if statement else question
+    cleaned = re.sub(
+        r"^does\s+(?:it\s+follow\s+that|the\s+logical\s+chain\s+demonstrate\s+that)\s+",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    cleaned = _PREMISE_REF_RE.sub("", cleaned).strip().rstrip("?").strip()
     cleaned = _YN_AUX_RE.sub("", cleaned, count=1).strip()
     return cleaned or question
 

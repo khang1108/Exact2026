@@ -12,6 +12,7 @@ Architecture: LLM = translator only; solver = decision maker.
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from exact.type1.prompts import get_system_prompt_refiner
@@ -68,10 +69,18 @@ class Type1Refiner:
             return {}
 
         corrections = data.get("corrections") or []
+        originals = {item["id"]: item["nl"] for item in items}
         return {
             c["id"]: c["rephrased"]
             for c in corrections
-            if isinstance(c, dict) and c.get("id") and c.get("rephrased")
+            if isinstance(c, dict)
+            and c.get("id")
+            and c.get("rephrased")
+            and _is_safe_premise_rewrite(
+                c["id"],
+                originals.get(c["id"], ""),
+                c["rephrased"],
+            )
         }
 
 
@@ -87,3 +96,33 @@ def _format_items(items: list[dict[str, str]]) -> str:
         "entity names are inconsistent with the rest, and fix structural errors."
     )
     return "\n".join(lines)
+
+
+_EXPLICIT_VARIABLE_RE = re.compile(r"\b(?:x|y|z)\d*\b")
+_NEGATION_RE = re.compile(r"\b(?:not|no|never|cannot|without|lacks?|doesn't|isn't)\b", re.I)
+
+
+def _is_safe_premise_rewrite(item_id: str, original: str, rephrased: str) -> bool:
+    """Reject rewrites that can silently change the problem's logical contract."""
+
+    if not all(isinstance(value, str) for value in (item_id, original, rephrased)):
+        return False
+    if not re.fullmatch(r"premise-\d+", item_id):
+        return False
+    original = original.strip()
+    rephrased = rephrased.strip()
+    if not original or not rephrased or original == rephrased:
+        return False
+    if _EXPLICIT_VARIABLE_RE.search(rephrased) and not _EXPLICIT_VARIABLE_RE.search(original):
+        return False
+    if bool(_NEGATION_RE.search(original)) != bool(_NEGATION_RE.search(rephrased)):
+        return False
+    ratio = len(rephrased.split()) / max(1, len(original.split()))
+    if not 0.5 <= ratio <= 2.0:
+        return False
+
+    original_tokens = set(re.findall(r"[a-z0-9]+", original.lower()))
+    rephrased_tokens = set(re.findall(r"[a-z0-9]+", rephrased.lower()))
+    union = original_tokens | rephrased_tokens
+    overlap = len(original_tokens & rephrased_tokens) / len(union) if union else 0.0
+    return overlap >= 0.45

@@ -134,6 +134,7 @@ class PredictionResponse(AppBaseModel):
     fol: str | None = None
     cot: list[str] | None = None
     premises: list[str] | None = None
+    premises_used: list[str] | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     id: str | None = None
     task_type: TaskType | None = None
@@ -152,5 +153,6 @@ def to_official_response(response: PredictionResponse) -> dict[str, Any]:
         "fol": response.fol,
         "cot": response.cot,
         "premises": response.premises,
+        "premises_used": response.premises_used,
         "confidence": response.confidence,
     }

@@ -122,10 +122,19 @@ class FOLParser:
             raise ValueError("sentence must not be empty")
 
         used_variables = used_variables or frozenset()
-        if depth > self.max_depth or self._is_recursive_loop(parent, sentence):
+        sentence_type = fast_classify(sentence)
+        if depth > self.max_depth:
             return simplify(await self._parse_atomic(sentence))
 
-        sentence_type = fast_classify(sentence)
+        # A quantified sentence often becomes a near-identical logical sentence
+        # after replacing its subject with a variable. That is structural
+        # progress, even when token overlap is high.
+        if (
+            self._is_recursive_loop(parent, sentence)
+            and fast_classify(parent) == sentence_type
+        ):
+            return simplify(await self._parse_atomic(sentence))
+
         if sentence_type == "quantified":
             return simplify(await self._parse_quantified(
                 sentence,
@@ -180,11 +189,15 @@ class FOLParser:
         if result.variable not in scope_sentence:
             scope_sentence = re.sub(r"\b[a-z]\d*\b", result.variable, scope_sentence, count=1)
 
-        # Break quantifier-nesting loops: if the scope is nearly the same as
-        # the input (token overlap) OR not meaningfully shorter (word count),
-        # the LLM isn't making progress — parse scope as atomic instead.
+        # Break quantifier-nesting loops only when the scope is still classified
+        # as quantified. A same-length scope that became AND/IMPLIES is valid
+        # structural progress and must be recursively parsed.
+        scope_type = fast_classify(scope_sentence)
         no_progress = len(scope_sentence.split()) >= len(sentence.split()) * 0.85
-        if self._is_recursive_loop(sentence, scope_sentence) or no_progress:
+        stuck_quantifier = scope_type == "quantified" and (
+            self._is_recursive_loop(sentence, scope_sentence) or no_progress
+        )
+        if stuck_quantifier:
             body = await self._parse_atomic(scope_sentence)
         else:
             body = await self.parse(
@@ -263,9 +276,10 @@ class FOLParser:
             parent=sentence,
             used_variables=used_variables | ({bound_variable} if bound_variable else frozenset()),
         )
-        # Lift quantifier so it scopes over the whole expression, not just left.
-        # ∀x.P(x) IMPLIES Q(x)  →  ∀x.(P(x) IMPLIES Q(x))
-        if isinstance(left, QuantifiedNode):
+        # Lift an antecedent quantifier only when its variable is genuinely used
+        # by the consequent. Keep proposition-level implications such as
+        # (∀x.P(x)) IMPLIES (∀y.Q(y)) as an implication between two formulas.
+        if isinstance(left, QuantifiedNode) and _has_free_variable(right, left.variable):
             return QuantifiedNode(
                 quantifier=left.quantifier,
                 variable=left.variable,
@@ -346,6 +360,20 @@ class FOLParser:
             injected = re.sub(pattern, variable, right, flags=re.IGNORECASE)
             if injected != right:
                 return injected
+
+        # Dataset rules often switch between a class noun and a generic subject
+        # in the consequent ("a Python code ... then the project ..."). Treat a
+        # leading generic subject as the same bound entity, while leaving proper
+        # names and object phrases untouched.
+        injected = re.sub(
+            r"^(?:the\s+)?(?:project|student|person|code|faculty\s+member|driver)\b",
+            variable,
+            right,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+        if injected != right:
+            return injected
         return right
 
     @staticmethod
@@ -367,3 +395,19 @@ class FOLParser:
             for part in parts
             if part
         )
+
+
+def _has_free_variable(
+    node: FOLNode,
+    variable: str,
+    bound: frozenset[str] = frozenset(),
+) -> bool:
+    """Return whether ``variable`` occurs free in an AST."""
+
+    if isinstance(node, AtomicNode):
+        return variable not in bound and variable in node.arguments
+    if isinstance(node, QuantifiedNode):
+        return _has_free_variable(node.body, variable, bound | {node.variable})
+    if _has_free_variable(node.left, variable, bound):
+        return True
+    return node.right is not None and _has_free_variable(node.right, variable, bound)
