@@ -1,0 +1,130 @@
+id,question,cot,answer,unit
+CH346,An inductor of 0.12 H is connected in series with a capacitor of 30 µF. Calculate f0.,"Step 1: Identify the given values for inductance (L) and capacitance (C) from the question.
+Step 2: Convert the capacitance from microfarads (µF) to farads (F).
+Step 3: Recall the formula for the resonant frequency (f0) of a series LC circuit: f0 = 1 / (2π√(LC)).
+Step 4: Substitute the values of L and C (in Farads) into the formula. Then, f0 = 83.88 Hz",83.89,Hz
+LD014,"Two charges separated by 15 cm exert a force of 4.8 N. Given that q1 = q2 = q, find q.","Step 1: Identify the given values from the question: The force (F) between the charges is 4.8 N, the separation distance (r) is 15 cm, and the magnitudes of the charges are equal (q1 = q2 = q).
+Step 2: State Coulomb's Law, which describes the magnitude of the electrostatic force between two point charges: F = k × |q1 × q2| / r^2, where k is Coulomb's constant (approximately 9 x 10^9 N m^2/C^2).
+Step 3: Convert the separation distance from centimeters to meters: r = 15 cm = 0.15 m.
+Step 4: Substitute the given values (F = 4.8 N, r = 0.15 m, k = 9 x 10^9 N m^2/C^2) and the condition q1 = q2 = q into Coulomb's Law: 4.8 = (9 x 10^9) × q^2 / (0.15)^2.",3.46,μC
+LD370,"Two charges, q1 = 3.96 × 10⁻⁶ C and q2 = 4.13 × 10⁻⁶ C, are each located 5.58 cm from point M. The electric fields they produce at M are perpendicular to each other. Calculate the magnitude of the resultant electric field at M. Give your answer rounded two decimal places.","Step 1: Identify the given values and convert the distance from centimeters to meters.
+q1 = 3.96 × 10⁻⁶ C, q2 = 4.13 × 10⁻⁶ C, and r = 5.58 cm = 0.0558 m. Use k = 9.0 × 10⁹ N×m²/C².
+Step 2: Calculate the magnitude of the electric field E1 produced by charge q1 at point M.
+E1 = (9.0 × 10⁹ × 3.96 × 10⁻⁶) / 0.0558² = 35640 / 0.00311364 ≈ 11446410.05 V/m.
+Step 3: Calculate the magnitude of the electric field E2 produced by charge q2 at point M.
+E2 = (9.0 × 10⁹ × 4.13 × 10⁻⁶) / 0.0558² = 37170 / 0.00311364 ≈ 11937796.28 V/m.
+Step 4: Since the electric fields E1 and E2 are perpendicular, calculate the magnitude of the resultant electric field Enet using the Pythagorean theorem and provide the answer in base 10⁶.
+Enet = √(E1² + E2²) = √(11446410.05² + 11937796.28²) ≈ 16.54 × 10⁶ V/m",16.54 × 10^6,V/m
+DDT149,"When the current through the solenoid increases rapidly, what happens to the induced electromotive force?","Step 1: The question asks about the induced electromotive force (EMF) when the current through a solenoid increases rapidly.
+Step 2: According to Faraday's Law of Induction, an induced EMF is generated when there is a change in magnetic flux (Φ) through a coil or solenoid over time. The magnitude of the induced EMF is directly proportional to the rate of change of magnetic flux (ε ∝ dΦ/dt).
+Step 3: A current flowing through a solenoid creates a magnetic field and thus a magnetic flux through the solenoid.
+Step 4: If the current through the solenoid increases, the magnetic field it produces also increases, leading to an increase in the magnetic flux through the solenoid.
+Step 5: The self-induced EMF is specifically given by the formula ε = -L × (di/dt), where di/dt is the rate of change of current.
+Step 6: When the current increases ""rapidly,"" the time interval (dt) is very small, making the rate of change (di/dt) very large.
+Step 7: Since the induced EMF is directly proportional to the rate of change of current, a rapid increase in current results in a very large induced electromotive force.
+Step 8: According to Lenz's Law, the magnitude of the induced electromotive force increases significantly (becomes very large) and acts to oppose the increase in current.",Increase and the opposite current direction cause it,—
+CH198,"For a series RLC circuit with fixed components, when the angular frequency is ω0, XL = 40 Ω and XC = 40 Ω. By what factor must ω0 be multiplied to achieve resonance?","Step 1: The given inductive reactance at angular frequency ω0 is XL = 40 Ω.
+Step 2: The given capacitive reactance at angular frequency ω0 is XC = 40 Ω.
+Step 3: For a series RLC circuit to be at resonance, the inductive reactance must equal the capacitive reactance (XL = XC).
+Step 4: At the given angular frequency ω0, XL = 40 Ω and XC = 40 Ω, which satisfies the condition XL = XC. Then, angular frequency must be multiplied by 1.",1.0,-
+TD369,A capacitor with a capacitance of 5 μF is charged to a voltage of 20 V and then disconnected from the power source. Calculate the charge on the capacitor after it is disconnected.,"Step 1: Identify initial charge Q = C × V = 5 μF × 20 V = 100 μC.
+Step 2: Recognize that the capacitor is disconnected from the source.
+Step 3: Understand that for a disconnected capacitor, the charge Q is conserved and remains constant even if other parameters change.
+Step 4: Conclude that the charge remains 100 μC.",Do not change,
+THCB074,What is the total resistance of two 10Ω and 30Ω branches connected in parallel?,"Step 1: Apply the parallel resistance formula: (R1 × R2) / (R1 + R2).
+Step 2: Calculation: (10 × 30) / (10 + 30) = 300 / 40.
+Step 3: Result: 7.5 Ω.",Rtd = 7.5,Ω
+LD250,"Two electric charges, q1 = +5 × 10^-7 C and q2 = -5 × 10^-7 C, are placed at two points A and B, 10 cm apart. A third charge q3 = -5 × 10^-7 C is placed at the midpoint of AB. Calculate the electric force acting on q3.","Step 1: Identify the given electric charges and the distance between points A and B.
+Step 2: Determine the distances from q3 to q1 (r13) and from q3 to q2 (r23), and recall Coulomb's constant, k.
+Step 3: Calculate the magnitude of the force (F13) exerted by q1 on q3 using Coulomb's Law, and determine its direction.
+Step 4: Calculate the magnitude of the force (F23) exerted by q2 on q3 using Coulomb's Law, and determine its direction.
+Step 5: The magnitude of the net electric force acting on q3 is 1.8 N.",1.8,N
+TD360,A capacitor has a capacitance of 2 μF and is charged to a voltage of 10 V. Calculate the electric field energy.,"Step 1: Identify the given capacitance C = 2 μF and voltage V = 10 V.
+Step 2: Convert the capacitance to farads: C = 2 × 10⁻⁶ F.
+Step 3: Use the formula for energy stored in a capacitor: W = 0.5 × C × V².
+Step 4: Calculate the energy: W = 0.5 × (2 × 10⁻⁶) × 10² = 100 × 10⁻⁶ J = 100 μJ.",100,μJ
+LD245,"Three electric charges, q1 = q2 = q3 = -1 × 10^-7 C, are placed at the three vertices of an equilateral triangle with a side length of 10 cm. Calculate the resultant electric force acting on q3.","Step 1: Identify the given values and Coulomb's constant (k = 9 × 10^9 N m^2/C^2).
+Step 2: The charges are q1 = q2 = q3 = -1 × 10^-7 C, and the distance between any two charges (side length of the equilateral triangle) is r = 10 cm = 0.10 m.
+Step 3: Calculate the magnitude of the electric force between any two charges (e.g., F13, the force from q1 on q3, or F23, the force from q2 on q3) using Coulomb's Law, F = k × |q1 × q2| / r^2.
+Step 4: F13 = F23 = (9 × 10^9 N m^2/C^2) × (|-1 × 10^-7 C| × |-1 × 10^-7 C|) / (0.10 m)^2 = (9 × 10^9) × (1 × 10^-14) / (0.01) = 9 × 10^-3 N.
+Step 5: The magnitude of the resultant electric force acting on q3 is approximately 0.016 N.",0.016,N
+TD400,"A capacitor with capacitance C = 12 μF is charged to U = 100 V. If its charge is then distributed equally among 3 identical capacitors, what is the total energy of the system?","Step 1: Calculate the initial total charge: Q = 12 μF × 100 V = 1200 μC.
+Step 2: Identify the new system with 3 identical capacitors (each 12 μF) connected in parallel.
+Step 3: Total capacitance: C_total = 3 × 12 μF = 36 μF.
+Step 4: Use the total charge to find the final total energy: W = Q² / (2 × C_total).
+Step 5: Calculate: W = (1200 × 10⁻⁶)² / (2 × 36 × 10⁻⁶) = 20000 μJ = 20 mJ = 0.02 J",0.020,J
+THCB114,Three voltage readings: 9.9V; 10.1V; 10.0V. Calculate the average voltage and the average absolute error.,"Step 1: Calculate the average voltage: (9.9 + 10.1 + 10.0) / 3 = 10.0 V.
+Step 2: Calculate individual absolute deviations: |9.9 - 10.0| = 0.1 V; |10.1 - 10.0| = 0.1 V; |10.0 - 10.0| = 0.0 V.
+Step 3: Calculate the average absolute error: (0.1 + 0.1 + 0.0) / 3.
+Step 4: Final calculation: ≈ 0.067 V.",10.0; 0.067,V; V
+LD369,"Two point charges, q1 = 3.91 × 10^-6 C and q2 = 3.90 × 10^-6 C, are each located 4.52 cm from point M. The electric fields they produce at M form an angle of 60° with each other. Calculate the magnitude of the resultant electric field at M. Give your answer rounded two decimal places.","Step 1: Identify the given values for charges q1 = 3.91 × 10⁻⁶ C, q2 = 3.90 × 10⁻⁶ C, and distance r = 4.52 cm.
+Step 2: Convert the distance to meters: r = 0.0452 m.
+Step 3: State the value for Coulomb's constant: k = 9.0 × 10⁹ N×m²/C².
+Step 4: Calculate the magnitude of the electric field E1 produced by q1 at M.
+E1 = (9.0 × 10⁹ × 3.91 × 10⁻⁶) / 0.0452² = 35190 / 0.00204304 ≈ 17224332.37 V/m.
+Step 5: Calculate the magnitude of the electric field E2 produced by q2 at M.
+E2 = (9.0 × 10⁹ × 3.90 × 10⁻⁶) / 0.0452² = 35100 / 0.00204304 ≈ 17180280.37 V/m.
+Step 6: Determine the magnitude of the total electric field at M using the law of cosines for vector addition (Enet = √(E1² + E2² + 2 × E1 × E2 × cos(θ))).
+Enet = √(17224332.37² + 17180280.37² + 2 × 17224332.37 × 17180280.37 × cos(60°))
+Enet = √(2.96677604 × 10¹⁴ + 2.95162034 × 10¹⁴ + 2.95918859 × 10¹⁴)
+Enet = √(8.87758497 × 10¹⁴) ≈ 29.80 × 10⁶ V/m.",29.80 × 10^6,V/m
+DDT209,The magnetic field energy density in a solenoid is proportional to the square of which quantity?,"Step 1: The magnetic field energy density (u_B) in a solenoid is given by the formula u_B = B² / (2μ₀).
+Step 2: In this formula, B represents the magnetic field strength (or magnetic flux density) inside the solenoid, and μ₀ is the permeability of free space, which is a constant.
+Step 3: From the formula, it is evident that the magnetic field energy density (u_B) is directly proportional to the square of the magnetic field strength (B).
+Step 4: The magnetic field energy density in a solenoid is proportional to the square of the magnetic field strength.",Magnetic induction $B$,—
+CH213,"For an RLC series circuit with constant components, when the angular frequency is ω0, X_L = 54 Ω and X_C = 216 Ω. By what factor must the angular frequency be multiplied (from ω0) for resonance to occur?","Step 1: The given inductive reactance at angular frequency ω0 is X_L = 54 Ω.
+Step 2: The given capacitive reactance at angular frequency ω0 is X_C = 216 Ω.
+Step 3: For an RLC series circuit, resonance occurs when the inductive reactance equals the capacitive reactance (X_L_res = X_C_res).
+Step 4: Inductive reactance is directly proportional to angular frequency (X_L = ωL), so X_L_res = (ω_res/ω0) × X_L. Then, angular frequency must be multiplied by 2.",2.0,-
+CH262,"In an RLC circuit, XL = 10 Ω, XC = 160 Ω, and the source voltage U = 120 V. If the frequency is increased by 4 times, what is the RMS voltage across the resistor R?","Step 1: Change in parameters when frequency is increased fourfold (f' = 4f)
+Inductive reactance Z_L is directly proportional to frequency so Z_L' = 4 × 10 = 40 Ω. Capacitive reactance Z_C is inversely proportional to frequency so Z_C' = 160 / 4 = 40 Ω.
+Step 2: Determine the circuit state
+Because Z_L' = Z_C' = 40 Ω the circuit reaches electrical resonance.
+Step 3: Calculate the voltage across the resistor R
+At the resonance state, the voltages across the inductor and capacitor cancel each other out completely (U_L = U_C). Therefore the RMS voltage across the resistor (U_R) is exactly equal to the source voltage U. Therefore U_R = U = 120 V.",120,V
+THCB070,"Two lamps are connected in parallel, with a total current of 1.2 A. If lamp D₁ is removed, what will be the total current (given that lamp D₂ draws 0.5 A)?","Step 1: In a parallel circuit, removing one lamp stops the current in that specific branch.
+Step 2: The current through the remaining functional branch (D2) remains 0.5 A.
+Step 3: Therefore, the new total current (A1) will simply be equal to the current of the remaining branch.
+Step 4: Final calculation: Total current = 0.5 A.",I_total_new = 0.5,A
+LD109,"Two charges q1 = -2 × 10^-8 C and q2 = -5 × 10^-8 C are placed at points A and B, 12 cm apart in the air. A third charge q3 = -5 × 10^-8 C is placed at point C, given that the distance from C to A is 5 cm and the distance from C to B is 9 cm. Calculate the net electric force acting on q3.","Step 1: Identify the given charges and distances, converting units to meters.
+Step 2: q1 = -2 × 10^-8 C, q2 = -5 × 10^-8 C, q3 = -5 × 10^-8 C.
+Step 3: r_CA = 5 cm = 0.05 m, r_CB = 9 cm = 0.09 m, r_AB = 12 cm = 0.12 m.
+Step 4: Use Coulomb's constant k = 9 × 10^9 N m^2/C^2 as charges are in air.
+Step 5: The magnitude of the net electric force acting on q3 is approximately 3.5 × 10^-3 N.",3.5*10^-3,N
+CH185,"At resonance, what is the total impedance Z of a series RLC circuit with R = 100 Ω?","Step 1: The circuit described is a series RLC circuit operating at resonance.
+Step 2: At resonance in a series RLC circuit, the inductive reactance (ZL) is equal to the capacitive reactance (ZC).
+Step 3: This means that the difference between the reactances, (ZL - ZC), becomes zero.
+Step 4: The general formula for the total impedance (Z) of a series RLC circuit is Z = √(R² + (ZL - ZC)²) = 100 Ω.",100,Ω
+LD258,"Three identical charges, q = +6 × 10^-7 C, are placed at the three vertices of a right isosceles triangle with legs of 20 cm. Calculate the net force acting on the charge at the right angle.","Step 1: The identical charge value is q = +6 × 10^-7 C. The length of the legs of the right isosceles triangle is L = 20 cm = 0.20 m.
+Step 2: Let the charge at the right angle be Q_R, and the other two charges be Q_1 and Q_2, placed at the ends of the legs.
+Step 3: The force exerted by Q_1 on Q_R, denoted F_1, and the force exerted by Q_2 on Q_R, denoted F_2, both act on Q_R.
+Step 4: According to Coulomb's Law, the magnitude of the force between two point charges q_a and q_b separated by distance r is F = k × |q_a × q_b| / r^2, where k is Coulomb's constant.
+Step 5: The magnitude of the net electric force acting on the charge at the right-angle vertex is approximately 0.115 N.",0.115,N
+CH036,"An inductor L=0.8 H is connected in series with a capacitor C=2 μF. What is the resonant frequency?""","Step 1: Identify the given inductance L = 0.8 H and capacitance C = 2 μF from the question.
+Step 2: Convert the capacitance from microfarads (μF) to farads (F): C = 2 × 10⁻⁶ F.
+Step 3: Recall the formula for the resonant frequency (f) of an LC series circuit: f = 1 / (2π√(LC)).
+Step 4: Substitute the values of L and C into the formula: f = 1 / (2π√(0.8 × 2 × 10⁻⁶ )) = 125.82 Hz.",125.82,Hz
+CH254,"Given a series circuit with XL = 40 Ω, XC = 160 Ω, and U = 100 V. If the frequency is doubled, what is the RMS voltage across R?","Step 1: Change in parameters when frequency is doubled (f' = 2f)
+Inductive reactance Z_L is directly proportional to frequency so Z_L' = 2 × 40 = 80 Ω. Capacitive reactance Z_C is inversely proportional to frequency so Z_C' = 160 / 2 = 80 Ω.
+Step 2: Determine the circuit state
+Because Z_L' = Z_C' = 80 Ω the circuit reaches electrical resonance.
+Step 3: Calculate the voltage across the resistor R
+At the resonance state, the RMS voltages across the inductor and capacitor cancel each other out completely (U_L = U_C), which means the RMS voltage across the resistor (U_R) is exactly equal to the source voltage U. Therefore U_R = U = 100 V.
+Step 4: Conclusion
+When the frequency changes and causes the circuit to resonate, the entire source voltage appears across the resistor R. Therefore U_R = 100 V.",100,V
+LD011,"An electric charge is subjected to two electric forces with magnitudes of 4 N and 3 N, acting at an angle of 90° to each other. Calculate the resultant force. (This is a very direct and clear translation.)","Step 1: Identify the magnitudes of the two electric forces and the angle between them.
+Step 2: Force 1 (F1) has a magnitude of 4 N.
+Step 3: Force 2 (F2) has a magnitude of 3 N.
+Step 4: The forces act at an angle of 90° to each other, meaning they are perpendicular.",5,N
+DDT359,What is the unit of inductance L?,"Step 1: Identify what the question asks. The problem asks for the unit of inductance, which is represented by the symbol L.
+Step 2: Recall the physical meaning of inductance. Inductance is a property of an inductor that measures its ability to store energy in a magnetic field when an electric current flows through it.
+Step 3: Recall the standard unit used in the International System of Units (SI). In SI units, inductance is measured in henries.
+Step 4: Identify the symbol used for this unit. The symbol for henry is H.
+Step 5: State the final conclusion. The unit of inductance L is the henry, written as H.",Henry,H
+LD076,"At the three vertices A, B, and C of a square ABCD with side length 6 cm in a vacuum, three point charges are placed: q1 = q3 = 2 × 10^-7 C and q2 = -4 × 10^-7 C. Determine the charge q4 placed at D such that the net electric field strength caused by the system of charges at the center O is zero.","Step 1: Identify the charges and their positions at the vertices of the square, and the point of interest, the center O.
+Step 2: Recognize that the distance from each vertex (A, B, C, D) to the center O is the same. Let this distance be r.
+Step 3: Analyze the electric fields at O due to charges q1 at A and q3 at C. Since q1 = q3 = 2 × 10^-7 C (both positive) and their distances to O are equal, the electric field E_A from q1 points from O towards C, and the electric field E_C from q3 points from O towards A. As vectors, E_A and E_C are equal in magnitude and opposite in direction, thus their vector sum (E_A + E_C) is zero.
+Step 4: Analyze the electric field at O due to charge q2 at B. Since q2 = -4 × 10^-7 C (negative), the electric field E_B points from O towards B.
+Step 5: State the condition for the net electric field at O to be zero: E_net = E_A + E_B + E_C + E_D = 0. Given that E_A + E_C = 0, the condition simplifies to E_B + E_D = 0, or E_D = -E_B.
+Step 6: Determine the properties of q4 based on the vector E_D. For E_D to cancel E_B, it must point from O towards D. Since O is the midpoint of diagonal BD, this requires q4 to have the same sign and magnitude as q2.
+Step 7: The charge q4 placed at D must be -4 × 10^-7 C.",-4 × 10^-7,C
