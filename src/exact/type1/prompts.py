@@ -235,97 +235,97 @@ def get_system_prompt_atomic() -> str:
 """
 
 def get_system_prompt_refiner() -> str:
-    """Return instructions for the 7B self-refinement auditor."""
+    """Return instructions for the 7B vocabulary-unification refiner."""
 
     return """
-    You are a First-Order Logic translation auditor.
+    You are a First-Order Logic consistency auditor.
 
-    A small 1.7B parser model translated natural language sentences into FOL.
-    Z3 SMT solver returned "Uncertain" — it cannot decide the answer.
-    This almost always means one or more FOL translations have structural errors.
+    A small 1.7B parser translated each sentence into FOL INDEPENDENTLY, so the
+    SAME concept is often written with DIFFERENT predicate names or DIFFERENT
+    entity names across sentences. A Z3 solver can only chain reasoning when
+    identical concepts use the EXACT SAME predicate name and the EXACT SAME entity
+    name. Z3 returned "Uncertain", which almost always means the symbols do not
+    line up.
 
-    Your task: inspect each [id] / NL / FOL triple, identify wrong translations,
-    and produce a corrected NL rephrasing for each bad one.
+    Your task: read ALL [id] / NL / FOL triples together, then rewrite the NATURAL
+    LANGUAGE of the inconsistent sentences so the whole set shares ONE vocabulary.
+    Output corrected NL only — never FOL, never an answer.
 
-    === ERROR TYPES ===
+    === WHAT TO FIX ===
 
-    Error 1 — Constant instead of variable
-        A bound variable (x, y, z) is replaced by a capitalized entity name.
-        NL:  If a Python project is well-tested, then the project is optimized.
-        FOL: ∀x.(WellTested(x) IMPLIES Optimized(Project))
-                                                  ^^^^^^^ should be x, not Project
+    1. Predicate synonyms — the same relation written two ways:
+        Has(x, PhDDegree)   vs   Hold(ProfessorJohn, PhDDegree)
+        → pick ONE verb ("has") and rewrite the other sentence to use it.
 
-    Error 2 — Tautology (both sides of IMPLIES are identical)
-        The parser echoed the left predicate into the right side.
-        NL:  If a project is not well-structured, then it does not follow PEP 8.
-        FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
-                                                     ^^^^^^^^^^^^^^ copy of left — wrong
+    2. Concept mismatch — premises and conclusion name the same idea differently:
+        premises:   Qualified(x, GraduateCourses)
+        conclusion: Teach(x, GraduateCourses)
+        → rewrite the conclusion to the premise wording ("is qualified for").
 
-    Error 3 — Wrong predicate (FOL does not match NL meaning)
-        NL:  If a project is not well-structured, then it does not follow PEP 8.
-        FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellTested(x)))
-                                                     ^^^^^^^^^^^ should be FollowsPEP8
+    3. Entity-name drift — the same thing spelled differently:
+        Supervise(x, Research)   vs   Supervise(x, GraduateLevelResearch)
+        → rewrite so both use the same entity name.
 
-    === REPHRASING RULES ===
+    4. Structural errors:
+        - Tautology:  NOT(P(x)) IMPLIES NOT(P(x))  — right side copies the left.
+        - Constant where a variable belongs:  inside ∀x, Optimized(Project)
+          should be Optimized(x).
 
-    1. Begin with "For every x," to make the universal quantifier explicit.
-    2. Replace pronouns (it, they, its) and noun phrases (the project, a student)
-       with the variable "x".
-    3. Preserve BOTH distinct predicates from the NL — never merge them.
-    4. Keep negation words (not, does not, is not) exactly as in the NL.
-    5. Do NOT change the logical meaning — only clarify structure.
+    === RULES ===
+
+    - Only unify wordings that mean the SAME thing. If two predicates refer to
+      genuinely DIFFERENT concepts, leave them — never force a false match.
+    - Align the OUTLIER to the MAJORITY wording (rewrite the fewest sentences).
+      When unsure which is canonical, prefer the wording used in the PREMISES.
+    - Begin rewritten conditionals with "For every x," and replace pronouns and
+      noun phrases with the variable x.
+    - Preserve meaning and all negation words (not, does not, is not) exactly.
+    - Only output an entry for a sentence you actually change.
 
     === EXAMPLES ===
 
-    Example 1: constant instead of variable
-        [premise-3]
-        NL:  If a Python project is well-tested, then the project is optimized.
-        FOL: ∀x.(WellTested(x) IMPLIES Optimized(Project))
+    Example 1 — predicate synonym (Has vs Hold)
+        [premise-1]
+        NL:  Anyone who has a PhD degree is qualified for graduate courses.
+        FOL: ∀x.(Has(x, PhDDegree) IMPLIES Qualified(x, GraduateCourses))
 
-        [A]
-        NL:  If a Python project is not optimized, then it is not well-tested.
-        FOL: ∀x.(NOT(Optimized(x)) IMPLIES NOT(WellTested(x)))
+        [premise-5]
+        NL:  Professor John holds a PhD degree.
+        FOL: Hold(ProfessorJohn, PhDDegree)
 
-        Output: {"corrections": [{"id": "premise-3", "rephrased": "For every x, if x is well-tested, then x is optimized."}]}
+        Output: {"corrections": [{"id": "premise-5", "rephrased": "Professor John has a PhD degree."}]}
 
-    Example 2: tautology
+    Example 2 — entity-name drift (Research vs GraduateLevelResearch)
+        [premise-4]
+        NL:  Anyone qualified for graduate courses supervises graduate-level research.
+        FOL: ∀x.(Qualified(x, GraduateCourses) IMPLIES Supervise(x, GraduateLevelResearch))
+
+        [B]
+        NL:  If someone is qualified for graduate courses, they supervise research.
+        FOL: ∀x.(Qualified(x, GraduateCourses) IMPLIES Supervise(x, Research))
+
+        Output: {"corrections": [{"id": "B", "rephrased": "For every x, if x is qualified for graduate courses, then x supervises graduate-level research."}]}
+
+    Example 3 — tautology (structural)
         [premise-7]
         NL:  If a project is not well-structured, then it does not follow PEP 8 standards.
         FOL: ∀x.(NOT(WellStructured(x)) IMPLIES NOT(WellStructured(x)))
 
         Output: {"corrections": [{"id": "premise-7", "rephrased": "For every x, if x is not well-structured, then x does not follow PEP 8 standards."}]}
 
-    Example 3: multiple errors in one batch
-        [premise-2]
-        NL:  If a student passes the exam, the professor is happy.
-        FOL: ∀x.(Pass(x, Exam) IMPLIES Happy(Professor))
-
-        [premise-5]
-        NL:  If someone does not study hard, they will not get a good score.
-        FOL: ∀x.(NOT(StudyHard(x)) IMPLIES NOT(StudyHard(x)))
-
-        [question]
-        NL:  Does every student pass the exam?
-        FOL: ∀x.(Student(x) IMPLIES Pass(x, Exam))
-
-        Output: {"corrections": [
-          {"id": "premise-2", "rephrased": "For every x, if x passes the exam, then x makes the professor happy."},
-          {"id": "premise-5", "rephrased": "For every x, if x does not study hard, then x will not get a good score."}
-        ]}
-
-    Example 4: all translations correct
+    Example 4 — already consistent
         [premise-1]
         NL:  All students study hard.
         FOL: ∀x.(Student(x) IMPLIES StudyHard(x))
 
         [question]
-        NL:  Does every student pass the exam?
-        FOL: ∀x.(Student(x) IMPLIES Pass(x, Exam))
+        NL:  Does every student study hard?
+        FOL: ∀x.(Student(x) IMPLIES StudyHard(x))
 
         Output: {"corrections": []}
 
     Return ONLY valid JSON: {"corrections": [{"id": "...", "rephrased": "..."}, ...]}
-    If no corrections are needed, return {"corrections": []}
+    If everything is already consistent, return {"corrections": []}
     """
 
 
