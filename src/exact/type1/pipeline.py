@@ -14,10 +14,12 @@ Workflow per request:
 
 from __future__ import annotations
 
+import asyncio
 import re
 from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
+from exact.config import get_settings
 from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
 from exact.type1.ast.nodes import LogicalNode
 from exact.type1.models.schemas import Predicate
@@ -36,6 +38,28 @@ async def run_type1_pipeline(
     parser: FOLParser,
     solver: FOLSolver | None = None,
     refiner: Type1Refiner | None = None,
+) -> PredictionResponse:
+    """Run the Type 1 pipeline under a hard end-to-end deadline.
+
+    Guarantees a response within ``type1_request_deadline_seconds``: if parse →
+    solve → refine exceeds the budget the in-flight work is cancelled and a
+    graceful "Uncertain" answer is returned instead of running unbounded.
+    """
+    deadline = get_settings().type1_request_deadline_seconds
+    try:
+        return await asyncio.wait_for(
+            _run_type1_core(payload, parser, solver, refiner),
+            timeout=deadline,
+        )
+    except asyncio.TimeoutError:
+        return _timeout_response(payload, deadline)
+
+
+async def _run_type1_core(
+    payload: PredictionRequest,
+    parser: FOLParser,
+    solver: FOLSolver | None,
+    refiner: Type1Refiner | None,
 ) -> PredictionResponse:
     """Parse → Z3 entailment → self-refinement loop if Uncertain."""
 
@@ -116,6 +140,23 @@ async def run_type1_pipeline(
             "parsed_premises": premise_items,
             "parsed_conclusions": conclusion_items,
         },
+    )
+
+
+def _timeout_response(payload: PredictionRequest, deadline: float) -> PredictionResponse:
+    """Graceful 'Uncertain' answer returned when the request exceeds its deadline."""
+    is_mcq = bool(_normalize_options(payload.options))
+    return PredictionResponse(
+        id=payload.query_id,
+        task_type=TaskType.TYPE1_LOGIC,
+        question_type=QuestionType.MCQ if is_mcq else QuestionType.YNU,
+        answer="Uncertain",
+        explanation=f"Request exceeded the {deadline:.0f}s deadline; returning Uncertain.",
+        fol="",
+        cot=[f"Deadline of {deadline:.0f}s exceeded before the solver could decide."],
+        premises=[p.strip() for p in payload.premises or [] if p.strip()],
+        confidence=None,
+        routing_diagnostics={"stage": "deadline_exceeded", "deadline_seconds": deadline},
     )
 
 

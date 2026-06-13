@@ -41,7 +41,9 @@ class FOLSolver:
     avoids re-declaring the same Z3 function within an instance's lifetime.
     """
 
-    def __init__(self, *, timeout_ms: int = 5_000) -> None:
+    def __init__(self, *, timeout_ms: int = 2_000) -> None:
+        # Per-check cap. An MCQ runs up to 8 checks (4 options × 2), so the
+        # synchronous worst case is ~16s — well inside the request deadline.
         self._timeout_ms = timeout_ms
         # (predicate_name, arity) → Z3 function declaration
         self._func_cache: dict[tuple[str, int], z3.FuncDeclRef] = {}
