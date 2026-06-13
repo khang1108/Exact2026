@@ -267,6 +267,12 @@ def get_system_prompt_atomic() -> str:
         Input:  "x does not pass the exam"
         Output: {"predicate":"Pass","arguments":["x","Exam"],"negated":true}
 
+        Input:  "Sophia has passed the science assessment"
+        Output: {"predicate":"Pass","arguments":["Sophia","ScienceAssessment"],"negated":false}
+
+        Input:  "Sophia passes the language proficiency exam"
+        Output: {"predicate":"Pass","arguments":["Sophia","LanguageProficiencyExam"],"negated":false}
+
         Input:  "Rina loves books"
         Output: {"predicate":"LovesBooks","arguments":["Rina"],"negated":false}
 """
