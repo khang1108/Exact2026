@@ -19,8 +19,9 @@ def get_system_prompt_rephrase() -> str:
         4. If a sentence has multiple conditions connected by "and" in the antecedent or a relative clause (e.g., "If a student is X and does Y, they do Z", or "Students who are X and do Y are Z"), rewrite it using logically equivalent nested implications of the form "If [Condition A], then if [Condition B], then [Consequent]".
            For example: "If a student is X, then if the student does Y, then the student does Z." (Do NOT use "and" to join multiple antecedent conditions, as this breaks quantifier lifting).
         5. If a sentence states a general capability or permission rule (e.g., "Completing X grants Y", "Enrollment in X makes a student Y"), rewrite it into an explicit conditional: "If a person/student completes/enrolls in X, then the person/student is Y."
-        6. Do NOT introduce quantifier symbols (∀, ∃) or variables (x, y, z). Keep natural language noun phrases.
-        7. Do NOT generate any Code Block.
+        6. If a sentence expresses a necessity, requirement, or precondition (e.g., "Sophia needs to pass X to get Y", "X requires Y to Z", "Y is necessary for X to Z"), rewrite it as: "If [consequent Z/Y], then [precondition X/Y]." (e.g., "If Sophia gets an honors diploma, then Sophia passes the language proficiency exam.").
+        7. Do NOT introduce quantifier symbols (∀, ∃) or variables (x, y, z). Keep natural language noun phrases.
+        8. Do NOT generate any Code Block.
 
     Return ONLY valid JSON. Output: {"rephrased": "..."}
 
@@ -51,6 +52,12 @@ def get_system_prompt_rephrase() -> str:
 
         Input:  "Enrollment in Course C makes a student eligible for the internship program."
         Output: {"rephrased": "If a student enrolls in Course C, then the student is eligible for the internship program."}
+
+        Input:  "Sophia needs to pass the language proficiency exam to get an honors diploma."
+        Output: {"rephrased": "If Sophia gets an honors diploma, then Sophia passes the language proficiency exam."}
+
+        Input:  "Sophia needs a faculty recommendation to qualify for the scholarship."
+        Output: {"rephrased": "If Sophia qualifies for the scholarship, then Sophia has a faculty recommendation."}
 
         Input:  "If a course requires a major assignment, the student must complete it or take the final exam."
         Output: {"rephrased": "If a course requires a major assignment, then the student must complete the major assignment or take the final exam."}
