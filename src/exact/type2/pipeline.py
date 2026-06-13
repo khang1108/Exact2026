@@ -35,17 +35,55 @@ def run_type2_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
 ) -> PredictionResponse:
-    """Run Type 2 with lightweight domain metadata and one generic solver path."""
-    from exact.type2.domains.router import route_domain_with_metadata
+    """Route to Type 2 domain pipelines before generic deterministic/PoT fallback."""
+    from exact.type2.domains.router import route_domain, route_domain_with_metadata
 
     settings = settings or get_settings()
     try:
-        domain_route = route_domain_with_metadata(request.id, request.question, settings=settings)
-        domain = domain_route.domain
+        pipeline_domain = route_domain(None, request.question)
+        response: PredictionResponse | None = None
 
-        response = run_generic_pipeline(request, settings, domain_hint=domain)
+        if pipeline_domain == "LD":
+            from exact.type2.domains.ld.pipeline import run_ld_pipeline
 
-        response = _with_domain_route_diagnostics(response, domain_route.to_dict())
+            response = run_ld_pipeline(request, settings)
+        elif pipeline_domain == "TD":
+            from exact.type2.domains.td.pipeline import run_td_pipeline
+
+            response = run_td_pipeline(request, settings)
+        elif pipeline_domain == "NL_ENERGY":
+            from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
+
+            nl_response, fallback = run_nl_energy_pipeline(request, settings)
+            if not fallback and nl_response is not None:
+                response = nl_response
+
+        if response is not None:
+            response = _with_domain_route_diagnostics(
+                response,
+                {
+                    "domain": pipeline_domain,
+                    "source": "type2_legacy_domain_router",
+                },
+            )
+            return _with_agent_loop_if_needed(
+                request,
+                response,
+                settings,
+                trigger=_agent_loop_trigger(response),
+            )
+
+        question_kind_route = route_domain_with_metadata(None, request.question, settings=settings)
+        response = run_generic_pipeline(request, settings, domain_hint=question_kind_route.domain)
+
+        response = _with_domain_route_diagnostics(
+            response,
+            {
+                "domain": pipeline_domain,
+                "source": "type2_legacy_domain_router",
+                "question_kind_route": question_kind_route.to_dict(),
+            },
+        )
         return _with_agent_loop_if_needed(
             request,
             response,

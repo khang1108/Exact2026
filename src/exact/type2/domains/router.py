@@ -10,6 +10,7 @@ from exact.config import Settings, get_settings
 from exact.type2.extraction.llm_structured import JsonClient, build_llm_json_client
 
 
+PipelineDomain = Literal["LD", "TD", "NL_ENERGY", "CIRCUIT", "ELECTROMAGNETISM", "GENERIC"]
 Type2Domain = Literal["numerical", "conceptual", "mixed"]
 VALID_DOMAINS = {"numerical", "conceptual", "mixed"}
 
@@ -42,8 +43,8 @@ class DomainRouteSpec(BaseModel):
         return normalized
 
 
-def route_domain(question_id: str | None, question_text: str) -> Type2Domain:
-    """Route a Type 2 question to a specific domain pipeline based on ID or content."""
+def route_domain(question_id: str | None, question_text: str) -> PipelineDomain:
+    """Route a Type 2 question to a specific domain pipeline from content only."""
 
     return route_domain_heuristic(question_id, question_text)
 
@@ -62,23 +63,83 @@ def route_domain_with_metadata(
         if route is not None:
             return route
 
-    fallback = route_domain(question_id, question_text)
+    fallback = route_question_kind_heuristic(question_id, question_text)
     reason = "LLM domain routing disabled" if not settings.type2_use_llm_domain_routing else "LLM route unavailable"
     return DomainRoute(domain=fallback, source="heuristic", fallback_reason=reason)
 
 
-def route_domain_heuristic(question_id: str | None, question_text: str) -> Type2Domain:
-    # Prefix routing mapping to kinds if possible, else heuristic keywords
-    if question_id:
-        if "LD" in question_id or "DT" in question_id:
-            return "numerical"
-        if "TD" in question_id:
-            return "numerical"
-        if "NL" in question_id:
-            return "numerical"
+def route_domain_heuristic(question_id: str | None, question_text: str) -> PipelineDomain:
+    """Route Type 2 pipeline domain from question text only."""
 
     text = question_text.lower()
-    # If question asks to explain or why, classify as conceptual
+    nl_keywords = [
+        "capacitor energy",
+        "electric field energy",
+        "magnetic field energy",
+        "inductor energy",
+        "lc circuit",
+        "oscillation",
+        "maximum current",
+        "maximum charge",
+        "si unit of energy",
+        "energy versus current",
+        "energy versus capacitance",
+    ]
+
+    for keyword in nl_keywords:
+        if keyword in text:
+            return "NL_ENERGY"
+
+    if re.search(r"\b[iqvu]\(t\).*?(sin|cos)", text):
+        return "NL_ENERGY"
+
+    circuit_keywords = [
+        "ohm",
+        "resistor",
+        "resistance",
+        "series circuit",
+        "parallel circuit",
+        "dc circuit",
+        "ac circuit",
+        "rms current",
+        "rms voltage",
+        "impedance",
+        "reactance",
+        "power factor",
+        "kirchhoff",
+        "wheatstone bridge",
+        "transformer",
+    ]
+    if _has_any(text, circuit_keywords):
+        return "CIRCUIT"
+
+    electromagnetism_keywords = [
+        "magnetic field",
+        "magnetic flux",
+        "faraday",
+        "lenz",
+        "solenoid",
+        "inductor",
+        "inductance",
+        "motional emf",
+        "electromagnetic induction",
+        "flux linkage",
+        "magnetic moment",
+        "lorentz force",
+        "hall effect",
+    ]
+    if _has_any(text, electromagnetism_keywords):
+        return "ELECTROMAGNETISM"
+
+    return "GENERIC"
+
+
+def _has_any(text: str, keywords: list[str]) -> bool:
+    return any(keyword in text for keyword in keywords)
+
+
+def route_question_kind_heuristic(question_id: str | None, question_text: str) -> Type2Domain:
+    text = question_text.lower()
     conceptual_keywords = [
         "explain", "why", "describe", "which of", "what is the relationship",
         "conceptual", "theory", "meaning", "define", "statement is correct",
