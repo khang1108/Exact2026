@@ -87,6 +87,9 @@ def _normalize_premise(premise: str) -> str:
     return re.sub(r"\s+", " ", premise).strip()
 
 
+_ONLY_IF_RE = re.compile(r"\bonly\s+(?:if|when)\b", re.IGNORECASE)
+
+
 def _verify_bundle(
     premises: list[str],
     trees: list[FOLNode],
@@ -98,10 +101,17 @@ def _verify_bundle(
             f"expected one AST per premise, received {len(trees)} ASTs for {len(premises)} premises"
         )
 
-    for index, tree in enumerate(trees):
+    for index, (premise, tree) in enumerate(zip(premises, trees)):
         for name, arity in _collect_predicates_in_order(tree):
             if not schema.contains(name, arity):
                 issues.append(
                     f"premise {index + 1} uses predicate {name}/{arity} outside the schema"
                 )
+
+        if _ONLY_IF_RE.search(premise):
+            issues.append(
+                f"ONLY_IF_DIRECTION_CHECK: premise {index + 1} contains 'only if/when' — "
+                f"confirm FOL has the result as left_operand and the condition as right_operand"
+            )
+
     return issues

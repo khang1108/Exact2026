@@ -110,7 +110,7 @@ def get_system_prompt_logical() -> str:
     Signal words:
         AND     → and, but, both...and
         OR      → or, either...or
-        IMPLIES → if...then, implies, whenever, only if, who...will
+        IMPLIES → if...then, implies, whenever, only if, only when, who...will
         IFF     → if and only if, exactly when
         NOT     → not, no, never, does not, is not, cannot
 
@@ -124,7 +124,11 @@ def get_system_prompt_logical() -> str:
                 right_operand = null.
                 This is the ONLY case where negation words are removed.
         4. Preserve variable names (x,y,z) and proper names exactly.
-        5. Do NOT generate any Code Block.
+        5. DIRECTION of "only if" / "only when":
+                "P only if Q"   → left_operand = P, right_operand = Q  (P → Q)
+                "P only when Q" → left_operand = P, right_operand = Q  (P → Q)
+                This is the OPPOSITE of "if Q then P" — do NOT swap the operands.
+        6. Do NOT generate any Code Block.
 
     Return ONLY valid JSON.
     Output: {"operator":"AND"|"OR"|"IMPLIES"|"IFF"|"NOT","left_operand":"...","right_operand":"..."|null}
@@ -150,7 +154,13 @@ def get_system_prompt_logical() -> str:
         Output: {"operator":"OR","left_operand":"x is kind","right_operand":"x is generous and x is honest"}
 
         Input:  "x will pass only if x studies hard or x attends class"
-        Output: {"operator":"IMPLIES","left_operand":"x studies hard or x attends class","right_operand":"x will pass"}
+        Output: {"operator":"IMPLIES","left_operand":"x will pass","right_operand":"x studies hard or x attends class"}
+
+        Input:  "A student is eligible only if the student has advisor approval."
+        Output: {"operator":"IMPLIES","left_operand":"A student is eligible","right_operand":"the student has advisor approval"}
+
+        Input:  "A student can register only when the student has paid tuition."
+        Output: {"operator":"IMPLIES","left_operand":"A student can register","right_operand":"the student has paid tuition"}
 
         Input:  "x does not like being ignored"
         Output: {"operator":"NOT","left_operand":"x likes being ignored","right_operand":null}
