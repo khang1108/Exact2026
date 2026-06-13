@@ -1,0 +1,711 @@
+Status Code: 200
+{
+  "answer": "C",
+  "explanation": "Z3 entailment result: C",
+  "fol": "premise-1: \u2200x.(Complete(x, CoreCurriculum) IMPLIES (Pass(x, ScienceAssessment) IMPLIES Qualifies(x, AdvancedCourses)))\npremise-2: \u2200x.(Qualifies(x, AdvancedCourses) IMPLIES (Complete(x, ResearchMethodology) IMPLIES Eligible(x, InternationalProgram)))\npremise-3: \u2200x.(Pass(x, LanguageProficiencyExam) IMPLIES Eligible(x, InternationalProgram))\npremise-4: \u2200x.(Eligible(x, InternationalProgram) IMPLIES (Complete(x, CapstoneProject) IMPLIES Awarded(x, HonorDiploma)))\npremise-5: \u2200x.(Awarded(x, HonorDiploma) IMPLIES (Complete(x, CommunityService) IMPLIES Qualifies(x, UniversityScholarship)))\npremise-6: \u2200x.(Awarded(x, HonorDiploma) IMPLIES (HasReceived(x, FacultyRecommendation) IMPLIES Qualifies(x, UniversityScholarship)))\npremise-7: Complete(Sophia, CoreCurriculum)\npremise-8: Pass(Sophia, ScienceAssessment)\npremise-9: Complete(Sophia, ResearchMethodology)\npremise-10: Complete(Sophia, CapstoneProject)\npremise-11: Complete(Sophia, RequiredCommunityServiceHours)\nA: (Qualifies(Sophia, UniversityScholarship) IMPLIES Granted(Sophia, UniversityScholarship))\nB: (Qualifies(Sophia, Scholarship) IMPLIES Has(Sophia, FacultyRecommendation))\nC: Eligible(Sophia, InternationalProgram)\nD: (Gets(Sophia, HonorDiploma) IMPLIES Pass(Sophia, LanguageProficiencyExam))",
+  "cot": [
+    "Parsed all sentences concurrently.",
+    "Z3 solver returned: C"
+  ],
+  "premises": [
+    "Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
+    "Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
+    "Students who have passed the language proficiency exam are eligible for the international program.",
+    "Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
+    "Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
+    "Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
+    "Sophia has completed the core curriculum.",
+    "Sophia has passed the science assessment.",
+    "Sophia has completed the research methodology course.",
+    "Sophia has completed her capstone project.",
+    "Sophia has completed the required community service hours."
+  ],
+  "premises_used": [
+    "premise-1",
+    "premise-2",
+    "premise-7",
+    "premise-8",
+    "premise-9"
+  ],
+  "confidence": null,
+  "id": "logic_0001_00",
+  "task_type": "type1_logic",
+  "question_type": "mcq",
+  "unit": null,
+  "error": null,
+  "routing_diagnostics": {
+    "stage": "z3_entailment",
+    "answered_by": "z3",
+    "solver_available": true,
+    "refiner_available": true,
+    "initial_answer": "C",
+    "refined_answer": null,
+    "refinement_applied": false,
+    "predicate_renames": [],
+    "symbol_normalizations": [
+      {
+        "kind": "predicate",
+        "variants": [
+          "Complete",
+          "HasCompleted",
+          "Completed"
+        ],
+        "to": "Complete"
+      },
+      {
+        "kind": "predicate",
+        "variants": [
+          "Qualified",
+          "Qualifies"
+        ],
+        "to": "Qualifies"
+      },
+      {
+        "kind": "constant",
+        "variants": [
+          "ResearchMethodology",
+          "ResearchMethodologyCourse"
+        ],
+        "to": "ResearchMethodology"
+      },
+      {
+        "kind": "constant",
+        "variants": [
+          "HonorDiploma",
+          "HonorsDiploma"
+        ],
+        "to": "HonorDiploma"
+      }
+    ],
+    "refinement_log": [],
+    "parsed_premises": [
+      {
+        "id": "premise-1",
+        "original_text": "Students who have completed the core curriculum and passed the science assessment are qualified for advanced courses.",
+        "fol": "\u2200x.(Complete(x, CoreCurriculum) IMPLIES (Pass(x, ScienceAssessment) IMPLIES Qualifies(x, AdvancedCourses)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Complete",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "CoreCurriculum"
+              ]
+            },
+            "right": {
+              "type": "logical",
+              "operator": "IMPLIES",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Pass",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "ScienceAssessment"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Qualifies",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "AdvancedCourses"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "Students who are qualified for advanced courses and have completed research methodology are eligible for the international program.",
+        "fol": "\u2200x.(Qualifies(x, AdvancedCourses) IMPLIES (Complete(x, ResearchMethodology) IMPLIES Eligible(x, InternationalProgram)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Qualifies",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "AdvancedCourses"
+              ]
+            },
+            "right": {
+              "type": "logical",
+              "operator": "IMPLIES",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Complete",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "ResearchMethodology"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Eligible",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "InternationalProgram"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "Students who have passed the language proficiency exam are eligible for the international program.",
+        "fol": "\u2200x.(Pass(x, LanguageProficiencyExam) IMPLIES Eligible(x, InternationalProgram))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Pass",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "LanguageProficiencyExam"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Eligible",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "InternationalProgram"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "Students who are eligible for the international program and have completed a capstone project are awarded an honors diploma.",
+        "fol": "\u2200x.(Eligible(x, InternationalProgram) IMPLIES (Complete(x, CapstoneProject) IMPLIES Awarded(x, HonorDiploma)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Eligible",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "InternationalProgram"
+              ]
+            },
+            "right": {
+              "type": "logical",
+              "operator": "IMPLIES",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Complete",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "CapstoneProject"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Awarded",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "HonorDiploma"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "Students who have been awarded an honors diploma and have completed community service qualify for the university scholarship.",
+        "fol": "\u2200x.(Awarded(x, HonorDiploma) IMPLIES (Complete(x, CommunityService) IMPLIES Qualifies(x, UniversityScholarship)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Awarded",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "HonorDiploma"
+              ]
+            },
+            "right": {
+              "type": "logical",
+              "operator": "IMPLIES",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Complete",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "CommunityService"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Qualifies",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "UniversityScholarship"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "Students who have been awarded an honors diploma and have received a faculty recommendation qualify for the university scholarship.",
+        "fol": "\u2200x.(Awarded(x, HonorDiploma) IMPLIES (HasReceived(x, FacultyRecommendation) IMPLIES Qualifies(x, UniversityScholarship)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Awarded",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "HonorDiploma"
+              ]
+            },
+            "right": {
+              "type": "logical",
+              "operator": "IMPLIES",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "HasReceived",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "FacultyRecommendation"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Qualifies",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "UniversityScholarship"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "Sophia has completed the core curriculum.",
+        "fol": "Complete(Sophia, CoreCurriculum)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Complete",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sophia",
+            "CoreCurriculum"
+          ]
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "Sophia has passed the science assessment.",
+        "fol": "Pass(Sophia, ScienceAssessment)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Pass",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sophia",
+            "ScienceAssessment"
+          ]
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "Sophia has completed the research methodology course.",
+        "fol": "Complete(Sophia, ResearchMethodology)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Complete",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sophia",
+            "ResearchMethodology"
+          ]
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "Sophia has completed her capstone project.",
+        "fol": "Complete(Sophia, CapstoneProject)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Complete",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sophia",
+            "CapstoneProject"
+          ]
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "Sophia has completed the required community service hours.",
+        "fol": "Complete(Sophia, RequiredCommunityServiceHours)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Complete",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sophia",
+            "RequiredCommunityServiceHours"
+          ]
+        }
+      }
+    ],
+    "parsed_conclusions": [
+      {
+        "id": "A",
+        "original_text": "Sophia qualifies for the university scholarship",
+        "fol": "(Qualifies(Sophia, UniversityScholarship) IMPLIES Granted(Sophia, UniversityScholarship))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Qualifies",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Sophia",
+              "UniversityScholarship"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Granted",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Sophia",
+              "UniversityScholarship"
+            ]
+          }
+        }
+      },
+      {
+        "id": "B",
+        "original_text": "Sophia needs a faculty recommendation to qualify for the scholarship",
+        "fol": "(Qualifies(Sophia, Scholarship) IMPLIES Has(Sophia, FacultyRecommendation))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Qualifies",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Sophia",
+              "Scholarship"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Has",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Sophia",
+              "FacultyRecommendation"
+            ]
+          }
+        }
+      },
+      {
+        "id": "C",
+        "original_text": "Sophia is eligible for the international program",
+        "fol": "Eligible(Sophia, InternationalProgram)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Eligible",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sophia",
+            "InternationalProgram"
+          ]
+        }
+      },
+      {
+        "id": "D",
+        "original_text": "Sophia needs to pass the language proficiency exam to get an honors diploma",
+        "fol": "(Gets(Sophia, HonorDiploma) IMPLIES Pass(Sophia, LanguageProficiencyExam))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Gets",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Sophia",
+              "HonorDiploma"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Pass",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Sophia",
+              "LanguageProficiencyExam"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
