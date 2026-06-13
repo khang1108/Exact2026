@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, Protocol
 
-from exact.type2.extraction.llm_structured import SemanticContractSpec
 from exact.type2.schemas import Extraction
 from exact.type2.solver_contract.models import (
     ContractBody,
@@ -15,6 +14,13 @@ from exact.type2.solver_contract.models import (
     SolverContract,
 )
 from exact.type2.solver_contract.unit_parser import safe_parse_quantity
+
+
+class SemanticContractSpec(Protocol):
+    target: dict[str, Any] | None
+    bodies: list[dict[str, Any]]
+    geometry: dict[str, Any] | None
+
 
 TARGET_MAPPING = {
     "force": "electric_force",
