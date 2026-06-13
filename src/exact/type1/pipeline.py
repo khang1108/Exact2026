@@ -10,6 +10,7 @@ Workflow per request:
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
@@ -48,11 +49,14 @@ async def run_type1_pipeline(
     premise_fols = premise_bundle.trees
 
     # --- Z3 entailment -------------------------------------------------------
-    if solver is not None:
+    solver_used = solver is not None and premise_bundle.verified
+    if solver_used:
         if is_mcq:
             option_fols = dict(zip(options_dict.keys(), conclusion_fols))
+            assert solver is not None
             answer = solver.check_mcq(premise_fols, option_fols)
         else:
+            assert solver is not None
             answer = solver.check_ynu(premise_fols, conclusion_fols[0])
     else:
         answer = "Uncertain"
@@ -91,21 +95,42 @@ async def run_type1_pipeline(
         task_type=TaskType.TYPE1_LOGIC,
         question_type=question_type,
         answer=answer,
-        explanation=f"Z3 entailment result: {answer}",
+        explanation=(
+            f"Z3 entailment result: {answer}"
+            if solver_used
+            else (
+                "Z3 solver skipped because no solver was configured "
+                "or premise verification failed."
+            )
+        ),
         fol=fol_text,
         cot=[
-            "Parsed and verified premises before parsing conclusions.",
-            f"Z3 solver returned: {answer}",
+            (
+                "Premise verification passed before parsing conclusions."
+                if premise_bundle.verified
+                else "Premise verification failed; solver execution was skipped."
+            ),
+            f"Pipeline returned: {answer}",
         ],
         premises=premise_bundle.premises,
         confidence=None,
         routing_diagnostics={
             "stage": "z3_entailment",
             "solver_available": solver is not None,
+            "solver_used": solver_used,
             "premise_bundle_verified": premise_bundle.verified,
             "premise_verification_issues": list(premise_bundle.verification_issues),
             "premise_predicate_renames": premise_bundle.predicate_renames,
             "conclusion_predicate_renames": conclusion_renames,
+            "premise_schema": {
+                "predicates": [
+                    asdict(predicate) for predicate in premise_bundle.schema.predicates
+                ],
+                "constants": [
+                    asdict(constant) for constant in premise_bundle.schema.constants
+                ],
+                "diagnostics": list(premise_bundle.schema.diagnostics),
+            },
             "parsed_premises": premise_items,
             "parsed_conclusions": conclusion_items,
         },

@@ -13,7 +13,6 @@ from exact.type1.parser.schemas import (
     PremiseSchema,
     _INTERROGATIVE_START,
     _OPTION_LINE,
-    _collect_predicates_in_order,
 )
 
 if TYPE_CHECKING:
@@ -26,9 +25,17 @@ class PremiseParser:
     def __init__(
         self,
         fol_parser: FOLParser,
-        frame_parser: PremiseFrameParser,
-        frame_compiler: PremiseFrameCompiler,
+        frame_parser: PremiseFrameParser | None = None,
+        frame_compiler: PremiseFrameCompiler | None = None,
     ) -> None:
+        if (frame_parser is None) != (frame_compiler is None):
+            raise ValueError("frame_parser and frame_compiler must be configured together")
+        if frame_parser is None and frame_compiler is None:
+            client = getattr(fol_parser, "client", None)
+            if client is not None:
+                frame_parser = PremiseFrameParser(client)
+                frame_compiler = PremiseFrameCompiler(fol_parser)
+
         self.fol_parser = fol_parser
         self.frame_parser = frame_parser
         self.frame_compiler = frame_compiler
@@ -56,8 +63,11 @@ class PremiseParser:
                 + "; ".join(repr(p) for p in invalid)
             )
 
-        frames = await self.frame_parser.parse_many(normalized)
-        draft_trees = await self.frame_compiler.compile_many(normalized, frames)
+        if self.frame_parser is not None and self.frame_compiler is not None:
+            frames = await self.frame_parser.parse_many(normalized)
+            draft_trees = await self.frame_compiler.compile_many(normalized, frames)
+        else:
+            draft_trees = await self.fol_parser.parse_many(normalized)
         schema = PremiseSchema.from_trees(draft_trees)
         trees, renames = schema.canonicalize(draft_trees)
         issues = _verify_bundle(normalized, trees, schema)
@@ -88,6 +98,7 @@ def _normalize_premise(premise: str) -> str:
 
 
 _ONLY_IF_RE = re.compile(r"\bonly\s+(?:if|when)\b", re.IGNORECASE)
+_NON_BLOCKING_SCHEMA_DIAGNOSTICS = ("SCHEMA_SIMILAR_PREDICATES:",)
 
 
 def _verify_bundle(
@@ -95,19 +106,17 @@ def _verify_bundle(
     trees: list[FOLNode],
     schema: PremiseSchema,
 ) -> list[str]:
-    issues: list[str] = []
+    issues = [
+        diagnostic
+        for diagnostic in schema.diagnostics
+        if not diagnostic.startswith(_NON_BLOCKING_SCHEMA_DIAGNOSTICS)
+    ]
     if len(premises) != len(trees):
         issues.append(
             f"expected one AST per premise, received {len(trees)} ASTs for {len(premises)} premises"
         )
 
-    for index, (premise, tree) in enumerate(zip(premises, trees)):
-        for name, arity in _collect_predicates_in_order(tree):
-            if not schema.contains(name, arity):
-                issues.append(
-                    f"premise {index + 1} uses predicate {name}/{arity} outside the schema"
-                )
-
+    for index, premise in enumerate(premises):
         if _ONLY_IF_RE.search(premise):
             issues.append(
                 f"ONLY_IF_DIRECTION_CHECK: premise {index + 1} contains 'only if/when' — "

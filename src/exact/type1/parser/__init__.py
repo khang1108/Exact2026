@@ -5,6 +5,7 @@ from exact.type1.parser.frame_parser import PremiseFrameCompiler, PremiseFramePa
 from exact.type1.parser.parser import FOLParser
 from exact.type1.parser.premise_parser import PremiseParser
 from exact.type1.parser.schemas import (
+    ConstantSignature,
     PredicateSignature,
     PremiseFrameResult,
     PremiseParseBundle,
@@ -27,6 +28,7 @@ from exact.type1.parser.schemas import (
 
 __all__ = [
     "AtomicResult",
+    "ConstantSignature",
     "CoreferenceResult",
     "FOLParser",
     "LogicalResult",
