@@ -27,6 +27,39 @@ def _sanitize_name(name: str) -> str:
         sanitized = "P_" + sanitized
     return sanitized
 
+
+# A logic variable is a single lowercase letter (+ optional digits): x, y, z, x1.
+# Constants are Capitalized/CamelCase after the parser's normalization, so this
+# never matches an entity name like "Curriculum" or "John".
+_VAR_RE = re.compile(r"[a-z]\d*")
+
+
+def _free_vars(node: FOLNode, bound: frozenset[str]) -> set[str]:
+    """Collect variable arguments not bound by an enclosing quantifier."""
+    if isinstance(node, AtomicNode):
+        return {a for a in node.arguments if a not in bound and _VAR_RE.fullmatch(a)}
+    if isinstance(node, QuantifiedNode):
+        return _free_vars(node.body, bound | {node.variable})
+    free = _free_vars(node.left, bound)
+    if node.right is not None:
+        free |= _free_vars(node.right, bound)
+    return free
+
+
+def _close_universally(node: FOLNode) -> FOLNode:
+    """Universally quantify a premise's free variables.
+
+    The parser emits rules with implicitly universally quantified variables, e.g.
+    ``(WellStructured(x) AND HasExercises(x)) IMPLIES Engaging(x)`` with no FORALL.
+    Z3 treats a free ``x`` as a single constant it may pick distinct from the
+    entity in the facts, so the rule never fires and every chain collapses to
+    Uncertain. Wrapping each premise's free variables in FORALL restores the
+    intended reading. A no-op when the premise is already ground or quantified.
+    """
+    for var in sorted(_free_vars(node, frozenset())):
+        node = QuantifiedNode(quantifier="FORALL", variable=var, body=node)
+    return node
+
 # Shared sort for every entity in the domain.  Must be a module-level singleton:
 # calling DeclareSort('Entity') twice creates two *distinct* sorts in Z3.
 _ENTITY = z3.DeclareSort("Entity")
@@ -54,7 +87,7 @@ class FOLSolver:
 
     def check_ynu(self, premises: list[FOLNode], conclusion: FOLNode) -> Answer:
         """Return Yes / No / Uncertain for a yes-no-uncertain question."""
-        p = [self._to_z3(n) for n in premises]
+        p = [self._to_z3(_close_universally(n)) for n in premises]
         c = self._to_z3(conclusion)
         return self._entails(p, c)
 
@@ -67,7 +100,7 @@ class FOLSolver:
 
         options: {"A": fol_node, "B": fol_node, ...}
         """
-        p = [self._to_z3(n) for n in premises]
+        p = [self._to_z3(_close_universally(n)) for n in premises]
         entailed = [
             label
             for label, node in options.items()
