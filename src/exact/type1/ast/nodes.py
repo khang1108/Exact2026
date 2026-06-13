@@ -2,18 +2,25 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from typing import Literal, TypeAlias
 
 from exact.type1.models.schemas import Predicate
 
 __all__ = [
     "AtomicNode",
+    "ComparisonNode",
+    "DateTerm",
     "FOLNode",
+    "FunctionTerm",
     "LogicalNode",
+    "NumericTerm",
     "QuantifiedNode",
     "_extract_bound_var",
     "extract_bound_variable",
+    "simplify",
 ]
 
 
@@ -67,7 +74,52 @@ class QuantifiedNode:
         return f"{symbol}{self.variable}.({self.body})"
 
 
-FOLNode: TypeAlias = AtomicNode | LogicalNode | QuantifiedNode
+@dataclass
+class NumericTerm:
+    """A numeric literal used on the right side of a comparison."""
+
+    value: float
+
+    def __repr__(self) -> str:
+        return str(self.value)
+
+
+@dataclass
+class DateTerm:
+    """A symbolic date or deadline reference (e.g. 'June1', 'AddDropDeadline')."""
+
+    value: str
+
+    def __repr__(self) -> str:
+        return self.value
+
+
+@dataclass
+class FunctionTerm:
+    """A numeric-valued attribute function applied to entity arguments."""
+
+    name: str
+    arguments: list[str] = field(default_factory=list)
+
+    def __repr__(self) -> str:
+        if self.arguments:
+            return f"{self.name}({', '.join(self.arguments)})"
+        return self.name
+
+
+@dataclass
+class ComparisonNode:
+    """An arithmetic or temporal comparison that yields a boolean formula."""
+
+    operator: Literal["=", ">=", ">", "<=", "<", "!="]
+    left: FunctionTerm
+    right: NumericTerm | FunctionTerm | DateTerm
+
+    def __repr__(self) -> str:
+        return f"({self.left} {self.operator} {self.right})"
+
+
+FOLNode: TypeAlias = AtomicNode | LogicalNode | QuantifiedNode | ComparisonNode
 
 
 def _extract_bound_var(node: FOLNode) -> str | None:
@@ -81,6 +133,8 @@ def _extract_bound_var(node: FOLNode) -> str | None:
             return left_variable
         if node.right is not None:
             return _extract_bound_var(node.right)
+    if isinstance(node, ComparisonNode):
+        return None
     return None
 
 
@@ -91,6 +145,8 @@ extract_bound_variable = _extract_bound_var
 def simplify(node: FOLNode) -> FOLNode:
     """Eliminate double negations recursively: NOT(NOT(x)) → x."""
     if isinstance(node, AtomicNode):
+        return node
+    if isinstance(node, ComparisonNode):
         return node
     if isinstance(node, QuantifiedNode):
         return QuantifiedNode(

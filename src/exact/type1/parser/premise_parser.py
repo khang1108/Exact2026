@@ -5,10 +5,11 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from exact.type1.ast.nodes import FOLNode
-from exact.type1.parser.frame_parser import PremiseFrameCompiler, PremiseFrameParser
+from exact.type1.ast.nodes import ComparisonNode, FOLNode, LogicalNode, QuantifiedNode
+from exact.type1.parser.frame_parser import ConstraintParser, PremiseFrameCompiler, PremiseFrameParser
 from exact.type1.parser.parser import FOLParser
 from exact.type1.parser.schemas import (
+    PremiseFrameResult,
     PremiseParseBundle,
     PremiseSchema,
     _INTERROGATIVE_START,
@@ -45,7 +46,8 @@ class PremiseParser:
         """Construct all parser components from one shared client."""
         fol_parser = FOLParser(client)
         frame_parser = PremiseFrameParser(client)
-        frame_compiler = PremiseFrameCompiler(fol_parser)
+        constraint_parser = ConstraintParser(client)
+        frame_compiler = PremiseFrameCompiler(fol_parser, constraint_parser)
         return cls(fol_parser, frame_parser, frame_compiler)
 
     async def parse_premises(self, premises: list[str]) -> PremiseParseBundle:
@@ -63,6 +65,7 @@ class PremiseParser:
                 + "; ".join(repr(p) for p in invalid)
             )
 
+        frames: list[PremiseFrameResult] | None = None
         if self.frame_parser is not None and self.frame_compiler is not None:
             frames = await self.frame_parser.parse_many(normalized)
             draft_trees = await self.frame_compiler.compile_many(normalized, frames)
@@ -70,7 +73,7 @@ class PremiseParser:
             draft_trees = await self.fol_parser.parse_many(normalized)
         schema = PremiseSchema.from_trees(draft_trees)
         trees, renames = schema.canonicalize(draft_trees)
-        issues = _verify_bundle(normalized, trees, schema)
+        issues = _verify_bundle(normalized, trees, schema, frames)
 
         return PremiseParseBundle(
             premises=normalized,
@@ -98,13 +101,42 @@ def _normalize_premise(premise: str) -> str:
 
 
 _ONLY_IF_RE = re.compile(r"\bonly\s+(?:if|when)\b", re.IGNORECASE)
+_NOT_NECESSARILY_RE = re.compile(r"\bnot\s+necessarily\b", re.IGNORECASE)
 _NON_BLOCKING_SCHEMA_DIAGNOSTICS = ("SCHEMA_SIMILAR_PREDICATES:",)
+
+_NUMERIC_SIGNAL_RE = re.compile(
+    r"\b(?:at\s+least|at\s+most|more\s+than|fewer\s+than|less\s+than|"
+    r"greater\s+than|exactly|minimum|maximum|above|below|"
+    r"\d+(?:\.\d+)?\s*(?:courses?|credits?|hours?|points?|percent|%))\b",
+    re.IGNORECASE,
+)
+_TEMPORAL_SIGNAL_RE = re.compile(
+    r"\b(?:before|after|by\s+\w+\s*\d|until|"
+    r"(?:january|february|march|april|may|june|july|august|september|october|november|december)"
+    r"\s*\d{1,2})\b",
+    re.IGNORECASE,
+)
+
+
+def _has_comparison_node(tree: FOLNode) -> bool:
+    if isinstance(tree, ComparisonNode):
+        return True
+    if isinstance(tree, QuantifiedNode):
+        return _has_comparison_node(tree.body) or (
+            tree.restrictor is not None and _has_comparison_node(tree.restrictor)
+        )
+    if isinstance(tree, LogicalNode):
+        return _has_comparison_node(tree.left) or (
+            tree.right is not None and _has_comparison_node(tree.right)
+        )
+    return False
 
 
 def _verify_bundle(
     premises: list[str],
     trees: list[FOLNode],
     schema: PremiseSchema,
+    frames: list[PremiseFrameResult] | None = None,
 ) -> list[str]:
     issues = [
         diagnostic
@@ -116,11 +148,28 @@ def _verify_bundle(
             f"expected one AST per premise, received {len(trees)} ASTs for {len(premises)} premises"
         )
 
-    for index, premise in enumerate(premises):
+    for index, (premise, tree) in enumerate(zip(premises, trees)):
         if _ONLY_IF_RE.search(premise):
             issues.append(
                 f"ONLY_IF_DIRECTION_CHECK: premise {index + 1} contains 'only if/when' — "
                 f"confirm FOL has the result as left_operand and the condition as right_operand"
+            )
+        frame_modality = frames[index].modality if frames and index < len(frames) else "none"
+        if frame_modality == "not_necessarily" or _NOT_NECESSARILY_RE.search(premise):
+            issues.append(
+                "UNSUPPORTED_MODAL_NOT_NECESSARILY: "
+                f"premise {index + 1} requires epistemic non-entailment reasoning"
+            )
+        has_cmp = _has_comparison_node(tree)
+        if _NUMERIC_SIGNAL_RE.search(premise) and not has_cmp:
+            issues.append(
+                f"NUMERIC_CONSTRAINT_LOST: premise {index + 1} has numeric signals "
+                f"but no ComparisonNode in the compiled AST"
+            )
+        if _TEMPORAL_SIGNAL_RE.search(premise) and not has_cmp:
+            issues.append(
+                f"TEMPORAL_CONSTRAINT_LOST: premise {index + 1} has temporal signals "
+                f"but no ComparisonNode in the compiled AST"
             )
 
     return issues

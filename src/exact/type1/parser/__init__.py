@@ -1,7 +1,7 @@
 """Public interfaces for Type 1 natural-language parsing."""
 
 from exact.type1.parser.client import ParserClient, build_parser_client_from_settings
-from exact.type1.parser.frame_parser import PremiseFrameCompiler, PremiseFrameParser
+from exact.type1.parser.frame_parser import ConstraintParser, PremiseFrameCompiler, PremiseFrameParser
 from exact.type1.parser.parser import FOLParser
 from exact.type1.parser.premise_parser import PremiseParser
 from exact.type1.parser.schemas import (
@@ -22,16 +22,20 @@ from exact.type1.parser.schemas import (
     AtomicResult,
     CoreferenceResult,
     LogicalResult,
+    NumericConstraintResult,
     QuantifiedResult,
     RephraseResult,
+    TemporalConstraintResult,
 )
 
 __all__ = [
     "AtomicResult",
     "ConstantSignature",
+    "ConstraintParser",
     "CoreferenceResult",
     "FOLParser",
     "LogicalResult",
+    "NumericConstraintResult",
     "ParserClient",
     "ParserKind",
     "ParserRequest",
@@ -44,6 +48,7 @@ __all__ = [
     "PremiseSchema",
     "QuantifiedResult",
     "RephraseResult",
+    "TemporalConstraintResult",
     "build_coreference_request",
     "build_parser_client_from_settings",
     "build_rephrase_request",

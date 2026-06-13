@@ -183,7 +183,11 @@ def get_system_prompt_atomic() -> str:
             "is a student"     → "Student"
             "is well-tested"   → "WellTested"
             "follows standards"→ "Follows"
-            "must complete"    → "Complete"
+            "must complete"    → "RequiredComplete"
+            "can register"     → "CanRegister"
+            "may enroll"       → "AllowedEnroll"
+            "eligible for"     → "EligibleFor"
+            "required to take" → "RequiresTake"
             "loves books"      → "LovesBooks"
 
         2. arguments → ALL entities in subject-object order.
@@ -224,16 +228,34 @@ def get_system_prompt_atomic() -> str:
         Output: {"predicate":"Requires","arguments":["x","MajorAssignment"],"negated":false}
 
         Input:  "the student must complete the major assignment"
-        Output: {"predicate":"Complete","arguments":["Student","MajorAssignment"],"negated":false}
+        Output: {"predicate":"RequiredComplete","arguments":["Student","MajorAssignment"],"negated":false}
 
         Input:  "the student must take the final exam"
-        Output: {"predicate":"Take","arguments":["Student","FinalExam"],"negated":false}
+        Output: {"predicate":"RequiredTake","arguments":["Student","FinalExam"],"negated":false}
+
+        Input:  "x can register"
+        Output: {"predicate":"CanRegister","arguments":["x"],"negated":false}
+
+        Input:  "x may enroll in the course"
+        Output: {"predicate":"AllowedEnroll","arguments":["x","Course"],"negated":false}
+
+        Input:  "x is eligible for advanced classes"
+        Output: {"predicate":"EligibleFor","arguments":["x","AdvancedClasses"],"negated":false}
+
+        Input:  "x is required to take the final exam"
+        Output: {"predicate":"RequiresTake","arguments":["x","FinalExam"],"negated":false}
 
         Input:  "x gives y a book"
         Output: {"predicate":"Gives","arguments":["x","y","Book"],"negated":false}
 
         Input:  "x does not pass the exam"
         Output: {"predicate":"Pass","arguments":["x","Exam"],"negated":true}
+
+        Input:  "x cannot stay"
+        Output: {"predicate":"Stay","arguments":["x"],"negated":true}
+
+        Input:  "x is prohibited from staying"
+        Output: {"predicate":"Stay","arguments":["x"],"negated":true}
 
         Input:  "Rina loves books"
         Output: {"predicate":"LovesBooks","arguments":["Rina"],"negated":false}
@@ -288,6 +310,8 @@ All text fragments must reference the entity using the stated variable (e.g. "x 
 8. temporal_constraints = temporal conditions ("x enrolled before the deadline").
 9. Do NOT include quantifier phrases in text fragments.
 10. One simple predication per item — do NOT combine multiple facts in one string.
+11. "not necessarily P" is not negation. Set modality="not_necessarily" and
+    preserve P as a positive conclusion text.
 
 # EXAMPLES
 
@@ -311,7 +335,92 @@ Output: {"kind":"existential_fact","variable":"x","restrictor_text":"x is a stud
 
 Input: "Students who enroll after the add/drop deadline cannot withdraw without penalty."
 Output: {"kind":"prohibition_rule","variable":"x","restrictor_text":"x is a student","condition_texts":[],"conclusion_texts":["x cannot withdraw without penalty"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":["x enrolled after the add/drop deadline"],"modality":"prohibited","confidence":1.0}
+
+Input: "Online courses are not necessarily cost-effective."
+Output: {"kind":"deontic_rule","variable":"x","restrictor_text":"x is an online course","condition_texts":[],"conclusion_texts":["x is not necessarily cost-effective"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":[],"modality":"not_necessarily","confidence":1.0}
 """
+
+
+def get_system_prompt_numeric_constraint() -> str:
+    """Return instructions for extracting one numeric comparison from a sentence."""
+
+    return """
+    Extract the numeric comparison expressed in this sentence.
+
+    Rules:
+        1. function_name → CamelCase name of the numeric attribute (e.g. GPA, CompletedCourses, CreditHours, Credits).
+        2. arguments → ALL entity arguments the function is applied to (variables like x, or constants like Sarah), in order.
+        3. operator → the comparison direction:
+            "at least N" / "no fewer than N" / "minimum N" → ">="
+            "more than N" / "greater than N" / "above N"   → ">"
+            "at most N"  / "no more than N"  / "maximum N" → "<="
+            "fewer than N" / "less than N" / "below N"     → "<"
+            "exactly N"  / "equals N" / "is N"             → "="
+            "not equal to N" / "different from N"          → "!="
+        4. value → the numeric value as a float (integer or decimal).
+        5. Do NOT generate any Code Block.
+
+    Return ONLY valid JSON.
+    Output: {"function_name":"...","arguments":["..."],"operator":"="|">="|">"|"<="|"<"|"!=","value":0.0}
+
+    Examples:
+        Input:  "x has completed at least 5 courses"
+        Output: {"function_name":"CompletedCourses","arguments":["x"],"operator":">=","value":5.0}
+
+        Input:  "x has a GPA below 2.5"
+        Output: {"function_name":"GPA","arguments":["x"],"operator":"<","value":2.5}
+
+        Input:  "Sarah has accumulated 80 credits"
+        Output: {"function_name":"Credits","arguments":["Sarah"],"operator":"=","value":80.0}
+
+        Input:  "x has more than 60 credit hours"
+        Output: {"function_name":"CreditHours","arguments":["x"],"operator":">","value":60.0}
+
+        Input:  "x covers at most 65% of total credits"
+        Output: {"function_name":"CreditPercentage","arguments":["x"],"operator":"<=","value":65.0}
+
+        Input:  "x has completed exactly 3 required courses"
+        Output: {"function_name":"RequiredCoursesCompleted","arguments":["x"],"operator":"=","value":3.0}
+    """
+
+
+def get_system_prompt_temporal_constraint() -> str:
+    """Return instructions for extracting one temporal comparison from a sentence."""
+
+    return """
+    Extract the temporal comparison expressed in this sentence.
+
+    Rules:
+        1. function_name → CamelCase name of the date attribute (e.g. SubmissionDate, EnrollmentDate, ApplicationDate).
+        2. arguments → ALL entity arguments the function is applied to (variables or constants).
+        3. operator → the temporal relation:
+            "before DATE"                         → "before"
+            "by DATE" / "no later than DATE"      → "by"
+            "after DATE" / "no earlier than DATE" → "after"
+            "on DATE"                             → "on"
+            "until DATE"                          → "until"
+        4. date_value → normalize the date to a CamelCase identifier (e.g. "June1", "May15", "AddDropDeadline", "SemesterStart").
+        5. Do NOT generate any Code Block.
+
+    Return ONLY valid JSON.
+    Output: {"function_name":"...","arguments":["..."],"operator":"before"|"after"|"on"|"by"|"until","date_value":"..."}
+
+    Examples:
+        Input:  "x enrolled before the add/drop deadline"
+        Output: {"function_name":"EnrollmentDate","arguments":["x"],"operator":"before","date_value":"AddDropDeadline"}
+
+        Input:  "x must submit by June 1"
+        Output: {"function_name":"SubmissionDate","arguments":["x"],"operator":"by","date_value":"June1"}
+
+        Input:  "Hà submitted her application on May 15"
+        Output: {"function_name":"ApplicationDate","arguments":["Ha"],"operator":"on","date_value":"May15"}
+
+        Input:  "x registered after the semester start"
+        Output: {"function_name":"RegistrationDate","arguments":["x"],"operator":"after","date_value":"SemesterStart"}
+
+        Input:  "x must complete the form before the deadline"
+        Output: {"function_name":"CompletionDate","arguments":["x"],"operator":"before","date_value":"Deadline"}
+    """
 
 
 def get_system_prompt_coreference() -> str:

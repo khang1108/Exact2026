@@ -15,6 +15,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.dataclasses import dataclass
 
 from exact.type1.ast import AtomicNode, FOLNode, LogicalNode, QuantifiedNode
+from exact.type1.ast.nodes import ComparisonNode
 from exact.type1.models.schemas import Predicate
 
 _INTERROGATIVE_START = re.compile(
@@ -106,6 +107,7 @@ _PLURAL_CLASS_NOUNS = frozenset(
         "teachers",
     }
 )
+_DEONTIC_PREDICATE_PREFIXES = frozenset({"allowed", "can", "required", "requires"})
 
 class ParserResult(BaseModel):
     """Base schema that rejects fields not requested by the parser operation."""
@@ -194,6 +196,24 @@ class PremiseFrameResult(ParserResult):
     ] = "none"
 
     confidence: float = 1.0
+
+
+class NumericConstraintResult(ParserResult):
+    """Result of parsing one numeric constraint sentence (e.g. 'x has at least 5 courses')."""
+
+    function_name: str
+    arguments: list[str]
+    operator: Literal["=", ">=", ">", "<=", "<", "!="]
+    value: float
+
+
+class TemporalConstraintResult(ParserResult):
+    """Result of parsing one temporal constraint sentence (e.g. 'x enrolled before June 1')."""
+
+    function_name: str
+    arguments: list[str]
+    operator: Literal["before", "after", "on", "by", "until"]
+    date_value: str
 
 
 # ------------------------------------------------------------------
@@ -318,18 +338,22 @@ def _collect_predicates_in_order(node: FOLNode) -> list[tuple[str, int]]:
 def _collect_atoms_in_order(node: FOLNode) -> list[AtomicNode]:
     if isinstance(node, AtomicNode):
         return [node]
+    if isinstance(node, ComparisonNode):
+        return []
     if isinstance(node, QuantifiedNode):
         atoms = _collect_atoms_in_order(node.body)
         if node.restrictor is not None:
             atoms.extend(_collect_atoms_in_order(node.restrictor))
         return atoms
-
+    # LogicalNode
     atoms = _collect_atoms_in_order(node.left)
     if node.right is not None:
         atoms.extend(_collect_atoms_in_order(node.right))
     return atoms
 
 def _rename_in_node(node: FOLNode, remap: dict[tuple[str, int], str]) -> FOLNode:
+    if isinstance(node, ComparisonNode):
+        return node
     if isinstance(node, AtomicNode):
         key = (node.predicate.name, len(node.arguments))
         canonical_name = remap.get(key)
@@ -399,6 +423,11 @@ def _camel_word_list(name: str) -> list[str]:
 def _semantic_key(name: str) -> tuple[str, ...]:
     raw_tokens = _camel_word_list(name)
     normalized = [_normalize_semantic_token(token) for token in raw_tokens]
+    if raw_tokens and raw_tokens[0] in _DEONTIC_PREDICATE_PREFIXES:
+        content = tuple(
+            token for token in normalized[1:] if token not in _AUXILIARY_ACTIONS
+        )
+        return (f"modal:{raw_tokens[0]}", *content)
     content = tuple(token for token in normalized if token not in _AUXILIARY_ACTIONS)
     return content or tuple(normalized)
 
@@ -483,6 +512,8 @@ def _collect_constants_in_order(
             for argument in node.arguments
             if argument not in bound_variables
         ]
+    if isinstance(node, ComparisonNode):
+        return [a for a in node.left.arguments if a not in bound_variables]
     if isinstance(node, QuantifiedNode):
         local_variables = bound_variables | {node.variable}
         constants = _collect_constants_in_order(node.body, local_variables)

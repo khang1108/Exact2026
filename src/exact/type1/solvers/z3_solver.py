@@ -12,17 +12,35 @@ Typical use:
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Callable, Literal
 
 import z3
 
-from exact.type1.ast.nodes import AtomicNode, FOLNode, LogicalNode, QuantifiedNode
+from exact.type1.ast.nodes import (
+    AtomicNode,
+    ComparisonNode,
+    DateTerm,
+    FOLNode,
+    FunctionTerm,
+    LogicalNode,
+    NumericTerm,
+    QuantifiedNode,
+)
 
 # Shared sort for every entity in the domain.  Must be a module-level singleton:
 # calling DeclareSort('Entity') twice creates two *distinct* sorts in Z3.
 _ENTITY = z3.DeclareSort("Entity")
 
 Answer = Literal["Yes", "No", "Uncertain"]
+
+_COMPARISON_OPS: dict[str, Callable[[z3.ExprRef, z3.ExprRef], z3.BoolRef]] = {
+    "=": lambda a, b: a == b,  # type: ignore[return-value]
+    ">=": lambda a, b: a >= b,  # type: ignore[return-value]
+    ">": lambda a, b: a > b,  # type: ignore[return-value]
+    "<=": lambda a, b: a <= b,  # type: ignore[return-value]
+    "<": lambda a, b: a < b,  # type: ignore[return-value]
+    "!=": lambda a, b: a != b,  # type: ignore[return-value]
+}
 
 
 class FOLSolver:
@@ -34,8 +52,12 @@ class FOLSolver:
 
     def __init__(self, *, timeout_ms: int = 5_000) -> None:
         self._timeout_ms = timeout_ms
-        # (predicate_name, arity) → Z3 function declaration
+        # (predicate_name, arity) → Z3 function Entity*→Bool
         self._func_cache: dict[tuple[str, int], z3.FuncDeclRef] = {}
+        # (function_name, arity) → Z3 function Entity*→Real (numeric attributes)
+        self._numeric_cache: dict[tuple[str, int], z3.FuncDeclRef] = {}
+        # date_identifier → Z3 Int constant (ordinal, enables ≤/≥ ordering)
+        self._date_cache: dict[str, z3.ExprRef] = {}
 
     # ------------------------------------------------------------------
     # Public API
@@ -83,6 +105,15 @@ class FOLSolver:
             args = [self._term(a, var_map) for a in node.arguments]
             return fn(*args)
 
+        if isinstance(node, ComparisonNode):
+            left_fn = self._numeric_predicate(node.left.name, len(node.left.arguments))
+            left_z3 = left_fn(*[self._term(a, var_map) for a in node.left.arguments])
+            right_z3 = self._comparison_right(node.right, var_map)
+            op = _COMPARISON_OPS.get(node.operator)
+            if op is None:
+                raise ValueError(f"Unknown comparison operator: {node.operator!r}")
+            return op(left_z3, right_z3)  # type: ignore[return-value]
+
         if isinstance(node, LogicalNode):
             left = self._to_z3(node.left, var_map)
             if node.operator == "NOT":
@@ -99,20 +130,8 @@ class FOLSolver:
                 return z3.And(z3.Implies(left, right), z3.Implies(right, left))  # type: ignore[return-value]
             raise ValueError(f"Unknown operator: {node.operator!r}")
 
-        # if isinstance(node, QuantifiedNode):
-        #     var = z3.Const(node.variable, _ENTITY)
-        #     body = self._to_z3(node.body, {**var_map, node.variable: var})
-        #     if node.quantifier == "FORALL":
-        #         return z3.ForAll([var], body)
-        #     return z3.Exists([var], body)
-        """That makes the parser lose the noun class:
-            - student, curriculum, course, faculty, applicant, etc.
-
-        For EXACT, that is dangerous because educational regulations are full of restricted groups:
-
-        All students who miss the lab exam fail the course.
-        Students with GPA above 8.0 qualify for scholarship.
-        A course with a final exam requires attendance."""
+        # QuantifiedNode — restrictor encodes the noun class domain restriction.
+        # ∀x[R].B → ForAll(x, R → B)   ∃x[R].B → Exists(x, R ∧ B)
         if isinstance(node, QuantifiedNode):
             var = z3.Const(node.variable, _ENTITY)
             local_vars = {**var_map, node.variable: var}
@@ -132,6 +151,8 @@ class FOLSolver:
 
             return z3.Exists([var], body)
 
+        raise ValueError(f"Unknown FOL node type: {type(node).__name__}")  # type: ignore[return-value]
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
@@ -143,6 +164,32 @@ class FOLSolver:
                 name, *([_ENTITY] * arity), z3.BoolSort()
             )
         return self._func_cache[key]
+
+    def _numeric_predicate(self, name: str, arity: int) -> z3.FuncDeclRef:
+        key = (name, arity)
+        if key not in self._numeric_cache:
+            self._numeric_cache[key] = z3.Function(
+                name, *([_ENTITY] * arity), z3.RealSort()
+            )
+        return self._numeric_cache[key]
+
+    def _date_const(self, value: str) -> z3.ExprRef:
+        if value not in self._date_cache:
+            self._date_cache[value] = z3.Int(value)
+        return self._date_cache[value]
+
+    def _comparison_right(
+        self,
+        right: NumericTerm | FunctionTerm | DateTerm,
+        var_map: dict[str, z3.ExprRef],
+    ) -> z3.ExprRef:
+        if isinstance(right, NumericTerm):
+            return z3.RealVal(right.value)
+        if isinstance(right, DateTerm):
+            return self._date_const(right.value)
+        # FunctionTerm
+        fn = self._numeric_predicate(right.name, len(right.arguments))
+        return fn(*[self._term(a, var_map) for a in right.arguments])
 
     def _term(self, name: str, var_map: dict[str, z3.ExprRef]) -> z3.ExprRef:
         """Return the Z3 expression for a variable (bound) or constant (free)."""

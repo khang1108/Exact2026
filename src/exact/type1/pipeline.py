@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
 from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
+from exact.type1.ast.nodes import ComparisonNode
 from exact.type1.parser import PremiseParser
 
 if TYPE_CHECKING:
@@ -177,9 +178,21 @@ def fol_node_to_dict(node: FOLNode) -> dict[str, Any]:
                 else None
             ),
         }
+    if isinstance(node, ComparisonNode):
+        return {
+            "type": "comparison",
+            "operator": node.operator,
+            "left": {"name": node.left.name, "arguments": list(node.left.arguments)},
+            "right": repr(node.right),
+        }
+    # LogicalNode
     return {
         "type": "logical",
-        "operator": node.operator,
-        "left": fol_node_to_dict(node.left),
-        "right": fol_node_to_dict(node.right) if node.right is not None else None,
+        "operator": node.operator,  # type: ignore[union-attr]
+        "left": fol_node_to_dict(node.left),  # type: ignore[union-attr]
+        "right": (
+            fol_node_to_dict(node.right)  # type: ignore[union-attr]
+            if node.right is not None  # type: ignore[union-attr]
+            else None
+        ),
     }
