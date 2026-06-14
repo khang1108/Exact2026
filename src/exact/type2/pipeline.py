@@ -518,9 +518,32 @@ def _question_type(result: Type2SolveResult) -> QuestionType:
 
 
 def _build_explanation(result: Type2SolveResult) -> str:
+    """Build a clean human-readable explanation for Type 2 responses.
+
+    Prefers CoT steps from the solver. Falls back to the verification message
+    or a generic explanation to ensure the field is never empty.
+    """
     if result.error is not None:
-        return result.verification.message
-    return result.premises[0] if result.premises else result.verification.message
+        return result.verification.message or "An error occurred during solving."
+    # Use CoT steps joined as sentences if available
+    if result.cot:
+        # Filter out internal plumbing notes; keep domain-logic steps
+        steps = [
+            s for s in result.cot
+            if not any(
+                skip in s.lower()
+                for skip in ("extraction checklist", "extracted a formal contract",
+                             "validated the contract", "validated the deterministic")
+            )
+        ]
+        if steps:
+            return " ".join(steps)
+    if result.premises:
+        # If premises[0] looks like a diagnostic dict string, don't expose it
+        first = result.premises[0]
+        if not first.startswith("diagnostics="):
+            return first
+    return result.verification.message or "Solved via physics pipeline."
 
 
 def _try_llm_extraction(

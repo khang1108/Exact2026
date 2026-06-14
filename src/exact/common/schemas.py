@@ -249,11 +249,45 @@ class OfficialPredictionResponse(AppBaseModel):
 
     @classmethod
     def from_prediction(cls, r: PredictionResponse) -> "OfficialPredictionResponse":
+        answer = _format_type2_answer(r.answer, r.task_type)
+        # Build reasoning from cot steps when not already set
+        reasoning = r.reasoning
+        if reasoning is None and r.cot:
+            reasoning = {"type": "cot", "steps": list(r.cot)}
         return cls(
             query_id=r.query_id,
-            answer=r.answer,
+            answer=answer,
             unit=r.unit or "",              # coerce None → ""
             explanation=r.explanation,
             premises_used=r.premises_used if r.premises_used is not None else [],
-            reasoning=r.reasoning,
+            reasoning=reasoning,
         )
+
+
+def _format_type2_answer(answer: str, task_type: "TaskType | None") -> str:
+    """Format a Type 2 numeric answer in scientific notation when appropriate.
+
+    Spec section 4.2: the answer field carries the numerical value only
+    (unit goes in the unit field).  Very small or very large numbers are
+    expressed as '<mantissa> × 10^<exp>' to match the expected answer style.
+    Type 1 answers are returned as-is.
+    """
+    if task_type != TaskType.TYPE2_PHYSICS:
+        return answer
+    try:
+        value = float(answer)
+    except (ValueError, TypeError):
+        return answer  # non-numeric answer — return as-is
+    abs_val = abs(value)
+    # Only apply scientific notation for very small or very large numbers
+    if abs_val == 0 or (0.1 <= abs_val <= 9999):
+        # Format to at most 4 significant figures, strip trailing zeros
+        formatted = f"{value:.4g}"
+        return formatted
+    # Scientific notation: e.g. 0.003384 → "3.384 × 10^-3"
+    exp = int(f"{value:.2e}".split("e")[1])
+    mantissa = value / (10 ** exp)
+    # Round mantissa to 3 decimal places, strip trailing zeros
+    mantissa_str = f"{mantissa:.3f}".rstrip("0").rstrip(".")
+    return f"{mantissa_str} × 10^{exp}"
+
