@@ -112,11 +112,26 @@ class Settings(BaseSettings):
     type1_parser_timeout_seconds: float = Field(default=30.0, gt=0)
     type1_parser_max_retries: int = Field(default=2, ge=0)
     type1_parser_max_tokens: int = Field(default=512, ge=1)
-    # Output token for the uncertain answer. Dataset gold uses "Unknown";
-    # set EXACT_TYPE1_UNCERTAIN_TOKEN=Uncertain for competition submission.
-    type1_uncertain_token: str = "Unknown"
+    # Hard end-to-end deadline for one Type 1 request. If the parse → solve →
+    # refine pipeline exceeds this, the request returns "Uncertain" instead of
+    # running unbounded. Keep it below any upstream proxy/tunnel timeout.
+    type1_request_deadline_seconds: float = Field(
+        default=55.0, gt=0, validation_alias="EXACT_TYPE1_DEADLINE_SECONDS"
+    )
 
     # Type 2 Physics Pipeline Settings
+    type2_use_llm_domain_routing: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_LLM_DOMAIN_ROUTING",
+    )
+    type2_use_llm_question_kind_routing: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_LLM_QUESTION_KIND_ROUTING",
+    )
+    type2_use_agent_loop: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_AGENT_LOOP",
+    )
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
         default="merge",
         validation_alias="EXACT_TYPE2_EXTRACTION_MODE",
@@ -158,23 +173,54 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_USE_EXECUTABLE_FALLBACK",
     )
     type2_pot_max_retries: int = Field(
-        default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
+        default=1, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
     )
-    type2_formula_limit: int = Field(default=24, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
-    type2_rerank_limit: int = Field(default=12, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
+    type2_agent_loop_max_attempts: int = Field(
+        default=2,
+        ge=1,
+        validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_ATTEMPTS",
+    )
+    type2_pot_batch_size: int = Field(
+        default=1,
+        ge=1,
+        validation_alias="EXACT_TYPE2_POT_BATCH_SIZE",
+    )
+    type2_pot_batch_temperature: float = Field(
+        default=0.4,
+        ge=0.0,
+        le=2.0,
+        validation_alias="EXACT_TYPE2_POT_BATCH_TEMPERATURE",
+    )
+    type2_formula_limit: int = Field(default=10, ge=1, validation_alias="EXACT_TYPE2_FORMULA_LIMIT")
+    type2_rerank_limit: int = Field(default=6, ge=1, validation_alias="EXACT_TYPE2_RERANK_LIMIT")
     type2_generate_explanation: bool = Field(
-        default=True, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION"
+        default=False, validation_alias="EXACT_TYPE2_GENERATE_EXPLANATION"
     )
     type2_pot_timeout: float = Field(
         default=10.0, gt=0.0, validation_alias="EXACT_TYPE2_POT_TIMEOUT"
     )
     type2_extraction_max_tokens: int = Field(
-        default=768,
+        default=512,
         ge=1,
         validation_alias="EXACT_TYPE2_EXTRACTION_MAX_TOKENS",
     )
+    type2_domain_routing_max_tokens: int = Field(
+        default=256,
+        ge=1,
+        validation_alias="EXACT_TYPE2_DOMAIN_ROUTING_MAX_TOKENS",
+    )
+    type2_question_kind_max_tokens: int = Field(
+        default=128,
+        ge=1,
+        validation_alias="EXACT_TYPE2_QUESTION_KIND_MAX_TOKENS",
+    )
+    type2_agent_loop_max_tokens: int = Field(
+        default=1024,
+        ge=1,
+        validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_TOKENS",
+    )
     type2_formula_selection_max_tokens: int = Field(
-        default=768,
+        default=512,
         ge=1,
         validation_alias="EXACT_TYPE2_FORMULA_SELECTION_MAX_TOKENS",
     )
@@ -194,7 +240,7 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_POT_REPAIR_MAX_TOKENS",
     )
     type2_final_explanation_max_tokens: int = Field(
-        default=768,
+        default=512,
         ge=1,
         validation_alias="EXACT_TYPE2_FINAL_EXPLANATION_MAX_TOKENS",
     )

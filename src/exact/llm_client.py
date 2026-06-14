@@ -45,14 +45,37 @@ class VLLMJsonClient:
         json_schema: dict[str, Any] | None = None,
         timeout_override: float | None = None,
     ) -> dict[str, Any]:
-        """
-        Return a JSON object from the configured self-hosted vLLM server.
+        return (
+            await self.complete_json_batch(
+                messages=messages,
+                n=1,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                json_schema=json_schema,
+                timeout_override=timeout_override,
+            )
+        )[0]
 
-        When provided, ``json_schema`` is sent as vLLM ``guided_json`` structured
-        decoding. If the server rejects that schema, the request is retried once
-        using prompt-level JSON constraints.
+    async def complete_json_batch(
+        self,
+        messages: Iterable[ChatMessage],
+        n: int,
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Return one or more JSON objects from the configured self-hosted vLLM server.
+
+        When provided, ``json_schema`` is sent using vLLM/OpenAI-compatible
+        ``response_format: json_schema`` structured decoding. If the server
+        rejects that schema, the request is retried once using plain JSON mode.
         """
         import httpx
+
+        if n < 1:
+            raise ValueError("n must be >= 1")
 
         effective_timeout = timeout_override if timeout_override is not None else self._timeout
         payload: dict[str, Any] = {
@@ -60,13 +83,20 @@ class VLLMJsonClient:
             "messages": list(messages),
             "temperature": temperature,
             "max_tokens": max_tokens,
-            "response_format": {"type": "json_object"},
         }
-        # guided_json constrains token sampling to only produce JSON matching the
-        # schema, effectively replacing retry-on-bad-JSON loops with a one-shot
-        # structural guarantee.
+        if n > 1:
+            payload["n"] = n
+        # Constrain decoding to the schema via response_format json_schema — the
+        # form this vLLM build accepts (the parser client uses the same and gets
+        # 200). The older `guided_json` parameter is rejected with 400 here, which
+        # silently dropped us to unconstrained free text.
         if json_schema is not None:
-            payload["guided_json"] = json_schema
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": "Result", "schema": json_schema},
+            }
+        else:
+            payload["response_format"] = {"type": "json_object"}
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
@@ -85,30 +115,47 @@ class VLLMJsonClient:
                         await asyncio.sleep(2 ** retry_number)
                         retry_number += 1
                         continue
-                    # 400 with guided_json: the schema was rejected by the server
-                    # (recursive $ref not supported by lm-format-enforcer, or wrong
-                    # vLLM version).  Drop guided_json and retry once without it so
-                    # the formula path continues rather than failing entirely.
-                    if resp.status_code == 400 and "guided_json" in payload:
+                    # 400 with a schema-constrained response_format: the server
+                    # rejected the schema. Fall back to plain JSON mode and retry
+                    # once so the request still completes.
+                    if (
+                        resp.status_code == 400
+                        and payload.get("response_format", {}).get("type") == "json_schema"
+                    ):
                         logger.warning(
-                            "vLLM returned 400 for guided_json request — "
-                            "retrying without guided_json (schema may use unsupported features)"
+                            "vLLM returned 400 for json_schema response_format — "
+                            "retrying with plain json_object"
                         )
-                        payload = {k: v for k, v in payload.items() if k != "guided_json"}
+                        payload["response_format"] = {"type": "json_object"}
                         attempts_remaining += 1
                         continue
                     resp.raise_for_status()
                 data = resp.json()
-                choice = data["choices"][0]
-                text = choice["message"]["content"] or ""
-                finish_reason = choice.get("finish_reason", "")
-                try:
-                    return _parse_json_object(text)
-                except ValueError as exc:
-                    raise ValueError(
-                        "LLM returned invalid JSON "
-                        f"with finish_reason={finish_reason}: {_clip_text(text)}"
-                    ) from exc
+                parsed_choices: list[dict[str, Any]] = []
+                parse_errors: list[str] = []
+                for choice in data.get("choices", []):
+                    text = choice["message"]["content"] or ""
+                    finish_reason = choice.get("finish_reason", "")
+                    try:
+                        parsed_choices.append(_parse_json_object(text))
+                    except ValueError as exc:
+                        parse_errors.append(
+                            "finish_reason={finish_reason}: {text}".format(
+                                finish_reason=finish_reason,
+                                text=_clip_text(text),
+                            )
+                        )
+                        if n == 1:
+                            raise ValueError(
+                                "LLM returned invalid JSON "
+                                f"with finish_reason={finish_reason}: {_clip_text(text)}"
+                            ) from exc
+                if parsed_choices:
+                    return parsed_choices
+                raise ValueError(
+                    "LLM returned no parseable JSON choices: "
+                    + "; ".join(parse_errors or ["empty choices"])
+                )
             except httpx.HTTPStatusError as exc:
                 last_exc = exc
                 if attempts_remaining > 0:
@@ -134,10 +181,32 @@ class VLLMJsonClient:
         """
         Synchronous wrapper for command-line scripts, FastAPI sync routes, and Jupyter notebooks.
         """
+        return self.complete_json_batch_sync(
+            messages=messages,
+            n=1,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            json_schema=json_schema,
+            timeout_override=timeout_override,
+        )[0]
+
+    def complete_json_batch_sync(
+        self,
+        messages: Iterable[ChatMessage],
+        n: int,
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+        json_schema: dict[str, Any] | None = None,
+        timeout_override: float | None = None,
+    ) -> list[dict[str, Any]]:
+        """
+        Synchronous wrapper for batched JSON completions.
+        """
         import concurrent.futures
 
-        coro = self.complete_json(
+        coro = self.complete_json_batch(
             messages=messages,
+            n=n,
             temperature=temperature,
             max_tokens=max_tokens,
             json_schema=json_schema,
