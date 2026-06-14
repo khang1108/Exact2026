@@ -124,6 +124,9 @@ async def run_type1_pipeline(
             )
             if fallback.answer != _SOLVER_UNCERTAIN or raw_answer == _SOLVER_UNCERTAIN:
                 raw_answer = fallback.answer
+                # Use LLM-reported premises when fallback overrides Z3
+                if fallback.premises_used:
+                    premises_used = fallback.premises_used
             fallback_used = True
             fallback_explanation = fallback.explanation
         except Exception as exc:  # Fallback failure must not hide symbolic diagnostics.

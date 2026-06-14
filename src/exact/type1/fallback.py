@@ -17,6 +17,7 @@ class Type1FallbackResult(BaseModel):
 
     answer: str
     explanation: str
+    premises_used: list[int] = []  # 0-based indices of premises used
 
 
 class Type1FallbackReasoner:
@@ -66,7 +67,9 @@ class Type1FallbackReasoner:
             label.casefold(): label
             for label in allowed
         }.get(result.answer.strip().casefold(), "Uncertain")
-        return result.model_copy(update={"answer": canonical})
+        # Convert 1-based premise indices (shown to LLM) to 0-based
+        zero_based = sorted(max(0, i - 1) for i in result.premises_used)
+        return result.model_copy(update={"answer": canonical, "premises_used": zero_based})
 
 
 _SYSTEM_PROMPT = """
@@ -86,7 +89,9 @@ Reason directly from the original premises and question:
 - For "strongest conclusion", prefer the most informative downstream
   conclusion justified by the complete implication chain.
 - Return exactly one answer from the supplied Allowed answers.
+- In premises_used, list the 1-based numbers of every premise you actually
+  relied on to reach your answer (e.g. [1, 3] means premises 1 and 3).
 
 Return JSON only with:
-{"answer": "<allowed answer>", "explanation": "<brief justification>"}
+{"answer": "<allowed answer>", "explanation": "<brief justification>", "premises_used": [<1-based premise numbers>]}
 """.strip()
