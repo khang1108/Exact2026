@@ -1,17 +1,25 @@
 """Z3-backed first-order logic entailment checker.
 
-Convert FOL AST nodes (AtomicNode / LogicalNode / QuantifiedNode) produced by
-the Type 1 parser into Z3 formulas and decide entailment via SMT.
+Convert FOL AST nodes (AtomicNode / LogicalNode / QuantifiedNode / ComparisonNode)
+produced by the Type 1 parser into Z3 formulas and decide entailment via SMT.
 
 Typical use:
 
     solver = FOLSolver()
     answer = solver.check_ynu(premises_fol, conclusion_fol)   # "Yes"/"No"/"Uncertain"
     label  = solver.check_mcq(premises_fol, option_fols)      # "A"/"B"/"C"/"D"/"Uncertain"
+
+Design notes:
+- Predicate caches are per-call (not per-instance) so sort declarations never
+  bleed across requests.  Two functions with the same name but different sorts
+  (Entity→Bool vs Entity→Real) are detected early and raise ValueError.
+- _ENTITY is a module-level singleton: calling DeclareSort('Entity') twice
+  creates two *distinct* sorts in Z3, breaking cross-request compatibility.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Callable, Literal
 
 import z3
@@ -27,8 +35,7 @@ from exact.type1.ast.nodes import (
     QuantifiedNode,
 )
 
-# Shared sort for every entity in the domain.  Must be a module-level singleton:
-# calling DeclareSort('Entity') twice creates two *distinct* sorts in Z3.
+# Shared sort for every entity in the domain — module-level singleton.
 _ENTITY = z3.DeclareSort("Entity")
 
 Answer = Literal["Yes", "No", "Uncertain"]
@@ -43,21 +50,60 @@ _COMPARISON_OPS: dict[str, Callable[[z3.ExprRef, z3.ExprRef], z3.BoolRef]] = {
 }
 
 
+@dataclass
+class _CallCtx:
+    """Per-call sort registry.  Isolates predicate declarations across requests."""
+
+    # (name, arity) → Entity*→Bool
+    bool_fns: dict[tuple[str, int], z3.FuncDeclRef] = field(default_factory=dict)
+    # (name, arity) → Entity*→Real
+    real_fns: dict[tuple[str, int], z3.FuncDeclRef] = field(default_factory=dict)
+    # date_identifier → Z3 Int constant
+    dates: dict[str, z3.ExprRef] = field(default_factory=dict)
+
+    def bool_fn(self, name: str, arity: int) -> z3.FuncDeclRef:
+        key = (name, arity)
+        if key in self.real_fns:
+            raise ValueError(
+                f"SORT_CONFLICT: predicate '{name}/{arity}' already declared as "
+                f"Entity→Real (numeric); cannot also use as Entity→Bool (atomic). "
+                f"Check that the same name is not used for both a ComparisonNode "
+                f"function and an AtomicNode predicate."
+            )
+        if key not in self.bool_fns:
+            self.bool_fns[key] = z3.Function(name, *([_ENTITY] * arity), z3.BoolSort())
+        return self.bool_fns[key]
+
+    def real_fn(self, name: str, arity: int) -> z3.FuncDeclRef:
+        key = (name, arity)
+        if key in self.bool_fns:
+            raise ValueError(
+                f"SORT_CONFLICT: predicate '{name}/{arity}' already declared as "
+                f"Entity→Bool (atomic); cannot also use as Entity→Real (numeric). "
+                f"Check that the same name is not used for both an AtomicNode "
+                f"predicate and a ComparisonNode function."
+            )
+        if key not in self.real_fns:
+            self.real_fns[key] = z3.Function(
+                name, *([_ENTITY] * arity), z3.RealSort()
+            )
+        return self.real_fns[key]
+
+    def date_const(self, value: str) -> z3.ExprRef:
+        if value not in self.dates:
+            self.dates[value] = z3.Int(value)
+        return self.dates[value]
+
+
 class FOLSolver:
     """Translate FOL AST trees to Z3 and check semantic entailment.
 
-    One instance can be reused across multiple checks.  The predicate cache
-    avoids re-declaring the same Z3 function within an instance's lifetime.
+    One instance can be reused across multiple checks.  Predicate sorts are
+    resolved fresh per call via _CallCtx — no state bleeds between requests.
     """
 
     def __init__(self, *, timeout_ms: int = 5_000) -> None:
         self._timeout_ms = timeout_ms
-        # (predicate_name, arity) → Z3 function Entity*→Bool
-        self._func_cache: dict[tuple[str, int], z3.FuncDeclRef] = {}
-        # (function_name, arity) → Z3 function Entity*→Real (numeric attributes)
-        self._numeric_cache: dict[tuple[str, int], z3.FuncDeclRef] = {}
-        # date_identifier → Z3 Int constant (ordinal, enables ≤/≥ ordering)
-        self._date_cache: dict[str, z3.ExprRef] = {}
 
     # ------------------------------------------------------------------
     # Public API
@@ -65,8 +111,9 @@ class FOLSolver:
 
     def check_ynu(self, premises: list[FOLNode], conclusion: FOLNode) -> Answer:
         """Return Yes / No / Uncertain for a yes-no-uncertain question."""
-        p = [self._to_z3(n) for n in premises]
-        c = self._to_z3(conclusion)
+        ctx = _CallCtx()
+        p = [self._to_z3(n, {}, ctx) for n in premises]
+        c = self._to_z3(conclusion, {}, ctx)
         return self._entails(p, c)
 
     def check_mcq(
@@ -75,18 +122,21 @@ class FOLSolver:
         options: dict[str, FOLNode],
         none_of_above_label: str | None = None,
     ) -> str:
-        """Return the label (A/B/C/D/…) of the entailed option, or 'Uncertain'.
+        """Return the label of the entailed option, or 'Uncertain'.
 
-        ``options`` holds only the ordinary (selectable) options. When a
-        none-of-above option exists, pass its label: if exactly one ordinary
-        option is entailed return that label; if none are entailed return the
-        none-of-above label; otherwise 'Uncertain' (B10 §16.5).
+        A shared _CallCtx ensures all premises and options use consistent
+        sort declarations within one MCQ call.
+
+        When a none-of-above option exists, pass its label: if exactly one
+        ordinary option is entailed return that label; if none are entailed
+        return the none-of-above label; otherwise 'Uncertain' (B10 §16.5).
         """
-        p = [self._to_z3(n) for n in premises]
+        ctx = _CallCtx()
+        p = [self._to_z3(n, {}, ctx) for n in premises]
         entailed = [
             label
             for label, node in options.items()
-            if self._entails(p, self._to_z3(node)) == "Yes"
+            if self._entails(p, self._to_z3(node, {}, ctx)) == "Yes"
         ]
         if len(entailed) == 1:
             return entailed[0]
@@ -102,13 +152,14 @@ class FOLSolver:
         """Return the label of the single FALSE option, or 'Uncertain'.
 
         For "which statement is NOT true / cannot follow", the answer is the
-        option that contradicts the premises (its negation is entailed).
+        option whose negation is entailed by the premises.
         """
-        p = [self._to_z3(n) for n in premises]
+        ctx = _CallCtx()
+        p = [self._to_z3(n, {}, ctx) for n in premises]
         refuted = [
             label
             for label, node in options.items()
-            if self._entails(p, self._to_z3(node)) == "No"
+            if self._entails(p, self._to_z3(node, {}, ctx)) == "No"
         ]
         return refuted[0] if len(refuted) == 1 else "Uncertain"
 
@@ -119,32 +170,31 @@ class FOLSolver:
     def _to_z3(
         self,
         node: FOLNode,
-        var_map: dict[str, z3.ExprRef] | None = None,
-    ) -> z3.ExprRef:  # BoolRef at runtime; ExprRef avoids imprecise z3 stubs
+        var_map: dict[str, z3.ExprRef],
+        ctx: _CallCtx,
+    ) -> z3.ExprRef:
         """Recursively convert a FOL AST node to a Z3 boolean expression."""
-        if var_map is None:
-            var_map = {}
 
         if isinstance(node, AtomicNode):
-            fn = self._predicate(node.predicate.name, len(node.arguments))
+            fn = ctx.bool_fn(node.predicate.name, len(node.arguments))
             args = [self._term(a, var_map) for a in node.arguments]
             return fn(*args)
 
         if isinstance(node, ComparisonNode):
-            left_fn = self._numeric_predicate(node.left.name, len(node.left.arguments))
+            left_fn = ctx.real_fn(node.left.name, len(node.left.arguments))
             left_z3 = left_fn(*[self._term(a, var_map) for a in node.left.arguments])
-            right_z3 = self._comparison_right(node.right, var_map)
+            right_z3 = self._comparison_right(node.right, var_map, ctx)
             op = _COMPARISON_OPS.get(node.operator)
             if op is None:
                 raise ValueError(f"Unknown comparison operator: {node.operator!r}")
             return op(left_z3, right_z3)  # type: ignore[return-value]
 
         if isinstance(node, LogicalNode):
-            left = self._to_z3(node.left, var_map)
+            left = self._to_z3(node.left, var_map, ctx)
             if node.operator == "NOT":
                 return z3.Not(left)  # type: ignore[return-value]
             assert node.right is not None, f"{node.operator} requires a right operand"
-            right = self._to_z3(node.right, var_map)
+            right = self._to_z3(node.right, var_map, ctx)
             if node.operator == "AND":
                 return z3.And(left, right)  # type: ignore[return-value]
             if node.operator == "OR":
@@ -152,7 +202,9 @@ class FOLSolver:
             if node.operator == "IMPLIES":
                 return z3.Implies(left, right)  # type: ignore[return-value]
             if node.operator == "IFF":
-                return z3.And(z3.Implies(left, right), z3.Implies(right, left))  # type: ignore[return-value]
+                return z3.And(  # type: ignore[return-value]
+                    z3.Implies(left, right), z3.Implies(right, left)
+                )
             raise ValueError(f"Unknown operator: {node.operator!r}")
 
         # QuantifiedNode — restrictor encodes the noun class domain restriction.
@@ -160,20 +212,16 @@ class FOLSolver:
         if isinstance(node, QuantifiedNode):
             var = z3.Const(node.variable, _ENTITY)
             local_vars = {**var_map, node.variable: var}
-
-            body = self._to_z3(node.body, local_vars)
+            body = self._to_z3(node.body, local_vars, ctx)
 
             if node.restrictor is not None:
-                restrictor = self._to_z3(node.restrictor, local_vars)
-
+                restrictor = self._to_z3(node.restrictor, local_vars, ctx)
                 if node.quantifier == "FORALL":
                     return z3.ForAll([var], z3.Implies(restrictor, body))
-
                 return z3.Exists([var], z3.And(restrictor, body))
 
             if node.quantifier == "FORALL":
                 return z3.ForAll([var], body)
-
             return z3.Exists([var], body)
 
         raise ValueError(f"Unknown FOL node type: {type(node).__name__}")  # type: ignore[return-value]
@@ -182,38 +230,17 @@ class FOLSolver:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _predicate(self, name: str, arity: int) -> z3.FuncDeclRef:
-        key = (name, arity)
-        if key not in self._func_cache:
-            self._func_cache[key] = z3.Function(
-                name, *([_ENTITY] * arity), z3.BoolSort()
-            )
-        return self._func_cache[key]
-
-    def _numeric_predicate(self, name: str, arity: int) -> z3.FuncDeclRef:
-        key = (name, arity)
-        if key not in self._numeric_cache:
-            self._numeric_cache[key] = z3.Function(
-                name, *([_ENTITY] * arity), z3.RealSort()
-            )
-        return self._numeric_cache[key]
-
-    def _date_const(self, value: str) -> z3.ExprRef:
-        if value not in self._date_cache:
-            self._date_cache[value] = z3.Int(value)
-        return self._date_cache[value]
-
     def _comparison_right(
         self,
         right: NumericTerm | FunctionTerm | DateTerm,
         var_map: dict[str, z3.ExprRef],
+        ctx: _CallCtx,
     ) -> z3.ExprRef:
         if isinstance(right, NumericTerm):
             return z3.RealVal(right.value)
         if isinstance(right, DateTerm):
-            return self._date_const(right.value)
-        # FunctionTerm
-        fn = self._numeric_predicate(right.name, len(right.arguments))
+            return ctx.date_const(right.value)
+        fn = ctx.real_fn(right.name, len(right.arguments))
         return fn(*[self._term(a, var_map) for a in right.arguments])
 
     def _term(self, name: str, var_map: dict[str, z3.ExprRef]) -> z3.ExprRef:
