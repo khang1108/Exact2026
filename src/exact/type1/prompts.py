@@ -362,6 +362,9 @@ Output: {"kind":"deontic_rule","variable":"x","restrictor_text":"x is an online 
 
 Input: "Professor John has published at least 3 academic papers."
 Output: {"kind":"numeric_fact","variable":null,"restrictor_text":null,"condition_texts":[],"conclusion_texts":[],"fact_texts":[],"numeric_constraints":["Professor John has published at least 3 academic papers"],"temporal_constraints":[],"modality":"none","confidence":1.0}
+
+Input: "John maintains a GPA of 3.8."
+Output: {"kind":"numeric_fact","variable":null,"restrictor_text":null,"condition_texts":[],"conclusion_texts":[],"fact_texts":[],"numeric_constraints":["John has a GPA of 3.8"],"temporal_constraints":[],"modality":"none","confidence":1.0}
 """
 
 
@@ -379,7 +382,7 @@ def get_system_prompt_numeric_constraint() -> str:
             "more than N" / "greater than N" / "above N"   → ">"
             "at most N"  / "no more than N"  / "maximum N" → "<="
             "fewer than N" / "less than N" / "below N"     → "<"
-            "exactly N"  / "equals N" / "is N"             → "="
+            "exactly N"  / "equals N" / "is N" / "of N" / "a … of N" / plain number → "="
             "not equal to N" / "different from N"          → "!="
         4. value → the numeric value as a float (integer or decimal).
         5. Do NOT generate any Code Block.
@@ -405,6 +408,12 @@ def get_system_prompt_numeric_constraint() -> str:
 
         Input:  "x has completed exactly 3 required courses"
         Output: {"function_name":"RequiredCoursesCompleted","arguments":["x"],"operator":"=","value":3.0}
+
+        Input:  "John maintains a GPA of 3.8"
+        Output: {"function_name":"GPA","arguments":["John"],"operator":"=","value":3.8}
+
+        Input:  "x has a minimum GPA of 2.5"
+        Output: {"function_name":"GPA","arguments":["x"],"operator":">=","value":2.5}
     """
 
 
