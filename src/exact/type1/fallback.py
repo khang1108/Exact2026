@@ -53,7 +53,7 @@ class Type1FallbackReasoner:
             [
                 {
                     "role": "system",
-                    "content": _SYSTEM_PROMPT,
+                    "content": _SYSTEM_PROMPT_OPEN if not allowed else _SYSTEM_PROMPT,
                 },
                 {
                     "role": "user",
@@ -63,6 +63,10 @@ class Type1FallbackReasoner:
             Type1FallbackResult,
             max_tokens=256,
         )
+        if not allowed:
+            # Open-ended / wh-question: return raw LLM answer as-is
+            zero_based = sorted(max(0, i - 1) for i in result.premises_used)
+            return result.model_copy(update={"premises_used": zero_based})
         canonical = {
             label.casefold(): label
             for label in allowed
@@ -94,4 +98,19 @@ Reason directly from the original premises and question:
 
 Return JSON only with:
 {"answer": "<allowed answer>", "explanation": "<brief justification>", "premises_used": [<1-based premise numbers>]}
+""".strip()
+
+
+_SYSTEM_PROMPT_OPEN = """
+You are answering an open-ended question from a set of logical premises.
+
+Rules:
+- Read only from the given premises. Do not use outside knowledge.
+- Answer concisely and precisely — numbers, names, or short phrases only.
+- Do not answer Yes/No unless the question explicitly asks for Yes or No.
+- In premises_used, list the 1-based numbers of every premise you actually
+  relied on to reach your answer.
+
+Return JSON only with:
+{"answer": "<direct answer>", "explanation": "<one sentence justification>", "premises_used": [<1-based premise numbers>]}
 """.strip()

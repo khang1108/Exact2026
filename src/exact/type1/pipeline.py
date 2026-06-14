@@ -113,13 +113,14 @@ async def run_type1_pipeline(
     )
     if fallback_trigger is not None and fallback_reasoner is not None:
         try:
+            is_open_wh = spec.question_format == "open_wh"
             fallback = await fallback_reasoner.answer(
                 premises=premises,
                 question=payload.question,
                 option_labels=(
                     [claim.label for claim in spec.option_claims]
                     if is_mcq
-                    else ["Yes", "No"]
+                    else ([] if is_open_wh else ["Yes", "No"])
                 ),
                 options=options_dict or None,
             )
