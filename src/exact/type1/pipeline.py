@@ -75,10 +75,11 @@ async def run_type1_pipeline(
     # --- Z3 routing ----------------------------------------------------------
     solver_used = solver is not None and premise_bundle.verified and spec.supported
     sort_conflict = False
+    premises_used: list[int] | None = None
     if solver_used:
         assert solver is not None
         try:
-            raw_answer = _solve(solver, premise_fols, spec, q_bundle)
+            raw_answer, premises_used = _solve(solver, premise_fols, spec, q_bundle)
         except ValueError as exc:
             if "SORT_CONFLICT" in str(exc):
                 raw_answer = _SOLVER_UNCERTAIN
@@ -179,6 +180,7 @@ async def run_type1_pipeline(
             ),
         ],
         premises=premise_bundle.premises,
+        premises_used=premises_used if premises_used else None,
         confidence=None,
         routing_diagnostics={
             "stage": "z3_entailment",
@@ -272,29 +274,34 @@ def _solve(
     premise_fols: list[FOLNode],
     spec: Any,
     q_bundle: QuestionParseBundle,
-) -> str:
-    """Dispatch to the right solver check based on the verified QuerySpec."""
+) -> tuple[str, list[int]]:
+    """Dispatch to the right solver check based on the verified QuerySpec.
+
+    Returns (answer, premises_used) where premises_used is a sorted list of
+    0-based indices into premise_fols.  MCQ modes that do not use a single
+    entailment check return [] for premises_used.
+    """
 
     if spec.question_format != "mcq":
         # Polar entailment. negate_claim flips Yes/No when the question asks for falsity.
         assert q_bundle.main_claim_fol is not None
-        answer = solver.check_ynu(premise_fols, q_bundle.main_claim_fol)
-        return _flip(answer) if spec.negate_claim else answer
+        answer, used = solver.check_ynu_with_used(premise_fols, q_bundle.main_claim_fol)
+        return (_flip(answer) if spec.negate_claim else answer), used
 
     if spec.solver_mode == "ynu_mapped":
         assert q_bundle.main_claim_fol is not None
-        ynu = solver.check_ynu(premise_fols, q_bundle.main_claim_fol)
-        return _map_ynu_to_label(ynu, spec.option_claims)
+        ynu, used = solver.check_ynu_with_used(premise_fols, q_bundle.main_claim_fol)
+        return _map_ynu_to_label(ynu, spec.option_claims), used
 
     option_fols = {c.label: c.fol for c in spec.option_claims if c.fol is not None}
     if spec.solver_mode == "refutation":
-        return solver.check_mcq_refutation(premise_fols, option_fols)
+        return solver.check_mcq_refutation(premise_fols, option_fols), []
     if spec.solver_mode == "fewest_premise":
-        return solver.check_mcq_fewest_premises(premise_fols, option_fols)
+        return solver.check_mcq_fewest_premises(premise_fols, option_fols), []
     none_of_above_label = next(
         (c.label for c in spec.option_claims if c.role == "NONE_OF_ABOVE"), None
     )
-    return solver.check_mcq(premise_fols, option_fols, none_of_above_label)
+    return solver.check_mcq(premise_fols, option_fols, none_of_above_label), []
 
 
 def _flip(answer: str) -> str:

@@ -117,6 +117,33 @@ class FOLSolver:
         c = self._to_z3(conclusion, {}, ctx)
         return self._entails(p, c)
 
+    def check_ynu_with_used(
+        self,
+        premises: list[FOLNode],
+        conclusion: FOLNode,
+    ) -> tuple[Answer, list[int]]:
+        """Like check_ynu but also returns 0-based indices of premises used.
+
+        Uses Z3 unsat-core tracking to identify the minimal set of premises
+        that contributed to a Yes or No answer.  Returns an empty list when
+        the answer is Uncertain or the solver times out.
+        """
+        ctx = _CallCtx()
+        p_z3 = [self._to_z3(n, {}, ctx) for n in premises]
+        c_z3 = self._to_z3(conclusion, {}, ctx)
+
+        # Yes: premises ∧ ¬conclusion is UNSAT
+        answer, used = self._entails_with_core(p_z3, z3.Not(c_z3))
+        if answer == z3.unsat:
+            return "Yes", used
+
+        # No: premises ∧ conclusion is UNSAT
+        answer, used = self._entails_with_core(p_z3, c_z3)
+        if answer == z3.unsat:
+            return "No", used
+
+        return "Uncertain", []
+
     def check_mcq(
         self,
         premises: list[FOLNode],
@@ -297,3 +324,32 @@ class FOLSolver:
 
         # unknown / sat → not enough information to decide
         return "Uncertain"
+
+    def _entails_with_core(
+        self,
+        premises_z3: list[z3.ExprRef],
+        extra: z3.ExprRef,
+    ) -> tuple[z3.CheckSatResult, list[int]]:
+        """Add premises + extra assertion, return (result, used_premise_indices).
+
+        Uses assert_and_track so Z3 can return an unsat core.  Each premise
+        is tracked with a fresh Boolean constant ``pN`` (N = 0-based index).
+        The extra assertion (negated conclusion or conclusion itself) is added
+        directly — it is always part of the check and not tracked.
+        """
+        s = self._solver()
+        s.set("unsat_core", True)
+        trackers: list[z3.BoolRef] = []
+        for i, p in enumerate(premises_z3):
+            tracker = z3.Bool(f"__p{i}")
+            trackers.append(tracker)
+            s.assert_and_track(p, tracker)
+        s.add(extra)
+        result = s.check()
+        if result != z3.unsat:
+            return result, []
+        core_names = {str(expr) for expr in s.unsat_core()}
+        used = [
+            i for i, t in enumerate(trackers) if str(t) in core_names
+        ]
+        return result, sorted(used)
