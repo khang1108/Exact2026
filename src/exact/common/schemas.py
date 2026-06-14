@@ -175,6 +175,7 @@ class QParserResponse(AppBaseModel):
     role_distribution: dict[str, int] | None = None
     extraction_diagnostics: list[str] = []
     option_claims: list[dict[str, Any]]
+    proof_connectivity: dict[str, Any] = Field(default_factory=dict)
 
 
 class PredictionResponse(AppBaseModel):

@@ -24,6 +24,7 @@ from exact.type1.pipeline import (
     fol_node_to_dict,
     run_type1_pipeline,
 )
+from exact.type1.proof_connectivity import build_proof_connectivity_dashboard
 from exact.type2.pipeline import run_type2_pipeline
 
 api_router = APIRouter()
@@ -143,6 +144,13 @@ async def qparser(payload: QParserRequest, request: Request) -> QParserResponse:
         extraction=mcq_extraction,
     )
     spec = q_bundle.spec
+    proof_connectivity = build_proof_connectivity_dashboard(
+        q_bundle,
+        premise_bundle.schema,
+    )
+    connectivity_by_id = {
+        claim["claim_id"]: claim for claim in proof_connectivity["claims"]
+    }
 
     return QParserResponse(
         question_format=spec.question_format,
@@ -162,7 +170,11 @@ async def qparser(payload: QParserRequest, request: Request) -> QParserResponse:
         extraction_diagnostics=(
             list(q_bundle.option_bundle.extraction_diagnostics) if q_bundle.option_bundle else []
         ),
-        option_claims=[_option_claim_to_dict(c) for c in spec.option_claims],
+        option_claims=[
+            _option_claim_to_dict(c, connectivity_by_id.get(c.label))
+            for c in spec.option_claims
+        ],
+        proof_connectivity=proof_connectivity,
     )
 
 

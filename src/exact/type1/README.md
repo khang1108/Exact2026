@@ -289,6 +289,26 @@ Option-side (set on `OptionClaim.diagnostics`):
 | `FRAGMENT_SUBJECT_RECOVERED` | deterministic stem-pattern subject recovery succeeded |
 | `FRAGMENT_LLM_REPAIR` | LLM `FragmentRealizationResult` call was used for subject recovery |
 
+Proof-connectivity diagnostics (set per claim/option in
+`routing_diagnostics.proof_connectivity` and merged into serialized option diagnostics):
+
+| tag | meaning |
+|---|---|
+| `CLAIM_PREDICATE_NOT_IN_SCHEMA` | claim predicate signature is absent from the premise schema |
+| `CLAIM_ARITY_NOT_IN_SCHEMA` | predicate name exists, but not with the claim's arity |
+| `CLAIM_CONSTANT_NOT_IN_SCHEMA` | claim constant is absent; a likely alias is reported when found |
+| `CLAIM_UNRESOLVED_PRONOUN` | claim text or AST still contains a personal pronoun |
+| `CLAIM_SCHEMA_LOW_CONNECTIVITY` | weighted predicate/constant connectivity score is below `0.75` |
+| `CLAIM_CANONICALIZATION_BLOCKED` | claim did not compile or a likely semantic match was not canonicalized |
+
+The dashboard contains structured predicate and constant match records plus a
+human-readable `report`. When the solver returns `Z3_TRUE_UNCERTAIN`,
+`z3_uncertainty_interpretation` is set to `REAL_LOGICAL_UNCERTAINTY` or
+`SYMBOL_MISMATCH_LIKELY`; this does not change the answer returned by Z3.
+The score averages exact symbols (`1.0`), likely constant aliases (`0.5`),
+semantic predicate candidates (`0.4`), arity mismatches (`0.25`), and absent
+symbols (`0.0`); an unresolved pronoun halves the final score.
+
 ---
 
 ## API Endpoints
@@ -389,6 +409,7 @@ Option-side (set on `OptionClaim.diagnostics`):
   - [x] **ClaimParser**: IF_ALL_THEN_ALL meta-implication — deterministic split before FOLParser
   - [x] **PremiseSchema**: semantic-family canonicalization guard (REQUIREMENT / ACHIEVEMENT / ACTION)
   - [x] **OParser**: pronoun resolution for FULL_CLAIM / CONJUNCTIVE_CLAIM options (`PRONOUN_RESOLVED`)
+- [x] **Proof-connectivity dashboard**: per-claim symbol matches, diagnostics, and uncertainty interpretation
 
 ### Missing / Incomplete
 

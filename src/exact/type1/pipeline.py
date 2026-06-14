@@ -19,6 +19,10 @@ from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
 from exact.type1.ast.nodes import ComparisonNode
 from exact.type1.parser import PremiseParser
 from exact.type1.parser.options import extract_mcq
+from exact.type1.proof_connectivity import (
+    build_proof_connectivity_dashboard,
+    interpret_z3_uncertainty,
+)
 
 if TYPE_CHECKING:
     from exact.type1.parser import QuestionSideParser
@@ -61,6 +65,10 @@ async def run_type1_pipeline(
     spec = q_bundle.spec
     is_mcq = spec.question_format == "mcq"
     question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
+    proof_connectivity = build_proof_connectivity_dashboard(
+        q_bundle,
+        premise_bundle.schema,
+    )
 
     # --- Z3 routing ----------------------------------------------------------
     solver_used = solver is not None and premise_bundle.verified and spec.supported
@@ -80,6 +88,11 @@ async def run_type1_pipeline(
 
     cause = _uncertainty_cause(
         solver, premise_bundle, spec, raw_answer, sort_conflict
+    )
+    uncertainty_interpretation = (
+        interpret_z3_uncertainty(proof_connectivity)
+        if cause == "Z3_TRUE_UNCERTAIN"
+        else None
     )
     answer = _normalize_answer(raw_answer)
 
@@ -130,12 +143,14 @@ async def run_type1_pipeline(
             "solver_available": solver is not None,
             "solver_used": solver_used,
             "uncertainty_cause": cause,
+            "z3_uncertainty_interpretation": uncertainty_interpretation,
+            "proof_connectivity": proof_connectivity,
             "premise_bundle_verified": premise_bundle.verified,
             "premise_verification_issues": list(premise_bundle.verification_issues),
             "premise_blocking_issues": list(premise_bundle.blocking_issues),
             "premise_warnings": list(premise_bundle.warnings),
             "premise_predicate_renames": premise_bundle.predicate_renames,
-            "query_spec": _query_spec_to_dict(q_bundle),
+            "query_spec": _query_spec_to_dict(q_bundle, proof_connectivity),
             "premise_schema": {
                 "predicates": [
                     asdict(predicate) for predicate in premise_bundle.schema.predicates
@@ -320,9 +335,16 @@ def _question_debug_items(q_bundle: QuestionParseBundle) -> list[dict[str, Any]]
     ]
 
 
-def _query_spec_to_dict(q_bundle: QuestionParseBundle) -> dict[str, Any]:
+def _query_spec_to_dict(
+    q_bundle: QuestionParseBundle,
+    proof_connectivity: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     spec = q_bundle.spec
-    return {
+    connectivity_by_id = {
+        claim["claim_id"]: claim
+        for claim in (proof_connectivity or {}).get("claims", [])
+    }
+    result = {
         "question_format": spec.question_format,
         "solver_mode": spec.solver_mode,
         "can_interpretation": spec.can_interpretation,
@@ -344,12 +366,24 @@ def _query_spec_to_dict(q_bundle: QuestionParseBundle) -> dict[str, Any]:
             if q_bundle.option_bundle
             else []
         ),
-        "option_claims": [_option_claim_to_dict(c) for c in spec.option_claims],
+        "option_claims": [
+            _option_claim_to_dict(c, connectivity_by_id.get(c.label))
+            for c in spec.option_claims
+        ],
     }
+    if proof_connectivity is not None:
+        result["main_claim_proof_connectivity"] = connectivity_by_id.get("question")
+    return result
 
 
-def _option_claim_to_dict(c: OptionClaim) -> dict[str, Any]:
-    return {
+def _option_claim_to_dict(
+    c: OptionClaim,
+    proof_connectivity: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    proof_diagnostics = (
+        proof_connectivity.get("diagnostics", []) if proof_connectivity else []
+    )
+    result = {
         "label": c.label,
         "role": c.role,
         "normalized_text": c.normalized_text,
@@ -359,8 +393,11 @@ def _option_claim_to_dict(c: OptionClaim) -> dict[str, Any]:
         "raw_fol": c.raw_fol,
         "is_selectable": c.is_selectable,
         "fol": repr(c.fol) if c.fol is not None else None,
-        "diagnostics": list(c.diagnostics),
+        "diagnostics": list(dict.fromkeys([*c.diagnostics, *proof_diagnostics])),
     }
+    if proof_connectivity is not None:
+        result["proof_connectivity"] = proof_connectivity
+    return result
 
 
 # ---------------------------------------------------------------------------
