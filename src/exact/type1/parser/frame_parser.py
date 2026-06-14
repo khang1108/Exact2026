@@ -96,7 +96,7 @@ class ConstraintParser:
     def _compile_numeric(self, r: NumericConstraintResult) -> ComparisonNode:
         return ComparisonNode(
             operator=r.operator,
-            left=FunctionTerm(name=r.function_name, arguments=list(r.arguments)),
+            left=FunctionTerm(name=r.function_name, arguments=[_camel(a) for a in r.arguments]),
             right=NumericTerm(value=r.value),
         )
 
@@ -104,7 +104,7 @@ class ConstraintParser:
         operator = _TEMPORAL_OP_MAP.get(r.operator, "=")
         return ComparisonNode(
             operator=operator,  # type: ignore[arg-type]
-            left=FunctionTerm(name=r.function_name, arguments=list(r.arguments)),
+            left=FunctionTerm(name=r.function_name, arguments=[_camel(a) for a in r.arguments]),
             right=DateTerm(value=r.date_value),
         )
 
@@ -158,16 +158,22 @@ class PremiseFrameCompiler:
         if kind in ("meta_rule", "unsupported"):
             return (await self.fol_parser.parse_many([premise]))[0]
 
-        if kind in ("fact", "numeric_fact"):
-            texts = frame.fact_texts or frame.conclusion_texts
-            if not texts and not frame.numeric_constraints:
+        if kind == "numeric_fact":
+            # The numeric constraint already captures the full semantics; skip fact_texts
+            # to avoid duplication (e.g. Published(John, Papers) AND PublishedPapers(John) >= 3).
+            if not frame.numeric_constraints:
                 return (await self.fol_parser.parse_many([premise]))[0]
-            atomic_nodes = await self._parse_conclusions(texts, frame.modality) if texts else []
             numeric_nodes = await self._parse_numeric_constraints(frame.numeric_constraints)
-            all_nodes: list[FOLNode] = list(atomic_nodes) + list(numeric_nodes)
-            if not all_nodes:
+            if not numeric_nodes:
                 return (await self.fol_parser.parse_many([premise]))[0]
-            return _and_nodes(all_nodes)
+            return _and_nodes(list(numeric_nodes))
+
+        if kind == "fact":
+            texts = frame.fact_texts or frame.conclusion_texts
+            if not texts:
+                return (await self.fol_parser.parse_many([premise]))[0]
+            nodes = await self._parse_conclusions(texts, frame.modality)
+            return _and_nodes(nodes)
 
         if kind == "existential_fact":
             atomic_texts = (
@@ -253,6 +259,11 @@ class PremiseFrameCompiler:
             _apply_deontic_mapping(text, node, modality)
             for text, node in zip(texts, nodes)
         ]
+
+
+def _camel(arg: str) -> str:
+    """CamelCase a multi-word constant so 'Professor John' → 'ProfessorJohn'."""
+    return "".join(w.capitalize() for w in arg.split()) if " " in arg else arg
 
 
 def _and_nodes(nodes: list[FOLNode]) -> FOLNode:
