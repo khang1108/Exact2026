@@ -10,6 +10,7 @@ Workflow per request:
 
 from __future__ import annotations
 
+import re
 from dataclasses import asdict
 from typing import TYPE_CHECKING, Any
 
@@ -338,6 +339,8 @@ def _normalize_answer(answer: str) -> str:
 # ---------------------------------------------------------------------------
 
 _YNU_TOKENS = frozenset({"yes", "no", "uncertain", "unknown"})
+# Single uppercase letters A–E used as bare MCQ label placeholders.
+_MCQ_LABEL_RE = re.compile(r"^[A-E]$")
 
 
 def _is_ynu_option_list(values: list[str]) -> bool:
@@ -345,12 +348,24 @@ def _is_ynu_option_list(values: list[str]) -> bool:
     return bool(values) and all(str(v).strip().lower() in _YNU_TOKENS for v in values)
 
 
-def _normalize_options(options: Any) -> dict[str, str]:
-    """Return {label: text} for MCQ options, or {} for YNU/polar.
+def _is_bare_mcq_label_list(values: list[str]) -> bool:
+    """True when every item is a single uppercase letter (A-E) with no text content.
 
-    A list of bare Yes/No/Uncertain tokens is NOT a multiple-choice set — it is
-    the answer space of a polar question, so it normalizes to {} (the pipeline
-    then routes through the native YNU path instead of treating it as MCQ).
+    Callers that send ``["A", "B", "C", "D"]`` as option labels instead of
+    full option text trigger this check.  The pipeline then falls back to
+    ``extract_mcq`` to parse the actual option sentences from the query body.
+    """
+    return bool(values) and all(_MCQ_LABEL_RE.match(str(v).strip()) for v in values)
+
+
+def _normalize_options(options: Any) -> dict[str, str]:
+    """Return {label: text} for MCQ options, or {} for YNU/polar/bare-labels.
+
+    Returns {} in three cases:
+    - ``None`` input
+    - All values are Yes/No/Uncertain tokens  → route as polar YNU question
+    - All values are single uppercase letters → bare label list; the pipeline
+      will call ``extract_mcq`` to parse real option text from the query body
     """
     if options is None:
         return {}
@@ -361,8 +376,12 @@ def _normalize_options(options: Any) -> dict[str, str]:
     if isinstance(options, list):
         if _is_ynu_option_list(options):
             return {}
+        if _is_bare_mcq_label_list(options):
+            return {}  # force extract_mcq to parse text from query body
         return {chr(ord("A") + i): str(v) for i, v in enumerate(options) if i < 5}
     return {}
+
+
 
 
 # ---------------------------------------------------------------------------
