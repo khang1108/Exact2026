@@ -156,9 +156,12 @@ _RULE_LIKE_KINDS = frozenset({
 _NUMERIC_SIGNAL_RE = re.compile(
     r"\b(?:at\s+least(?!\s+(?:one|a|1)\b)|at\s+most|more\s+than|fewer\s+than|less\s+than|"
     r"greater\s+than|exactly|minimum|maximum|above|below|"
-    r"\d+(?:\.\d+)?\s*(?:courses?|credits?|hours?|points?|percent|%))\b",
+    r"\d+(?:\.\d+)?\s*(?:courses?|credits?|hours?|points?|percent|%)|"
+    # Plain cardinal before a noun: "has 12 enrolled participants", "contains 3 elements"
+    r"(?:has|have|contains?|includes?|holds?|with|of)\s+\d+(?:\.\d+)?\s+\w+)\b",
     re.IGNORECASE,
 )
+
 _TEMPORAL_SIGNAL_RE = re.compile(
     r"\b(?:before|after|by\s+\w+\s*\d|until|"
     r"(?:january|february|march|april|may|june|july|august|september|october|november|december)"

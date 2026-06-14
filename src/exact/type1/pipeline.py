@@ -108,7 +108,17 @@ async def run_type1_pipeline(
         else (
             "RANKING_MODE_ADJUDICATION"
             if spec.solver_mode in {"fewest_premise", "strongest_conclusion", "premise_selection"}
-            else None
+            else (
+                # Numeric premises may have their values silently dropped by the FOL parser.
+                # If Z3 answered an MCQ confidently but the bundle has numeric loss warnings,
+                # the answer may be a false positive (same predicate for different numbers).
+                "NUMERIC_CONSTRAINT_MCQ_VERIFY"
+                if is_mcq and any(
+                    "NUMERIC_CONSTRAINT_LOST" in issue
+                    for issue in premise_bundle.verification_issues
+                )
+                else None
+            )
         )
     )
     if fallback_trigger is not None and fallback_reasoner is not None:
