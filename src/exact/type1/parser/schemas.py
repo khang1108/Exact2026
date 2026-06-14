@@ -242,24 +242,28 @@ class QuestionFrameResult(ParserResult):
     confidence: float = 1.0
 
 
-class OptionClaimResult(ParserResult):
-    """Interpretation of one MCQ option relative to the question stem.
+OptionRole = Literal[
+    "RAW_FOL",
+    "PREMISE_REFERENCE",
+    "YNU_ANSWER",
+    "NONE_OF_ABOVE",
+    "SUBJECTLESS_MODAL_FRAGMENT",
+    "PREDICATE_FRAGMENT",
+    "CONJUNCTIVE_CLAIM",
+    "FULL_CLAIM",
+    "UNKNOWN",
+]
 
-    Options are not always self-contained propositions: they may be fragments
-    needing subject recovery, raw FOL, premise references, or YNU answers.
+
+class FragmentRealizationResult(ParserResult):
+    """LLM fallback for realizing one subjectless option fragment into a claim.
+
+    Used only when deterministic subject recovery + templating cannot produce a
+    complete declarative claim. Must preserve modality and negation.
     """
 
-    option_type: Literal[
-        "proposition",
-        "fragment",
-        "raw_fol",
-        "premise_reference",
-        "ynu_answer",
-    ]
     claim_text: str | None = None
-    ynu_value: Literal["yes", "no", "uncertain", "none"] = "none"
-    premise_indices: list[int] = []
-    raw_fol: str | None = None
+    subject_found: bool = False
 
 
 # ------------------------------------------------------------------
@@ -377,15 +381,32 @@ class PremiseParseBundle:
 
 @dataclass(frozen=True)
 class OptionClaim:
-    """One MCQ option interpreted as a (possibly unsupported) testable claim."""
+    """One MCQ option interpreted as a role-tagged, possibly testable claim."""
 
     label: str
-    option_type: str
+    original_text: str
+    normalized_text: str
+    role: str
     claim_text: str | None
-    ynu_value: str
-    premise_indices: tuple[int, ...]
     raw_fol: str | None
+    premise_indices: tuple[int, ...]
+    ynu_value: str
+    is_selectable: bool
     fol: FOLNode | None = None
+    diagnostics: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class OptionParseBundle:
+    """Result of interpreting all options of one MCQ."""
+
+    options: tuple[OptionClaim, ...]
+    marker_style: str
+    option_count: int
+    role_distribution: dict[str, int]
+    verified: bool
+    issues: tuple[str, ...]
+    extraction_diagnostics: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -415,6 +436,7 @@ class QuestionParseBundle:
     spec: QuerySpec
     main_claim_fol: FOLNode | None
     claim_renames: list[dict[str, object]]
+    option_bundle: OptionParseBundle | None = None
 
 def _collect_predicates_in_order(node: FOLNode) -> list[tuple[str, int]]:
     return [

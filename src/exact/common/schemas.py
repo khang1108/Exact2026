@@ -143,6 +143,9 @@ class QParserResponse(AppBaseModel):
     negate_claim: bool
     supported: bool
     issues: list[str]
+    marker_style: str | None = None
+    role_distribution: dict[str, int] | None = None
+    extraction_diagnostics: list[str] = []
     option_claims: list[dict[str, Any]]
 
 

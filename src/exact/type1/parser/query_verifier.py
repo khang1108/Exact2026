@@ -52,22 +52,29 @@ def verify(
             return False, issues
         return True, issues
 
+    none_of_above_present = any(c.role == "NONE_OF_ABOVE" for c in option_claims)
     solvable = [c for c in option_claims if c.fol is not None]
-    if len(solvable) < 2:
+    # With a none-of-above fallback, one ordinary solvable option is enough for
+    # entailment (post-processing selects none-of-above when nothing is entailed).
+    min_solvable = 1 if (none_of_above_present and solver_mode == "entailment") else 2
+    if len(solvable) < min_solvable:
         if not option_claims:
             issues.append("QUERY_NO_SOLVABLE_OPTIONS: MCQ has no options")
-        elif all(c.option_type in ("raw_fol", "premise_reference") for c in option_claims):
+        elif all(c.role in ("RAW_FOL", "PREMISE_REFERENCE") for c in option_claims):
             issues.append(
                 "QUERY_OPTIONS_UNSUPPORTED: all options are raw FOL or premise references"
             )
         else:
             issues.append(
-                "QUERY_NO_SOLVABLE_OPTIONS: fewer than two options compiled to FOL"
+                "QUERY_NO_SOLVABLE_OPTIONS: too few options compiled to FOL"
             )
         return False, issues
+
+    if none_of_above_present:
+        issues.append("QUERY_NONE_OF_ABOVE_PRESENT: solver post-processing will apply")
 
     return True, issues
 
 
 def _has_ynu_options(option_claims: tuple[OptionClaim, ...]) -> bool:
-    return any(c.ynu_value in ("yes", "no", "uncertain") for c in option_claims)
+    return sum(1 for c in option_claims if c.role == "YNU_ANSWER") >= 2

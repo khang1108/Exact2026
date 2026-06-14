@@ -73,10 +73,14 @@ class FOLSolver:
         self,
         premises: list[FOLNode],
         options: dict[str, FOLNode],
+        none_of_above_label: str | None = None,
     ) -> str:
         """Return the label (A/B/C/D/…) of the entailed option, or 'Uncertain'.
 
-        options: {"A": fol_node, "B": fol_node, ...}
+        ``options`` holds only the ordinary (selectable) options. When a
+        none-of-above option exists, pass its label: if exactly one ordinary
+        option is entailed return that label; if none are entailed return the
+        none-of-above label; otherwise 'Uncertain' (B10 §16.5).
         """
         p = [self._to_z3(n) for n in premises]
         entailed = [
@@ -84,8 +88,11 @@ class FOLSolver:
             for label, node in options.items()
             if self._entails(p, self._to_z3(node)) == "Yes"
         ]
-        # Exactly one entailed option → confident answer; otherwise uncertain.
-        return entailed[0] if len(entailed) == 1 else "Uncertain"
+        if len(entailed) == 1:
+            return entailed[0]
+        if not entailed and none_of_above_label is not None:
+            return none_of_above_label
+        return "Uncertain"
 
     def check_mcq_refutation(
         self,

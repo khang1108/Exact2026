@@ -163,7 +163,10 @@ def _solve(
     option_fols = {c.label: c.fol for c in spec.option_claims if c.fol is not None}
     if spec.solver_mode == "refutation":
         return solver.check_mcq_refutation(premise_fols, option_fols)
-    return solver.check_mcq(premise_fols, option_fols)
+    none_of_above_label = next(
+        (c.label for c in spec.option_claims if c.role == "NONE_OF_ABOVE"), None
+    )
+    return solver.check_mcq(premise_fols, option_fols, none_of_above_label)
 
 
 def _flip(answer: str) -> str:
@@ -250,18 +253,33 @@ def _query_spec_to_dict(q_bundle: QuestionParseBundle) -> dict[str, Any]:
         "negate_claim": spec.negate_claim,
         "supported": spec.supported,
         "issues": list(spec.issues),
-        "option_claims": [
-            {
-                "label": c.label,
-                "option_type": c.option_type,
-                "claim_text": c.claim_text,
-                "ynu_value": c.ynu_value,
-                "premise_indices": list(c.premise_indices),
-                "raw_fol": c.raw_fol,
-                "fol": repr(c.fol) if c.fol is not None else None,
-            }
-            for c in spec.option_claims
-        ],
+        "marker_style": (
+            q_bundle.option_bundle.marker_style if q_bundle.option_bundle else None
+        ),
+        "role_distribution": (
+            q_bundle.option_bundle.role_distribution if q_bundle.option_bundle else None
+        ),
+        "extraction_diagnostics": (
+            list(q_bundle.option_bundle.extraction_diagnostics)
+            if q_bundle.option_bundle
+            else []
+        ),
+        "option_claims": [_option_claim_to_dict(c) for c in spec.option_claims],
+    }
+
+
+def _option_claim_to_dict(c: OptionClaim) -> dict[str, Any]:
+    return {
+        "label": c.label,
+        "role": c.role,
+        "normalized_text": c.normalized_text,
+        "claim_text": c.claim_text,
+        "ynu_value": c.ynu_value,
+        "premise_indices": list(c.premise_indices),
+        "raw_fol": c.raw_fol,
+        "is_selectable": c.is_selectable,
+        "fol": repr(c.fol) if c.fol is not None else None,
+        "diagnostics": list(c.diagnostics),
     }
 
 

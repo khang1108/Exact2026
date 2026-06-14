@@ -563,68 +563,45 @@ Output: {"question_format":"open_wh","solver_mode":"unsupported","can_interpreta
 """
 
 
-def get_system_prompt_option_claim() -> str:
-    """Return instructions for interpreting one MCQ option against the question stem."""
+def get_system_prompt_fragment_realization() -> str:
+    """Return instructions for realizing one subjectless option fragment into a claim.
+
+    Used only as a fallback when deterministic subject recovery fails.
+    """
 
     return """
-Interpret ONE multiple-choice option relative to its question stem. Do NOT generate FOL.
+Turn a subjectless multiple-choice option FRAGMENT into a complete declarative claim by
+recovering its subject from the question stem. Do NOT generate FOL.
 
 # TASK
-Decide what kind of option this is and, when it is a real statement, return the FULL
-declarative proposition with any missing subject recovered from the question stem.
-
-# OPTION TYPE
-- proposition       : already a complete statement ("If a project is optimized, it is well-tested").
-- fragment          : missing its subject ("Can teach undergraduate courses only") — recover the
-                      subject from the stem ("the professor") and return the completed sentence.
-- raw_fol           : a logic formula using symbols like ∀ ∃ → ∧ ∨ ¬ or P(x). Pass it through in raw_fol.
-- premise_reference : the option only names premises ("Premises 1, 3, 7"). Put the numbers in premise_indices.
-- ynu_answer        : the option is itself a Yes / Uncertain / No answer ("Yes, all mastered the subject.";
-                      "No, only some earn A+."; "Uncertain."). Set ynu_value accordingly.
-
-# OUTPUT FORMAT (return ONLY valid JSON)
-{
-  "option_type": "proposition"|"fragment"|"raw_fol"|"premise_reference"|"ynu_answer",
-  "claim_text": "<full proposition with subject, or null>",
-  "ynu_value": "yes"|"no"|"uncertain"|"none",
-  "premise_indices": [],
-  "raw_fol": null
-}
+The fragment lacks a subject (e.g. "Can be a research mentor"). Find the subject the
+question is about (e.g. "Professor Kim") and return the full sentence.
 
 # RULES
-1. For proposition / fragment → fill claim_text with one complete declarative sentence; ynu_value="none".
-2. For fragment → recover the subject from the stem and PRESERVE the option's modal/negation words.
-3. For raw_fol → claim_text=null, copy the formula into raw_fol verbatim.
-4. For premise_reference → claim_text=null, list the integers in premise_indices.
-5. For ynu_answer → claim_text=null, set ynu_value to the answer the option expresses.
+1. PRESERVE every modal word exactly: can, cannot, may, must, should, required, allowed, prohibited.
+2. PRESERVE negation exactly: "Cannot teach" must stay "cannot teach", never "can teach".
+3. Recover the subject from the stem ("about X", "true for X", "Can X ...", "describes the X").
+4. If no subject can be recovered, set subject_found=false and claim_text=null. Do NOT invent one.
+5. Return ONE complete declarative sentence.
+
+# OUTPUT FORMAT (return ONLY valid JSON)
+{ "claim_text": "<full sentence or null>", "subject_found": true }
 
 # EXAMPLES
 
-Stem: "Which conclusion can be inferred?"
-Option: "If a Python project is not optimized, then it is not well-tested"
-Output: {"option_type":"proposition","claim_text":"if a Python project is not optimized, then it is not well-tested","ynu_value":"none","premise_indices":[],"raw_fol":null}
+Stem: "Which statement is true about Professor Kim?"
+Fragment: "Can be a research mentor"
+Output: {"claim_text":"Professor Kim can be a research mentor.","subject_found":true}
 
 Stem: "Which option describes the professor?"
-Option: "Can teach undergraduate courses only"
-Output: {"option_type":"fragment","claim_text":"the professor can teach undergraduate courses only","ynu_value":"none","premise_indices":[],"raw_fol":null}
+Fragment: "Cannot teach graduate courses"
+Output: {"claim_text":"The professor cannot teach graduate courses.","subject_found":true}
 
-Stem: "Which formula follows from the premises?"
-Option: "∀x (R(x) → P(x))"
-Output: {"option_type":"raw_fol","claim_text":null,"ynu_value":"none","premise_indices":[],"raw_fol":"∀x (R(x) → P(x))"}
+Stem: "Which of the following is true about Hà?"
+Fragment: "Eligible for the internship program"
+Output: {"claim_text":"Hà is eligible for the internship program.","subject_found":true}
 
-Stem: "Which premises support the conclusion?"
-Option: "Premises 1, 3, 7"
-Output: {"option_type":"premise_reference","claim_text":null,"ynu_value":"none","premise_indices":[1,3,7],"raw_fol":null}
-
-Stem: "Do all students earn an A or A+?"
-Option: "Yes, all mastered the subject."
-Output: {"option_type":"ynu_answer","claim_text":null,"ynu_value":"yes","premise_indices":[],"raw_fol":null}
-
-Stem: "Do all students earn an A or A+?"
-Option: "No, only some earn A+."
-Output: {"option_type":"ynu_answer","claim_text":null,"ynu_value":"no","premise_indices":[],"raw_fol":null}
-
-Stem: "Do all students earn an A or A+?"
-Option: "Uncertain."
-Output: {"option_type":"ynu_answer","claim_text":null,"ynu_value":"uncertain","premise_indices":[],"raw_fol":null}
+Stem: "Which conclusion follows from the premises?"
+Fragment: "Needs advisor approval"
+Output: {"claim_text":null,"subject_found":false}
 """

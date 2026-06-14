@@ -15,7 +15,12 @@ from exact.common.schemas import (
 )
 from exact.logger import get_request_logger
 from exact.type1.parser.options import parse_mcq_options
-from exact.type1.pipeline import _normalize_options, fol_node_to_dict, run_type1_pipeline
+from exact.type1.pipeline import (
+    _normalize_options,
+    _option_claim_to_dict,
+    fol_node_to_dict,
+    run_type1_pipeline,
+)
 
 api_router = APIRouter()
 
@@ -115,18 +120,14 @@ async def qparser(payload: QParserRequest, request: Request) -> QParserResponse:
         negate_claim=spec.negate_claim,
         supported=spec.supported,
         issues=list(spec.issues),
-        option_claims=[
-            {
-                "label": c.label,
-                "option_type": c.option_type,
-                "claim_text": c.claim_text,
-                "ynu_value": c.ynu_value,
-                "premise_indices": list(c.premise_indices),
-                "raw_fol": c.raw_fol,
-                "fol": repr(c.fol) if c.fol is not None else None,
-            }
-            for c in spec.option_claims
-        ],
+        marker_style=q_bundle.option_bundle.marker_style if q_bundle.option_bundle else None,
+        role_distribution=(
+            q_bundle.option_bundle.role_distribution if q_bundle.option_bundle else None
+        ),
+        extraction_diagnostics=(
+            list(q_bundle.option_bundle.extraction_diagnostics) if q_bundle.option_bundle else []
+        ),
+        option_claims=[_option_claim_to_dict(c) for c in spec.option_claims],
     )
 
 
