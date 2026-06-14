@@ -163,7 +163,7 @@ QuestionSideParser
 | `refutation` | "which is false / not true / cannot" | `check_mcq_refutation` |
 | `ynu_mapped` | MCQ whose options are Yes/Uncertain/No | `check_ynu` on the stem, map verdict → label |
 | `strongest_conclusion` | strongest / most significant | classified; **deferred** → Unknown |
-| `fewest_premise` | follows from fewest premises | classified; **deferred** → Unknown |
+| `fewest_premise` | follows from fewest premises | `check_mcq_fewest_premises` |
 | `premise_selection` | which premises support a conclusion | classified; **deferred** → Unknown |
 | `unsupported` | open-WH / no decidable claim | → Unknown |
 
@@ -276,7 +276,7 @@ Question-side (`query_verifier`, set on `QuerySpec.issues`):
 | `QUERY_NO_SOLVABLE_OPTIONS` | MCQ has fewer than two options that compiled to FOL |
 | `QUERY_OPTIONS_UNSUPPORTED` | all options are raw FOL or premise references |
 | `QUERY_NO_YNU_OPTIONS` | `ynu_mapped` question has no Yes/No/Uncertain options |
-| `QUERY_MODE_DEFERRED` | strongest/fewest/premise_selection — classified but not solved in v1 |
+| `QUERY_MODE_DEFERRED` | strongest/premise_selection — classified but not solved in v1 |
 | `QUERY_OPEN_WH_UNSUPPORTED` | open-WH question with no decidable claim |
 | `QUERY_NONE_OF_ABOVE_PRESENT` | informational: a NONE_OF_ABOVE option is present; handled by solver post-processing |
 
@@ -382,14 +382,14 @@ symbols (`0.0`); an unresolved pronoun halves the final score.
 - [x] Generic-class constant repair — `Students` arg → `∀x[Student(x)]` for rule-like frames (Issue 8)
 - [x] `NUMERIC_CONSTRAINT_LOST` / `TEMPORAL_CONSTRAINT_LOST` verifier diagnostics (Issue 6)
 - [x] Deontic mapping — `must/may/cannot` → `Required*/Allowed*/NOT Can*` predicate prefixes
-- [x] `FOLSolver` — Z3 `check_ynu()`, `check_mcq()`, `check_mcq_refutation()`
+- [x] `FOLSolver` — Z3 `check_ynu()`, `check_mcq()`, `check_mcq_refutation()`, `check_mcq_fewest_premises()`
 - [x] Z3 real-arithmetic for `ComparisonNode` via `Entity→Real` function declarations (Issue 6)
 - [x] `run_type1_pipeline()` — wires all stages into one call
 - [x] `/parser` API endpoint
 - [x] B03 parser quality eval notebook
 - [x] **`QuestionSideParser`** — `QParser` + `OParser` + `ClaimParser` + `query_verifier`
 - [x] Question classification — `question_format` / `solver_mode` / `can_interpretation` (meta vs object "can")
-- [x] Solver routing — entailment / refutation / ynu_mapped (strongest/fewest/premise_selection deferred)
+- [x] Solver routing — entailment / refutation / ynu_mapped / fewest-premise (strongest/premise_selection deferred)
 - [x] Configurable uncertain token — `EXACT_TYPE1_UNCERTAIN_TOKEN` (default `"Unknown"`)
 - [x] `/qparser` API endpoint + B05 question-parser eval notebook
 - [x] **B10 OParser** — 9-role deterministic-first OptionParser (B10)
@@ -424,7 +424,7 @@ symbols (`0.0`); an unresolved pronoun halves the final score.
 - [ ] **Chain-of-thought** — `cot` is a few fixed strings; no step-by-step reasoning trace.
 - [ ] **Unknown fallback quality** — when `verified=False` or unsupported, the pipeline returns the Unknown token with no further reasoning. An LLM-based fallback for hard cases is not implemented.
 - [ ] **Numeric/temporal constraints in questions** — `ConstraintParser` is only wired for premises, not for question or option texts.
-- [ ] **Ranking solver modes** — `strongest_conclusion`, `fewest_premise`, `premise_selection` are classified but return the Unknown token (need minimal-subset / ranking logic in Z3).
+- [ ] **Remaining ranking solver modes** — `strongest_conclusion` and `premise_selection` are classified but return the Unknown token.
 
 ---
 

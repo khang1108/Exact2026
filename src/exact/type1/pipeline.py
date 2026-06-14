@@ -241,6 +241,8 @@ def _solve(
     option_fols = {c.label: c.fol for c in spec.option_claims if c.fol is not None}
     if spec.solver_mode == "refutation":
         return solver.check_mcq_refutation(premise_fols, option_fols)
+    if spec.solver_mode == "fewest_premise":
+        return solver.check_mcq_fewest_premises(premise_fols, option_fols)
     none_of_above_label = next(
         (c.label for c in spec.option_claims if c.role == "NONE_OF_ABOVE"), None
     )

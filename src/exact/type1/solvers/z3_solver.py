@@ -20,6 +20,7 @@ Design notes:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from itertools import combinations
 from typing import Callable, Literal
 
 import z3
@@ -162,6 +163,35 @@ class FOLSolver:
             if self._entails(p, self._to_z3(node, {}, ctx)) == "No"
         ]
         return refuted[0] if len(refuted) == 1 else "Uncertain"
+
+    def check_mcq_fewest_premises(
+        self,
+        premises: list[FOLNode],
+        options: dict[str, FOLNode],
+    ) -> str:
+        """Return the uniquely entailed option requiring the fewest premises."""
+
+        minimum_sizes: dict[str, int] = {}
+        for label, option in options.items():
+            # Entailment is monotonic: if the full premise set cannot prove the
+            # option, no subset can. This avoids exponential work for distractors.
+            if self.check_ynu(premises, option) != "Yes":
+                continue
+            for size in range(1, len(premises) + 1):
+                if any(
+                    self.check_ynu(list(subset), option) == "Yes"
+                    for subset in combinations(premises, size)
+                ):
+                    minimum_sizes[label] = size
+                    break
+
+        if not minimum_sizes:
+            return "Uncertain"
+        minimum = min(minimum_sizes.values())
+        winners = [
+            label for label, required in minimum_sizes.items() if required == minimum
+        ]
+        return winners[0] if len(winners) == 1 else "Uncertain"
 
     # ------------------------------------------------------------------
     # FOL AST → Z3

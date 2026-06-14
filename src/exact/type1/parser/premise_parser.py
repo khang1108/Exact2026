@@ -79,9 +79,15 @@ class PremiseParser:
                 _repair_generic_class_constants(tree, frame)
                 for tree, frame in zip(draft_trees, frames)  # type: ignore[arg-type]
             ]
+            draft_trees, restrictor_repairs = _weaken_unwitnessed_rule_restrictors(
+                draft_trees,
+                frames,
+            )
+        else:
+            restrictor_repairs = []
         schema = PremiseSchema.from_trees(draft_trees)
         trees, renames = schema.canonicalize(draft_trees)
-        issues = _verify_bundle(normalized, trees, schema, frames)
+        issues = _verify_bundle(normalized, trees, schema, frames) + restrictor_repairs
 
         blocking = tuple(i for i in issues if _is_blocking_issue(i))
         warnings = tuple(i for i in issues if not _is_blocking_issue(i))
@@ -198,6 +204,128 @@ def _repair_generic_class_constants(
             restrictor=restrictor,
         )
     return tree
+
+
+def _weaken_unwitnessed_rule_restrictors(
+    trees: list[FOLNode],
+    frames: list[PremiseFrameResult],
+) -> tuple[list[FOLNode], list[str]]:
+    """Remove synthetic class guards that can never participate in a proof.
+
+    The frame compiler prepends ``restrictor_text`` to every rule antecedent.
+    Some dataset rules use a class noun only as natural-language scoping
+    ("students who complete X ...") without ever asserting ``Student(Sophia)``.
+    Keeping that unwitnessed guard makes the rule vacuously true and blocks the
+    intended chain. Only the compiler-added first conjunct is removed, and only
+    when no ground fact with the same predicate signature exists anywhere.
+    """
+
+    grounded = _ground_atomic_signatures(trees)
+    repaired: list[FOLNode] = []
+    diagnostics: list[str] = []
+
+    for index, (tree, frame) in enumerate(zip(trees, frames), start=1):
+        updated, removed = _remove_unwitnessed_rule_restrictor(tree, frame, grounded)
+        repaired.append(updated)
+        if removed is not None:
+            diagnostics.append(
+                "UNWITNESSED_RESTRICTOR_WEAKENED: "
+                f"premise {index} removed {removed[0]}/{removed[1]} from rule antecedent"
+            )
+
+    repaired.extend(trees[len(repaired):])
+    return repaired, diagnostics
+
+
+def _remove_unwitnessed_rule_restrictor(
+    tree: FOLNode,
+    frame: PremiseFrameResult,
+    grounded: set[tuple[str, int]],
+) -> tuple[FOLNode, tuple[str, int] | None]:
+    if (
+        frame.kind not in _RULE_LIKE_KINDS
+        or frame.kind == "equivalence"
+        or not frame.restrictor_text
+        or not isinstance(tree, QuantifiedNode)
+        or tree.quantifier != "FORALL"
+        or not isinstance(tree.body, LogicalNode)
+        or tree.body.operator != "IMPLIES"
+        or tree.body.right is None
+    ):
+        return tree, None
+
+    conjuncts = _flatten_and(tree.body.left)
+    if len(conjuncts) < 2:
+        return tree, None
+
+    candidate = conjuncts[0]
+    if (
+        not isinstance(candidate, AtomicNode)
+        or len(candidate.arguments) != 1
+        or candidate.arguments[0] != tree.variable
+    ):
+        return tree, None
+
+    signature = (candidate.predicate.name, len(candidate.arguments))
+    if signature in grounded:
+        return tree, None
+
+    body = LogicalNode(
+        operator="IMPLIES",
+        left=_combine_and(conjuncts[1:]),
+        right=tree.body.right,
+    )
+    return (
+        QuantifiedNode(
+            quantifier=tree.quantifier,
+            variable=tree.variable,
+            body=body,
+            restrictor=tree.restrictor,
+        ),
+        signature,
+    )
+
+
+def _ground_atomic_signatures(trees: list[FOLNode]) -> set[tuple[str, int]]:
+    signatures: set[tuple[str, int]] = set()
+    for tree in trees:
+        _collect_ground_atomic_signatures(tree, frozenset(), signatures)
+    return signatures
+
+
+def _collect_ground_atomic_signatures(
+    node: FOLNode,
+    bound_variables: frozenset[str],
+    signatures: set[tuple[str, int]],
+) -> None:
+    if isinstance(node, AtomicNode):
+        if all(argument not in bound_variables for argument in node.arguments):
+            signatures.add((node.predicate.name, len(node.arguments)))
+        return
+    if isinstance(node, ComparisonNode):
+        return
+    if isinstance(node, QuantifiedNode):
+        local_variables = bound_variables | {node.variable}
+        _collect_ground_atomic_signatures(node.body, local_variables, signatures)
+        if node.restrictor is not None:
+            _collect_ground_atomic_signatures(node.restrictor, local_variables, signatures)
+        return
+    _collect_ground_atomic_signatures(node.left, bound_variables, signatures)
+    if node.right is not None:
+        _collect_ground_atomic_signatures(node.right, bound_variables, signatures)
+
+
+def _flatten_and(node: FOLNode) -> list[FOLNode]:
+    if isinstance(node, LogicalNode) and node.operator == "AND" and node.right is not None:
+        return [*_flatten_and(node.left), *_flatten_and(node.right)]
+    return [node]
+
+
+def _combine_and(nodes: list[FOLNode]) -> FOLNode:
+    result = nodes[0]
+    for node in nodes[1:]:
+        result = LogicalNode(operator="AND", left=result, right=node)
+    return result
 
 
 def _has_comparison_node(tree: FOLNode) -> bool:

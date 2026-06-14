@@ -11,7 +11,7 @@ from exact.type1.parser.schemas import OptionClaim
 
 # Solver modes recognized by the classifier but not yet solved in v1.
 _DEFERRED_MODES = frozenset(
-    {"strongest_conclusion", "fewest_premise", "premise_selection"}
+    {"strongest_conclusion", "premise_selection"}
 )
 
 
