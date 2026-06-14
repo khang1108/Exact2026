@@ -149,7 +149,7 @@ The question side mirrors the premise side: classify first, compile FOL second, 
 QuestionSideParser
   ├── QParser        question                  → QuestionFrameResult   (1 LLM call)
   ├── OParser        stem + options            → OptionParseBundle     (deterministic-first; LLM only for unresolved fragments)
-  ├── ClaimParser    claim texts + schema      → FOLNode[]             (FOLParser + canonicalize)
+  ├── ClaimParser    claim texts + schema      → FOLNode[]             (possessive norm + IF_ALL_THEN_ALL + FOLParser + canonicalize)
   └── query_verifier QuerySpec                 → supported / issues    (deterministic)
 ```
 
@@ -193,6 +193,8 @@ Each MCQ option is classified into one of 9 **`OptionRole`** values in determini
 
 **Fragment realization** — for `SUBJECTLESS_MODAL_FRAGMENT` and `PREDICATE_FRAGMENT`, `OParser` first tries deterministic subject recovery from the question stem (patterns: `about X`, `for X`, `true (about|of|for) X`, `(can|is|does|will|should) X`). On success, the subject is prepended deterministically (modal fragments: `"{subject} {modal…}"`; predicate fragments: `"{subject} is {frag}"`). Unresolved fragments fall back to one batched LLM `FragmentRealizationResult` call. Still-unresolved → role `UNKNOWN`, `is_selectable=False`.
 
+**Pronoun resolution** — for `FULL_CLAIM` and `CONJUNCTIVE_CLAIM` options that start with `he/she/they/it/his/her`, the pronoun is replaced with the subject recovered from the question stem before the claim is sent to `ClaimParser`. Emits `PRONOUN_RESOLVED` diagnostic tag.
+
 **`OptionParseBundle`** — returned by `OParser`, carried through `QuestionParseBundle`:
 - `options: tuple[OptionClaim, ...]`
 - `marker_style: str` — `"dot"` / `"paren"` / `"mixed"`
@@ -223,6 +225,33 @@ Each MCQ option is classified into one of 9 **`OptionRole`** values in determini
 
 **Embedded option extraction** (`options.py / extract_mcq`) — handles both `A.` and `A)` marker styles. The `options_mcq.json` sidecar misses the 13 records (134–146) that use `A)` markers; `extract_mcq` catches all of them. Diagnostics: `MCQ_MARKER_A_DOT`, `MCQ_MARKER_A_PAREN`, `MCQ_MIXED_MARKER_FORMAT`, `MCQ_THREE_OPTIONS`, `MCQ_FOUR_OPTIONS`, `MCQ_DUPLICATE_LABEL`, `MCQ_OPTION_TEXT_EMPTY`.
 
+### ClaimParser — Claim text → canonical FOL
+
+`ClaimParser.parse_claims(claim_texts, schema) → (FOLNodes, renames)`
+
+Before sending to `FOLParser`, each claim text goes through two deterministic pre-processing steps:
+
+1. **Possessive normalization** — `"X's Y"` → `"Y of X"` (e.g. `"John's GPA"` → `"GPA of John"`). Prevents possessive phrases from being collapsed into a phantom entity argument like `JohnsGPA`.
+
+2. **IF_ALL_THEN_ALL detection** — matches `"if all/every X …, then all/every Y …"` and builds a meta-implication deterministically:
+   - Splits into antecedent and consequent sub-texts
+   - Parses both via `FOLParser` (in the same batch as regular texts)
+   - Combines with `LogicalNode(IMPLIES, ∀x.P(x), ∀y.Q(y))`
+   
+   Without this, the recursive FOLParser produces the wrong nested structure `∀x[P(x)].(Q(x) → ∀y.R(y))`.
+
+After pre-processing, texts are sent to `FOLParser.parse_many` in one batch, then `schema.canonicalize` renames predicates to match the premise vocabulary.
+
+**Semantic-family canonicalization guard** — `PremiseSchema.canonicalize` blocks cross-family predicate renaming. Predicates are classified into three families:
+
+| family | example predicates |
+|---|---|
+| `requirement` | `Requires`, `Needs`, `Required`, `MustHave`, `Prerequisite` |
+| `achievement` | `QualifiesFor`, `EligibleFor`, `Receives`, `Earns`, `Achieves` |
+| `action` | `Pass`, `Complete`, `Submit`, `Take`, `Finish` |
+
+A claim predicate in one family is never renamed to a schema predicate in a different family, even if they share the same semantic key. This prevents `Requires(Sophia, X)` from being silently merged with `QualifiesFor(Sophia)`.
+
 ---
 
 ## Schema Diagnostics
@@ -250,6 +279,15 @@ Question-side (`query_verifier`, set on `QuerySpec.issues`):
 | `QUERY_MODE_DEFERRED` | strongest/fewest/premise_selection — classified but not solved in v1 |
 | `QUERY_OPEN_WH_UNSUPPORTED` | open-WH question with no decidable claim |
 | `QUERY_NONE_OF_ABOVE_PRESENT` | informational: a NONE_OF_ABOVE option is present; handled by solver post-processing |
+
+Option-side (set on `OptionClaim.diagnostics`):
+
+| tag | meaning |
+|---|---|
+| `PRONOUN_RESOLVED` | pronoun subject (he/she/they/it) was replaced with the recovered stem subject |
+| `RAW_FOL_UNSUPPORTED` | option contains raw FOL symbols — classified but not compiled |
+| `FRAGMENT_SUBJECT_RECOVERED` | deterministic stem-pattern subject recovery succeeded |
+| `FRAGMENT_LLM_REPAIR` | LLM `FragmentRealizationResult` call was used for subject recovery |
 
 ---
 
@@ -342,19 +380,30 @@ Question-side (`query_verifier`, set on `QuerySpec.issues`):
   - [x] `extract_mcq()` with both `A.` and `A)` marker support + extraction diagnostics
   - [x] None-of-above solver post-processing in `check_mcq(…, none_of_above_label)`
   - [x] B06 eval notebook (offline classifier checks + live structural eval via `/qparser`)
+- [x] **Parser bug fixes** (post-B10)
+  - [x] `numeric_fact` compiler: numeric constraints now included in output (was silently dropped)
+  - [x] `_camel()` helper: multi-word constant args in constraints (`"Professor John"` → `"ProfessorJohn"`)
+  - [x] `extract_mcq` deduplication in `_and_nodes` (A∧A removed before AND-folding)
+  - [x] Single `extract_mcq` call per request (pipeline + router no longer double-extract)
+  - [x] **ClaimParser**: possessive normalization (`"John's GPA"` → `"GPA of John"`)
+  - [x] **ClaimParser**: IF_ALL_THEN_ALL meta-implication — deterministic split before FOLParser
+  - [x] **PremiseSchema**: semantic-family canonicalization guard (REQUIREMENT / ACHIEVEMENT / ACTION)
+  - [x] **OParser**: pronoun resolution for FULL_CLAIM / CONJUNCTIVE_CLAIM options (`PRONOUN_RESOLVED`)
 
 ### Missing / Incomplete
 
-- [ ] **Ranking solver modes** — `strongest_conclusion`, `fewest_premise`, `premise_selection` are classified but return the Unknown token (need minimal-subset / ranking logic in Z3).
 - [ ] **Raw-FOL & premise-reference options** — tagged but not compiled (no FOL-string → AST parser; no premise-ref resolution).
 - [ ] **Open-ended question type** — `open_wh` is detected and routed to Unknown; no free-text answering.
 - [ ] **SaT sentence segmentation** — multi-sentence premises are not split before parsing; each premise string is sent whole.
 - [ ] **Coreference resolution** — `build_coreference_request()` exists in the router but is not called anywhere in the live pipeline.
 - [ ] **Rephrasing** — `build_rephrase_request()` exists but is not wired into any pre-processing pass.
+- [ ] **Claim-side frame parser (Bug 2)** — `ClaimParser` currently sends all claims directly to the recursive `FOLParser`. It needs a lighter version of the premise-side frame architecture: requirement/modal/possessive attribute patterns need deterministic frame detection before the LLM sees them.
+- [ ] **Purpose clause parsing (Bug 4)** — `"X needs to A to B"` / `"X must A in order to B"` patterns lose the purpose clause and the requirement modality. Should produce `RequiresFor(X, A, B)` instead of `Pass(X, A)`. Requires the claim-side frame parser (Bug 2) to be implemented first.
 - [ ] **Confidence scoring** — `PredictionResponse.confidence` is always `None`.
 - [ ] **Chain-of-thought** — `cot` is a few fixed strings; no step-by-step reasoning trace.
 - [ ] **Unknown fallback quality** — when `verified=False` or unsupported, the pipeline returns the Unknown token with no further reasoning. An LLM-based fallback for hard cases is not implemented.
 - [ ] **Numeric/temporal constraints in questions** — `ConstraintParser` is only wired for premises, not for question or option texts.
+- [ ] **Ranking solver modes** — `strongest_conclusion`, `fewest_premise`, `premise_selection` are classified but return the Unknown token (need minimal-subset / ranking logic in Z3).
 
 ---
 
