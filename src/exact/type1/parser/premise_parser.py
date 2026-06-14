@@ -120,8 +120,11 @@ _RULE_LIKE_KINDS = frozenset({
     "prohibition_rule", "numeric_rule", "temporal_rule", "equivalence",
 })
 
+# "at least one/a/1" is existential (∃), not a counting constraint — it is
+# correctly compiled to an Exists quantifier with no ComparisonNode, so it must
+# not trip the numeric-signal check (negative lookahead excludes cardinality-one).
 _NUMERIC_SIGNAL_RE = re.compile(
-    r"\b(?:at\s+least|at\s+most|more\s+than|fewer\s+than|less\s+than|"
+    r"\b(?:at\s+least(?!\s+(?:one|a|1)\b)|at\s+most|more\s+than|fewer\s+than|less\s+than|"
     r"greater\s+than|exactly|minimum|maximum|above|below|"
     r"\d+(?:\.\d+)?\s*(?:courses?|credits?|hours?|points?|percent|%))\b",
     re.IGNORECASE,
