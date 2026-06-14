@@ -222,3 +222,30 @@ def to_official_response(response: PredictionResponse) -> dict[str, Any]:
         "premises_used": response.premises_used if response.premises_used is not None else [],
         "reasoning": response.reasoning,
     }
+
+
+class OfficialPredictionResponse(AppBaseModel):
+    """Competition submission shape — exactly the 6 fields from spec section 4.2.
+
+    Used as the FastAPI ``response_model`` so the API surface only exposes
+    fields the judges expect.  Internal debug fields (fol, cot, routing_diagnostics,
+    etc.) are stripped automatically by FastAPI's response filtering.
+    """
+
+    query_id: str | None
+    answer: str
+    unit: str = ""
+    explanation: str
+    premises_used: list[int] = Field(default_factory=list)
+    reasoning: dict[str, Any] | None = None
+
+    @classmethod
+    def from_prediction(cls, r: PredictionResponse) -> "OfficialPredictionResponse":
+        return cls(
+            query_id=r.query_id,
+            answer=r.answer,
+            unit=r.unit,
+            explanation=r.explanation,
+            premises_used=r.premises_used if r.premises_used is not None else [],
+            reasoning=r.reasoning,
+        )

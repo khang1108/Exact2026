@@ -7,6 +7,7 @@ import httpx
 from fastapi import APIRouter, HTTPException, Request
 
 from exact.common.schemas import (
+    OfficialPredictionResponse,
     ParsePremisesRequest,
     ParsePremisesResponse,
     ParsedPremise,
@@ -116,8 +117,10 @@ async def llm_models() -> dict[str, Any]:
     return await _proxy_models(settings.llm_base_url, api_key, "Main LLM")
 
 
-@api_router.post("/predict", response_model=PredictionResponse)
-async def predict(payload: UnifiedPredictionRequest, request: Request) -> PredictionResponse:
+@api_router.post("/predict", response_model=OfficialPredictionResponse)
+async def predict(
+    payload: UnifiedPredictionRequest, request: Request
+) -> OfficialPredictionResponse:
     """Route one unified request to the Type 1 or Type 2 pipeline."""
     task_type = _resolve_task_type(payload)
     logger = get_request_logger(
@@ -129,7 +132,8 @@ async def predict(payload: UnifiedPredictionRequest, request: Request) -> Predic
 
     if task_type == TaskType.TYPE2_PHYSICS:
         logger.info("Running Type 2 pipeline")
-        return await asyncio.to_thread(run_type2_pipeline, payload)
+        result = await asyncio.to_thread(run_type2_pipeline, payload)
+        return OfficialPredictionResponse.from_prediction(result)
 
     if not payload.premises:
         raise HTTPException(status_code=422, detail="Type 1 requests require non-empty premises")
@@ -142,26 +146,30 @@ async def predict(payload: UnifiedPredictionRequest, request: Request) -> Predic
     solver = getattr(request.app.state, "type1_solver", None)
     fallback_reasoner = getattr(request.app.state, "type1_fallback_reasoner", None)
     try:
-        return await run_type1_pipeline(
+        result = await run_type1_pipeline(
             payload,
             premise_parser,
             question_parser,
             solver,
             fallback_reasoner,
         )
+        return OfficialPredictionResponse.from_prediction(result)
     except Exception as exc:
         logger.exception(f"Type 1 pipeline failed for {payload.query_id!r}: {exc}")
-        return PredictionResponse(
+        fallback = PredictionResponse(
             id=payload.query_id,
             task_type=TaskType.TYPE1_LOGIC,
             answer="Uncertain",
             explanation="Pipeline error — see server logs for details.",
             error=str(exc),
         )
+        return OfficialPredictionResponse.from_prediction(fallback)
 
 
-@api_router.post("/z3", response_model=PredictionResponse)
-async def z3_predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
+@api_router.post("/z3", response_model=OfficialPredictionResponse)
+async def z3_predict(
+    payload: PredictionRequest, request: Request
+) -> OfficialPredictionResponse:
     """Parse premises + question/options to FOL then answer via Z3 entailment."""
     premise_parser = getattr(request.app.state, "type1_premise_parser", None)
     question_parser = getattr(request.app.state, "type1_question_parser", None)
@@ -169,13 +177,14 @@ async def z3_predict(payload: PredictionRequest, request: Request) -> Prediction
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
     fallback_reasoner = getattr(request.app.state, "type1_fallback_reasoner", None)
-    return await run_type1_pipeline(
+    result = await run_type1_pipeline(
         payload,
         premise_parser,
         question_parser,
         solver,
         fallback_reasoner,
     )
+    return OfficialPredictionResponse.from_prediction(result)
 
 
 @api_router.post("/parser", response_model=ParserResponse)

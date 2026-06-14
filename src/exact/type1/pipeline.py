@@ -180,7 +180,7 @@ async def run_type1_pipeline(
             ),
         ],
         premises=premise_bundle.premises,
-        premises_used=premises_used if premises_used else None,
+        premises_used=premises_used,  # None = solver not run; [] = uncertain; [0,1,...] = used
         confidence=None,
         routing_diagnostics={
             "stage": "z3_entailment",
