@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Any
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
@@ -46,7 +47,33 @@ def health_check() -> dict[str, str]:
     return {"status": "ok", "pipeline": "full_pipeline", "version": "0.1.0"}
 
 
-async def _proxy_models(base_url: str | None, api_key: str | None, name: str) -> dict:
+def _validate_models_payload(payload: Any, name: str) -> dict[str, Any]:
+    """Validate the minimum OpenAI-compatible model-list contract."""
+
+    if not isinstance(payload, dict) or payload.get("object") != "list":
+        raise HTTPException(
+            status_code=502,
+            detail=f"{name} returned an invalid /v1/models response",
+        )
+    data = payload.get("data")
+    if not isinstance(data, list) or not data:
+        raise HTTPException(
+            status_code=502,
+            detail=f"{name} returned no models from /v1/models",
+        )
+    if any(not isinstance(model, dict) or not model.get("id") for model in data):
+        raise HTTPException(
+            status_code=502,
+            detail=f"{name} returned a model entry without an id",
+        )
+    return payload
+
+
+async def _proxy_models(
+    base_url: str | None,
+    api_key: str | None,
+    name: str,
+) -> dict[str, Any]:
     """Forward a GET to a local vLLM ``/v1/models`` endpoint.
 
     The committee queries these public passthrough URLs during grading to verify
@@ -61,9 +88,11 @@ async def _proxy_models(base_url: str | None, api_key: str | None, name: str) ->
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(url, headers=headers)
             response.raise_for_status()
-            return response.json()
+            return _validate_models_payload(response.json(), name)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail=f"{name} model server unreachable: {exc}")
+    except ValueError as exc:
+        raise HTTPException(status_code=502, detail=f"{name} returned invalid JSON: {exc}")
 
 
 @api_router.get("/parser/v1/models")
@@ -78,8 +107,9 @@ async def parser_models() -> dict:
     return await _proxy_models(settings.type1_parser_base_url, api_key, "Type 1 parser")
 
 
-@api_router.get("/llm/v1/models")
-async def llm_models() -> dict:
+@api_router.get("/v1/models")
+# @api_router.get("/llm/v1/models")
+async def llm_models() -> dict[str, Any]:
     """Passthrough to the main LLM vLLM ``/v1/models``."""
     settings = get_settings()
     api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None

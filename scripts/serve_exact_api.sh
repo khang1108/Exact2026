@@ -94,6 +94,25 @@ wait_for_tcp() {
   done
 }
 
+check_models_endpoint() {
+  local url="$1"
+  if ! "$PYTHON_BIN" -c '
+import json
+import sys
+from urllib.request import urlopen
+
+with urlopen(sys.argv[1], timeout=10) as response:
+    payload = json.load(response)
+assert payload.get("object") == "list"
+assert isinstance(payload.get("data"), list) and payload["data"]
+assert all(isinstance(model, dict) and model.get("id") for model in payload["data"])
+' "$url"; then
+    log_error "Committee model endpoint is not ready: $url"
+    return 1
+  fi
+  log_info "Committee model endpoint ready: $url"
+}
+
 check_vllm_runtime() {
   local vllm_bin="$1" resolved_bin runtime_python
   resolved_bin="$(command -v "$vllm_bin" 2>/dev/null || true)"
@@ -420,11 +439,14 @@ wait_for_tcp \
   "$API_PID" \
   "$PROJECT_ROOT/outputs/logs/api.log" || exit 1
 
+check_models_endpoint "http://${API_CONNECT_HOST}:${API_PORT}/v1/models" || exit 1
+
 echo ""
 log_info "All services ready."
 echo -e "  ${GREEN}Parser vLLM:${NC}  http://${PARSER_HOST}:${PARSER_PORT}/v1"
 [[ "$VLLM_SKIP" != "1" ]] && echo -e "  ${GREEN}Main vLLM:${NC}    http://${VLLM_HOST}:${VLLM_PORT}/v1"
 echo -e "  ${GREEN}EXACT API:${NC}    http://${API_HOST}:${API_PORT}"
+echo -e "  ${GREEN}Committee:${NC}    http://${API_CONNECT_HOST}:${API_PORT}/v1/models"
 echo ""
 
 # Keep the launcher attached to the directly-owned API process without polling

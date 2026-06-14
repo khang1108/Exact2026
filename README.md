@@ -39,6 +39,14 @@ bash scripts/serve_exact_api.sh
 
 Health check: `GET http://localhost:8080/health`
 
+Committee-facing vLLM model discovery is publicly proxied through the EXACT API
+without exposing the private vLLM API key:
+
+```bash
+curl https://api.iamphuckhang.dev/v1/models
+bash scripts/check_committee_models.sh
+```
+
 ## Type 2 Dataset Runs
 
 ```bash
