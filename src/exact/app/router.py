@@ -132,8 +132,21 @@ async def predict(
 
     if task_type == TaskType.TYPE2_PHYSICS:
         logger.info("Running Type 2 pipeline")
-        result = await asyncio.to_thread(run_type2_pipeline, payload)
-        return [OfficialPredictionResponse.from_prediction(result)]
+        try:
+            result = await asyncio.to_thread(run_type2_pipeline, payload)
+            return [OfficialPredictionResponse.from_prediction(result)]
+        except Exception as exc:
+            logger.exception(f"Type 2 pipeline failed for {payload.query_id!r}: {exc}")
+            import traceback as _tb
+
+            fallback = PredictionResponse(
+                id=payload.query_id,
+                task_type=TaskType.TYPE2_PHYSICS,
+                answer="",
+                explanation=f"DEBUG_TRACE: {_tb.format_exc()[-1500:]}",
+                error=str(exc),
+            )
+            return [OfficialPredictionResponse.from_prediction(fallback)]
 
     if not payload.premises:
         raise HTTPException(status_code=422, detail="Type 1 requests require non-empty premises")
