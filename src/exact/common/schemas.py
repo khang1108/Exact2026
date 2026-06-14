@@ -179,32 +179,46 @@ class QParserResponse(AppBaseModel):
 
 
 class PredictionResponse(AppBaseModel):
-    """Competition-facing prediction plus local metadata for debugging."""
+    """Competition-facing prediction plus local metadata for debugging.
 
+    Field names follow the official EXACT submission spec (section 4.2).
+    Legacy callers that construct with ``id=...`` are supported via the
+    ``AliasChoices`` on ``query_id``.
+    """
+
+    # --- Official submission fields (section 4.2) ----------------------------
+    query_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("query_id", "id"),
+    )
     answer: str
     explanation: str
+    unit: str = ""                          # "" for Type 1; ASCII unit for Type 2
+    premises_used: list[int] | None = None  # 0-based indices; [] for Type 2
+    reasoning: dict[str, Any] | None = None # structured evidence; null if unused
+
+    # --- Internal / debug fields (not submitted) -----------------------------
+    task_type: TaskType | None = None
+    question_type: QuestionType = QuestionType.UNKNOWN
     fol: str | None = None
     cot: list[str] | None = None
     premises: list[str] | None = None
-    premises_used: list[str] | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
-    id: str | None = None
-    task_type: TaskType | None = None
-    question_type: QuestionType = QuestionType.UNKNOWN
-    unit: str | None = None
     error: str | None = None
     routing_diagnostics: dict[str, Any] | None = None
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
-    """Convert an internal response into the stable EXACT submission shape."""
+    """Convert an internal response into the stable EXACT submission shape.
+
+    Returns only the fields defined in the competition spec (section 4.2).
+    """
 
     return {
+        "query_id": response.query_id,
         "answer": response.answer,
+        "unit": response.unit,
         "explanation": response.explanation,
-        "fol": response.fol,
-        "cot": response.cot,
-        "premises": response.premises,
-        "premises_used": response.premises_used,
-        "confidence": response.confidence,
+        "premises_used": response.premises_used if response.premises_used is not None else [],
+        "reasoning": response.reasoning,
     }
