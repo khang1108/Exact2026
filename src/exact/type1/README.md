@@ -1,192 +1,246 @@
-# Type 1: Logical Question with MCQ or YuN Types.
-To solve this challenge, I adopted idea of [NL2Logic](https://arxiv.org/pdf/2602.13237). They proposed a framework that won't let LLM directly translate a ``NL-premises`` to ``First-Order Logic``, but they will leverage the advancement of LLM in reasoning for general-purpose problem to extract ``predicates`` to build a ``FOL Abstract Syntax Tree`` to improve quality of output.
+# Type 1: Logical QA (MCQ / Yes-No-Uncertain)
 
-Let LLM directly translate a natural language query to a FOL representation is a large picture. We need to decompose the problem into smaller subproblems include:
-```mermaid
-flowchart TD
-    A[NL Query or Premises] --> B[Normalization]
-    B --> C[Domain or Schema Extraction]
-    C --> D[AST Parsing]
-    D --> E[AST Verification]
-    E --> F[Z3 Compilation]
-    F --> G[Entailment solving]
-    G --> H[Response]
+Inspired by [NL2Logic](https://arxiv.org/pdf/2602.13237). Rather than asking an LLM to produce FOL in one shot, the pipeline decomposes the problem into small, verifiable sub-steps: frame detection → deterministic AST assembly → schema canonicalization → Z3 entailment.
+
+---
+
+## Pipeline Overview
+
 ```
+NL Premises
+    │
+    ▼
+PremiseFrameParser        (1 vLLM call/premise)
+    │  identifies: kind, variable, restrictor_text,
+    │  condition_texts, conclusion_texts,
+    │  numeric_constraints, temporal_constraints, modality
+    ▼
+PremiseFrameCompiler      (0 LLM calls — deterministic)
+    │  atomics  ──► FOLParser._parse_atomic()
+    │  numerics ──► ConstraintParser.parse_numerics()
+    │  temporals──► ConstraintParser.parse_temporals()
+    │  assembles: ∀x[R(x)].(A(x) ∧ B(x) → C(x))
+    ▼
+Generic-class repair       (rule: Students arg → ∀x[Student(x)])
+    ▼
+PremiseSchema              (dedup predicates, arity check, canonicalize)
+    │  renames similar predicates to one canonical name
+    │  raises diagnostics for drift / lost constraints
+    ▼
+FOLNode trees  ◄── verified: bool + issues: list[str]
+    │
+    ├── /parser endpoint  (NL → FOL, stop here)
+    │
+    ▼
+Question / option parsing  (FOLParser.parse_many, schema-canonicalized)
+    ▼
+Z3 FOLSolver
+    │  check_ynu()  → "Yes" / "No" / "Uncertain"
+    │  check_mcq()  → option label "A" / "B" / "C" / "D"
+    ▼
+PredictionResponse
+```
+
+---
 
 ## Folder Structure
-```text
+
+```
 type1/
-    __init__.py
+  pipeline.py               # run_type1_pipeline() + fol_node_to_dict()
+  prompts.py                # all vLLM system prompts
 
-    pipeline.py              # main run_type1_pipeline()
-    schemas.py               # request/response + domain schema
-    ast_nodes.py             # FOL AST node models
-    prompts.py               # LLM prompts
-    llm_client.py            # Self-hosted vLLM client
+  ast/
+    nodes.py                # FOL AST dataclasses
+    classifier.py           # sentence-type classifier (atomic/logical/quantified)
 
-    schema_builder.py        # NL premises → DomainSchema
-    ast_parser.py            # NL sentence → AST
-    ast_verifier.py          # validate AST against schema
-    z3_compiler.py           # AST → Z3 expressions
-    solver.py                # entailment, MCQ solving
-    response_builder.py      # final response formatting
+  parser/
+    client.py               # ParserClient — HTTP pool + semaphore to vLLM
+    router.py               # ParserKind routing + request builders
+    parser.py               # FOLParser — recursive NL → FOLNode
+    frame_parser.py         # PremiseFrameParser + PremiseFrameCompiler + ConstraintParser
+    premise_parser.py       # PremiseParser — orchestration + repair + verify
+    schemas.py              # PremiseFrameResult, PremiseSchema, parser result models
+    qparser.py              # QuestionParser  ⚠ stub — not implemented
 
-    errors.py
-    utils.py
+  models/
+    schemas.py              # Predicate, domain schema models
+
+  solvers/
+    z3_solver.py            # FOLSolver — Z3 entailment
 ```
 
-## Detail
-
-```mermaid
 ---
-title: Overview of NL2LOGIC idea.
----
-flowchart TD
-    A[Natural Language Sentence] --> B[Recursive Semantic Parser]
-    B --> C[FOLAST: First-Order Logic AST]
-    C --> D[AST-Guided Generator]
-    D --> E[Symbolic Solvers like Z3/SMT-LIB/Prover9/PyProver Code]
-```
 
-In this paper, their framework will parse a sentence or a document to three types: ``atomic`` - the smallest unit in the sentence, ``quantified`` - ∀, ForAll, Exists,..., ``logical``. 
+## AST Grammar
 
-For example:
-```json
-{
-  "type": "atom",
-  "predicate": "Passed",
-  "args": ["Alice", "Logic"]
-}
 ```
-## 1.1 AST Grammar
-They defines the ``FOLAST`` using small and simple grammar below:
-```text
 Term       ::= Variable | Constant
 
-Atomic     ::= RelationName(Term)
-             | RelationName(Term, Term)
-             | RelationName(Term, Term, Term)
+FunctionTerm ::= name(Variable*)          -- numeric-valued attribute, e.g. GPA(x)
+NumericTerm  ::= float                    -- 2.5, 80.0, 65.0
+DateTerm     ::= str                      -- "June1", "May15", "AddDropDeadline"
 
-Quantified ::= ∀Variable. Formula
-             | ∃Variable. Formula
+Atomic     ::= PredicateName(Term+)
+
+Comparison ::= FunctionTerm op NumericTerm     -- GPA(x) >= 2.5
+             | FunctionTerm op FunctionTerm    -- Credits(x) >= MinCredits(y)
+             | FunctionTerm op DateTerm        -- Submission(x) < June1
+             where op ∈ { =, !=, <, <=, >, >= }
+
+Quantified ::= ∀x[Restrictor].Body
+             | ∃x.Body
 
 Logical    ::= ¬Formula
              | Formula ∧ Formula
              | Formula ∨ Formula
              | Formula → Formula
+             | Formula ↔ Formula
 
 Formula    ::= Atomic
+             | Comparison
              | Quantified
              | Logical
 ```
 
+---
+
+## Frame Kinds
+
+`PremiseFrameParser` maps each NL sentence to one of:
+
+| kind | assembled shape |
+|---|---|
+| `fact` | `A(x) ∧ B(x)` |
+| `existential_fact` | `∃x.(A(x) ∧ B(x))` |
+| `numeric_fact` | `A(x) ∧ (f(x) op n)` |
+| `universal_rule` | `∀x[R(x)].(A(x) → B(x))` |
+| `deontic_rule` | `∀x[R(x)].(A(x) → Required/Allowed B(x))` |
+| `permission_rule` | `∀x[R(x)].(A(x) → AllowedB(x))` |
+| `prohibition_rule` | `∀x[R(x)].(A(x) → NOT CanB(x))` |
+| `numeric_rule` | `∀x[R(x)].(f(x) op n → B(x))` |
+| `temporal_rule` | `∀x[R(x)].(f(x) < date → B(x))` |
+| `equivalence` | `∀x.(A(x) ↔ B(x))` |
+| `meta_rule` | full recursive FOLParser fallback |
+| `unsupported` | full recursive FOLParser fallback |
+
+---
+
+## Schema Diagnostics
+
+Raised during `PremiseSchema` build and `_verify_bundle()`:
+
+| tag | meaning |
+|---|---|
+| `ARITY_DRIFT` | same predicate appears as `/1` and `/2` across premises |
+| `SCHEMA_SIMILAR_PREDICATES` | two predicates share the same semantic key (non-blocking) |
+| `GENERIC_CLASS_USED_AS_CONSTANT` | `Students`, `AIModels` used as a constant — repaired automatically for rule-like frames |
+| `ONLY_IF_DIRECTION_CHECK` | "only if/when" detected — implication direction may be reversed |
+| `NUMERIC_CONSTRAINT_LOST` | premise has numeric signals but no `ComparisonNode` in the AST |
+| `TEMPORAL_CONSTRAINT_LOST` | premise has temporal signals but no `ComparisonNode` in the AST |
+| `UNSUPPORTED_MODAL_NOT_NECESSARILY` | epistemic non-entailment; Z3 cannot model it |
+
+---
+
+## API Endpoints
+
+| method | path | description |
+|---|---|---|
+| `GET` | `/health` | liveness check |
+| `POST` | `/parser` | NL premises → FOL ASTs + verified + issues + renames |
+| `POST` | `/predict` | full pipeline → answer |
+| `POST` | `/z3` | alias for `/predict` |
+| `POST` | `/premises` | lighter version of `/parser` (no verified/issues/renames) |
+
+**`/parser` request:**
+```json
+{ "premises": ["All students must pass at least 5 courses", "Alice is a student"] }
+```
+
+**`/parser` response:**
+```json
+{
+  "premises": [
+    { "id": "premise-1", "original_text": "...", "fol": "∀x[Student(x)].(PassedCourses(x) >= 5.0)", "ast": {...} }
+  ],
+  "verified": true,
+  "issues": [],
+  "renames": []
+}
+```
+
+---
+
+## Status
+
+### Done
+
+- [x] `AtomicNode`, `LogicalNode`, `QuantifiedNode` — core FOL AST
+- [x] `ComparisonNode` + `FunctionTerm` / `NumericTerm` / `DateTerm` — numeric & temporal comparisons (Issue 6)
+- [x] `FOLParser` — recursive atomic / logical / quantified / coreference parsing
+- [x] `PremiseFrameParser` — one LLM call classifies the logical skeleton of each premise
+- [x] `PremiseFrameCompiler` — deterministic AST assembly from frame fragments
+- [x] `ConstraintParser` — `"at least 5 courses"` → `CompletedCourses(x) >= 5.0` (Issue 6)
+- [x] Temporal constraint parsing — `"before June 1"` → `Submission(x) < June1` (Issue 6)
+- [x] `PremiseSchema` — predicate deduplication, arity checking, semantic canonicalization
+- [x] `ARITY_DRIFT` diagnostic with `/0, /1` format (Issue 9)
+- [x] Atomic prompt: Rules 5-8 for stable unary/binary predicate preference (Issue 9)
+- [x] Generic-class constant repair — `Students` arg → `∀x[Student(x)]` for rule-like frames (Issue 8)
+- [x] `NUMERIC_CONSTRAINT_LOST` / `TEMPORAL_CONSTRAINT_LOST` verifier diagnostics (Issue 6)
+- [x] Deontic mapping — `must/may/cannot` → `Required*/Allowed*/NOT Can*` predicate prefixes
+- [x] `FOLSolver` — Z3 `check_ynu()` and `check_mcq()`
+- [x] Z3 real-arithmetic for `ComparisonNode` via `Entity→Real` function declarations (Issue 6)
+- [x] `run_type1_pipeline()` — wires all stages into one call
+- [x] `/parser` API endpoint
+- [x] B03 parser quality eval notebook
+
+### Missing / Incomplete
+
+- [ ] **`qparser.py` — QuestionParser** is an empty stub. Questions and MCQ options are currently parsed by `FOLParser.parse_many()` (plain recursive parse, no frame decomposition).
+- [ ] **Frame-based question parsing** — questions like *"Is Alice eligible?"* or *"Which students qualify?"* should go through a question-specific frame before hitting the solver.
+- [ ] **Open-ended question type** — competition has MCQ, YNU, and open-ended; open-ended is not handled.
+- [ ] **SaT sentence segmentation** — multi-sentence premises are not split before parsing; each premise string is sent whole.
+- [ ] **Coreference resolution** — `build_coreference_request()` exists in the router but is not called anywhere in the live pipeline.
+- [ ] **Rephrasing** — `build_rephrase_request()` exists but is not wired into any pre-processing pass.
+- [ ] **Confidence scoring** — `PredictionResponse.confidence` is always `None`.
+- [ ] **Chain-of-thought** — `cot` is two fixed strings; no step-by-step reasoning trace.
+- [ ] **`"Uncertain"` fallback quality** — when `verified=False`, the pipeline always returns `"Uncertain"` with no further reasoning. A LLM-based fallback for hard / unverified cases is not implemented.
+- [ ] **Numeric/temporal constraints in questions** — `ConstraintParser` is only wired for premises, not for question or option texts.
+
+---
+
 ## Parser Model Service
 
-The Type 1 parser runs as a dedicated vLLM service. The serving script loads
-the project `.env` automatically:
+The parser runs as a dedicated vLLM service (Qwen3-1.7B on ThunderCompute A6000):
 
 ```bash
 bash scripts/serve_type1_parser.sh
 ```
 
-Use `EXACT_ENV_FILE` to load another environment file, or a `PARSER_*`
-variable for a one-off override:
-
-```bash
-EXACT_ENV_FILE=/etc/exact/parser.env bash scripts/serve_type1_parser.sh
-PARSER_GPU_MEMORY_UTILIZATION=0.35 bash scripts/serve_type1_parser.sh
-```
-
-For a CPU-only laptop smoke test, use the official vLLM CPU Docker image:
-
-```bash
-bash scripts/serve_type1_parser_cpu_docker.sh
-```
-
-In another terminal, run one concurrent atomic/quantified/logical batch:
-
-```bash
-PYTHONPATH=src exact/bin/python scripts/test_type1_parser.py
-```
-
-The application uses `ParserClient` with one persistent HTTP connection pool:
-
-```python
-from exact.type1.parser import ParserClient
-
-parser = ParserClient(
-    base_url="http://127.0.0.1:8001/v1",
-    model="type1-parser",
-    api_key="exact-parser-token",
-    concurrency=32,
-)
-```
-
-For application deployment, configure the parser independently:
+Key environment variables:
 
 ```dotenv
 EXACT_TYPE1_PARSER_BASE_URL=http://127.0.0.1:8001/v1
 EXACT_TYPE1_PARSER_MODEL=type1-parser
 EXACT_TYPE1_PARSER_API_KEY=exact-parser-token
 EXACT_TYPE1_PARSER_CONCURRENCY=32
-
-# vLLM process configuration
 EXACT_TYPE1_PARSER_SOURCE_MODEL=Qwen/Qwen3-1.7B
-EXACT_TYPE1_PARSER_SERVER_HOST=127.0.0.1
-EXACT_TYPE1_PARSER_SERVER_PORT=8001
-EXACT_TYPE1_PARSER_SERVER_MAX_MODEL_LEN=4096
-EXACT_TYPE1_PARSER_SERVER_MAX_NUM_SEQS=64
-EXACT_TYPE1_PARSER_SERVER_MAX_NUM_BATCHED_TOKENS=8192
 EXACT_TYPE1_PARSER_SERVER_GPU_MEMORY_UTILIZATION=0.25
-EXACT_TYPE1_PARSER_SERVER_DTYPE=auto
-EXACT_TYPE1_PARSER_SERVER_QUANTIZATION=
-EXACT_TYPE1_PARSER_SERVER_TENSOR_PARALLEL_SIZE=1
 ```
 
-Then construct it once during application startup with
-`build_parser_client_from_settings()` and close it during shutdown.
-
-Use `parse_many_as()` to submit premises concurrently. The client semaphore
-limits application pressure, while vLLM continuously batches active requests on
-the GPU. Each call sends a Pydantic JSON schema to vLLM structured output, which
-replaces client-side closing-brace stopping criteria.
-
-System prompts remain in `exact.type1.prompts`. The prompt router selects the
-correct prompt and response schema before calling the transport client:
+The application creates one shared `ParserClient` at startup (via `build_parser_client_from_settings()`) and closes it at shutdown. Do not create a client per request.
 
 ```python
-from exact.type1.parser import FOLParser, build_parser_client_from_settings
+from exact.type1.parser import FOLParser, PremiseParser, build_parser_client_from_settings
 
 client = build_parser_client_from_settings()
-if client is None:
-    raise RuntimeError("EXACT_TYPE1_PARSER_BASE_URL is not configured")
+parser = PremiseParser.from_parser_client(client)
 
-parser = FOLParser(client)
-trees = await parser.parse_many(premises)
+bundle = await parser.parse_premises(["All students must pass.", "Alice is a student."])
+print(bundle.verified)          # True / False
+print(bundle.verification_issues)
+for text, tree in zip(bundle.premises, bundle.trees):
+    print(text, "→", repr(tree))
+
+await client.aclose()
 ```
-
-`FOLParser.parse_many()` starts each independent premise concurrently. During
-recursive parsing, each premise submits its next atomic, logical, quantified,
-or coreference operation through the same `ParserClient`. The client semaphore
-bounds request pressure and vLLM continuously batches active operations.
-
-Create one shared client during application startup and close it during
-shutdown. Do not create one client per premise:
-
-```python
-client = build_parser_client_from_settings()
-parser = FOLParser(client)
-
-try:
-    first_problem_trees = await parser.parse_many(first_problem_premises)
-    second_problem_trees = await parser.parse_many(second_problem_premises)
-finally:
-    await client.aclose()
-```
-
-For lower-level operations, `build_sentence_request()` deterministically
-chooses `atomic`, `logical`, or `quantified`. Use `build_rephrase_request()`
-and `build_coreference_request()` for explicit preprocessing operations.
-
-# 1.2 Preprocessing
-Before parsing, the framework splits input documents into distinct sentences using an ``ML-based model`` called ``SaT (Segment any Text)``. Unlike simple rule-based splitters, ``SaT`` uses contextual and lexical cues to accurately distinguish real sentence endings from punctuation used in abbreviations or numeric expressions, preventing sentence fragmentation errors.
