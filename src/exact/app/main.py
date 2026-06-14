@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from exact.app.router import api_router
 from exact.logger import setup_logging
+from exact.type1.fallback import Type1FallbackReasoner
 from exact.type1.parser import (
     PremiseParser,
     QuestionSideParser,
@@ -28,6 +29,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         QuestionSideParser.from_parser_client(parser_client) if parser_client is not None else None
     )
     app.state.type1_solver = FOLSolver()
+    app.state.type1_fallback_reasoner = (
+        Type1FallbackReasoner(parser_client) if parser_client is not None else None
+    )
     try:
         yield
     finally:

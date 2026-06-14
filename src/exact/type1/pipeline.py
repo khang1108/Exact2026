@@ -25,6 +25,7 @@ from exact.type1.proof_connectivity import (
 )
 
 if TYPE_CHECKING:
+    from exact.type1.fallback import Type1FallbackReasoner
     from exact.type1.parser import QuestionSideParser
     from exact.type1.parser.schemas import OptionClaim, QuestionParseBundle
     from exact.type1.solvers import FOLSolver  # type: ignore[import-untyped]
@@ -38,6 +39,7 @@ async def run_type1_pipeline(
     premise_parser: PremiseParser,
     question_parser: QuestionSideParser,
     solver: FOLSolver | None = None,
+    fallback_reasoner: Type1FallbackReasoner | None = None,
 ) -> PredictionResponse:
     """Parse premises and the question through their workflows, then solve."""
 
@@ -86,14 +88,47 @@ async def run_type1_pipeline(
     else:
         raw_answer = _SOLVER_UNCERTAIN
 
-    cause = _uncertainty_cause(
+    symbolic_answer = raw_answer
+    symbolic_cause = _uncertainty_cause(
         solver, premise_bundle, spec, raw_answer, sort_conflict
     )
     uncertainty_interpretation = (
         interpret_z3_uncertainty(proof_connectivity)
-        if cause == "Z3_TRUE_UNCERTAIN"
+        if symbolic_cause == "Z3_TRUE_UNCERTAIN"
         else None
     )
+    fallback_used = False
+    fallback_error: str | None = None
+    fallback_explanation: str | None = None
+    fallback_trigger = (
+        symbolic_cause
+        if raw_answer == _SOLVER_UNCERTAIN
+        else (
+            "RANKING_MODE_ADJUDICATION"
+            if spec.solver_mode in {"fewest_premise", "strongest_conclusion", "premise_selection"}
+            else None
+        )
+    )
+    if fallback_trigger is not None and fallback_reasoner is not None:
+        try:
+            fallback = await fallback_reasoner.answer(
+                premises=premises,
+                question=payload.question,
+                option_labels=(
+                    [claim.label for claim in spec.option_claims]
+                    if is_mcq
+                    else ["Yes", "No"]
+                ),
+                options=options_dict or None,
+            )
+            if fallback.answer != _SOLVER_UNCERTAIN or raw_answer == _SOLVER_UNCERTAIN:
+                raw_answer = fallback.answer
+            fallback_used = True
+            fallback_explanation = fallback.explanation
+        except Exception as exc:  # Fallback failure must not hide symbolic diagnostics.
+            fallback_error = f"{type(exc).__name__}: {exc}"
+
+    cause = symbolic_cause if raw_answer == _SOLVER_UNCERTAIN else None
     answer = _normalize_answer(raw_answer)
 
     # --- Debug FOL text -------------------------------------------------------
@@ -120,7 +155,9 @@ async def run_type1_pipeline(
         question_type=question_type,
         answer=answer,
         explanation=(
-            f"Z3 {spec.solver_mode} result: {answer}"
+            f"LLM fallback after {fallback_trigger}: {answer}. {fallback_explanation}"
+            if fallback_used
+            else f"Z3 {spec.solver_mode} result: {answer}"
             if cause is None
             else f"Answer: {answer} (cause: {cause})"
         ),
@@ -135,6 +172,11 @@ async def run_type1_pipeline(
             + (f" ({spec.can_interpretation})" if spec.can_interpretation != "none" else ""),
             f"Pipeline returned: {answer}"
             + (f" (cause: {cause})" if cause is not None else ""),
+            *(
+                [f"LLM fallback returned: {answer}"]
+                if fallback_used
+                else []
+            ),
         ],
         premises=premise_bundle.premises,
         confidence=None,
@@ -142,8 +184,14 @@ async def run_type1_pipeline(
             "stage": "z3_entailment",
             "solver_available": solver is not None,
             "solver_used": solver_used,
+            "symbolic_answer": symbolic_answer,
             "uncertainty_cause": cause,
+            "symbolic_uncertainty_cause": symbolic_cause,
             "z3_uncertainty_interpretation": uncertainty_interpretation,
+            "fallback_used": fallback_used,
+            "fallback_trigger": fallback_trigger,
+            "fallback_error": fallback_error,
+            "fallback_explanation": fallback_explanation,
             "proof_connectivity": proof_connectivity,
             "premise_bundle_verified": premise_bundle.verified,
             "premise_verification_issues": list(premise_bundle.verification_issues),

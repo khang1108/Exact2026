@@ -410,6 +410,7 @@ symbols (`0.0`); an unresolved pronoun halves the final score.
   - [x] **PremiseSchema**: semantic-family canonicalization guard (REQUIREMENT / ACHIEVEMENT / ACTION)
   - [x] **OParser**: pronoun resolution for FULL_CLAIM / CONJUNCTIVE_CLAIM options (`PRONOUN_RESOLVED`)
 - [x] **Proof-connectivity dashboard**: per-claim symbol matches, diagnostics, and uncertainty interpretation
+- [x] **Neuro-symbolic fallback**: Z3 remains primary; unresolved/parser-drift and ranking cases are adjudicated from the original NL with constrained answer labels
 
 ### Missing / Incomplete
 

@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict
 from pydantic.dataclasses import dataclass
 
 from exact.type1.ast import AtomicNode, FOLNode, LogicalNode, QuantifiedNode
-from exact.type1.ast.nodes import ComparisonNode
+from exact.type1.ast.nodes import ComparisonNode, FunctionTerm
 from exact.type1.models.schemas import Predicate
 
 _INTERROGATIVE_START = re.compile(
@@ -353,7 +353,7 @@ class PremiseSchema:
         )
 
     def canonicalize(self, trees: list[FOLNode]) -> tuple[list[FOLNode], list[dict[str, object]]]:
-        """Rename predicates in ``trees`` to matching canonical schema names."""
+        """Rename predicates and entity constants to the shared schema vocabulary."""
 
         remap: dict[tuple[str, int], str] = {}
         for tree in trees:
@@ -366,9 +366,32 @@ class PremiseSchema:
             {"from": name, "arity": arity, "to": canonical}
             for (name, arity), canonical in remap.items()
         ]
+        canonicalized = (
+            [_rename_in_node(tree, remap) for tree in trees] if remap else trees
+        )
+        canonicalized, constant_renames = self.canonicalize_constants(canonicalized)
+        return canonicalized, [*renames, *constant_renames]
+
+    def canonicalize_constants(
+        self,
+        trees: list[FOLNode],
+    ) -> tuple[list[FOLNode], list[dict[str, object]]]:
+        """Rename constants to exact aliases or one unambiguous semantic match."""
+
+        remap: dict[str, str] = {}
+        for tree in trees:
+            for constant in _collect_constants_in_order(tree):
+                match = _best_constant_match(constant, list(self.constants))
+                if match is not None and match.name != constant:
+                    remap[constant] = match.name
+
+        renames = [
+            {"kind": "constant", "from": name, "to": canonical}
+            for name, canonical in remap.items()
+        ]
         if not remap:
             return trees, renames
-        return [_rename_in_node(tree, remap) for tree in trees], renames
+        return [_rename_constants_in_node(tree, remap) for tree in trees], renames
 
     def contains(self, name: str, arity: int) -> bool:
         """Return whether the exact canonical predicate is in the schema."""
@@ -512,6 +535,46 @@ def _rename_in_node(node: FOLNode, remap: dict[tuple[str, int], str]) -> FOLNode
         right=_rename_in_node(node.right, remap) if node.right is not None else None,
     )
 
+
+def _rename_constants_in_node(node: FOLNode, remap: dict[str, str]) -> FOLNode:
+    if isinstance(node, ComparisonNode):
+        left = FunctionTerm(
+            name=node.left.name,
+            arguments=[remap.get(argument, argument) for argument in node.left.arguments],
+        )
+        right = node.right
+        if isinstance(right, FunctionTerm):
+            right = FunctionTerm(
+                name=right.name,
+                arguments=[remap.get(argument, argument) for argument in right.arguments],
+            )
+        return ComparisonNode(operator=node.operator, left=left, right=right)
+    if isinstance(node, AtomicNode):
+        return AtomicNode(
+            predicate=node.predicate,
+            arguments=[remap.get(argument, argument) for argument in node.arguments],
+        )
+    if isinstance(node, QuantifiedNode):
+        return QuantifiedNode(
+            quantifier=node.quantifier,
+            variable=node.variable,
+            body=_rename_constants_in_node(node.body, remap),
+            restrictor=(
+                _rename_constants_in_node(node.restrictor, remap)
+                if node.restrictor is not None
+                else None
+            ),
+        )
+    return LogicalNode(
+        operator=node.operator,
+        left=_rename_constants_in_node(node.left, remap),
+        right=(
+            _rename_constants_in_node(node.right, remap)
+            if node.right is not None
+            else None
+        ),
+    )
+
 def _predicate_family(name: str) -> str | None:
     """Return the semantic family of a predicate name, or None if unclassified."""
     tokens = {_normalize_semantic_token(t) for t in _camel_word_list(name)}
@@ -623,26 +686,157 @@ def _infer_predicate_value_type(
 
 
 def _build_constant_signatures(trees: list[FOLNode]) -> tuple[ConstantSignature, ...]:
-    occurrences: dict[str, list[tuple[int, str]]] = {}
+    occurrences: dict[str, list[tuple[int, str, tuple[object, ...]]]] = {}
     for premise_index, tree in enumerate(trees, start=1):
-        for constant in _collect_constants_in_order(tree):
-            occurrences.setdefault(constant.casefold(), []).append((premise_index, constant))
+        for constant, context in _collect_constant_occurrences(tree):
+            occurrences.setdefault(constant.casefold(), []).append(
+                (premise_index, constant, context)
+            )
+
+    keys = list(occurrences)
+    parent = {key: key for key in keys}
+
+    def find(key: str) -> str:
+        while parent[key] != key:
+            parent[key] = parent[parent[key]]
+            key = parent[key]
+        return key
+
+    def union(left: str, right: str) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root != right_root:
+            parent[right_root] = left_root
+
+    contexts = {
+        key: {context for _, _, context in group}
+        for key, group in occurrences.items()
+    }
+    token_sets = {
+        key: frozenset(_normalize_semantic_token(token) for token in _camel_word_list(group[0][1]))
+        for key, group in occurrences.items()
+    }
+    for key in keys:
+        same_context_supersets = [
+            candidate
+            for candidate in keys
+            if candidate != key
+            and contexts[key] & contexts[candidate]
+            and token_sets[key]
+            and token_sets[key] < token_sets[candidate]
+        ]
+        if len(same_context_supersets) == 1:
+            union(key, same_context_supersets[0])
+        for candidate in keys:
+            if (
+                candidate != key
+                and contexts[key] & contexts[candidate]
+                and token_sets[key]
+                and token_sets[key] == token_sets[candidate]
+            ):
+                union(key, candidate)
+
+    grouped: dict[str, list[tuple[int, str, tuple[object, ...]]]] = {}
+    for key, group in occurrences.items():
+        grouped.setdefault(find(key), []).extend(group)
 
     signatures: list[ConstantSignature] = []
-    for group in occurrences.values():
-        names = _unique(name for _, name in group)
-        canonical_name = names[0]
+    for group in grouped.values():
+        names = _unique(name for _, name, _ in group)
+        canonical_name = _choose_canonical_name(names)
         signatures.append(
             ConstantSignature(
                 name=canonical_name,
                 aliases=tuple(name for name in names if name != canonical_name),
                 sort=_infer_constant_sort(canonical_name),
                 introduced_by_premises=tuple(
-                    sorted({premise_index for premise_index, _ in group})
+                    sorted({premise_index for premise_index, _, _ in group})
                 ),
             )
         )
     return tuple(signatures)
+
+
+def _best_constant_match(
+    name: str,
+    constants: list[ConstantSignature],
+) -> ConstantSignature | None:
+    folded = name.casefold()
+    exact = next(
+        (
+            constant
+            for constant in constants
+            if constant.name.casefold() == folded
+            or any(alias.casefold() == folded for alias in constant.aliases)
+        ),
+        None,
+    )
+    if exact is not None:
+        return exact
+
+    tokens = frozenset(
+        _normalize_semantic_token(token) for token in _camel_word_list(name)
+    )
+    if not tokens:
+        return None
+    candidates = [
+        constant
+        for constant in constants
+        if any(
+            tokens <= candidate_tokens or candidate_tokens <= tokens
+            for candidate_tokens in (
+                frozenset(
+                    _normalize_semantic_token(token)
+                    for token in _camel_word_list(candidate)
+                )
+                for candidate in (constant.name, *constant.aliases)
+            )
+        )
+    ]
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def _collect_constant_occurrences(
+    node: FOLNode,
+    bound_variables: frozenset[str] = frozenset(),
+) -> list[tuple[str, tuple[object, ...]]]:
+    if isinstance(node, AtomicNode):
+        context = ("atomic", _semantic_key(node.predicate.name), len(node.arguments))
+        return [
+            (argument, (*context, index))
+            for index, argument in enumerate(node.arguments)
+            if argument not in bound_variables
+        ]
+    if isinstance(node, ComparisonNode):
+        context = ("function", _semantic_key(node.left.name), len(node.left.arguments))
+        occurrences = [
+            (argument, (*context, index))
+            for index, argument in enumerate(node.left.arguments)
+            if argument not in bound_variables
+        ]
+        if isinstance(node.right, FunctionTerm):
+            right_context = (
+                "function",
+                _semantic_key(node.right.name),
+                len(node.right.arguments),
+            )
+            occurrences.extend(
+                (argument, (*right_context, index))
+                for index, argument in enumerate(node.right.arguments)
+                if argument not in bound_variables
+            )
+        return occurrences
+    if isinstance(node, QuantifiedNode):
+        local_variables = bound_variables | {node.variable}
+        occurrences = _collect_constant_occurrences(node.body, local_variables)
+        if node.restrictor is not None:
+            occurrences.extend(_collect_constant_occurrences(node.restrictor, local_variables))
+        return occurrences
+
+    occurrences = _collect_constant_occurrences(node.left, bound_variables)
+    if node.right is not None:
+        occurrences.extend(_collect_constant_occurrences(node.right, bound_variables))
+    return occurrences
 
 
 def _collect_constants_in_order(

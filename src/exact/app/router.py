@@ -140,8 +140,15 @@ async def predict(payload: UnifiedPredictionRequest, request: Request) -> Predic
     if premise_parser is None or question_parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
+    fallback_reasoner = getattr(request.app.state, "type1_fallback_reasoner", None)
     try:
-        return await run_type1_pipeline(payload, premise_parser, question_parser, solver)
+        return await run_type1_pipeline(
+            payload,
+            premise_parser,
+            question_parser,
+            solver,
+            fallback_reasoner,
+        )
     except Exception as exc:
         logger.exception(f"Type 1 pipeline failed for {payload.query_id!r}: {exc}")
         return PredictionResponse(
@@ -161,7 +168,14 @@ async def z3_predict(payload: PredictionRequest, request: Request) -> Prediction
     if premise_parser is None or question_parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
-    return await run_type1_pipeline(payload, premise_parser, question_parser, solver)
+    fallback_reasoner = getattr(request.app.state, "type1_fallback_reasoner", None)
+    return await run_type1_pipeline(
+        payload,
+        premise_parser,
+        question_parser,
+        solver,
+        fallback_reasoner,
+    )
 
 
 @api_router.post("/parser", response_model=ParserResponse)

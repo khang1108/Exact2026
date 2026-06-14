@@ -342,9 +342,9 @@ class SafeClaimCanonicalizer:
             {"from": name, "arity": arity, "to": canonical}
             for (name, arity), canonical in remap.items()
         ]
-        if not remap:
-            return trees, renames, diagnostics
-        return [_rename(tree, remap) for tree in trees], renames, diagnostics
+        canonicalized = [_rename(tree, remap) for tree in trees] if remap else trees
+        canonicalized, constant_renames = schema.canonicalize_constants(canonicalized)
+        return canonicalized, [*renames, *constant_renames], diagnostics
 
 
 # ---------------------------------------------------------------------------

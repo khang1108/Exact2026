@@ -65,7 +65,13 @@ def test_ynu_labels_are_not_treated_as_mcq_conclusions() -> None:
 def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
     calls: list[tuple[str, str | None]] = []
 
-    async def fake_type1(payload, premise_parser, question_parser, solver):
+    async def fake_type1(
+        payload,
+        premise_parser,
+        question_parser,
+        solver,
+        fallback_reasoner=None,
+    ):
         calls.append(("type1", payload.query_id))
         return _response(TaskType.TYPE1_LOGIC, payload.query_id)
 

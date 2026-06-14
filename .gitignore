@@ -24,7 +24,7 @@ docs/
 tests/
 outputs/
 tmp/
-
+setup.sh
 notebooks/
 kaggle/
 result/
