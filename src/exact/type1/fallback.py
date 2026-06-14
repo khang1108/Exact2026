@@ -9,6 +9,8 @@ from pydantic import BaseModel, ConfigDict
 if TYPE_CHECKING:
     from exact.type1.parser.client import ParserClient
 
+_UNCERTAIN_TOKEN = "Uncertain"
+
 
 class Type1FallbackResult(BaseModel):
     """Structured answer returned by the fallback reasoner."""
@@ -34,46 +36,105 @@ class Type1FallbackReasoner:
         option_labels: list[str],
         options: dict[str, str] | None = None,
     ) -> Type1FallbackResult:
-        allowed = list(dict.fromkeys([*option_labels, "Uncertain"]))
+        # Determine mode BEFORE appending "Uncertain" to allowed set
+        is_open_ended = not option_labels  # no labels → free-form / wh-question
+        allowed = [] if is_open_ended else list(dict.fromkeys([*option_labels, _UNCERTAIN_TOKEN]))
+
         option_text = "\n".join(
             f"{label}. {text}" for label, text in (options or {}).items()
         )
+        numbered_premises = [f"{i}. {p}" for i, p in enumerate(premises, start=1)]
         user_parts = [
             "Premises:",
-            *[f"{index}. {premise}" for index, premise in enumerate(premises, start=1)],
+            *numbered_premises,
             "",
             "Question:",
             question,
         ]
         if option_text and option_text not in question:
             user_parts.extend(["", "Options:", option_text])
-        user_parts.extend(["", f"Allowed answers: {', '.join(allowed)}"])
+        if allowed:
+            user_parts.extend(["", f"Allowed answers: {', '.join(allowed)}"])
 
+        system_prompt = _SYSTEM_PROMPT_OPEN if is_open_ended else _SYSTEM_PROMPT
         result = await self.client.parse_as(
             [
-                {
-                    "role": "system",
-                    "content": _SYSTEM_PROMPT_OPEN if not allowed else _SYSTEM_PROMPT,
-                },
-                {
-                    "role": "user",
-                    "content": "\n".join(user_parts),
-                },
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": "\n".join(user_parts)},
             ],
             Type1FallbackResult,
             max_tokens=256,
         )
-        if not allowed:
-            # Open-ended / wh-question: return raw LLM answer as-is
-            zero_based = sorted(max(0, i - 1) for i in result.premises_used)
+
+        # Convert 1-based premise indices (shown to LLM) to 0-based
+        zero_based = sorted(max(0, i - 1) for i in result.premises_used)
+
+        if is_open_ended:
+            # Open-ended / wh-question: return raw LLM answer as-is, no canonicalization
             return result.model_copy(update={"premises_used": zero_based})
+
         canonical = {
             label.casefold(): label
             for label in allowed
-        }.get(result.answer.strip().casefold(), "Uncertain")
-        # Convert 1-based premise indices (shown to LLM) to 0-based
-        zero_based = sorted(max(0, i - 1) for i in result.premises_used)
+        }.get(result.answer.strip().casefold(), _UNCERTAIN_TOKEN)
+
+        # If LLM still returned Uncertain but we have premises to reason from,
+        # retry once with a stronger "best guess" instruction.
+        if canonical == _UNCERTAIN_TOKEN and premises:
+            canonical, explanation, zero_based = await self._force_concrete_answer(
+                numbered_premises=numbered_premises,
+                question=question,
+                option_text=option_text,
+                allowed=[a for a in allowed if a != _UNCERTAIN_TOKEN] or allowed,
+                prior_explanation=result.explanation,
+            )
+            return Type1FallbackResult(
+                answer=canonical,
+                explanation=explanation,
+                premises_used=zero_based,
+            )
+
         return result.model_copy(update={"answer": canonical, "premises_used": zero_based})
+
+    async def _force_concrete_answer(
+        self,
+        *,
+        numbered_premises: list[str],
+        question: str,
+        option_text: str,
+        allowed: list[str],
+        prior_explanation: str,
+    ) -> tuple[str, str, list[int]]:
+        """Retry with an explicit instruction to commit to the best answer."""
+        user_parts = [
+            "Premises:",
+            *numbered_premises,
+            "",
+            "Question:",
+            question,
+        ]
+        if option_text:
+            user_parts.extend(["", "Options:", option_text])
+        user_parts.extend([
+            "",
+            f"Your previous reasoning: {prior_explanation}",
+            "",
+            f"Based on your reasoning above, select the single best answer from: {', '.join(allowed)}",
+            "Do NOT answer Uncertain. Commit to the most likely answer.",
+        ])
+        result = await self.client.parse_as(
+            [
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": "\n".join(user_parts)},
+            ],
+            Type1FallbackResult,
+            max_tokens=192,
+        )
+        canonical = {
+            label.casefold(): label for label in allowed
+        }.get(result.answer.strip().casefold(), allowed[0] if allowed else result.answer)
+        zero_based = sorted(max(0, i - 1) for i in result.premises_used)
+        return canonical, result.explanation, zero_based
 
 
 _SYSTEM_PROMPT = """
