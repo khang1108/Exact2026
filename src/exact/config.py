@@ -112,6 +112,10 @@ class Settings(BaseSettings):
     type1_parser_timeout_seconds: float = Field(default=30.0, gt=0)
     type1_parser_max_retries: int = Field(default=2, ge=0)
     type1_parser_max_tokens: int = Field(default=512, ge=1)
+    type1_uncertain_token: str = Field(
+        default="Uncertain",
+        validation_alias="EXACT_TYPE1_UNCERTAIN_TOKEN",
+    )
     # Hard end-to-end deadline for one Type 1 request. If the parse → solve →
     # refine pipeline exceeds this, the request returns "Uncertain" instead of
     # running unbounded. Keep it below any upstream proxy/tunnel timeout.
