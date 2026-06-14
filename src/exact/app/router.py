@@ -67,7 +67,17 @@ async def predict(payload: UnifiedPredictionRequest, request: Request) -> Predic
     if premise_parser is None or question_parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
-    return await run_type1_pipeline(payload, premise_parser, question_parser, solver)
+    try:
+        return await run_type1_pipeline(payload, premise_parser, question_parser, solver)
+    except Exception as exc:
+        logger.exception(f"Type 1 pipeline failed for {payload.query_id!r}: {exc}")
+        return PredictionResponse(
+            id=payload.query_id,
+            task_type=TaskType.TYPE1_LOGIC,
+            answer="Uncertain",
+            explanation="Pipeline error — see server logs for details.",
+            error=str(exc),
+        )
 
 
 @api_router.post("/z3", response_model=PredictionResponse)
