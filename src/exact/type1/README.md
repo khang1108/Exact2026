@@ -27,16 +27,25 @@ PremiseSchema              (dedup predicates, arity check, canonicalize)
     │  renames similar predicates to one canonical name
     │  raises diagnostics for drift / lost constraints
     ▼
-FOLNode trees  ◄── verified: bool + issues: list[str]
-    │
-    ├── /parser endpoint  (NL → FOL, stop here)
-    │
+FOLNode trees  ◄── verified: bool + issues: list[str]   ──►  PremiseSchema
+    │                                                            │
+    ├── /parser endpoint  (NL → FOL, stop here)                  │
+    │                                                            ▼
+    │                                          QuestionSideParser (question side)
+    │                                            │  QParser     → QuestionFrameResult
+    │                                            │  OParser     → OptionClaim[]
+    │                                            │  ClaimParser → FOL (schema-canonicalized)
+    │                                            │  QueryVerifier → supported / issues
+    │                                            ▼
+    │                                          QuerySpec  ──► /qparser endpoint (inspect, stop here)
+    ▼                                            │
+Z3 FOLSolver  ◄──────────────────────────────────┘
+    │  polar      → check_ynu()             → "Yes" / "No" / "Uncertain"
+    │  mcq        → check_mcq()             → option label "A".."D"
+    │  refutation → check_mcq_refutation()  → the single FALSE option
+    │  ynu_mapped → check_ynu() + map YNU verdict → option label
     ▼
-Question / option parsing  (FOLParser.parse_many, schema-canonicalized)
-    ▼
-Z3 FOLSolver
-    │  check_ynu()  → "Yes" / "No" / "Uncertain"
-    │  check_mcq()  → option label "A" / "B" / "C" / "D"
+_normalize_answer()   ("Uncertain" → configured token, default "Unknown")
     ▼
 PredictionResponse
 ```
@@ -59,15 +68,20 @@ type1/
     router.py               # ParserKind routing + request builders
     parser.py               # FOLParser — recursive NL → FOLNode
     frame_parser.py         # PremiseFrameParser + PremiseFrameCompiler + ConstraintParser
-    premise_parser.py       # PremiseParser — orchestration + repair + verify
-    schemas.py              # PremiseFrameResult, PremiseSchema, parser result models
-    qparser.py              # QuestionParser  ⚠ stub — not implemented
+    premise_parser.py       # PremiseParser — premise orchestration + repair + verify
+    options.py              # parse_mcq_options — extract embedded A./A) options
+    qparser.py              # QParser — classify question → QuestionFrameResult
+    oparser.py              # OParser — MCQ options → OptionClaim[]
+    claim_parser.py         # ClaimParser — claim texts → canonicalized FOL
+    query_verifier.py       # verify() — pre-solve QuerySpec validation
+    question_parser.py      # QuestionSideParser — question orchestration
+    schemas.py              # frame/query result models, PremiseSchema, QuerySpec
 
   models/
     schemas.py              # Predicate, domain schema models
 
   solvers/
-    z3_solver.py            # FOLSolver — Z3 entailment
+    z3_solver.py            # FOLSolver — Z3 entailment / refutation
 ```
 
 ---
@@ -126,6 +140,50 @@ Formula    ::= Atomic
 
 ---
 
+## Question Side (`QuestionSideParser`)
+
+The question side mirrors the premise side: classify first, compile FOL second, never emit FOL from the classifier. It produces a `QuerySpec` describing *how* to answer the question, then the pipeline routes to the matching solver call.
+
+```
+QuestionSideParser
+  ├── QParser        question                  → QuestionFrameResult   (1 LLM call)
+  ├── OParser        stem + options            → OptionClaim[]         (1 LLM call/option)
+  ├── ClaimParser    claim texts + schema      → FOLNode[]             (FOLParser + canonicalize)
+  └── query_verifier QuerySpec                 → supported / issues    (deterministic)
+```
+
+**`question_format`** — `polar` (yes/no), `mcq`, or `open_wh`.
+
+**`solver_mode`** — what to compute and how it routes:
+
+| solver_mode | meaning | routing (v1) |
+|---|---|---|
+| `entailment` | does a claim follow (default) | `check_ynu` (polar) / `check_mcq` (mcq) |
+| `refutation` | "which is false / not true / cannot" | `check_mcq_refutation` |
+| `ynu_mapped` | MCQ whose options are Yes/Uncertain/No | `check_ynu` on the stem, map verdict → label |
+| `strongest_conclusion` | strongest / most significant | classified; **deferred** → Unknown |
+| `fewest_premise` | follows from fewest premises | classified; **deferred** → Unknown |
+| `premise_selection` | which premises support a conclusion | classified; **deferred** → Unknown |
+| `unsupported` | open-WH / no decidable claim | → Unknown |
+
+**`can_interpretation`** — disambiguates the word "can":
+- `meta_inference` — "which statement **can be inferred**" → logical entailment, "can" dropped from the claim.
+- `object_modal` — "**Can** Tuan take the course?" → ability/permission kept inside the claim (`Tuan can take the course`).
+
+**`OptionClaim.option_type`** — options are not always self-contained propositions:
+
+| option_type | handling |
+|---|---|
+| `proposition` | parsed to FOL |
+| `fragment` | subject recovered from the stem, then parsed to FOL |
+| `raw_fol` | `∀x …` formula — tagged, **not** compiled in v1 |
+| `premise_reference` | "Premises 1, 3, 7" → indices — tagged, not compiled in v1 |
+| `ynu_answer` | "Yes, all mastered…" → `ynu_value`, drives `ynu_mapped` |
+
+Embedded options (`A.` **and** `A)` lines inside the question body) are extracted by `parse_mcq_options` when no separate `options` payload is supplied.
+
+---
+
 ## Schema Diagnostics
 
 Raised during `PremiseSchema` build and `_verify_bundle()`:
@@ -140,6 +198,17 @@ Raised during `PremiseSchema` build and `_verify_bundle()`:
 | `TEMPORAL_CONSTRAINT_LOST` | premise has temporal signals but no `ComparisonNode` in the AST |
 | `UNSUPPORTED_MODAL_NOT_NECESSARILY` | epistemic non-entailment; Z3 cannot model it |
 
+Question-side (`query_verifier`, set on `QuerySpec.issues`):
+
+| tag | meaning |
+|---|---|
+| `QUERY_NO_CLAIM` | polar / ynu_mapped question has no testable claim FOL |
+| `QUERY_NO_SOLVABLE_OPTIONS` | MCQ has fewer than two options that compiled to FOL |
+| `QUERY_OPTIONS_UNSUPPORTED` | all options are raw FOL or premise references |
+| `QUERY_NO_YNU_OPTIONS` | `ynu_mapped` question has no Yes/No/Uncertain options |
+| `QUERY_MODE_DEFERRED` | strongest/fewest/premise_selection — classified but not solved in v1 |
+| `QUERY_OPEN_WH_UNSUPPORTED` | open-WH question with no decidable claim |
+
 ---
 
 ## API Endpoints
@@ -148,24 +217,38 @@ Raised during `PremiseSchema` build and `_verify_bundle()`:
 |---|---|---|
 | `GET` | `/health` | liveness check |
 | `POST` | `/parser` | NL premises → FOL ASTs + verified + issues + renames |
+| `POST` | `/qparser` | question (+ options + premises) → `QuerySpec` (classify only, no solving) |
 | `POST` | `/predict` | full pipeline → answer |
 | `POST` | `/z3` | alias for `/predict` |
 | `POST` | `/premises` | lighter version of `/parser` (no verified/issues/renames) |
 
-**`/parser` request:**
+**`/parser` request / response:**
 ```json
 { "premises": ["All students must pass at least 5 courses", "Alice is a student"] }
 ```
-
-**`/parser` response:**
 ```json
 {
   "premises": [
     { "id": "premise-1", "original_text": "...", "fol": "∀x[Student(x)].(PassedCourses(x) >= 5.0)", "ast": {...} }
   ],
-  "verified": true,
-  "issues": [],
-  "renames": []
+  "verified": true, "issues": [], "renames": []
+}
+```
+
+**`/qparser` request / response:** (options may be embedded in `question` as `A.`/`A)` lines)
+```json
+{ "premises": ["..."], "question": "Which conclusion can be inferred?\nA. ...\nB. ..." }
+```
+```json
+{
+  "question_format": "mcq",
+  "solver_mode": "entailment",
+  "can_interpretation": "meta_inference",
+  "main_claim_text": null, "main_claim_fol": null, "negate_claim": false,
+  "supported": true, "issues": [],
+  "option_claims": [
+    { "label": "A", "option_type": "proposition", "claim_text": "...", "fol": "...", "ynu_value": "none", "premise_indices": [], "raw_fol": null }
+  ]
 }
 ```
 
@@ -188,23 +271,30 @@ Raised during `PremiseSchema` build and `_verify_bundle()`:
 - [x] Generic-class constant repair — `Students` arg → `∀x[Student(x)]` for rule-like frames (Issue 8)
 - [x] `NUMERIC_CONSTRAINT_LOST` / `TEMPORAL_CONSTRAINT_LOST` verifier diagnostics (Issue 6)
 - [x] Deontic mapping — `must/may/cannot` → `Required*/Allowed*/NOT Can*` predicate prefixes
-- [x] `FOLSolver` — Z3 `check_ynu()` and `check_mcq()`
+- [x] `FOLSolver` — Z3 `check_ynu()`, `check_mcq()`, `check_mcq_refutation()`
 - [x] Z3 real-arithmetic for `ComparisonNode` via `Entity→Real` function declarations (Issue 6)
 - [x] `run_type1_pipeline()` — wires all stages into one call
 - [x] `/parser` API endpoint
 - [x] B03 parser quality eval notebook
+- [x] **`QuestionSideParser`** — `QParser` + `OParser` + `ClaimParser` + `query_verifier`
+- [x] Question classification — `question_format` / `solver_mode` / `can_interpretation` (meta vs object "can")
+- [x] MCQ option interpretation — proposition / fragment (subject recovery) / raw_fol / premise_reference / ynu_answer
+- [x] Embedded option extraction — `parse_mcq_options` handles `A.` and `A)`
+- [x] Solver routing — entailment / refutation / ynu_mapped (strongest/fewest/premise_selection deferred)
+- [x] Configurable uncertain token — `EXACT_TYPE1_UNCERTAIN_TOKEN` (default `"Unknown"`)
+- [x] `/qparser` API endpoint + B05 question-parser eval notebook
 
 ### Missing / Incomplete
 
-- [ ] **`qparser.py` — QuestionParser** is an empty stub. Questions and MCQ options are currently parsed by `FOLParser.parse_many()` (plain recursive parse, no frame decomposition).
-- [ ] **Frame-based question parsing** — questions like *"Is Alice eligible?"* or *"Which students qualify?"* should go through a question-specific frame before hitting the solver.
-- [ ] **Open-ended question type** — competition has MCQ, YNU, and open-ended; open-ended is not handled.
+- [ ] **Ranking solver modes** — `strongest_conclusion`, `fewest_premise`, `premise_selection` are classified but return the Unknown token (need minimal-subset / ranking logic in Z3).
+- [ ] **Raw-FOL & premise-reference options** — tagged but not compiled (no FOL-string → AST parser; no premise-ref resolution).
+- [ ] **Open-ended question type** — `open_wh` is detected and routed to Unknown; no free-text answering.
 - [ ] **SaT sentence segmentation** — multi-sentence premises are not split before parsing; each premise string is sent whole.
 - [ ] **Coreference resolution** — `build_coreference_request()` exists in the router but is not called anywhere in the live pipeline.
 - [ ] **Rephrasing** — `build_rephrase_request()` exists but is not wired into any pre-processing pass.
 - [ ] **Confidence scoring** — `PredictionResponse.confidence` is always `None`.
-- [ ] **Chain-of-thought** — `cot` is two fixed strings; no step-by-step reasoning trace.
-- [ ] **`"Uncertain"` fallback quality** — when `verified=False`, the pipeline always returns `"Uncertain"` with no further reasoning. A LLM-based fallback for hard / unverified cases is not implemented.
+- [ ] **Chain-of-thought** — `cot` is a few fixed strings; no step-by-step reasoning trace.
+- [ ] **Unknown fallback quality** — when `verified=False` or unsupported, the pipeline returns the Unknown token with no further reasoning. An LLM-based fallback for hard cases is not implemented.
 - [ ] **Numeric/temporal constraints in questions** — `ConstraintParser` is only wired for premises, not for question or option texts.
 
 ---
@@ -231,16 +321,27 @@ EXACT_TYPE1_PARSER_SERVER_GPU_MEMORY_UTILIZATION=0.25
 The application creates one shared `ParserClient` at startup (via `build_parser_client_from_settings()`) and closes it at shutdown. Do not create a client per request.
 
 ```python
-from exact.type1.parser import FOLParser, PremiseParser, build_parser_client_from_settings
+from exact.type1.parser import (
+    PremiseParser, QuestionSideParser, build_parser_client_from_settings,
+)
 
 client = build_parser_client_from_settings()
-parser = PremiseParser.from_parser_client(client)
+premise_parser = PremiseParser.from_parser_client(client)
+question_parser = QuestionSideParser.from_parser_client(client)
 
-bundle = await parser.parse_premises(["All students must pass.", "Alice is a student."])
+bundle = await premise_parser.parse_premises(["All students must pass.", "Alice is a student."])
 print(bundle.verified)          # True / False
-print(bundle.verification_issues)
 for text, tree in zip(bundle.premises, bundle.trees):
     print(text, "→", repr(tree))
+
+q = await question_parser.parse_question(
+    "Which conclusion can be inferred?\nA. Alice passes.\nB. Alice fails.",
+    options=None,               # extracted from the question body
+    schema=bundle.schema,       # share the premise vocabulary
+)
+print(q.spec.question_format, q.spec.solver_mode, q.spec.supported)
+for c in q.spec.option_claims:
+    print(c.label, c.option_type, repr(c.fol))
 
 await client.aclose()
 ```
