@@ -247,6 +247,11 @@ class QuestionFrameResult(ParserResult):
     can_interpretation: Literal["none", "meta_inference", "object_modal"] = "none"
     claim_text: str | None = None
     negate_claim: bool = False
+    # Resolution targets the ClaimNormalizer uses to fix pronouns/possessives.
+    # target_entity: the named subject the claim is about ("Sophia", "Professor John").
+    target_class: str | None = None
+    target_property: str | None = None
+    target_entity: str | None = None
     confidence: float = 1.0
 
 

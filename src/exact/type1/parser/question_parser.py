@@ -99,15 +99,17 @@ class QuestionSideParser:
                 solver_mode = "ynu_mapped"
             # ynu_mapped tests the stem proposition, not the options themselves.
             if solver_mode == "ynu_mapped" and frame.claim_text:
-                fols, claim_renames = await self.claim_parser.parse_claims(
-                    [frame.claim_text], schema
+                fols, claim_renames, claim_diags = await self.claim_parser.parse_claims_verbose(
+                    [frame.claim_text], schema, target_entity=frame.target_entity
                 )
                 main_claim_fol = fols[0] if fols else None
+                option_issues.extend(claim_diags)
         elif frame.question_format == "polar" and frame.claim_text:
-            fols, claim_renames = await self.claim_parser.parse_claims(
-                [frame.claim_text], schema
+            fols, claim_renames, claim_diags = await self.claim_parser.parse_claims_verbose(
+                [frame.claim_text], schema, target_entity=frame.target_entity
             )
             main_claim_fol = fols[0] if fols else None
+            option_issues.extend(claim_diags)
 
         supported, issues = query_verifier.verify(
             question_format=question_format,

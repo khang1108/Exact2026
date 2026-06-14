@@ -528,6 +528,13 @@ stripped of "does it follow that" / "according to the premises" / "is it true th
 For mcq and open_wh, claim_text = null (the options carry the claims).
 Set negate_claim=true only when the polar question asks whether something is FALSE / NOT true.
 
+# TARGET (the entity the question/options are about)
+- target_entity   : the named subject the answer is about — a proper noun like "Sophia",
+                    "Professor John", "Student A". null if the question is about a class only.
+- target_class    : the class/role of that subject ("student", "professor") or null.
+- target_property : the property being asked about ("eligible", "qualifies", "GPA") or null.
+These let the option/claim normalizer resolve pronouns ("he", "she") and possessives.
+
 # OUTPUT FORMAT (return ONLY valid JSON)
 {
   "question_format": "polar"|"mcq"|"open_wh",
@@ -535,6 +542,9 @@ Set negate_claim=true only when the polar question asks whether something is FAL
   "can_interpretation": "none"|"meta_inference"|"object_modal",
   "claim_text": "<declarative claim or null>",
   "negate_claim": false,
+  "target_entity": "<proper-noun subject or null>",
+  "target_class": "<class/role or null>",
+  "target_property": "<property asked about or null>",
   "confidence": 1.0
 }
 
