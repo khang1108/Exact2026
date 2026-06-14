@@ -1,0 +1,6265 @@
+[
+  {
+    "gold_fol": [
+      "ForAll(x, SQL(x) → UsedForManagingRelationalDatabases(x))",
+      "ForAll(x, RelationalDatabase(x) → ConsistsOfTables(x))",
+      "ForAll(x, SQLQuery(x) → (RetrieveData(x) ∨ InsertData(x) ∨ UpdateData(x) ∨ DeleteData(x)))",
+      "ForAll(x, SelectStatement(x) → QueryData(x))",
+      "ForAll(x, WhereClause(x) → FiltersRecords(x))",
+      "ForAll(x, InsertInto(x) → AddRowsToTable(x))",
+      "ForAll(x, UpdateStatement(x) → ModifyRecords(x))",
+      "ForAll(x, DeleteStatement(x) → RemoveRecords(x))",
+      "ForAll(x, ForAll(y, Join(x, y) → CombineData(x, y)))",
+      "ForAll(x, PrimaryKey(x) → UniquelyIdentifiesRecord(x))",
+      "ForAll(x, ForeignKey(x) → EnsuresDataIntegrity(x))",
+      "ForAll(x, GroupBy(x) → GroupRows(x))",
+      "ForAll(x, OrderBy(x) → SortResultSet(x))",
+      "ForAll(x, Index(x) → ImprovesDataRetrievalSpeed(x))"
+    ],
+    "nl": [
+      "SQL is a standard programming language used for managing relational databases.",
+      "A relational database consists of tables, each containing rows and columns.",
+      "SQL queries are used to interact with databases and perform operations such as retrieving, inserting, updating, and deleting data.",
+      "The SELECT statement is used to query and retrieve data from one or more tables.",
+      "The WHERE clause is used in SQL to filter records based on specific conditions.",
+      "The INSERT INTO statement is used to add new rows of data to a table.",
+      "The UPDATE statement is used to modify existing records in a table.",
+      "The DELETE statement is used to remove records from a table.",
+      "The JOIN operation is used to combine data from two or more tables based on a related column.",
+      "The PRIMARY KEY constraint uniquely identifies each record in a table.",
+      "The FOREIGN KEY constraint ensures the integrity of the relationship between tables.",
+      "The GROUP BY clause is used to group rows that have the same values into summary rows, such as totals.",
+      "The ORDER BY clause is used to sort the result set in ascending or descending order.",
+      "An index in SQL is used to improve the speed of data retrieval operations."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "SQL is a standard programming language used for managing relational databases.",
+        "fol": "Standard(SQL)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Standard",
+            "arg_sorts": [
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "SQL"
+          ]
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "A relational database consists of tables, each containing rows and columns.",
+        "fol": "ConsistsOf(RelationalDatabase, Tables)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "ConsistsOf",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "RelationalDatabase",
+            "Tables"
+          ]
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "SQL queries are used to interact with databases and perform operations such as retrieving, inserting, updating, and deleting data.",
+        "fol": "((((Used(SQLQueries, Databases) AND Used(SQLQueries, Data)) AND Used(SQLQueries, Data)) AND Update(SQLQueries, Data)) AND Delete(SQLQueries, Data))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Used",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "SQLQueries",
+                    "Databases"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Used",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "SQLQueries",
+                    "Data"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Used",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "SQLQueries",
+                  "Data"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Update",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "SQLQueries",
+                "Data"
+              ]
+            }
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Delete",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "SQLQueries",
+              "Data"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "The SELECT statement is used to query and retrieve data from one or more tables.",
+        "fol": "Used(SELECTStatement, Data, Tables)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Used",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "SELECTStatement",
+            "Data",
+            "Tables"
+          ]
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "The WHERE clause is used in SQL to filter records based on specific conditions.",
+        "fol": "Used(WHEREClause, SQL, Filter, Records, SpecificConditions)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Used",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "WHEREClause",
+            "SQL",
+            "Filter",
+            "Records",
+            "SpecificConditions"
+          ]
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "The INSERT INTO statement is used to add new rows of data to a table.",
+        "fol": "Used(INSERTINTOStatement, AddNewRowsOfData, Table)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Used",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "INSERTINTOStatement",
+            "AddNewRowsOfData",
+            "Table"
+          ]
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "The UPDATE statement is used to modify existing records in a table.",
+        "fol": "Used(UPDATEStatement, Modify, Existing, Records, Table)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Used",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "UPDATEStatement",
+            "Modify",
+            "Existing",
+            "Records",
+            "Table"
+          ]
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "The DELETE statement is used to remove records from a table.",
+        "fol": "Remove(DELETEStatement, Table)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Remove",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "DELETEStatement",
+            "Table"
+          ]
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "The JOIN operation is used to combine data from two or more tables based on a related column.",
+        "fol": "Combine(JOINOperation, Data, Tables, RelatedColumn)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Combine",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "JOINOperation",
+            "Data",
+            "Tables",
+            "RelatedColumn"
+          ]
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "The PRIMARY KEY constraint uniquely identifies each record in a table.",
+        "fol": "Identifies(PrimaryKey, Record, Table)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Identifies",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "PrimaryKey",
+            "Record",
+            "Table"
+          ]
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "The FOREIGN KEY constraint ensures the integrity of the relationship between tables.",
+        "fol": "EnsuresIntegrity(FOREIGNKEYConstraint, RelationshipBetweenTables)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "EnsuresIntegrity",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "FOREIGNKEYConstraint",
+            "RelationshipBetweenTables"
+          ]
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "The GROUP BY clause is used to group rows that have the same values into summary rows, such as totals.",
+        "fol": "Used(GROUPBYClause)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Used",
+            "arg_sorts": [
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "GROUPBYClause"
+          ]
+        }
+      },
+      {
+        "id": "premise-13",
+        "original_text": "The ORDER BY clause is used to sort the result set in ascending or descending order.",
+        "fol": "UsedToSort(ORDERBYClause, ResultSet, AscendingOrder, DescendingOrder)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "UsedToSort",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "ORDERBYClause",
+            "ResultSet",
+            "AscendingOrder",
+            "DescendingOrder"
+          ]
+        }
+      },
+      {
+        "id": "premise-14",
+        "original_text": "An index in SQL is used to improve the speed of data retrieval operations.",
+        "fol": "Improve(Index, Speed)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Improve",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Index",
+            "Speed"
+          ]
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "Exists(x, CostEffective(x))",
+      "Exists(x, EquippedWithModernTechnology(x))",
+      "Exists(x, Safe(x))",
+      "ForAll(x, EquippedWithModernTechnology(x))",
+      "ForAll(x, Safe(x))",
+      "ForAll(x, ¬EquippedWithModernTechnology(x) → ¬CostEffective(x))",
+      "ForAll(x, ¬EcoFriendly(x) → ¬ThoroughlyTested(x))",
+      "ForAll(x, ¬EcoFriendly(x) → ¬EquippedWithModernTechnology(x))",
+      "(Exists(x, CostEffective(x)) → ForAll(x, Safe(x)))",
+      "(ForAll(x, ¬EquippedWithModernTechnology(x) → ¬CostEffective(x)) → ForAll(x, Safe(x)))",
+      "ForAll(x, ¬ThoroughlyTested(x) → ¬Reliable(x))",
+      "ForAll(x, ¬Safe(x) → ¬EquippedWithModernTechnology(x))",
+      "ForAll(x, EcoFriendly(x) → CostEffective(x))",
+      "ForAll(x, (Safe(x) ∧ ¬EcoFriendly(x)) → ¬Necessarily(CostEffective(x)))"
+    ],
+    "nl": [
+      "Every transportation system in the city is equipped with modern technology.",
+      "Every transportation system in the city is safe.",
+      "There exists at least one transportation system that is cost-effective.",
+      "If a transportation system is not equipped with modern technology, then it is not cost-effective.",
+      "If a transportation system is not eco-friendly, then it is not thoroughly tested.",
+      "If a transportation system is not eco-friendly, then it is not equipped with modern technology.",
+      "If there exists at least one cost-effective transportation system, then every transportation system in the city is safe.",
+      "If not being equipped with modern technology implies not being cost-effective, then every transportation system in the city is safe.",
+      "If a transportation system is not thoroughly tested, then it is not reliable.",
+      "If a transportation system is not safe, then it is not equipped with modern technology.",
+      "If a transportation system is eco-friendly, then it is cost-effective.",
+      "If a transportation system is safe but not eco-friendly, then it is not necessarily cost-effective."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "Every transportation system in the city is equipped with modern technology.",
+        "fol": "Equipped(TransportationSystem, ModernTechnology)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Equipped",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "TransportationSystem",
+            "ModernTechnology"
+          ]
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "Every transportation system in the city is safe.",
+        "fol": "Safe(TransportationSystem, City)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Safe",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "TransportationSystem",
+            "City"
+          ]
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "There exists at least one transportation system that is cost-effective.",
+        "fol": "∃x.(TransportationSystem(x) AND CostEffective(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "EXISTS",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "TransportationSystem",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "CostEffective",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "If a transportation system is not equipped with modern technology, then it is not cost-effective.",
+        "fol": "∀x.((TransportationSystem(x) AND NOT(Equipped(x, ModernTechnology))) IMPLIES NOT(CostEffective(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "TransportationSystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Equipped",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x",
+                    "ModernTechnology"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "CostEffective",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "If a transportation system is not eco-friendly, then it is not thoroughly tested.",
+        "fol": "∀x.((TransportationSystem(x) AND NOT(EcoFriendly(x))) IFF NOT(ThoroughlyTested(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "TransportationSystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "EcoFriendly",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "ThoroughlyTested",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "If a transportation system is not eco-friendly, then it is not equipped with modern technology.",
+        "fol": "∀x.((TransportationSystem(x) AND NOT(EcoFriendly(x))) IFF NOT(Equipped(x, ModernTechnology)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "TransportationSystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "EcoFriendly",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Equipped",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "ModernTechnology"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "If there exists at least one cost-effective transportation system, then every transportation system in the city is safe.",
+        "fol": "∀x.((System(x, TransportationCity) AND Exist(CostEffectiveTransportationSystem)) IMPLIES Safe(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "System",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "TransportationCity"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Exist",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "CostEffectiveTransportationSystem"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Safe",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "If not being equipped with modern technology implies not being cost-effective, then every transportation system in the city is safe.",
+        "fol": "((NOT(EquippedWith(ModernTechnology)) IMPLIES NOT(CostEffective())) IMPLIES ∀x[TransportationSystem(x, City)].(Safe(x)))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "EquippedWith",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "ModernTechnology"
+                ]
+              },
+              "right": null
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "CostEffective",
+                  "arg_sorts": [],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": []
+              },
+              "right": null
+            }
+          },
+          "right": {
+            "type": "quantified",
+            "quantifier": "FORALL",
+            "variable": "x",
+            "body": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Safe",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "restrictor": {
+              "type": "atomic",
+              "predicate": {
+                "name": "TransportationSystem",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "City"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "If a transportation system is not thoroughly tested, then it is not reliable.",
+        "fol": "∀x.((TransportationSystem(x) AND NOT(ThoroughlyTested(x))) IMPLIES NOT(Reliable(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "TransportationSystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "ThoroughlyTested",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Reliable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "If a transportation system is not safe, then it is not equipped with modern technology.",
+        "fol": "∀x.((TransportationSystem(x) AND NOT(Safe(x))) IFF NOT(Equipped(x, ModernTechnology)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "TransportationSystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Safe",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Equipped",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "ModernTechnology"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "If a transportation system is eco-friendly, then it is cost-effective.",
+        "fol": "∀x.((TransportationSystem(x) AND EcoFriendly(x)) IFF CostEffective(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "TransportationSystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "EcoFriendly",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "CostEffective",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "If a transportation system is safe but not eco-friendly, then it is not necessarily cost-effective.",
+        "fol": "∀x[TransportationSystem(x)].((Safe(x) AND NOT(EcoFriendly(x))) IMPLIES NOT(CostEffective(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Safe",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "EcoFriendly",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "CostEffective",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": {
+            "type": "atomic",
+            "predicate": {
+              "name": "TransportationSystem",
+              "arg_sorts": [
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "x"
+            ]
+          }
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "ForAll(x, (active_status(x) ∧ completed_courses(x) ≥ 5) → eligible_advanced(x))",
+      "ForAll(x, eligible_advanced(x) → requires_approval(x))",
+      "active_status(sarah)",
+      "completed_courses(sarah) = 4",
+      "has_approval(sarah)"
+    ],
+    "nl": [
+      "Students with active status who have completed at least 5 courses are eligible for advanced classes.",
+      "Eligible students must obtain advisor approval to take advanced classes.",
+      "Sarah has active student status.",
+      "Sarah has completed 4 courses.",
+      "Sarah has obtained advisor approval."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "Students with active status who have completed at least 5 courses are eligible for advanced classes.",
+        "fol": "∀x.(((Student(x) AND HasStatus(x, ActiveStatus)) AND Completed(x, Courses)) IMPLIES Eligible(x, AdvancedClasses))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Student",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "HasStatus",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x",
+                    "ActiveStatus"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Completed",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Courses"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Eligible",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "AdvancedClasses"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "Eligible students must obtain advisor approval to take advanced classes.",
+        "fol": "∀x.((Student(x) AND Eligible(x)) IMPLIES Obtain(x, AdvisorApproval))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Eligible",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Obtain",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "AdvisorApproval"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "Sarah has active student status.",
+        "fol": "HasStatus(Sarah, ActiveStudent)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "HasStatus",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sarah",
+            "ActiveStudent"
+          ]
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "Sarah has completed 4 courses.",
+        "fol": "Completed(Sarah, 4courses)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Completed",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sarah",
+            "4courses"
+          ]
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "Sarah has obtained advisor approval.",
+        "fol": "ObtainedAdvisorApproval(Sarah)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "ObtainedAdvisorApproval",
+            "arg_sorts": [
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Sarah"
+          ]
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "∀s (EligibleForInternship(s) ↔ (AccumulatedCredits(s) ≥ 0.65 * TotalCredits(Program(s))))",
+      "TotalCredits(TrainingProgram) = 120",
+      "AccumulatedCredits(Hà) = 80",
+      "∀s (EligibleForInternship(s) → SubmittedApplication(s, Before(June1)))",
+      "SubmittedApplication(Hà, May15)",
+      "ElectiveCredits(TrainingProgram) = 30",
+      "CountedElectiveCredits(TrainingProgram, Internship) = 20",
+      "AccumulatedCredits(Vinh) = 75",
+      "Program(Vinh) = TrainingProgram",
+      "∀s (GPA(s) < 2.5 → RequiresRemedialCourse(s))",
+      "GPA(Hà) = 3.2",
+      "¬RequiresRemedialCourse(Hà)",
+      "InternshipCycle(Summer) ∧ InternshipCycle(Fall)",
+      "Priority(Summer, Seniors)",
+      "Status(Hà) = Junior ∧ ApplyingFor(Hà, Fall)",
+      "∀s (EligibleForInternship(s) → ApprovedByAdvisor(s))",
+      "ApprovedByAdvisor(Hà)",
+      "¬SubmittedApplication(Vinh, Before(June1))",
+      "ElectiveCreditsAccumulated(Vinh) = 10"
+    ],
+    "nl": [
+      "Students must accumulate at least 65% of the total credits of their training program to be eligible for an internship.",
+      "The training program has a total of 120 credits.",
+      "Hà has accumulated 80 credits in the training program.",
+      "Students must submit an internship application by June 1st to be considered.",
+      "Hà submitted her application on May 15th.",
+      "The training program includes 30 credits of elective courses, but only 20 credits are counted toward the internship requirement.",
+      "Another student, Vinh, has accumulated 75 credits and is also in the training program.",
+      "Students with a GPA below 2.5 are required to take a remedial course before interning.",
+      "Hà’s GPA is 3.2, and she has no remedial requirements.",
+      "Internships are offered in two cycles: summer and fall, with summer priority for seniors.",
+      "Hà is a junior and applying for a fall internship.",
+      "The program advisor must approve all internship applications, and Hà’s was approved.",
+      "Vinh missed the application deadline and accumulated only 10 elective credits."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "Students must accumulate at least 65% of the total credits of their training program to be eligible for an internship.",
+        "fol": "∀x.((Student(x) AND Accumulated(x, Credits, TrainingProgram)) IMPLIES Eligible(x, Internship))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Accumulated",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Credits",
+                  "TrainingProgram"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Eligible",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Internship"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "The training program has a total of 120 credits.",
+        "fol": "Has(TrainingProgram, TotalCredits)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Has",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "TrainingProgram",
+            "TotalCredits"
+          ]
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "Hà has accumulated 80 credits in the training program.",
+        "fol": "Accumulated(Hà, 80credits, TrainingProgram)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Accumulated",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Hà",
+            "80credits",
+            "TrainingProgram"
+          ]
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "Students must submit an internship application by June 1st to be considered.",
+        "fol": "∀x.((Student(x) AND Submit(x, InternshipApplication)) IMPLIES NOT(Consider(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Submit",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "InternshipApplication"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Consider",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "Hà submitted her application on May 15th.",
+        "fol": "Submitted(Hà, Application)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Submitted",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Hà",
+            "Application"
+          ]
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "The training program includes 30 credits of elective courses, but only 20 credits are counted toward the internship requirement.",
+        "fol": "(Includes(TrainingProgram, CreditsElectiveCourses) AND CountedToward(20credits, InternshipRequirement))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Includes",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "TrainingProgram",
+              "CreditsElectiveCourses"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "CountedToward",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "20credits",
+              "InternshipRequirement"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "Another student, Vinh, has accumulated 75 credits and is also in the training program.",
+        "fol": "InTrainingProgram(x)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "InTrainingProgram",
+            "arg_sorts": [
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "x"
+          ]
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "Students with a GPA below 2.5 are required to take a remedial course before interning.",
+        "fol": "∀x.((Student(x) AND HasGPA(x, Below25)) IMPLIES (Take(x, RemedialCourse) AND Required(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "HasGPA",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Below25"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Take",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "RemedialCourse"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Required",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "Hà’s GPA is 3.2, and she has no remedial requirements.",
+        "fol": "(HasGPA(Hà, 3.2) AND NOT(RemedialRequirements(Hà)))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "HasGPA",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": [
+                "GPA"
+              ]
+            },
+            "arguments": [
+              "Hà",
+              "3.2"
+            ]
+          },
+          "right": {
+            "type": "logical",
+            "operator": "NOT",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "RemedialRequirements",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "Hà"
+              ]
+            },
+            "right": null
+          }
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "Internships are offered in two cycles: summer and fall, with summer priority for seniors.",
+        "fol": "∀x.(((Internship(x) AND Offered(x)) AND Offered(x, Fall)) IMPLIES HasSummerPriority(x, Seniors))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Internship",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Offered",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Offered",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Fall"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "HasSummerPriority",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Seniors"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "Hà is a junior and applying for a fall internship.",
+        "fol": "(Junior(Hà) AND ApplyingFor(Hà, FallInternship))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Junior",
+              "arg_sorts": [
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Hà"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "ApplyingFor",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Hà",
+              "FallInternship"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "The program advisor must approve all internship applications, and Hà’s was approved.",
+        "fol": "∀x[InternshipApplication(x)].(Approved(x, ProgramAdvisor))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Approved",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "x",
+              "ProgramAdvisor"
+            ]
+          },
+          "restrictor": {
+            "type": "atomic",
+            "predicate": {
+              "name": "InternshipApplication",
+              "arg_sorts": [
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "x"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-13",
+        "original_text": "Vinh missed the application deadline and accumulated only 10 elective credits.",
+        "fol": "(Missed(Vinh, ApplicationDeadline) AND Accumulated(Vinh, ElectiveCredits))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Missed",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Vinh",
+              "ApplicationDeadline"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Accumulated",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Vinh",
+              "ElectiveCredits"
+            ]
+          }
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "∀x (AtBK(x) ∧ StudySchedule(x) → RegisterDorm(x))",
+      "∀x (StudySchedule(x) ↔ (RegisterSubject(x) ∨ FirstSemester(x)))",
+      "∀x ((Fail(x) ∨ Dropout(x)) → ¬RegisterDorm(x))",
+      "FirstSemester(Tuan)"
+    ],
+    "nl": [
+      "Students in BK university can register in BK dormitory if they have a studying schedule.",
+      "To have a studying schedule, they need to register subjects or be registered by the school for the first semester.",
+      "They cannot stay in BK dormitory if they fail or drop out of school.",
+      "Tuan is in the first semester."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "Students in BK university can register in BK dormitory if they have a studying schedule.",
+        "fol": "∀x.(((Student(x) AND InBKUniversity(x)) AND Has(x, StudyingSchedule)) IMPLIES Register(x, BKDormitory))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Student",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "InBKUniversity",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Has",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "StudyingSchedule"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Register",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "BKDormitory"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "To have a studying schedule, they need to register subjects or be registered by the school for the first semester.",
+        "fol": "∀x.((Student(x) AND Registered(x, School, FirstSemester)) IMPLIES Register(x, Subjects))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Registered",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "School",
+                  "FirstSemester"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Register",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Subjects"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "They cannot stay in BK dormitory if they fail or drop out of school.",
+        "fol": "∀x.((Student(x) AND Fail(x)) IMPLIES NOT(Stay(x, BKDormitory)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Fail",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Stay",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "BKDormitory"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "Tuan is in the first semester.",
+        "fol": "InSemester(Tuan)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "InSemester",
+            "arg_sorts": [
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Tuan"
+          ]
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "Exists(x, Predicts(x))",
+      "ForAll(x, RequiresTrainingData(x))",
+      "∀x (¬UsesDeepLearning(x) → ¬Predicts(x))",
+      "ForAll(x, UsesDeepLearning(x))",
+      "Exists(x, PerformsClassification(x))",
+      "∀x (Trained(x) → HighAccuracy(x))",
+      "∀x (¬PerformsClassification(x) → ¬UsesDeepLearning(x))",
+      "∀x (¬Predicts(x) → ¬PerformsClassification(x))",
+      "∀x (¬UsesDeepLearning(x) → ¬HasSufficientData(x))",
+      "((¬UsesDeepLearning(x) → ¬HasSufficientData(x)) → ForAll(x, RequiresTrainingData(x)))",
+      "∀x (UsesDeepLearning(x) → HasSufficientData(x))",
+      "ForAll(x, PerformsClassification(x))",
+      "∀x (Predicts(x) → HasSufficientData(x))",
+      "∀x (¬Predicts(x) → ¬RequiresTrainingData(x))",
+      "∀x (PerformsClassification(x) → RequiresTrainingData(x))"
+    ],
+    "nl": [
+      "There exists at least one AI model that can make predictions.",
+      "All AI models require training data.",
+      "If an AI system does not use deep learning, then it cannot make predictions.",
+      "All AI models utilize deep learning.",
+      "There exists at least one AI model that performs classification.",
+      "If an AI model is trained, then it can achieve high accuracy.",
+      "If an AI model does not perform classification, then it does not utilize deep learning.",
+      "If an AI model cannot make predictions, then it does not perform classification.",
+      "If an AI model does not use deep learning, then it does not have sufficient data.",
+      "If the inability to use deep learning implies a lack of sufficient data, then all AI models require training data.",
+      "If an AI model uses deep learning, then it has sufficient data.",
+      "All AI models perform classification.",
+      "If an AI model can make predictions, then it has sufficient data.",
+      "If an AI model cannot make predictions, then it does not require training data.",
+      "If an AI model performs classification, then it requires training data."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "There exists at least one AI model that can make predictions.",
+        "fol": "∃x.(AIModel(x) AND MakePredictions(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "EXISTS",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "AIModel",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "MakePredictions",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "All AI models require training data.",
+        "fol": "∀x.(AIModel(x) IMPLIES Requires(x, TrainingData))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "AIModel",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Requires",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "TrainingData"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "If an AI system does not use deep learning, then it cannot make predictions.",
+        "fol": "∀x.((AISystem(x) AND NOT(Use(x, DeepLearning))) IMPLIES NOT(MakePredictions(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AISystem",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Use",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x",
+                    "DeepLearning"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "MakePredictions",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "All AI models utilize deep learning.",
+        "fol": "∀x.(AIModel(x) IMPLIES Utilize(x, DeepLearning))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "AIModel",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Utilize",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "DeepLearning"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "There exists at least one AI model that performs classification.",
+        "fol": "∃x.(AIModel(x) AND PerformsClassification(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "EXISTS",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "AIModel",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "PerformsClassification",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "If an AI model is trained, then it can achieve high accuracy.",
+        "fol": "∀x.((AIModel(x) AND Trained(x)) IMPLIES Achieve(x, HighAccuracy))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Trained",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Achieve",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "HighAccuracy"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "If an AI model does not perform classification, then it does not utilize deep learning.",
+        "fol": "∀x.((AIModel(x) AND NOT(PerformClassification(x))) IFF NOT(Utilize(x, DeepLearning)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "PerformClassification",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Utilize",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "DeepLearning"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "If an AI model cannot make predictions, then it does not perform classification.",
+        "fol": "∀x.((AIModel(x) AND NOT(MakePredictions(x))) IFF NOT(PerformClassification(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "MakePredictions",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "PerformClassification",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "If an AI model does not use deep learning, then it does not have sufficient data.",
+        "fol": "∀x.((AIModel(x) AND NOT(Use(x, DeepLearning))) IMPLIES NOT(Have(x, SufficientData)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Use",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x",
+                    "DeepLearning"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Have",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "SufficientData"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "If the inability to use deep learning implies a lack of sufficient data, then all AI models require training data.",
+        "fol": "((NOT(UnableToUseDeepLearning(DeepLearning)) IMPLIES ∃x[Lack(x, SufficientData)].(X(x))) IMPLIES ∀y[AIModel(y)].(Requires(y, TrainingData)))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "UnableToUseDeepLearning",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "DeepLearning"
+                ]
+              },
+              "right": null
+            },
+            "right": {
+              "type": "quantified",
+              "quantifier": "EXISTS",
+              "variable": "x",
+              "body": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "X",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "restrictor": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Lack",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "SufficientData"
+                ]
+              }
+            }
+          },
+          "right": {
+            "type": "quantified",
+            "quantifier": "FORALL",
+            "variable": "y",
+            "body": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Requires",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "y",
+                "TrainingData"
+              ]
+            },
+            "restrictor": {
+              "type": "atomic",
+              "predicate": {
+                "name": "AIModel",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "y"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "If an AI model uses deep learning, then it has sufficient data.",
+        "fol": "∀x.((AIModel(x) AND UsesDeepLearning(x)) IMPLIES HasData(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "UsesDeepLearning",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "HasData",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "All AI models perform classification.",
+        "fol": "∀x.(AIModel(x) IMPLIES PerformsClassification(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "AIModel",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "PerformsClassification",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-13",
+        "original_text": "If an AI model can make predictions, then it has sufficient data.",
+        "fol": "∀x.((AIModel(x) AND MakePredictions(x)) IMPLIES Has(x, SufficientData))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "MakePredictions",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Has",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "SufficientData"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-14",
+        "original_text": "If an AI model cannot make predictions, then it does not require training data.",
+        "fol": "∀x.((AIModel(x) AND NOT(MakePredictions(x))) IFF NOT(Require(x, TrainingData)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "MakePredictions",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Require",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "TrainingData"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-15",
+        "original_text": "If an AI model performs classification, then it requires training data.",
+        "fol": "∀x.((AIModel(x) AND PerformsClassification(x)) IMPLIES Requires(x, TrainingData))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "AIModel",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "PerformsClassification",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Requires",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "TrainingData"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "∀x (Studies(x) → PassesExam(x))",
+      "∃x (Researches(x))",
+      "∀x (TakesTest(x) → PassesExam(x))",
+      "(∀x (TakesTest(x) → PassesExam(x))) → (∀x (Studies(x) → PassesExam(x)))",
+      "(∀x (Studies(x) → PassesExam(x))) → ((∀x (TakesTest(x) → PassesExam(x))) → (∀x (Studies(x) → PassesExam(x))))",
+      "∀x (EnrolledInUniversity(x))",
+      "∀x (Researches(x))"
+    ],
+    "nl": [
+      "If a student studies, then they will pass the exam.",
+      "There exists at least one student who does research.",
+      "If a student takes a test, then they will pass the exam.",
+      "If taking a test leads to passing the exam, then studying also leads to passing the exam.",
+      "If studying leads to passing the exam, then the previous rule (if taking a test leads to passing the exam, then studying also leads to passing the exam) holds.",
+      "All students are enrolled in the university.",
+      "All students conduct research."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "If a student studies, then they will pass the exam.",
+        "fol": "∀x.((Student(x) AND Studies(x)) IMPLIES Pass(x, Exam))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Studies",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Pass",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Exam"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "There exists at least one student who does research.",
+        "fol": "∃x.(Student(x) AND Research(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "EXISTS",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Student",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Research",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "If a student takes a test, then they will pass the exam.",
+        "fol": "∀x.((Student(x) AND Take(x, Test)) IMPLIES Pass(x, Exam))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Take",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Test"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Pass",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Exam"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "If taking a test leads to passing the exam, then studying also leads to passing the exam.",
+        "fol": "(LeadsTo(Test, Exam) IMPLIES LeadsTo(Study, Exam))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "LeadsTo",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Test",
+              "Exam"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "LeadsTo",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": [
+                "LeadsToPass"
+              ]
+            },
+            "arguments": [
+              "Study",
+              "Exam"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "If studying leads to passing the exam, then the previous rule (if taking a test leads to passing the exam, then studying also leads to passing the exam) holds.",
+        "fol": "(LeadsTo(Study, Exam) IMPLIES (LeadsTo(Test, Exam) IMPLIES LeadsTo(Study, Exam)))",
+        "ast": {
+          "type": "logical",
+          "operator": "IMPLIES",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "LeadsTo",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": [
+                "LeadsToPass"
+              ]
+            },
+            "arguments": [
+              "Study",
+              "Exam"
+            ]
+          },
+          "right": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "LeadsTo",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "Test",
+                "Exam"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "LeadsTo",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": [
+                  "LeadsToPass"
+                ]
+              },
+              "arguments": [
+                "Study",
+                "Exam"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "All students are enrolled in the university.",
+        "fol": "Enrolled(x, University)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Enrolled",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "x",
+            "University"
+          ]
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "All students conduct research.",
+        "fol": "∀x.(Student(x) IMPLIES ConductsResearch(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Student",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "ConductsResearch",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "ForAll(x, ThoroughlyTested(x))",
+      "ForAll(x, ThoroughlyTested(x) → HighlyEfficient(x))",
+      "ForAll(x, WellDesignedMaintainable(x) → Robust(x))",
+      "ForAll(x, WellDesignedMaintainable(x) → ModernCppStandards(x))",
+      "ForAll(x, WellDesignedMaintainable(x))",
+      "ForAll(x, Portable(x) → WellDesignedMaintainable(x))",
+      "ForAll(x, HighlyEfficient(x) → WellDesignedMaintainable(x))",
+      "ForAll(x, Robust(x))",
+      "(ForAll(x, WellDesignedMaintainable(x) → Robust(x)) → ForAll(x, Robust(x)))",
+      "(ForAll(x, WellDesignedMaintainable(x) → ModernCppStandards(x)) → ForAll(x, HighlyEfficient(x) → WellDesignedMaintainable(x)))",
+      "Exists(x, Portable(x))",
+      "ForAll(x, ThoroughlyTested(x) → Portable(x))",
+      "ForAll(x, HighlyEfficient(x) → ThoroughlyTested(x))",
+      "ForAll(x, ThoroughlyTested(x) → WellDesignedMaintainable(x))",
+      "ForAll(x, ¬ThoroughlyTested(x) → ¬ModernCppStandards(x))",
+      "ForAll(x, ¬HighlyEfficient(x) → ¬Portable(x))",
+      "ForAll(x, HighlyEfficient(x))"
+    ],
+    "nl": [
+      "Every C++ project is thoroughly tested.",
+      "If a C++ project is thoroughly tested, then it is highly efficient.",
+      "If a C++ project is well-designed and maintainable, then it is robust.",
+      "If a C++ project is well-designed and maintainable, then it adheres to modern C++ standards.",
+      "Every C++ project is well-designed and maintainable.",
+      "If a C++ project is portable, then it is well-designed and maintainable.",
+      "If a C++ project is highly efficient, then it is well-designed and maintainable.",
+      "Every C++ project is robust.",
+      "If every well-designed C++ project is robust, then every C++ project is robust.",
+      "If well-designed C++ projects adhere to modern C++ standards, then any C++ project that is highly efficient is well-designed and maintainable.",
+      "There exists at least one C++ project that is portable.",
+      "If a C++ project is thoroughly tested, then it is portable.",
+      "If a C++ project is highly efficient, then it is thoroughly tested.",
+      "If a C++ project is thoroughly tested, then it is well-designed and maintainable.",
+      "If a C++ project is not thoroughly tested, then it does not adhere to modern C++ standards.",
+      "If a C++ project is not highly efficient, then it is not portable.",
+      "Every C++ project is highly efficient."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "Every C++ project is thoroughly tested.",
+        "fol": "∀x.(Project(x) IMPLIES ThoroughlyTested(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Project",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "ThoroughlyTested",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "If a C++ project is thoroughly tested, then it is highly efficient.",
+        "fol": "∀x.((Project(x) AND ThoroughlyTested(x)) IMPLIES Efficient(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "ThoroughlyTested",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Efficient",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "If a C++ project is well-designed and maintainable, then it is robust.",
+        "fol": "∀x.(((Project(x) AND WellDesigned(x)) AND Maintainable(x)) IMPLIES Robust(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Project",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "WellDesigned",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Maintainable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Robust",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "If a C++ project is well-designed and maintainable, then it adheres to modern C++ standards.",
+        "fol": "∀x.(((Project(x) AND WellDesigned(x)) AND Maintainable(x)) IMPLIES Adheres(x, ModernCPlusPlusStandards))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Project",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "WellDesigned",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Maintainable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Adheres",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "ModernCPlusPlusStandards"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "Every C++ project is well-designed and maintainable.",
+        "fol": "∀x.(Project(x) IMPLIES (WellDesigned(x) AND Maintainable(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Project",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "WellDesigned",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Maintainable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "If a C++ project is portable, then it is well-designed and maintainable.",
+        "fol": "∀x.((Project(x) AND Portable(x)) IMPLIES (WellDesigned(x) AND Maintainable(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Portable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "WellDesigned",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Maintainable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "If a C++ project is highly efficient, then it is well-designed and maintainable.",
+        "fol": "∀x.((Project(x) AND Efficient(x)) IMPLIES (WellDesigned(x) AND Maintainable(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Efficient",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "WellDesigned",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Maintainable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "Every C++ project is robust.",
+        "fol": "∀x.(Project(x) IMPLIES Robust(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Project",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Robust",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "If every well-designed C++ project is robust, then every C++ project is robust.",
+        "fol": "∀x[WellDesigned(x, CPlusPlusProject)].(Robust(x) IMPLIES ∀y[Project(y)].(Robust(y)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Robust",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "quantified",
+              "quantifier": "FORALL",
+              "variable": "y",
+              "body": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Robust",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "y"
+                ]
+              },
+              "restrictor": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "y"
+                ]
+              }
+            }
+          },
+          "restrictor": {
+            "type": "atomic",
+            "predicate": {
+              "name": "WellDesigned",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "x",
+              "CPlusPlusProject"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "If well-designed C++ projects adhere to modern C++ standards, then any C++ project that is highly efficient is well-designed and maintainable.",
+        "fol": "∀x.((Project(x) AND Adheres(x, ModernCPlusPlusStandards)) IMPLIES WellDesignedAndMaintainable(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Adheres",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "ModernCPlusPlusStandards"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "WellDesignedAndMaintainable",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "There exists at least one C++ project that is portable.",
+        "fol": "∃x.(Project(x) AND Portable(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "EXISTS",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Project",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Portable",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "If a C++ project is thoroughly tested, then it is portable.",
+        "fol": "∀x.((Project(x) AND ThoroughlyTested(x)) IMPLIES Portable(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "ThoroughlyTested",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Portable",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-13",
+        "original_text": "If a C++ project is highly efficient, then it is thoroughly tested.",
+        "fol": "∀x.((Project(x) AND Efficient(x)) IMPLIES ThoroughlyTested(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Efficient",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "ThoroughlyTested",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-14",
+        "original_text": "If a C++ project is thoroughly tested, then it is well-designed and maintainable.",
+        "fol": "∀x.((Project(x) AND ThoroughlyTested(x)) IMPLIES (WellDesigned(x) AND Maintainable(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "ThoroughlyTested",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "WellDesigned",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Maintainable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-15",
+        "original_text": "If a C++ project is not thoroughly tested, then it does not adhere to modern C++ standards.",
+        "fol": "∀x.((Project(x) AND NOT(ThoroughlyTested(x))) IMPLIES NOT(Adhere(x, ModernCPlusPlusStandards)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "ThoroughlyTested",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Adhere",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "ModernCPlusPlusStandards"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-16",
+        "original_text": "If a C++ project is not highly efficient, then it is not portable.",
+        "fol": "∀x.((Project(x) AND NOT(Efficient(x))) IFF NOT(Portable(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IFF",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Project",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Efficient",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Portable",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-17",
+        "original_text": "Every C++ project is highly efficient.",
+        "fol": "∀x.(Project(x) IMPLIES Efficient(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Project",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Efficient",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "∀s (AllowedToEnterLab(s) ↔ (HasHealthInsurance(s) ∧ HasAccidentInsurance(s)))",
+      "HasHealthInsurance(Lan)",
+      "HasAccidentInsurance(Lan)",
+      "∀s ((LabOpen(Weekdays, Time_9AM_to_5PM) ∧ ¬SpecialEvent) → CanAccessLab(s))",
+      "∀s (InLab(s) ∧ ¬VirtualLab → MustWearGoggles(s))",
+      "Enrolled(Lan, Chemistry101)",
+      "RequiresLabAccess(Chemistry101, Tuesdays)",
+      "HasHealthInsurance(Kai)",
+      "¬HasAccidentInsurance(Kai)",
+      "∀s (GroupSize(s) > 3 → MustReserveEquipment(s, Duration_24Hours))",
+      "GroupSize(Lan) = 1",
+      "CompletedSafetyTraining(Lan)",
+      "∀s ((GPA(s) > 3.5 ∧ Approved(DrZee, s)) → ExtraLabHours(s))",
+      "GPA(Lan) = 3.8",
+      "WorksRegularHours(Lan)",
+      "¬AllowedToEnterLab(Kai)",
+      "∀e (Experiment(Chemistry101, e) → LabTemperature ≥ 20)"
+    ],
+    "nl": [
+      "Students are allowed to enter the laboratory to conduct experiments only if they have both health insurance and accident insurance.",
+      "Lan has both health insurance and accident insurance.",
+      "The laboratory is open from 9 AM to 5 PM on weekdays, unless there’s a special event.",
+      "Students must wear safety goggles in the lab, but this rule is waived for virtual labs.",
+      "Lan is enrolled in Chemistry 101, which requires lab access on Tuesdays.",
+      "Another student, Kai, has health insurance but no accident insurance.",
+      "Lab equipment must be reserved 24 hours in advance for groups larger than three.",
+      "Lan is working alone and doesn’t need to reserve equipment.",
+      "All students must complete a safety training course, though Lan completed hers last semester.",
+      "The lab supervisor, Dr. Zee, allows extra hours for students with a GPA above 3.5.",
+      "Lan’s GPA is 3.8, but she only works during regular hours.",
+      "Kai was denied lab access last week due to incomplete paperwork.",
+      "Chemistry 101 experiments require a minimum temperature of 20°C in the lab."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "Students are allowed to enter the laboratory to conduct experiments only if they have both health insurance and accident insurance.",
+        "fol": "∀x.(((Student(x) AND HasInsurance(x)) AND HasInsurance(x)) IMPLIES Enter(x, Laboratory, Experiments))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "logical",
+                "operator": "AND",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Student",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                },
+                "right": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "HasInsurance",
+                    "arg_sorts": [
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x"
+                  ]
+                }
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "HasInsurance",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Enter",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Laboratory",
+                "Experiments"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "Lan has both health insurance and accident insurance.",
+        "fol": "Has(Lan, HealthInsurance, AccidentInsurance)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Has",
+            "arg_sorts": [
+              "Entity",
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Lan",
+            "HealthInsurance",
+            "AccidentInsurance"
+          ]
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "The laboratory is open from 9 AM to 5 PM on weekdays, unless there’s a special event.",
+        "fol": "∀x.((Laboratory(x) AND Open(x)) IMPLIES Open(x, TimePeriod))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Laboratory",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Open",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Open",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "TimePeriod"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "Students must wear safety goggles in the lab, but this rule is waived for virtual labs.",
+        "fol": "∀x.((Student(x) AND InLab(x)) IMPLIES NOT(Wear(x, SafetyGoggles)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "InLab",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Wear",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "SafetyGoggles"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "Lan is enrolled in Chemistry 101, which requires lab access on Tuesdays.",
+        "fol": "(EnrolledIn(Lan, Chemistry101) AND Requires(Chemistry101, LabAccess))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "EnrolledIn",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Lan",
+              "Chemistry101"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Requires",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Chemistry101",
+              "LabAccess"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "Another student, Kai, has health insurance but no accident insurance.",
+        "fol": "(HasInsurance(x) AND NOT(Has(x, AccidentInsurance)))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "HasInsurance",
+              "arg_sorts": [
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "x"
+            ]
+          },
+          "right": {
+            "type": "logical",
+            "operator": "NOT",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Has",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "AccidentInsurance"
+              ]
+            },
+            "right": null
+          }
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "Lab equipment must be reserved 24 hours in advance for groups larger than three.",
+        "fol": "∀x.((LabEquipment(x) AND For(x, GroupsLargerThanThree)) IMPLIES Reserved(x, 24hours))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "LabEquipment",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "For",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "GroupsLargerThanThree"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Reserved",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "24hours"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "Lan is working alone and doesn’t need to reserve equipment.",
+        "fol": "(Working(Lan) AND NOT(Need(Lan, Equipment)))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Working",
+              "arg_sorts": [
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Lan"
+            ]
+          },
+          "right": {
+            "type": "logical",
+            "operator": "NOT",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Need",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "Lan",
+                "Equipment"
+              ]
+            },
+            "right": null
+          }
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "All students must complete a safety training course, though Lan completed hers last semester.",
+        "fol": "∀x.(Student(x) IMPLIES Complete(x, SafetyTrainingCourse))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Student",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Complete",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "SafetyTrainingCourse"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "The lab supervisor, Dr. Zee, allows extra hours for students with a GPA above 3.5.",
+        "fol": "∀x.((Student(x) AND HasGPA(x, Above35)) IMPLIES Get(x, ExtraHours))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "HasGPA",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Above35"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Get",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "ExtraHours"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "Lan’s GPA is 3.8, but she only works during regular hours.",
+        "fol": "(HasGPA(Lan's, 3.8) AND Works(Lan, RegularHours))",
+        "ast": {
+          "type": "logical",
+          "operator": "AND",
+          "left": {
+            "type": "atomic",
+            "predicate": {
+              "name": "HasGPA",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": [
+                "GPA"
+              ]
+            },
+            "arguments": [
+              "Lan's",
+              "3.8"
+            ]
+          },
+          "right": {
+            "type": "atomic",
+            "predicate": {
+              "name": "Works",
+              "arg_sorts": [
+                "Entity",
+                "Entity"
+              ],
+              "description": null,
+              "aliases": []
+            },
+            "arguments": [
+              "Lan",
+              "RegularHours"
+            ]
+          }
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "Kai was denied lab access last week due to incomplete paperwork.",
+        "fol": "Denied(Kai, LabAccess)",
+        "ast": {
+          "type": "atomic",
+          "predicate": {
+            "name": "Denied",
+            "arg_sorts": [
+              "Entity",
+              "Entity"
+            ],
+            "description": null,
+            "aliases": []
+          },
+          "arguments": [
+            "Kai",
+            "LabAccess"
+          ]
+        }
+      },
+      {
+        "id": "premise-13",
+        "original_text": "Chemistry 101 experiments require a minimum temperature of 20°C in the lab.",
+        "fol": "∀x.((Chemistry101Experiment(x) AND Requires(x, MinimumTemperature)) IMPLIES Requires(x, MinimumTemperature, Lab))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Chemistry101Experiment",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Requires",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "MinimumTemperature"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Requires",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "MinimumTemperature",
+                "Lab"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      }
+    ],
+    "error": null
+  },
+  {
+    "gold_fol": [
+      "∃x (LearningPython(x))",
+      "∀x (Student(x) → AccessPythonResources(x))",
+      "∀x (PracticesPython(x) → ImprovesCodingSkills(x))",
+      "∀x (¬PracticesPython(x) → ¬ImprovesCodingSkills(x))",
+      "∀x (Student(x) → CanJoinCodingChallenges(x))",
+      "∀x (SolvesChallenges(x) → GainsProblemSolvingSkills(x))",
+      "∀x (GainsProblemSolvingSkills(x) → ProficientPython(x))",
+      "∀x (ProficientPython(x) → QualifiesInternship(x))",
+      "∀x (GetsInternship(x) → GainsRealWorldExperience(x))",
+      "∀x (GainsRealWorldExperience(x) → ImprovesJobProspects(x))",
+      "∀x (¬PracticesCoding(x) → StrugglesTechnicalInterviews(x))",
+      "∀x (ParticipatesOpenSource(x) → BuildsStrongPortfolio(x))"
+    ],
+    "nl": [
+      "At least one student is learning Python.",
+      "All students can access Python learning resources.",
+      "If a student practices Python regularly, they improve their coding skills.",
+      "If a student does not practice Python, their coding skills do not improve.",
+      "All students can participate in coding challenges.",
+      "If a student solves coding challenges, they gain problem-solving skills.",
+      "If a student gains problem-solving skills, they become proficient in Python.",
+      "If a student is proficient in Python, they qualify for software development internships.",
+      "If a student gets an internship, they gain real-world experience.",
+      "If a student gains real-world experience, their job prospects improve.",
+      "If a student does not practice coding, they may struggle in technical interviews.",
+      "If a student participates in open-source projects, they build a strong portfolio."
+    ],
+    "parsed": [
+      {
+        "id": "premise-1",
+        "original_text": "At least one student is learning Python.",
+        "fol": "∃x.(Student(x) AND LearningPython(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "EXISTS",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "AND",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Student",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "LearningPython",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-2",
+        "original_text": "All students can access Python learning resources.",
+        "fol": "∀x.(Student(x) IMPLIES Access(x, PythonLearningResources))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Student",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Access",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "PythonLearningResources"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-3",
+        "original_text": "If a student practices Python regularly, they improve their coding skills.",
+        "fol": "∀x.((Student(x) AND PracticesPython(x, Regularly)) IMPLIES Improve(x, CodingSkills))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "PracticesPython",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Regularly"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Improve",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "CodingSkills"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-4",
+        "original_text": "If a student does not practice Python, their coding skills do not improve.",
+        "fol": "∀x.((Student(x) AND NOT(Practice(x, Python))) IMPLIES NOT(Improve(x)))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Practice",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x",
+                    "Python"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "logical",
+              "operator": "NOT",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Improve",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": null
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-5",
+        "original_text": "All students can participate in coding challenges.",
+        "fol": "∀x.(Student(x) IMPLIES Participate(x, CodingChallenges))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Student",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Participate",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "CodingChallenges"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-6",
+        "original_text": "If a student solves coding challenges, they gain problem-solving skills.",
+        "fol": "∀x.((Student(x) AND Solves(x, CodingChallenges)) IMPLIES GainsProblemSolvingSkills(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Solves",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "CodingChallenges"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "GainsProblemSolvingSkills",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-7",
+        "original_text": "If a student gains problem-solving skills, they become proficient in Python.",
+        "fol": "∀x.((Student(x) AND GainsProblemSolvingSkills(x)) IMPLIES BecomesProficient(x, Python))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "GainsProblemSolvingSkills",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "BecomesProficient",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "Python"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-8",
+        "original_text": "If a student is proficient in Python, they qualify for software development internships.",
+        "fol": "∀x.((Student(x) AND ProficientInPython(x)) IMPLIES Qualifies(x, SoftwareDevelopmentInternships))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "ProficientInPython",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Qualifies",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "SoftwareDevelopmentInternships"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-9",
+        "original_text": "If a student gets an internship, they gain real-world experience.",
+        "fol": "∀x.((Student(x) AND Gets(x, Internship)) IMPLIES GainsRealWorldExperience(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Gets",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "Internship"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "GainsRealWorldExperience",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-10",
+        "original_text": "If a student gains real-world experience, their job prospects improve.",
+        "fol": "∀x.((Student(x) AND GainsRealWorldExperience(x)) IMPLIES Improve(x, JobProspects))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "GainsRealWorldExperience",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Improve",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "JobProspects"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-11",
+        "original_text": "If a student does not practice coding, they may struggle in technical interviews.",
+        "fol": "∀x.((Student(x) AND NOT(Practice(x, Coding))) IMPLIES Struggle(x))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "logical",
+                "operator": "NOT",
+                "left": {
+                  "type": "atomic",
+                  "predicate": {
+                    "name": "Practice",
+                    "arg_sorts": [
+                      "Entity",
+                      "Entity"
+                    ],
+                    "description": null,
+                    "aliases": []
+                  },
+                  "arguments": [
+                    "x",
+                    "Coding"
+                  ]
+                },
+                "right": null
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Struggle",
+                "arg_sorts": [
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      },
+      {
+        "id": "premise-12",
+        "original_text": "If a student participates in open-source projects, they build a strong portfolio.",
+        "fol": "∀x.((Student(x) AND Participates(x, OpenSourceProjects)) IMPLIES Build(x, StrongPortfolio))",
+        "ast": {
+          "type": "quantified",
+          "quantifier": "FORALL",
+          "variable": "x",
+          "body": {
+            "type": "logical",
+            "operator": "IMPLIES",
+            "left": {
+              "type": "logical",
+              "operator": "AND",
+              "left": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Student",
+                  "arg_sorts": [
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x"
+                ]
+              },
+              "right": {
+                "type": "atomic",
+                "predicate": {
+                  "name": "Participates",
+                  "arg_sorts": [
+                    "Entity",
+                    "Entity"
+                  ],
+                  "description": null,
+                  "aliases": []
+                },
+                "arguments": [
+                  "x",
+                  "OpenSourceProjects"
+                ]
+              }
+            },
+            "right": {
+              "type": "atomic",
+              "predicate": {
+                "name": "Build",
+                "arg_sorts": [
+                  "Entity",
+                  "Entity"
+                ],
+                "description": null,
+                "aliases": []
+              },
+              "arguments": [
+                "x",
+                "StrongPortfolio"
+              ]
+            }
+          },
+          "restrictor": null
+        }
+      }
+    ],
+    "error": null
+  }
+]

@@ -64,13 +64,24 @@ async def run_type1_pipeline(
 
     # --- Z3 routing ----------------------------------------------------------
     solver_used = solver is not None and premise_bundle.verified and spec.supported
+    sort_conflict = False
     if solver_used:
         assert solver is not None
-        answer = _solve(solver, premise_fols, spec, q_bundle)
+        try:
+            raw_answer = _solve(solver, premise_fols, spec, q_bundle)
+        except ValueError as exc:
+            if "SORT_CONFLICT" in str(exc):
+                raw_answer = _SOLVER_UNCERTAIN
+                sort_conflict = True
+            else:
+                raise
     else:
-        answer = _SOLVER_UNCERTAIN
+        raw_answer = _SOLVER_UNCERTAIN
 
-    answer = _normalize_answer(answer)
+    cause = _uncertainty_cause(
+        solver, premise_bundle, spec, raw_answer, sort_conflict
+    )
+    answer = _normalize_answer(raw_answer)
 
     # --- Debug FOL text -------------------------------------------------------
     premise_items = [
@@ -97,22 +108,20 @@ async def run_type1_pipeline(
         answer=answer,
         explanation=(
             f"Z3 {spec.solver_mode} result: {answer}"
-            if solver_used
-            else (
-                "Z3 solver skipped: no solver configured, premise verification "
-                "failed, or the question is unsupported."
-            )
+            if cause is None
+            else f"Answer: {answer} (cause: {cause})"
         ),
         fol=fol_text,
         cot=[
             (
                 "Premise verification passed."
                 if premise_bundle.verified
-                else "Premise verification failed; solver execution was skipped."
+                else "Premise verification blocked; solver execution was skipped."
             ),
             f"Question classified as {spec.question_format}/{spec.solver_mode}"
             + (f" ({spec.can_interpretation})" if spec.can_interpretation != "none" else ""),
-            f"Pipeline returned: {answer}",
+            f"Pipeline returned: {answer}"
+            + (f" (cause: {cause})" if cause is not None else ""),
         ],
         premises=premise_bundle.premises,
         confidence=None,
@@ -120,8 +129,11 @@ async def run_type1_pipeline(
             "stage": "z3_entailment",
             "solver_available": solver is not None,
             "solver_used": solver_used,
+            "uncertainty_cause": cause,
             "premise_bundle_verified": premise_bundle.verified,
             "premise_verification_issues": list(premise_bundle.verification_issues),
+            "premise_blocking_issues": list(premise_bundle.blocking_issues),
+            "premise_warnings": list(premise_bundle.warnings),
             "premise_predicate_renames": premise_bundle.predicate_renames,
             "query_spec": _query_spec_to_dict(q_bundle),
             "premise_schema": {
@@ -137,6 +149,55 @@ async def run_type1_pipeline(
             "parsed_question": question_items,
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Uncertainty attribution
+# ---------------------------------------------------------------------------
+
+# Maps a QuerySpec issue prefix to its uncertainty_cause bucket.
+_ISSUE_CAUSE_MAP = (
+    ("QUERY_MODE_DEFERRED", "QUERY_MODE_DEFERRED"),
+    ("QUERY_NO_CLAIM", "NO_CLAIM_FOL"),
+    ("QUERY_NO_YNU_OPTIONS", "NO_SOLVABLE_OPTIONS"),
+    ("QUERY_NO_SOLVABLE_OPTIONS", "NO_SOLVABLE_OPTIONS"),
+    ("QUERY_OPTIONS_UNSUPPORTED", "NO_SOLVABLE_OPTIONS"),
+    ("QUERY_OPEN_WH_UNSUPPORTED", "QUERY_UNSUPPORTED"),
+)
+
+
+def _uncertainty_cause(
+    solver: FOLSolver | None,
+    premise_bundle: Any,
+    spec: Any,
+    raw_answer: str,
+    sort_conflict: bool,
+) -> str | None:
+    """Attribute *why* the pipeline could not return a definite answer.
+
+    Returns None when the solver ran and produced a definite Yes/No/label.
+    Otherwise returns one bucket from the uncertainty taxonomy so eval can
+    separate real logical uncertainty from parser/verifier/mode gaps.
+    """
+
+    if sort_conflict:
+        return "Z3_SORT_CONFLICT"
+    if solver is None:
+        return "SOLVER_NOT_CONFIGURED"
+    if not premise_bundle.verified:
+        first = premise_bundle.blocking_issues[0] if premise_bundle.blocking_issues else "UNKNOWN"
+        return f"PREMISE_VERIFICATION_BLOCKED:{first.split(':')[0]}"
+    if not spec.supported:
+        for issue in spec.issues:
+            for prefix, bucket in _ISSUE_CAUSE_MAP:
+                if issue.startswith(prefix):
+                    if bucket == "QUERY_MODE_DEFERRED":
+                        return f"QUERY_MODE_DEFERRED:{spec.solver_mode}"
+                    return bucket
+        return "QUERY_UNSUPPORTED"
+    if raw_answer == _SOLVER_UNCERTAIN:
+        return "Z3_TRUE_UNCERTAIN"
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -201,13 +262,30 @@ def _normalize_answer(answer: str) -> str:
 # Option normalisation
 # ---------------------------------------------------------------------------
 
+_YNU_TOKENS = frozenset({"yes", "no", "uncertain", "unknown"})
+
+
+def _is_ynu_option_list(values: list[str]) -> bool:
+    """True when every option is a bare Yes/No/Uncertain token (a polar set)."""
+    return bool(values) and all(str(v).strip().lower() in _YNU_TOKENS for v in values)
+
+
 def _normalize_options(options: Any) -> dict[str, str]:
-    """Return {label: text} for MCQ options, or {} for YNU."""
+    """Return {label: text} for MCQ options, or {} for YNU/polar.
+
+    A list of bare Yes/No/Uncertain tokens is NOT a multiple-choice set — it is
+    the answer space of a polar question, so it normalizes to {} (the pipeline
+    then routes through the native YNU path instead of treating it as MCQ).
+    """
     if options is None:
         return {}
     if isinstance(options, dict):
+        if _is_ynu_option_list(list(options.values())):
+            return {}
         return {str(k): str(v) for k, v in options.items()}
     if isinstance(options, list):
+        if _is_ynu_option_list(options):
+            return {}
         return {chr(ord("A") + i): str(v) for i, v in enumerate(options) if i < 5}
     return {}
 

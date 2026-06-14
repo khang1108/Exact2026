@@ -65,7 +65,7 @@ def test_ynu_labels_are_not_treated_as_mcq_conclusions() -> None:
 def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
     calls: list[tuple[str, str | None]] = []
 
-    async def fake_type1(payload, parser, solver, refiner):
+    async def fake_type1(payload, premise_parser, question_parser, solver):
         calls.append(("type1", payload.query_id))
         return _response(TaskType.TYPE1_LOGIC, payload.query_id)
 
@@ -82,9 +82,9 @@ def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
     request = SimpleNamespace(
         app=SimpleNamespace(
             state=SimpleNamespace(
-                type1_fol_parser=object(),
+                type1_premise_parser=object(),
+                type1_question_parser=object(),
                 type1_solver=object(),
-                type1_refiner=None,
             )
         )
     )

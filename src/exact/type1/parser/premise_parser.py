@@ -83,14 +83,19 @@ class PremiseParser:
         trees, renames = schema.canonicalize(draft_trees)
         issues = _verify_bundle(normalized, trees, schema, frames)
 
+        blocking = tuple(i for i in issues if _is_blocking_issue(i))
+        warnings = tuple(i for i in issues if not _is_blocking_issue(i))
+
         return PremiseParseBundle(
             premises=normalized,
             draft_trees=draft_trees,
             schema=schema,
             trees=trees,
             predicate_renames=renames,
-            verified=not issues,
+            verified=not blocking,
             verification_issues=tuple(issues),
+            blocking_issues=blocking,
+            warnings=warnings,
         )
 
 
@@ -114,6 +119,25 @@ _NON_BLOCKING_SCHEMA_DIAGNOSTICS = (
     "SCHEMA_SIMILAR_PREDICATES:",
     "GENERIC_CLASS_USED_AS_CONSTANT:",  # auto-repaired before schema build; residual only
 )
+
+# Only structural failures that make the AST unusable block the solver. Soft
+# diagnostics (numeric/temporal lost, direction checks, similar predicates,
+# entity-encoded constants, arity drift) are warnings: the solver still runs and
+# the warning is surfaced. See uncertainty_cause in the pipeline for routing.
+_BLOCKING_ISSUE_PREFIXES = (
+    "AST_INVALID",
+    "NO_AST_FOR_PREMISE",
+    "RAW_FOL_PARSE_FAILED",
+    "expected one AST per premise",
+    # "not necessarily" compiles to a plain implication that asserts the
+    # opposite of the intended epistemic modality — the AST is actively wrong,
+    # so it must block rather than mislead the solver.
+    "UNSUPPORTED_MODAL_NOT_NECESSARILY",
+)
+
+
+def _is_blocking_issue(issue: str) -> bool:
+    return issue.startswith(_BLOCKING_ISSUE_PREFIXES)
 
 _RULE_LIKE_KINDS = frozenset({
     "universal_rule", "deontic_rule", "permission_rule",

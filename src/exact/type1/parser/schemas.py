@@ -385,6 +385,10 @@ class PremiseParseBundle:
     predicate_renames: list[dict[str, object]]
     verified: bool
     verification_issues: tuple[str, ...]
+    # Severity split: only blocking_issues set verified=False and skip the solver;
+    # warnings are surfaced but the solver still runs (lower confidence).
+    blocking_issues: tuple[str, ...] = ()
+    warnings: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

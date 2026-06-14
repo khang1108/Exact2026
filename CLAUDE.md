@@ -4,6 +4,17 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+## 0. Goal
+Build an optimized QA system for logical questions. It has two types: MCQ and Yes No Uncertain. This challenge belongs to [EXACT 2026](ura.hcmut.edu.vn/exact)
+
+You should survey top-tier papers since 2025 about NeuroSymbolic Solver. The big problem is ``how to optimize translating NL Premises/Questions/Options to FOL/Claim/Fact or any logic representation to feed to Z3 Solver.
+
+**Note**: API is open at ``api.iamphuckhang.dev``. I always run a Virtual Machine that syncs to our current repo and always watch to the latest to pull to the server. So that the server is always up-to-date to the repo. 
+
+- Do not use pyest purely.
+- Should use API to test.
+- If need create an endpoint and commit + push to repo (wait ~ 15s) for reloading server.
+
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
