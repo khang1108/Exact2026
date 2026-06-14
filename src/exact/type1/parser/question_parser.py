@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 from exact.type1.parser import query_verifier
 from exact.type1.parser.claim_parser import ClaimParser
 from exact.type1.parser.oparser import OParser
-from exact.type1.parser.options import extract_mcq
+from exact.type1.parser.options import MCQExtraction, extract_mcq
 from exact.type1.parser.parser import FOLParser
 from exact.type1.parser.qparser import QParser
 from exact.type1.parser.schemas import (
@@ -60,6 +60,8 @@ class QuestionSideParser:
         question: str,
         options: dict[str, str] | None,
         schema: PremiseSchema,
+        *,
+        extraction: MCQExtraction | None = None,
     ) -> QuestionParseBundle:
         """Classify the question and build a verified QuerySpec."""
 
@@ -79,7 +81,8 @@ class QuestionSideParser:
 
         if is_mcq:
             assert options is not None
-            extraction = extract_mcq(question)
+            if extraction is None:
+                extraction = extract_mcq(question)
             stem = extraction.stem if extraction.options else _strip_options(question)
             option_bundle = await self.oparser.parse_options(
                 stem,

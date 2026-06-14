@@ -18,7 +18,7 @@ from exact.config import get_settings
 from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
 from exact.type1.ast.nodes import ComparisonNode
 from exact.type1.parser import PremiseParser
-from exact.type1.parser.options import parse_mcq_options
+from exact.type1.parser.options import extract_mcq
 
 if TYPE_CHECKING:
     from exact.type1.parser import QuestionSideParser
@@ -46,15 +46,17 @@ async def run_type1_pipeline(
 
     # --- Question side: classify, interpret options, compile claims -----------
     options_dict = _normalize_options(payload.options)
+    mcq_extraction = None
     if not options_dict:
         # Options may be embedded in the question body (A./A) lines).
-        _, embedded = parse_mcq_options(payload.question)
-        options_dict = embedded
+        mcq_extraction = extract_mcq(payload.question)
+        options_dict = mcq_extraction.options
 
     q_bundle = await question_parser.parse_question(
         payload.question,
         options_dict or None,
         premise_bundle.schema,
+        extraction=mcq_extraction,
     )
     spec = q_bundle.spec
     is_mcq = spec.question_format == "mcq"

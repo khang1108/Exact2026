@@ -14,7 +14,7 @@ from exact.common.schemas import (
     TaskType,
 )
 from exact.logger import get_request_logger
-from exact.type1.parser.options import parse_mcq_options
+from exact.type1.parser.options import extract_mcq
 from exact.type1.pipeline import (
     _normalize_options,
     _option_claim_to_dict,
@@ -98,14 +98,16 @@ async def qparser(payload: QParserRequest, request: Request) -> QParserResponse:
     premise_bundle = await premise_parser.parse_premises(payload.premises)
 
     options_dict = _normalize_options(payload.options)
+    mcq_extraction = None
     if not options_dict:
-        _, embedded = parse_mcq_options(payload.question)
-        options_dict = embedded
+        mcq_extraction = extract_mcq(payload.question)
+        options_dict = mcq_extraction.options
 
     q_bundle = await question_parser.parse_question(
         payload.question,
         options_dict or None,
         premise_bundle.schema,
+        extraction=mcq_extraction,
     )
     spec = q_bundle.spec
 
