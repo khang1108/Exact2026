@@ -267,9 +267,16 @@ def _camel(arg: str) -> str:
 
 
 def _and_nodes(nodes: list[FOLNode]) -> FOLNode:
-    """Left-fold a list of FOL nodes into a nested AND tree."""
-    result = nodes[0]
-    for node in nodes[1:]:
+    """Left-fold a list of FOL nodes into a nested AND tree, deduplicating by repr."""
+    seen: set[str] = set()
+    unique: list[FOLNode] = []
+    for node in nodes:
+        key = repr(node)
+        if key not in seen:
+            seen.add(key)
+            unique.append(node)
+    result = unique[0]
+    for node in unique[1:]:
         result = LogicalNode(operator="AND", left=result, right=node)
     return result
 
