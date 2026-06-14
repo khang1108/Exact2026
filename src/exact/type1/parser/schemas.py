@@ -111,6 +111,14 @@ _PLURAL_CLASS_NOUNS = frozenset(
 )
 _DEONTIC_PREDICATE_PREFIXES = frozenset({"allowed", "can", "required", "requires"})
 
+# Predicate semantic families. Cross-family canonicalization is blocked so that
+# e.g. Requires(Sophia, X) cannot be silently renamed to QualifiesFor(Sophia).
+_PREDICATE_FAMILIES: dict[str, frozenset[str]] = {
+    "requirement": frozenset({"require", "need", "must", "mandatory", "obligat", "prerequisit"}),
+    "achievement": frozenset({"qualify", "eligible", "receive", "earn", "award", "achiev", "get"}),
+    "action": frozenset({"pass", "complet", "submit", "take", "finish"}),
+}
+
 class ParserResult(BaseModel):
     """Base schema that rejects fields not requested by the parser operation."""
 
@@ -495,6 +503,15 @@ def _rename_in_node(node: FOLNode, remap: dict[tuple[str, int], str]) -> FOLNode
         right=_rename_in_node(node.right, remap) if node.right is not None else None,
     )
 
+def _predicate_family(name: str) -> str | None:
+    """Return the semantic family of a predicate name, or None if unclassified."""
+    tokens = {_normalize_semantic_token(t) for t in _camel_word_list(name)}
+    for family, keywords in _PREDICATE_FAMILIES.items():
+        if any(any(t.startswith(k) for k in keywords) for t in tokens):
+            return family
+    return None
+
+
 def _best_schema_match(
     name: str,
     arity: int,
@@ -512,6 +529,7 @@ def _best_schema_match(
     if exact is not None:
         return exact
 
+    claim_family = _predicate_family(name)
     semantic_key = _semantic_key(name)
     return next(
         (
@@ -519,6 +537,12 @@ def _best_schema_match(
             for predicate in predicates
             if predicate.arity == arity
             and _semantic_key(predicate.name) == semantic_key
+            # Block cross-family canonicalization (e.g. Requires → QualifiesFor).
+            and not (
+                claim_family is not None
+                and _predicate_family(predicate.name) is not None
+                and claim_family != _predicate_family(predicate.name)
+            )
         ),
         None,
     )

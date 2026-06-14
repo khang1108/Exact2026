@@ -58,6 +58,9 @@ _SUBJECT_PATTERNS = [
 ]
 
 _SELECTABLE_ROLES = frozenset({"FULL_CLAIM", "CONJUNCTIVE_CLAIM"})
+
+# Pronouns that should be replaced with the question's subject entity.
+_PRONOUN_START_RE = re.compile(r"^(he|she|they|it|his|her)\b", re.IGNORECASE)
 _FRAGMENT_ROLES = frozenset({"SUBJECTLESS_MODAL_FRAGMENT", "PREDICATE_FRAGMENT"})
 
 
@@ -188,7 +191,11 @@ class OParser:
         diagnostics: list[str] = [f"ROLE_{role}"]
 
         if role in _SELECTABLE_ROLES:
-            return self._claim(label, raw, normalized, role, claim_text=normalized,
+            claim_text = normalized
+            if subject and _PRONOUN_START_RE.match(normalized):
+                claim_text = _PRONOUN_START_RE.sub(subject, normalized, count=1)
+                diagnostics.append("PRONOUN_RESOLVED")
+            return self._claim(label, raw, normalized, role, claim_text=claim_text,
                                is_selectable=True, diagnostics=diagnostics), False
 
         if role == "RAW_FOL":
