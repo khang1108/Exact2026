@@ -32,13 +32,23 @@ def health_check() -> dict[str, str]:
 
 @api_router.post("/predict", response_model=PredictionResponse)
 async def predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
-    """Run the full EXACT pipeline and return the merged prediction payload."""
+    """Route to the type 1 or type 2 pipeline based on payload.type."""
     logger = get_request_logger(
         name="api_router.predict",
         request_id=payload.query_id,
         task_type=TaskType.TYPE1_LOGIC,
     )
-    logger.info(f"Received prediction request: {payload}")
+    logger.info(f"Received prediction request: type={payload.type!r} id={payload.query_id!r}")
+
+    if payload.type == "type2":
+        return PredictionResponse(
+            id=payload.query_id,
+            task_type=TaskType.TYPE2_PHYSICS,
+            answer="Unknown",
+            explanation="Type 2 pipeline not yet implemented — mock response.",
+        )
+
+    # Default: type1 (also handles None for backwards compat)
     premise_parser = getattr(request.app.state, "type1_premise_parser", None)
     question_parser = getattr(request.app.state, "type1_question_parser", None)
     if premise_parser is None or question_parser is None:
