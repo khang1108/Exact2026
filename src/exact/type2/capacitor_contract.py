@@ -100,9 +100,9 @@ def extract_capacitor_contract(extraction: Extraction) -> CapacitorContract | No
     knowns = _extract_knowns(text)
     capacitors = _extract_capacitors(text)
     target = _target_from_text(text, extraction.target)
-    system_type = _system_type_from_text(text, target, capacitors)
     if target is None:
         return None
+    system_type = _system_type_from_text(text, target, capacitors)
     evidence = [CapacitorEvidence(text, {"target.quantity": target.quantity, "target.unit": target.unit})]
     for key, value in knowns.items():
         evidence.append(CapacitorEvidence(value.original, {f"knowns.{key}.value": value.value, f"knowns.{key}.unit": value.unit}))
@@ -417,13 +417,16 @@ def _target_from_text(text: str, extraction_target: str | None) -> CapacitorTarg
     if "voltage across" in lower and "series" in lower:
         cap_id = _requested_capacitor_id(text)
         return CapacitorTarget("voltage_across_capacitor", "V", cap_id)
-    if extraction_target == "capacitance":
-        return CapacitorTarget("capacitance", "F")
-    if extraction_target == "charge":
-        return CapacitorTarget("charge", "C")
-    if extraction_target == "energy":
+    # Normalize the upstream target so LLM phrasings ("stored energy",
+    # "energy_stored") match the same buckets the heuristic extractor emits.
+    norm = (extraction_target or "").strip().lower().replace("_", " ")
+    if "energy" in norm or "energy stored" in lower or "stored energy" in lower:
         return CapacitorTarget("stored_energy", "J")
-    if extraction_target == "voltage" and "series" in lower:
+    if "capacitance" in norm:
+        return CapacitorTarget("capacitance", "F")
+    if "charge" in norm:
+        return CapacitorTarget("charge", "C")
+    if ("voltage" in norm or "potential" in norm) and "series" in lower:
         return CapacitorTarget("voltage_across_capacitor", "V", _requested_capacitor_id(text))
     return None
 

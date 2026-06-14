@@ -109,8 +109,10 @@ def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
             query="Calculate the voltage.",
         )
 
-        assert (await router.predict(type1, request)).task_type == TaskType.TYPE1_LOGIC
-        assert (await router.predict(type2, request)).task_type == TaskType.TYPE2_PHYSICS
+        type1_result = await router.predict(type1, request)
+        type2_result = await router.predict(type2, request)
+        assert type1_result[0].query_id == "T1_0001"
+        assert type2_result[0].query_id == "T2_0001"
 
     asyncio.run(scenario())
     assert calls == [("type1", "T1_0001"), ("type2", "T2_0001")]

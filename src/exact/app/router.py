@@ -137,13 +137,11 @@ async def predict(
             return [OfficialPredictionResponse.from_prediction(result)]
         except Exception as exc:
             logger.exception(f"Type 2 pipeline failed for {payload.query_id!r}: {exc}")
-            import traceback as _tb
-
             fallback = PredictionResponse(
                 id=payload.query_id,
                 task_type=TaskType.TYPE2_PHYSICS,
                 answer="",
-                explanation=f"DEBUG_TRACE: {_tb.format_exc()[-1500:]}",
+                explanation="Type 2 pipeline error — see server logs for details.",
                 error=str(exc),
             )
             return [OfficialPredictionResponse.from_prediction(fallback)]
