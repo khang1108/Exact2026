@@ -112,6 +112,9 @@ class Settings(BaseSettings):
     type1_parser_timeout_seconds: float = Field(default=30.0, gt=0)
     type1_parser_max_retries: int = Field(default=2, ge=0)
     type1_parser_max_tokens: int = Field(default=512, ge=1)
+    # Output token for the uncertain answer. Dataset gold uses "Unknown";
+    # set EXACT_TYPE1_UNCERTAIN_TOKEN=Uncertain for competition submission.
+    type1_uncertain_token: str = "Unknown"
 
     # Type 2 Physics Pipeline Settings
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(

@@ -218,6 +218,50 @@ class TemporalConstraintResult(ParserResult):
     date_value: str
 
 
+class QuestionFrameResult(ParserResult):
+    """Structural classification of one question before any FOL is produced.
+
+    The frame identifies what kind of question this is, which solver mode should
+    answer it, how to read a meta vs object-level "can", and—for polar
+    questions—the single declarative claim to test. It never contains FOL.
+    """
+
+    question_format: Literal["polar", "mcq", "open_wh"]
+    solver_mode: Literal[
+        "entailment",
+        "refutation",
+        "strongest_conclusion",
+        "fewest_premise",
+        "premise_selection",
+        "ynu_mapped",
+        "unsupported",
+    ]
+    can_interpretation: Literal["none", "meta_inference", "object_modal"] = "none"
+    claim_text: str | None = None
+    negate_claim: bool = False
+    confidence: float = 1.0
+
+
+class OptionClaimResult(ParserResult):
+    """Interpretation of one MCQ option relative to the question stem.
+
+    Options are not always self-contained propositions: they may be fragments
+    needing subject recovery, raw FOL, premise references, or YNU answers.
+    """
+
+    option_type: Literal[
+        "proposition",
+        "fragment",
+        "raw_fol",
+        "premise_reference",
+        "ynu_answer",
+    ]
+    claim_text: str | None = None
+    ynu_value: Literal["yes", "no", "uncertain", "none"] = "none"
+    premise_indices: list[int] = []
+    raw_fol: str | None = None
+
+
 # ------------------------------------------------------------------
 # Schemas for Premise Parser
 # ------------------------------------------------------------------
@@ -329,6 +373,48 @@ class PremiseParseBundle:
     predicate_renames: list[dict[str, object]]
     verified: bool
     verification_issues: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class OptionClaim:
+    """One MCQ option interpreted as a (possibly unsupported) testable claim."""
+
+    label: str
+    option_type: str
+    claim_text: str | None
+    ynu_value: str
+    premise_indices: tuple[int, ...]
+    raw_fol: str | None
+    fol: FOLNode | None = None
+
+
+@dataclass(frozen=True)
+class QuerySpec:
+    """Text-level decision record for how to answer one question.
+
+    Produced by the question-side parser before solving. Carries no FOL of its
+    own; option FOL lives on each ``OptionClaim`` and the polar claim FOL lives
+    on ``QuestionParseBundle``.
+    """
+
+    question_format: str
+    solver_mode: str
+    can_interpretation: str
+    main_claim_text: str | None
+    negate_claim: bool
+    option_claims: tuple[OptionClaim, ...]
+    supported: bool
+    issues: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class QuestionParseBundle:
+    """Verified result of the complete question parsing workflow."""
+
+    question: str
+    spec: QuerySpec
+    main_claim_fol: FOLNode | None
+    claim_renames: list[dict[str, object]]
 
 def _collect_predicates_in_order(node: FOLNode) -> list[tuple[str, int]]:
     return [

@@ -477,3 +477,154 @@ def get_system_prompt_coreference() -> str:
     Input right: "it is mandatory"
     Output: {"resolved_right": "the course is mandatory"}
 """
+
+
+def get_system_prompt_question_frame() -> str:
+    """Return instructions for classifying a question before any FOL is produced."""
+
+    return """
+Classify a question and decide HOW it should be answered. Do NOT generate FOL.
+
+# TASK
+Identify the question_format, the solver_mode, how to read the word "can", and—for
+polar (yes/no) questions only—the single declarative claim to test.
+
+# QUESTION FORMAT
+- polar   : a yes/no/unknown question ("Does it follow that ...?", "Is X true?", "Can X ...?")
+- mcq     : a multiple-choice question (the stem refers to lettered options A/B/C/D)
+- open_wh : an open "how/what/why" question with no testable single claim
+
+# SOLVER MODE (what we must compute)
+- entailment        : does a statement logically follow from the premises (default)
+- refutation        : pick the statement that is FALSE / "not true" / "cannot" follow
+- strongest_conclusion : pick the strongest / most significant conclusion
+- fewest_premise    : pick the conclusion that follows from the FEWEST premises
+- premise_selection : pick which premises support a conclusion
+- ynu_mapped        : MCQ whose options are themselves Yes / Uncertain / No answers
+- unsupported       : open_wh or anything with no decidable claim
+
+# CAN INTERPRETATION (critical)
+- meta_inference : "can" means logical entailment — "which statement CAN be inferred / concluded / follows".
+                   Use solver_mode=entailment (or refutation), and DO NOT keep "can" inside the claim.
+- object_modal   : "can/may" is a real-world ability/permission about a named subject —
+                   "Can Tuan take the course?". Keep the modal inside claim_text ("Tuan can take the course").
+- none           : the word "can" is absent or irrelevant.
+
+# CLAIM TEXT (polar only)
+For polar questions, claim_text = the statement being tested as a plain declarative sentence,
+stripped of "does it follow that" / "according to the premises" / "is it true that".
+For mcq and open_wh, claim_text = null (the options carry the claims).
+Set negate_claim=true only when the polar question asks whether something is FALSE / NOT true.
+
+# OUTPUT FORMAT (return ONLY valid JSON)
+{
+  "question_format": "polar"|"mcq"|"open_wh",
+  "solver_mode": "entailment"|"refutation"|"strongest_conclusion"|"fewest_premise"|"premise_selection"|"ynu_mapped"|"unsupported",
+  "can_interpretation": "none"|"meta_inference"|"object_modal",
+  "claim_text": "<declarative claim or null>",
+  "negate_claim": false,
+  "confidence": 1.0
+}
+
+# EXAMPLES
+
+Input: "Does it follow that if all Python projects are well-structured, then all Python projects are optimized, according to the premises?"
+Output: {"question_format":"polar","solver_mode":"entailment","can_interpretation":"none","claim_text":"if all Python projects are well-structured, then all Python projects are optimized","negate_claim":false,"confidence":1.0}
+
+Input: "Which conclusion can be inferred from the premises?"
+Output: {"question_format":"mcq","solver_mode":"entailment","can_interpretation":"meta_inference","claim_text":null,"negate_claim":false,"confidence":1.0}
+
+Input: "Which conclusion follows with the fewest premises?"
+Output: {"question_format":"mcq","solver_mode":"fewest_premise","can_interpretation":"none","claim_text":null,"negate_claim":false,"confidence":1.0}
+
+Input: "Which of the following statements is NOT true?"
+Output: {"question_format":"mcq","solver_mode":"refutation","can_interpretation":"none","claim_text":null,"negate_claim":false,"confidence":1.0}
+
+Input: "Which combination of factors most significantly decreases learning efficiency?"
+Output: {"question_format":"mcq","solver_mode":"strongest_conclusion","can_interpretation":"none","claim_text":null,"negate_claim":false,"confidence":1.0}
+
+Input: "Can Tuan take the advanced course?"
+Output: {"question_format":"polar","solver_mode":"entailment","can_interpretation":"object_modal","claim_text":"Tuan can take the advanced course","negate_claim":false,"confidence":1.0}
+
+Input: "Is it false that every student passes the final exam?"
+Output: {"question_format":"polar","solver_mode":"entailment","can_interpretation":"none","claim_text":"every student passes the final exam","negate_claim":true,"confidence":1.0}
+
+Input: "Do all students earn an A or A+?"
+Output: {"question_format":"polar","solver_mode":"entailment","can_interpretation":"none","claim_text":"all students earn an A or A+","negate_claim":false,"confidence":1.0}
+
+Input: "Which premises directly support the conclusion about decreased learning efficiency?"
+Output: {"question_format":"mcq","solver_mode":"premise_selection","can_interpretation":"none","claim_text":null,"negate_claim":false,"confidence":1.0}
+
+Input: "Do all students earn an A or A+?\nA. Yes, all mastered the subject.\nB. Uncertain.\nC. No, only some earn A+."
+Output: {"question_format":"mcq","solver_mode":"ynu_mapped","can_interpretation":"none","claim_text":"all students earn an A or A+","negate_claim":false,"confidence":1.0}
+
+Input: "How do supervised learning models function?"
+Output: {"question_format":"open_wh","solver_mode":"unsupported","can_interpretation":"none","claim_text":null,"negate_claim":false,"confidence":1.0}
+"""
+
+
+def get_system_prompt_option_claim() -> str:
+    """Return instructions for interpreting one MCQ option against the question stem."""
+
+    return """
+Interpret ONE multiple-choice option relative to its question stem. Do NOT generate FOL.
+
+# TASK
+Decide what kind of option this is and, when it is a real statement, return the FULL
+declarative proposition with any missing subject recovered from the question stem.
+
+# OPTION TYPE
+- proposition       : already a complete statement ("If a project is optimized, it is well-tested").
+- fragment          : missing its subject ("Can teach undergraduate courses only") — recover the
+                      subject from the stem ("the professor") and return the completed sentence.
+- raw_fol           : a logic formula using symbols like ∀ ∃ → ∧ ∨ ¬ or P(x). Pass it through in raw_fol.
+- premise_reference : the option only names premises ("Premises 1, 3, 7"). Put the numbers in premise_indices.
+- ynu_answer        : the option is itself a Yes / Uncertain / No answer ("Yes, all mastered the subject.";
+                      "No, only some earn A+."; "Uncertain."). Set ynu_value accordingly.
+
+# OUTPUT FORMAT (return ONLY valid JSON)
+{
+  "option_type": "proposition"|"fragment"|"raw_fol"|"premise_reference"|"ynu_answer",
+  "claim_text": "<full proposition with subject, or null>",
+  "ynu_value": "yes"|"no"|"uncertain"|"none",
+  "premise_indices": [],
+  "raw_fol": null
+}
+
+# RULES
+1. For proposition / fragment → fill claim_text with one complete declarative sentence; ynu_value="none".
+2. For fragment → recover the subject from the stem and PRESERVE the option's modal/negation words.
+3. For raw_fol → claim_text=null, copy the formula into raw_fol verbatim.
+4. For premise_reference → claim_text=null, list the integers in premise_indices.
+5. For ynu_answer → claim_text=null, set ynu_value to the answer the option expresses.
+
+# EXAMPLES
+
+Stem: "Which conclusion can be inferred?"
+Option: "If a Python project is not optimized, then it is not well-tested"
+Output: {"option_type":"proposition","claim_text":"if a Python project is not optimized, then it is not well-tested","ynu_value":"none","premise_indices":[],"raw_fol":null}
+
+Stem: "Which option describes the professor?"
+Option: "Can teach undergraduate courses only"
+Output: {"option_type":"fragment","claim_text":"the professor can teach undergraduate courses only","ynu_value":"none","premise_indices":[],"raw_fol":null}
+
+Stem: "Which formula follows from the premises?"
+Option: "∀x (R(x) → P(x))"
+Output: {"option_type":"raw_fol","claim_text":null,"ynu_value":"none","premise_indices":[],"raw_fol":"∀x (R(x) → P(x))"}
+
+Stem: "Which premises support the conclusion?"
+Option: "Premises 1, 3, 7"
+Output: {"option_type":"premise_reference","claim_text":null,"ynu_value":"none","premise_indices":[1,3,7],"raw_fol":null}
+
+Stem: "Do all students earn an A or A+?"
+Option: "Yes, all mastered the subject."
+Output: {"option_type":"ynu_answer","claim_text":null,"ynu_value":"yes","premise_indices":[],"raw_fol":null}
+
+Stem: "Do all students earn an A or A+?"
+Option: "No, only some earn A+."
+Output: {"option_type":"ynu_answer","claim_text":null,"ynu_value":"no","premise_indices":[],"raw_fol":null}
+
+Stem: "Do all students earn an A or A+?"
+Option: "Uncertain."
+Output: {"option_type":"ynu_answer","claim_text":null,"ynu_value":"uncertain","premise_indices":[],"raw_fol":null}
+"""

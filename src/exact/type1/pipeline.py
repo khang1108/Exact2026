@@ -2,10 +2,10 @@
 
 Workflow per request:
   1. Parse and verify declarative premises through ``PremiseParser``.
-  2. Parse question options or the conclusion through the wrapped ``FOLParser``.
-  3. Canonicalize conclusion predicate names against the premise schema.
-  4. Z3 entailment check → "Yes" / "No" / "Uncertain" / option label.
-  5. Return answer with FOL debug info.
+  2. Classify the question + interpret options through ``QuestionSideParser``.
+  3. Route on the resulting ``QuerySpec`` to the right Z3 check.
+  4. Z3 entailment / refutation / YNU-mapping → answer label.
+  5. Normalize the uncertain token and return answer with FOL debug info.
 """
 
 from __future__ import annotations
@@ -14,53 +14,61 @@ from dataclasses import asdict
 from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
+from exact.config import get_settings
 from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
 from exact.type1.ast.nodes import ComparisonNode
 from exact.type1.parser import PremiseParser
+from exact.type1.parser.options import parse_mcq_options
 
 if TYPE_CHECKING:
+    from exact.type1.parser import QuestionSideParser
+    from exact.type1.parser.schemas import OptionClaim, QuestionParseBundle
     from exact.type1.solvers import FOLSolver  # type: ignore[import-untyped]
+
+# Internal uncertain literal emitted by the solver, normalized at the boundary.
+_SOLVER_UNCERTAIN = "Uncertain"
+
 
 async def run_type1_pipeline(
     payload: PredictionRequest,
     premise_parser: PremiseParser,
+    question_parser: QuestionSideParser,
     solver: FOLSolver | None = None,
 ) -> PredictionResponse:
-    """Parse premises and conclusions through their distinct workflows, then solve."""
+    """Parse premises and the question through their workflows, then solve."""
 
     premises = [p.strip() for p in payload.premises or [] if p.strip()]
     if not premises:
         raise ValueError("Type 1 requests require at least one non-empty premise")
 
     premise_bundle = await premise_parser.parse_premises(premises)
-
-    options_dict = _normalize_options(payload.options)
-    is_mcq = bool(options_dict)
-    question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
-
-    if is_mcq:
-        conclusion_sentences = list(options_dict.values())
-    else:
-        conclusion_sentences = [payload.question]
-
-    conclusion_fols_raw = await premise_parser.fol_parser.parse_many(conclusion_sentences)
-    conclusion_fols, conclusion_renames = premise_bundle.schema.canonicalize(
-        conclusion_fols_raw
-    )
     premise_fols = premise_bundle.trees
 
-    # --- Z3 entailment -------------------------------------------------------
-    solver_used = solver is not None and premise_bundle.verified
+    # --- Question side: classify, interpret options, compile claims -----------
+    options_dict = _normalize_options(payload.options)
+    if not options_dict:
+        # Options may be embedded in the question body (A./A) lines).
+        _, embedded = parse_mcq_options(payload.question)
+        options_dict = embedded
+
+    q_bundle = await question_parser.parse_question(
+        payload.question,
+        options_dict or None,
+        premise_bundle.schema,
+    )
+    spec = q_bundle.spec
+    is_mcq = spec.question_format == "mcq"
+    question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
+
+    # --- Z3 routing ----------------------------------------------------------
+    solver_used = solver is not None and premise_bundle.verified and spec.supported
     if solver_used:
-        if is_mcq:
-            option_fols = dict(zip(options_dict.keys(), conclusion_fols))
-            assert solver is not None
-            answer = solver.check_mcq(premise_fols, option_fols)
-        else:
-            assert solver is not None
-            answer = solver.check_ynu(premise_fols, conclusion_fols[0])
+        assert solver is not None
+        answer = _solve(solver, premise_fols, spec, q_bundle)
     else:
-        answer = "Uncertain"
+        answer = _SOLVER_UNCERTAIN
+
+    answer = _normalize_answer(answer)
 
     # --- Debug FOL text -------------------------------------------------------
     premise_items = [
@@ -75,20 +83,9 @@ async def run_type1_pipeline(
             start=1,
         )
     ]
-    conclusion_items = [
-        {
-            "id": label if is_mcq else "question",
-            "original_text": text,
-            "fol": repr(tree),
-            "ast": fol_node_to_dict(tree),
-        }
-        for (label, text), tree in zip(
-            (options_dict.items() if is_mcq else [("question", payload.question)]),
-            conclusion_fols,
-        )
-    ]
+    question_items = _question_debug_items(q_bundle)
 
-    fol_lines = [f"{item['id']}: {item['fol']}" for item in premise_items + conclusion_items]
+    fol_lines = [f"{item['id']}: {item['fol']}" for item in premise_items + question_items]
     fol_text = "\n".join(fol_lines)
 
     return PredictionResponse(
@@ -97,20 +94,22 @@ async def run_type1_pipeline(
         question_type=question_type,
         answer=answer,
         explanation=(
-            f"Z3 entailment result: {answer}"
+            f"Z3 {spec.solver_mode} result: {answer}"
             if solver_used
             else (
-                "Z3 solver skipped because no solver was configured "
-                "or premise verification failed."
+                "Z3 solver skipped: no solver configured, premise verification "
+                "failed, or the question is unsupported."
             )
         ),
         fol=fol_text,
         cot=[
             (
-                "Premise verification passed before parsing conclusions."
+                "Premise verification passed."
                 if premise_bundle.verified
                 else "Premise verification failed; solver execution was skipped."
             ),
+            f"Question classified as {spec.question_format}/{spec.solver_mode}"
+            + (f" ({spec.can_interpretation})" if spec.can_interpretation != "none" else ""),
             f"Pipeline returned: {answer}",
         ],
         premises=premise_bundle.premises,
@@ -122,7 +121,7 @@ async def run_type1_pipeline(
             "premise_bundle_verified": premise_bundle.verified,
             "premise_verification_issues": list(premise_bundle.verification_issues),
             "premise_predicate_renames": premise_bundle.predicate_renames,
-            "conclusion_predicate_renames": conclusion_renames,
+            "query_spec": _query_spec_to_dict(q_bundle),
             "premise_schema": {
                 "predicates": [
                     asdict(predicate) for predicate in premise_bundle.schema.predicates
@@ -133,9 +132,64 @@ async def run_type1_pipeline(
                 "diagnostics": list(premise_bundle.schema.diagnostics),
             },
             "parsed_premises": premise_items,
-            "parsed_conclusions": conclusion_items,
+            "parsed_question": question_items,
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Z3 routing
+# ---------------------------------------------------------------------------
+
+def _solve(
+    solver: FOLSolver,
+    premise_fols: list[FOLNode],
+    spec: Any,
+    q_bundle: QuestionParseBundle,
+) -> str:
+    """Dispatch to the right solver check based on the verified QuerySpec."""
+
+    if spec.question_format != "mcq":
+        # Polar entailment. negate_claim flips Yes/No when the question asks for falsity.
+        assert q_bundle.main_claim_fol is not None
+        answer = solver.check_ynu(premise_fols, q_bundle.main_claim_fol)
+        return _flip(answer) if spec.negate_claim else answer
+
+    if spec.solver_mode == "ynu_mapped":
+        assert q_bundle.main_claim_fol is not None
+        ynu = solver.check_ynu(premise_fols, q_bundle.main_claim_fol)
+        return _map_ynu_to_label(ynu, spec.option_claims)
+
+    option_fols = {c.label: c.fol for c in spec.option_claims if c.fol is not None}
+    if spec.solver_mode == "refutation":
+        return solver.check_mcq_refutation(premise_fols, option_fols)
+    return solver.check_mcq(premise_fols, option_fols)
+
+
+def _flip(answer: str) -> str:
+    if answer == "Yes":
+        return "No"
+    if answer == "No":
+        return "Yes"
+    return answer
+
+
+def _map_ynu_to_label(ynu: str, option_claims: tuple[OptionClaim, ...]) -> str:
+    """Map a Yes/No/Uncertain verdict to the label of the matching YNU option."""
+
+    target = {"Yes": "yes", "No": "no", "Uncertain": "uncertain"}.get(ynu)
+    for claim in option_claims:
+        if claim.ynu_value == target:
+            return claim.label
+    return _SOLVER_UNCERTAIN
+
+
+def _normalize_answer(answer: str) -> str:
+    """Replace the internal uncertain literal with the configured output token."""
+
+    if answer == _SOLVER_UNCERTAIN:
+        return get_settings().type1_uncertain_token
+    return answer
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +205,64 @@ def _normalize_options(options: Any) -> dict[str, str]:
     if isinstance(options, list):
         return {chr(ord("A") + i): str(v) for i, v in enumerate(options) if i < 5}
     return {}
+
+
+# ---------------------------------------------------------------------------
+# Debug serialisation
+# ---------------------------------------------------------------------------
+
+def _question_debug_items(q_bundle: QuestionParseBundle) -> list[dict[str, Any]]:
+    spec = q_bundle.spec
+    if spec.question_format == "mcq":
+        return [
+            {
+                "id": claim.label,
+                "original_text": claim.claim_text or claim.raw_fol or "",
+                "fol": repr(claim.fol) if claim.fol is not None else None,
+                "ast": fol_node_to_dict(claim.fol) if claim.fol is not None else None,
+            }
+            for claim in spec.option_claims
+        ]
+    return [
+        {
+            "id": "question",
+            "original_text": spec.main_claim_text or q_bundle.question,
+            "fol": repr(q_bundle.main_claim_fol) if q_bundle.main_claim_fol is not None else None,
+            "ast": (
+                fol_node_to_dict(q_bundle.main_claim_fol)
+                if q_bundle.main_claim_fol is not None
+                else None
+            ),
+        }
+    ]
+
+
+def _query_spec_to_dict(q_bundle: QuestionParseBundle) -> dict[str, Any]:
+    spec = q_bundle.spec
+    return {
+        "question_format": spec.question_format,
+        "solver_mode": spec.solver_mode,
+        "can_interpretation": spec.can_interpretation,
+        "main_claim_text": spec.main_claim_text,
+        "main_claim_fol": (
+            repr(q_bundle.main_claim_fol) if q_bundle.main_claim_fol is not None else None
+        ),
+        "negate_claim": spec.negate_claim,
+        "supported": spec.supported,
+        "issues": list(spec.issues),
+        "option_claims": [
+            {
+                "label": c.label,
+                "option_type": c.option_type,
+                "claim_text": c.claim_text,
+                "ynu_value": c.ynu_value,
+                "premise_indices": list(c.premise_indices),
+                "raw_fol": c.raw_fol,
+                "fol": repr(c.fol) if c.fol is not None else None,
+            }
+            for c in spec.option_claims
+        ],
+    }
 
 
 # ---------------------------------------------------------------------------

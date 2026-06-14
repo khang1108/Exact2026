@@ -9,10 +9,13 @@ from exact.common.schemas import (
     ParserResponse,
     PredictionRequest,
     PredictionResponse,
+    QParserRequest,
+    QParserResponse,
     TaskType,
 )
 from exact.logger import get_request_logger
-from exact.type1.pipeline import fol_node_to_dict, run_type1_pipeline
+from exact.type1.parser.options import parse_mcq_options
+from exact.type1.pipeline import _normalize_options, fol_node_to_dict, run_type1_pipeline
 
 api_router = APIRouter()
 
@@ -32,20 +35,22 @@ async def predict(payload: PredictionRequest, request: Request) -> PredictionRes
     )
     logger.info(f"Received prediction request: {payload}")
     premise_parser = getattr(request.app.state, "type1_premise_parser", None)
-    if premise_parser is None:
+    question_parser = getattr(request.app.state, "type1_question_parser", None)
+    if premise_parser is None or question_parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
-    return await run_type1_pipeline(payload, premise_parser, solver)
+    return await run_type1_pipeline(payload, premise_parser, question_parser, solver)
 
 
 @api_router.post("/z3", response_model=PredictionResponse)
 async def z3_predict(payload: PredictionRequest, request: Request) -> PredictionResponse:
     """Parse premises + question/options to FOL then answer via Z3 entailment."""
     premise_parser = getattr(request.app.state, "type1_premise_parser", None)
-    if premise_parser is None:
+    question_parser = getattr(request.app.state, "type1_question_parser", None)
+    if premise_parser is None or question_parser is None:
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
-    return await run_type1_pipeline(payload, premise_parser, solver)
+    return await run_type1_pipeline(payload, premise_parser, question_parser, solver)
 
 
 @api_router.post("/parser", response_model=ParserResponse)
@@ -70,6 +75,58 @@ async def parser(payload: ParsePremisesRequest, request: Request) -> ParserRespo
         verified=bundle.verified,
         issues=list(bundle.verification_issues),
         renames=bundle.predicate_renames,
+    )
+
+
+@api_router.post("/qparser", response_model=QParserResponse)
+async def qparser(payload: QParserRequest, request: Request) -> QParserResponse:
+    """Classify a question into a QuerySpec (no solving).
+
+    Parses the premises to build the shared schema, then runs the question-side
+    parser and returns the QuerySpec for inspecting classification quality.
+    """
+    premise_parser = getattr(request.app.state, "type1_premise_parser", None)
+    question_parser = getattr(request.app.state, "type1_question_parser", None)
+    if premise_parser is None or question_parser is None:
+        raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
+
+    premise_bundle = await premise_parser.parse_premises(payload.premises)
+
+    options_dict = _normalize_options(payload.options)
+    if not options_dict:
+        _, embedded = parse_mcq_options(payload.question)
+        options_dict = embedded
+
+    q_bundle = await question_parser.parse_question(
+        payload.question,
+        options_dict or None,
+        premise_bundle.schema,
+    )
+    spec = q_bundle.spec
+
+    return QParserResponse(
+        question_format=spec.question_format,
+        solver_mode=spec.solver_mode,
+        can_interpretation=spec.can_interpretation,
+        main_claim_text=spec.main_claim_text,
+        main_claim_fol=(
+            repr(q_bundle.main_claim_fol) if q_bundle.main_claim_fol is not None else None
+        ),
+        negate_claim=spec.negate_claim,
+        supported=spec.supported,
+        issues=list(spec.issues),
+        option_claims=[
+            {
+                "label": c.label,
+                "option_type": c.option_type,
+                "claim_text": c.claim_text,
+                "ynu_value": c.ynu_value,
+                "premise_indices": list(c.premise_indices),
+                "raw_fol": c.raw_fol,
+                "fol": repr(c.fol) if c.fol is not None else None,
+            }
+            for c in spec.option_claims
+        ],
     )
 
 

@@ -87,6 +87,24 @@ class FOLSolver:
         # Exactly one entailed option → confident answer; otherwise uncertain.
         return entailed[0] if len(entailed) == 1 else "Uncertain"
 
+    def check_mcq_refutation(
+        self,
+        premises: list[FOLNode],
+        options: dict[str, FOLNode],
+    ) -> str:
+        """Return the label of the single FALSE option, or 'Uncertain'.
+
+        For "which statement is NOT true / cannot follow", the answer is the
+        option that contradicts the premises (its negation is entailed).
+        """
+        p = [self._to_z3(n) for n in premises]
+        refuted = [
+            label
+            for label, node in options.items()
+            if self._entails(p, self._to_z3(node)) == "No"
+        ]
+        return refuted[0] if len(refuted) == 1 else "Uncertain"
+
     # ------------------------------------------------------------------
     # FOL AST → Z3
     # ------------------------------------------------------------------

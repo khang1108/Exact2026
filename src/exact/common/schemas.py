@@ -107,6 +107,45 @@ class ParserResponse(AppBaseModel):
     renames: list[dict[str, Any]]
 
 
+class QParserRequest(InboundBaseModel):
+    """Input for the ``/qparser`` endpoint: a question, its options, and premises."""
+
+    question: str = Field(validation_alias=AliasChoices("question", "query"))
+    premises: list[str] = Field(
+        validation_alias=AliasChoices("premises", "premises-NL", "premises_nl"),
+    )
+    options: Any | None = None
+
+    @field_validator("premises")
+    @classmethod
+    def premises_must_not_be_empty(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value if item and item.strip()]
+        if not cleaned:
+            raise ValueError("premises must contain at least one non-empty string")
+        return cleaned
+
+    @field_validator("question")
+    @classmethod
+    def question_must_not_be_empty(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("question must not be empty")
+        return value
+
+
+class QParserResponse(AppBaseModel):
+    """QuerySpec inspection result from the /qparser endpoint (no solving)."""
+
+    question_format: str
+    solver_mode: str
+    can_interpretation: str
+    main_claim_text: str | None
+    main_claim_fol: str | None
+    negate_claim: bool
+    supported: bool
+    issues: list[str]
+    option_claims: list[dict[str, Any]]
+
+
 class PredictionResponse(AppBaseModel):
     """Competition-facing prediction plus local metadata for debugging."""
 
