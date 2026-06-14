@@ -38,7 +38,12 @@ class Type1FallbackReasoner:
     ) -> Type1FallbackResult:
         # Determine mode BEFORE appending "Uncertain" to allowed set
         is_open_ended = not option_labels  # no labels → free-form / wh-question
+        # "Uncertain" is a valid answer only when the question explicitly includes it
+        uncertain_is_valid = any(
+            label.casefold() == _UNCERTAIN_TOKEN.casefold() for label in option_labels
+        )
         allowed = [] if is_open_ended else list(dict.fromkeys([*option_labels, _UNCERTAIN_TOKEN]))
+
 
         option_text = "\n".join(
             f"{label}. {text}" for label, text in (options or {}).items()
@@ -78,9 +83,11 @@ class Type1FallbackReasoner:
             for label in allowed
         }.get(result.answer.strip().casefold(), _UNCERTAIN_TOKEN)
 
-        # If LLM still returned Uncertain but we have premises to reason from,
-        # retry once with a stronger "best guess" instruction.
-        if canonical == _UNCERTAIN_TOKEN and premises:
+        # If LLM returned Uncertain but it is NOT a valid option in this problem,
+        # retry once with a stronger "best guess" instruction to get a concrete answer.
+        # When options explicitly include "Uncertain" (e.g. Yes/No/Uncertain), this IS valid.
+        if canonical == _UNCERTAIN_TOKEN and not uncertain_is_valid and premises:
+
             canonical, explanation, zero_based = await self._force_concrete_answer(
                 numbered_premises=numbered_premises,
                 question=question,
