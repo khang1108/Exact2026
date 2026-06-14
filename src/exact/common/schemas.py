@@ -193,7 +193,7 @@ class PredictionResponse(AppBaseModel):
     )
     answer: str
     explanation: str
-    unit: str = ""                          # "" for Type 1; ASCII unit for Type 2
+    unit: str | None = None               # None / "" for Type 1; ASCII unit for Type 2
     premises_used: list[int] | None = None  # 0-based indices; [] for Type 2
     reasoning: dict[str, Any] | None = None # structured evidence; null if unused
 
@@ -206,6 +206,14 @@ class PredictionResponse(AppBaseModel):
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
     error: str | None = None
     routing_diagnostics: dict[str, Any] | None = None
+
+    @field_validator("unit", mode="before")
+    @classmethod
+    def _coerce_unit(cls, v: Any) -> str:
+        """Normalise unit to a string; Type 2 pipelines may pass None."""
+        if v is None:
+            return ""
+        return str(v)
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
@@ -244,7 +252,7 @@ class OfficialPredictionResponse(AppBaseModel):
         return cls(
             query_id=r.query_id,
             answer=r.answer,
-            unit=r.unit,
+            unit=r.unit or "",              # coerce None → ""
             explanation=r.explanation,
             premises_used=r.premises_used if r.premises_used is not None else [],
             reasoning=r.reasoning,
