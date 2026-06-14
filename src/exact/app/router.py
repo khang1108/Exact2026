@@ -117,10 +117,10 @@ async def llm_models() -> dict[str, Any]:
     return await _proxy_models(settings.llm_base_url, api_key, "Main LLM")
 
 
-@api_router.post("/predict", response_model=OfficialPredictionResponse)
+@api_router.post("/predict", response_model=list[OfficialPredictionResponse])
 async def predict(
     payload: UnifiedPredictionRequest, request: Request
-) -> OfficialPredictionResponse:
+) -> list[OfficialPredictionResponse]:
     """Route one unified request to the Type 1 or Type 2 pipeline."""
     task_type = _resolve_task_type(payload)
     logger = get_request_logger(
@@ -133,7 +133,7 @@ async def predict(
     if task_type == TaskType.TYPE2_PHYSICS:
         logger.info("Running Type 2 pipeline")
         result = await asyncio.to_thread(run_type2_pipeline, payload)
-        return OfficialPredictionResponse.from_prediction(result)
+        return [OfficialPredictionResponse.from_prediction(result)]
 
     if not payload.premises:
         raise HTTPException(status_code=422, detail="Type 1 requests require non-empty premises")
@@ -153,7 +153,7 @@ async def predict(
             solver,
             fallback_reasoner,
         )
-        return OfficialPredictionResponse.from_prediction(result)
+        return [OfficialPredictionResponse.from_prediction(result)]
     except Exception as exc:
         logger.exception(f"Type 1 pipeline failed for {payload.query_id!r}: {exc}")
         fallback = PredictionResponse(
@@ -163,13 +163,13 @@ async def predict(
             explanation="Pipeline error — see server logs for details.",
             error=str(exc),
         )
-        return OfficialPredictionResponse.from_prediction(fallback)
+        return [OfficialPredictionResponse.from_prediction(fallback)]
 
 
-@api_router.post("/z3", response_model=OfficialPredictionResponse)
+@api_router.post("/z3", response_model=list[OfficialPredictionResponse])
 async def z3_predict(
     payload: PredictionRequest, request: Request
-) -> OfficialPredictionResponse:
+) -> list[OfficialPredictionResponse]:
     """Parse premises + question/options to FOL then answer via Z3 entailment."""
     premise_parser = getattr(request.app.state, "type1_premise_parser", None)
     question_parser = getattr(request.app.state, "type1_question_parser", None)
@@ -184,7 +184,7 @@ async def z3_predict(
         solver,
         fallback_reasoner,
     )
-    return OfficialPredictionResponse.from_prediction(result)
+    return [OfficialPredictionResponse.from_prediction(result)]
 
 
 @api_router.post("/parser", response_model=ParserResponse)
