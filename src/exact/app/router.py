@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 
+import httpx
 from fastapi import APIRouter, HTTPException, Request
 
 from exact.common.schemas import (
@@ -16,6 +17,7 @@ from exact.common.schemas import (
     TaskType,
     UnifiedPredictionRequest,
 )
+from exact.config import get_settings
 from exact.logger import get_request_logger
 from exact.type1.parser.options import extract_mcq
 from exact.type1.pipeline import (
@@ -42,6 +44,46 @@ def _resolve_task_type(payload: PredictionRequest) -> TaskType:
 @api_router.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok", "pipeline": "full_pipeline", "version": "0.1.0"}
+
+
+async def _proxy_models(base_url: str | None, api_key: str | None, name: str) -> dict:
+    """Forward a GET to a local vLLM ``/v1/models`` endpoint.
+
+    The committee queries these public passthrough URLs during grading to verify
+    the self-hosted models. The local vLLM servers are not exposed directly; this
+    proxy injects the server API key so the caller needs no auth.
+    """
+    if not base_url:
+        raise HTTPException(status_code=503, detail=f"{name} model server is not configured")
+    url = f"{base_url.rstrip('/')}/models"
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()
+            return response.json()
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"{name} model server unreachable: {exc}")
+
+
+@api_router.get("/parser/v1/models")
+async def parser_models() -> dict:
+    """Passthrough to the Type 1 parser vLLM ``/v1/models``."""
+    settings = get_settings()
+    api_key = (
+        settings.type1_parser_api_key.get_secret_value()
+        if settings.type1_parser_api_key
+        else None
+    )
+    return await _proxy_models(settings.type1_parser_base_url, api_key, "Type 1 parser")
+
+
+@api_router.get("/llm/v1/models")
+async def llm_models() -> dict:
+    """Passthrough to the main LLM vLLM ``/v1/models``."""
+    settings = get_settings()
+    api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
+    return await _proxy_models(settings.llm_base_url, api_key, "Main LLM")
 
 
 @api_router.post("/predict", response_model=PredictionResponse)
