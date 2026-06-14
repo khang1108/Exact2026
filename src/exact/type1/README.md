@@ -33,7 +33,7 @@ FOLNode trees  ◄── verified: bool + issues: list[str]   ──►  Premise
     │                                                            ▼
     │                                          QuestionSideParser (question side)
     │                                            │  QParser     → QuestionFrameResult
-    │                                            │  OParser     → OptionClaim[]
+    │                                            │  OParser     → OptionParseBundle
     │                                            │  ClaimParser → FOL (schema-canonicalized)
     │                                            │  QueryVerifier → supported / issues
     │                                            ▼
@@ -42,6 +42,7 @@ FOLNode trees  ◄── verified: bool + issues: list[str]   ──►  Premise
 Z3 FOLSolver  ◄──────────────────────────────────┘
     │  polar      → check_ynu()             → "Yes" / "No" / "Uncertain"
     │  mcq        → check_mcq()             → option label "A".."D"
+    │              (none-of-above post-processing: 0 ordinary entailed + NoA present → NoA label)
     │  refutation → check_mcq_refutation()  → the single FALSE option
     │  ynu_mapped → check_ynu() + map YNU verdict → option label
     ▼
@@ -69,13 +70,13 @@ type1/
     parser.py               # FOLParser — recursive NL → FOLNode
     frame_parser.py         # PremiseFrameParser + PremiseFrameCompiler + ConstraintParser
     premise_parser.py       # PremiseParser — premise orchestration + repair + verify
-    options.py              # parse_mcq_options — extract embedded A./A) options
+    options.py              # extract_mcq() — extract embedded A./A) options with diagnostics
     qparser.py              # QParser — classify question → QuestionFrameResult
-    oparser.py              # OParser — MCQ options → OptionClaim[]
+    oparser.py              # OParser — role-aware deterministic OptionParser → OptionParseBundle
     claim_parser.py         # ClaimParser — claim texts → canonicalized FOL
     query_verifier.py       # verify() — pre-solve QuerySpec validation
     question_parser.py      # QuestionSideParser — question orchestration
-    schemas.py              # frame/query result models, PremiseSchema, QuerySpec
+    schemas.py              # frame/query result models, PremiseSchema, QuerySpec, OptionRole
 
   models/
     schemas.py              # Predicate, domain schema models
@@ -106,7 +107,7 @@ Quantified ::= ∀x[Restrictor].Body
              | ∃x.Body
 
 Logical    ::= ¬Formula
-             | Formula ∧ Formula
+               Formula ∧ Formula
              | Formula ∨ Formula
              | Formula → Formula
              | Formula ↔ Formula
@@ -147,7 +148,7 @@ The question side mirrors the premise side: classify first, compile FOL second, 
 ```
 QuestionSideParser
   ├── QParser        question                  → QuestionFrameResult   (1 LLM call)
-  ├── OParser        stem + options            → OptionClaim[]         (1 LLM call/option)
+  ├── OParser        stem + options            → OptionParseBundle     (deterministic-first; LLM only for unresolved fragments)
   ├── ClaimParser    claim texts + schema      → FOLNode[]             (FOLParser + canonicalize)
   └── query_verifier QuerySpec                 → supported / issues    (deterministic)
 ```
@@ -170,17 +171,57 @@ QuestionSideParser
 - `meta_inference` — "which statement **can be inferred**" → logical entailment, "can" dropped from the claim.
 - `object_modal` — "**Can** Tuan take the course?" → ability/permission kept inside the claim (`Tuan can take the course`).
 
-**`OptionClaim.option_type`** — options are not always self-contained propositions:
+### OParser — Role-Aware Deterministic OptionParser (B10)
 
-| option_type | handling |
+`OParser.parse_options(stem, options) → OptionParseBundle`
+
+Each MCQ option is classified into one of 9 **`OptionRole`** values in deterministic priority order (first match wins). LLM calls are only made as a fallback for unresolved modal/predicate fragments.
+
+| priority | `OptionRole` | detection rule | is_selectable |
+|---|---|---|---|
+| 1 | `RAW_FOL` | contains `∀ ∃ → ↔ ¬ ∧ ∨` or `ForAll(` / `Exists(` | ✗ |
+| 2 | `PREMISE_REFERENCE` | `^premises?\s+\d+(\s*[,and]\s*\d+)*\.?$` | ✗ |
+| 3 | `YNU_ANSWER` | bare polarity token: `yes/no/uncertain/unknown` alone or followed by `[.,]` only | ✗ |
+| 4 | `NONE_OF_ABOVE` | `none of the (above\|following)` | ✗ |
+| 5 | `SUBJECTLESS_MODAL_FRAGMENT` | starts with a modal (`can/cannot/may/must/should/…`) with no preceding subject | ✓ (after realization) |
+| 6 | `PREDICATE_FRAGMENT` | starts with fragment starter (`eligible/needs/only/requires/able/…`) — no subject | ✓ (after realization) |
+| 7 | `CONJUNCTIVE_CLAIM` | full claim containing `both … and` | ✓ |
+| 8 | `FULL_CLAIM` | default for any complete proposition | ✓ |
+| 9 | `UNKNOWN` | empty / label-combo / unresolved fragment | ✗ |
+
+**YNU bare-token rule** — `YNU_ANSWER` matches only when the polarity token is the *entire* option or is immediately followed by punctuation. "No one is qualified." and "No AI models use deep learning." are `FULL_CLAIM`, not `YNU_ANSWER`. `ynu_mapped` solver mode only triggers when ≥ 2 options have role `YNU_ANSWER`.
+
+**Fragment realization** — for `SUBJECTLESS_MODAL_FRAGMENT` and `PREDICATE_FRAGMENT`, `OParser` first tries deterministic subject recovery from the question stem (patterns: `about X`, `for X`, `true (about|of|for) X`, `(can|is|does|will|should) X`). On success, the subject is prepended deterministically (modal fragments: `"{subject} {modal…}"`; predicate fragments: `"{subject} is {frag}"`). Unresolved fragments fall back to one batched LLM `FragmentRealizationResult` call. Still-unresolved → role `UNKNOWN`, `is_selectable=False`.
+
+**`OptionParseBundle`** — returned by `OParser`, carried through `QuestionParseBundle`:
+- `options: tuple[OptionClaim, ...]`
+- `marker_style: str` — `"dot"` / `"paren"` / `"mixed"`
+- `option_count: int` — 3 or 4 in the training set
+- `role_distribution: dict[str, int]`
+- `verified: bool`, `issues: tuple[str, ...]`, `extraction_diagnostics: tuple[str, ...]`
+
+**`OptionClaim` fields:**
+
+| field | meaning |
 |---|---|
-| `proposition` | parsed to FOL |
-| `fragment` | subject recovered from the stem, then parsed to FOL |
-| `raw_fol` | `∀x …` formula — tagged, **not** compiled in v1 |
-| `premise_reference` | "Premises 1, 3, 7" → indices — tagged, not compiled in v1 |
-| `ynu_answer` | "Yes, all mastered…" → `ynu_value`, drives `ynu_mapped` |
+| `label` | `"A"` … `"D"` |
+| `original_text` | raw text from the question (including marker) |
+| `normalized_text` | stripped of leading `A. ` / `A) ` markers |
+| `role` | `OptionRole` — one of the 9 values above |
+| `claim_text` | realized claim sentence (non-null only for selectable roles) |
+| `raw_fol` | raw FOL string when `role == RAW_FOL` |
+| `premise_indices` | list of referenced premise indices when `role == PREMISE_REFERENCE` |
+| `ynu_value` | `"yes"` / `"no"` / `"uncertain"` / `"none"` |
+| `is_selectable` | `True` for roles the solver scores; `False` for YNU/NoA/raw_fol/premise_ref/unknown |
+| `fol` | `FOLNode` (filled by ClaimParser for selectable options that compiled) |
+| `diagnostics` | per-option diagnostic tags |
 
-Embedded options (`A.` **and** `A)` lines inside the question body) are extracted by `parse_mcq_options` when no separate `options` payload is supplied.
+**None-of-above solver post-processing** — `check_mcq(premises, options, none_of_above_label=None)`:
+- Exactly 1 ordinary option entailed → return that label.
+- 0 ordinary options entailed **and** `none_of_above_label` present → return the none-of-above label.
+- Otherwise → `"Uncertain"`.
+
+**Embedded option extraction** (`options.py / extract_mcq`) — handles both `A.` and `A)` marker styles. The `options_mcq.json` sidecar misses the 13 records (134–146) that use `A)` markers; `extract_mcq` catches all of them. Diagnostics: `MCQ_MARKER_A_DOT`, `MCQ_MARKER_A_PAREN`, `MCQ_MIXED_MARKER_FORMAT`, `MCQ_THREE_OPTIONS`, `MCQ_FOUR_OPTIONS`, `MCQ_DUPLICATE_LABEL`, `MCQ_OPTION_TEXT_EMPTY`.
 
 ---
 
@@ -208,6 +249,7 @@ Question-side (`query_verifier`, set on `QuerySpec.issues`):
 | `QUERY_NO_YNU_OPTIONS` | `ynu_mapped` question has no Yes/No/Uncertain options |
 | `QUERY_MODE_DEFERRED` | strongest/fewest/premise_selection — classified but not solved in v1 |
 | `QUERY_OPEN_WH_UNSUPPORTED` | open-WH question with no decidable claim |
+| `QUERY_NONE_OF_ABOVE_PRESENT` | informational: a NONE_OF_ABOVE option is present; handled by solver post-processing |
 
 ---
 
@@ -246,8 +288,19 @@ Question-side (`query_verifier`, set on `QuerySpec.issues`):
   "can_interpretation": "meta_inference",
   "main_claim_text": null, "main_claim_fol": null, "negate_claim": false,
   "supported": true, "issues": [],
+  "marker_style": "dot",
+  "role_distribution": { "FULL_CLAIM": 3, "CONJUNCTIVE_CLAIM": 1 },
+  "extraction_diagnostics": ["MCQ_FOUR_OPTIONS"],
   "option_claims": [
-    { "label": "A", "option_type": "proposition", "claim_text": "...", "fol": "...", "ynu_value": "none", "premise_indices": [], "raw_fol": null }
+    {
+      "label": "A", "role": "FULL_CLAIM",
+      "normalized_text": "Alice passes the exam.",
+      "claim_text": "Alice passes the exam.",
+      "fol": "Passes(Alice)",
+      "is_selectable": true,
+      "ynu_value": "none", "premise_indices": [], "raw_fol": null,
+      "diagnostics": []
+    }
   ]
 }
 ```
@@ -278,11 +331,17 @@ Question-side (`query_verifier`, set on `QuerySpec.issues`):
 - [x] B03 parser quality eval notebook
 - [x] **`QuestionSideParser`** — `QParser` + `OParser` + `ClaimParser` + `query_verifier`
 - [x] Question classification — `question_format` / `solver_mode` / `can_interpretation` (meta vs object "can")
-- [x] MCQ option interpretation — proposition / fragment (subject recovery) / raw_fol / premise_reference / ynu_answer
-- [x] Embedded option extraction — `parse_mcq_options` handles `A.` and `A)`
 - [x] Solver routing — entailment / refutation / ynu_mapped (strongest/fewest/premise_selection deferred)
 - [x] Configurable uncertain token — `EXACT_TYPE1_UNCERTAIN_TOKEN` (default `"Unknown"`)
 - [x] `/qparser` API endpoint + B05 question-parser eval notebook
+- [x] **B10 OParser** — 9-role deterministic-first OptionParser (B10)
+  - [x] `OptionRole` taxonomy (RAW_FOL / PREMISE_REFERENCE / YNU_ANSWER / NONE_OF_ABOVE / SUBJECTLESS_MODAL_FRAGMENT / PREDICATE_FRAGMENT / CONJUNCTIVE_CLAIM / FULL_CLAIM / UNKNOWN)
+  - [x] `OptionParseBundle` with `marker_style`, `role_distribution`, `extraction_diagnostics`
+  - [x] YNU bare-token rule (fixes 10× over-counting; "No one…" → FULL_CLAIM)
+  - [x] Deterministic fragment realization (stem-pattern subject recovery + LLM fallback)
+  - [x] `extract_mcq()` with both `A.` and `A)` marker support + extraction diagnostics
+  - [x] None-of-above solver post-processing in `check_mcq(…, none_of_above_label)`
+  - [x] B06 eval notebook (offline classifier checks + live structural eval via `/qparser`)
 
 ### Missing / Incomplete
 
@@ -341,7 +400,7 @@ q = await question_parser.parse_question(
 )
 print(q.spec.question_format, q.spec.solver_mode, q.spec.supported)
 for c in q.spec.option_claims:
-    print(c.label, c.option_type, repr(c.fol))
+    print(c.label, c.role, c.is_selectable, repr(c.fol))
 
 await client.aclose()
 ```

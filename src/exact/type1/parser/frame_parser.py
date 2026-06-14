@@ -160,10 +160,14 @@ class PremiseFrameCompiler:
 
         if kind in ("fact", "numeric_fact"):
             texts = frame.fact_texts or frame.conclusion_texts
-            if not texts:
+            if not texts and not frame.numeric_constraints:
                 return (await self.fol_parser.parse_many([premise]))[0]
-            nodes = await self._parse_conclusions(texts, frame.modality)
-            return _and_nodes(nodes)
+            atomic_nodes = await self._parse_conclusions(texts, frame.modality) if texts else []
+            numeric_nodes = await self._parse_numeric_constraints(frame.numeric_constraints)
+            all_nodes: list[FOLNode] = list(atomic_nodes) + list(numeric_nodes)
+            if not all_nodes:
+                return (await self.fol_parser.parse_many([premise]))[0]
+            return _and_nodes(all_nodes)
 
         if kind == "existential_fact":
             atomic_texts = (

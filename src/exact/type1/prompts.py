@@ -359,6 +359,9 @@ Output: {"kind":"prohibition_rule","variable":"x","restrictor_text":"x is a stud
 
 Input: "Online courses are not necessarily cost-effective."
 Output: {"kind":"deontic_rule","variable":"x","restrictor_text":"x is an online course","condition_texts":[],"conclusion_texts":["x is not necessarily cost-effective"],"fact_texts":[],"numeric_constraints":[],"temporal_constraints":[],"modality":"not_necessarily","confidence":1.0}
+
+Input: "Professor John has published at least 3 academic papers."
+Output: {"kind":"numeric_fact","variable":null,"restrictor_text":null,"condition_texts":[],"conclusion_texts":[],"fact_texts":[],"numeric_constraints":["Professor John has published at least 3 academic papers"],"temporal_constraints":[],"modality":"none","confidence":1.0}
 """
 
 
