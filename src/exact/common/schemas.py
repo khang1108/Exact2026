@@ -228,6 +228,19 @@ class PredictionResponse(AppBaseModel):
         solver-not-run), never ``null``. Internal attribute access keeps ``None``."""
         return v if v is not None else []
 
+    @field_serializer("answer")
+    def _serialize_answer(self, v: str) -> str:
+        """Format Type 2 numeric answers in scientific notation on output (spec
+        section 4.2). Raw attribute access keeps the unformatted value."""
+        return _format_type2_answer(v, self.task_type)
+
+    @field_serializer("reasoning")
+    def _serialize_reasoning(self, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        """Fall back to the chain-of-thought steps when reasoning is unset."""
+        if v is None and self.cot:
+            return {"type": "cot", "steps": list(self.cot)}
+        return v
+
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
     """Convert an internal response into the stable EXACT submission shape.
