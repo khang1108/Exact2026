@@ -5,6 +5,7 @@ from typing import Any
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from exact.common.schemas import (
     OfficialPredictionResponse,
@@ -41,6 +42,20 @@ def _resolve_task_type(payload: PredictionRequest) -> TaskType:
     if payload.type == "type2":
         return TaskType.TYPE2_PHYSICS
     return TaskType.TYPE1_LOGIC if payload.premises else TaskType.TYPE2_PHYSICS
+
+
+def _render_predictions(results: list[PredictionResponse], debug: bool):
+    """Official 6-field submission shape by default; full debug response when ``debug``.
+
+    The full ``PredictionResponse`` already carries the FOL detail — ``fol`` plus
+    ``routing_diagnostics.parsed_premises`` (premise → FOL) and
+    ``routing_diagnostics.query_spec`` (translated question + per-option FOL).
+    Returning a ``JSONResponse`` bypasses the route's ``OfficialPredictionResponse``
+    filtering so grading keeps the stable 6-field contract by default.
+    """
+    if debug:
+        return JSONResponse([r.model_dump(mode="json") for r in results])
+    return [OfficialPredictionResponse.from_prediction(r) for r in results]
 
 
 @api_router.get("/health")
@@ -155,9 +170,13 @@ async def llm_models() -> dict[str, Any]:
 
 @api_router.post("/predict", response_model=list[OfficialPredictionResponse])
 async def predict(
-    payload: UnifiedPredictionRequest, request: Request
-) -> list[OfficialPredictionResponse]:
-    """Route one unified request to the Type 1 or Type 2 pipeline."""
+    payload: UnifiedPredictionRequest, request: Request, debug: bool = False
+):
+    """Route one unified request to the Type 1 or Type 2 pipeline.
+
+    ``?debug=true`` returns the full internal response (FOL translations of the
+    premises, question, and options) instead of the 6-field submission shape.
+    """
     task_type = _resolve_task_type(payload)
     logger = get_request_logger(
         name="api_router.predict",
@@ -170,7 +189,7 @@ async def predict(
         logger.info("Running Type 2 pipeline")
         try:
             result = await asyncio.to_thread(run_type2_pipeline, payload)
-            return [OfficialPredictionResponse.from_prediction(result)]
+            return _render_predictions([result], debug)
         except Exception as exc:
             logger.exception(f"Type 2 pipeline failed for {payload.query_id!r}: {exc}")
             fallback = PredictionResponse(
@@ -180,7 +199,7 @@ async def predict(
                 explanation="Type 2 pipeline error — see server logs for details.",
                 error=str(exc),
             )
-            return [OfficialPredictionResponse.from_prediction(fallback)]
+            return _render_predictions([fallback], debug)
 
     if not payload.premises:
         raise HTTPException(status_code=422, detail="Type 1 requests require non-empty premises")
@@ -200,7 +219,7 @@ async def predict(
             solver,
             fallback_reasoner,
         )
-        return [OfficialPredictionResponse.from_prediction(result)]
+        return _render_predictions([result], debug)
     except Exception as exc:
         logger.exception(f"Type 1 pipeline failed for {payload.query_id!r}: {exc}")
         fallback = PredictionResponse(
@@ -210,7 +229,7 @@ async def predict(
             explanation="Pipeline error — see server logs for details.",
             error=str(exc),
         )
-        return [OfficialPredictionResponse.from_prediction(fallback)]
+        return _render_predictions([fallback], debug)
 
 
 @api_router.post("/z3", response_model=list[OfficialPredictionResponse])
