@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
@@ -574,6 +574,99 @@ def _rename_constants_in_node(node: FOLNode, remap: dict[str, str]) -> FOLNode:
             else None
         ),
     )
+
+def _map_atoms(node: FOLNode, fn: Callable[[AtomicNode], AtomicNode]) -> FOLNode:
+    """Rebuild a tree, applying ``fn`` to every atom (comparisons left untouched)."""
+    if isinstance(node, ComparisonNode):
+        return node
+    if isinstance(node, AtomicNode):
+        return fn(node)
+    if isinstance(node, QuantifiedNode):
+        return QuantifiedNode(
+            quantifier=node.quantifier,
+            variable=node.variable,
+            body=_map_atoms(node.body, fn),
+            restrictor=(
+                _map_atoms(node.restrictor, fn)
+                if node.restrictor is not None
+                else None
+            ),
+        )
+    return LogicalNode(
+        operator=node.operator,
+        left=_map_atoms(node.left, fn),
+        right=_map_atoms(node.right, fn) if node.right is not None else None,
+    )
+
+
+def repair_arity_drift(trees: list[FOLNode]) -> tuple[list[FOLNode], list[str]]:
+    """Unify a predicate that drifts across arities down to its lowest arity.
+
+    The atomic parser occasionally emits a higher-arity copy of a predicate whose
+    surplus argument merely re-states the predicate itself (a self-nominalization,
+    e.g. ``HasSupervisorApproval(Asha, SupervisorApproval)`` alongside a rule's
+    unary ``HasSupervisorApproval(x)``). Z3 treats the two arities as distinct
+    predicates, so entailment silently fails. When the surplus argument is such a
+    self-nominalization, drop it so every occurrence shares one signature.
+    """
+    arities_by_name: dict[str, set[int]] = defaultdict(set)
+    for tree in trees:
+        for atom in _collect_atoms_in_order(tree):
+            arities_by_name[atom.predicate.name].add(len(atom.arguments))
+    targets = {
+        name: min(arities)
+        for name, arities in arities_by_name.items()
+        if len(arities) > 1
+    }
+    if not targets:
+        return trees, []
+
+    repairs: list[str] = []
+
+    def _self_nominalized(pred_name: str, argument: str) -> bool:
+        pred_tokens = {
+            _normalize_semantic_token(token) for token in _camel_word_list(pred_name)
+        }
+        arg_tokens = {
+            _normalize_semantic_token(token) for token in _camel_word_list(argument)
+        }
+        return bool(arg_tokens) and arg_tokens <= pred_tokens
+
+    def _repair_atom(atom: AtomicNode) -> AtomicNode:
+        name = atom.predicate.name
+        target = targets.get(name)
+        if target is None or len(atom.arguments) <= target:
+            return atom
+        drop = {
+            index
+            for index, argument in enumerate(atom.arguments)
+            if _self_nominalized(name, argument)
+        }
+        # Only repair when dropping the self-nominalized args reaches the target
+        # arity — otherwise the surplus args are real and we leave the warning.
+        if len(atom.arguments) - len(drop) != target:
+            return atom
+        kept = [index for index in range(len(atom.arguments)) if index not in drop]
+        dropped = [atom.arguments[index] for index in sorted(drop)]
+        sorts = atom.predicate.arg_sorts
+        new_sorts = (
+            [sorts[index] for index in kept] if len(sorts) == len(atom.arguments) else sorts
+        )
+        repairs.append(
+            f"ARITY_DRIFT_REPAIRED: {name}/{len(atom.arguments)} → /{target} "
+            f"(dropped self-nominalized {', '.join(dropped)})"
+        )
+        predicate = Predicate(
+            name=name,
+            arg_sorts=new_sorts,
+            description=atom.predicate.description,
+            aliases=list(atom.predicate.aliases),
+        )
+        return AtomicNode(predicate=predicate, arguments=[atom.arguments[i] for i in kept])
+
+    repaired = [_map_atoms(tree, _repair_atom) for tree in trees]
+    return repaired, list(dict.fromkeys(repairs))
+
 
 def _predicate_family(name: str) -> str | None:
     """Return the semantic family of a predicate name, or None if unclassified."""

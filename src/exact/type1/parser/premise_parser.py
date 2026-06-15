@@ -16,6 +16,7 @@ from exact.type1.parser.schemas import (
     _INTERROGATIVE_START,
     _OPTION_LINE,
     is_generic_class_constant,
+    repair_arity_drift,
     singularize_class_constant,
 )
 
@@ -85,9 +86,14 @@ class PremiseParser:
             )
         else:
             restrictor_repairs = []
+        draft_trees, arity_repairs = repair_arity_drift(draft_trees)
         schema = PremiseSchema.from_trees(draft_trees)
         trees, renames = schema.canonicalize(draft_trees)
-        issues = _verify_bundle(normalized, trees, schema, frames) + restrictor_repairs
+        issues = (
+            _verify_bundle(normalized, trees, schema, frames)
+            + restrictor_repairs
+            + arity_repairs
+        )
 
         blocking = tuple(i for i in issues if _is_blocking_issue(i))
         warnings = tuple(i for i in issues if not _is_blocking_issue(i))
