@@ -102,25 +102,27 @@ async def run_type1_pipeline(
     fallback_used = False
     fallback_error: str | None = None
     fallback_explanation: str | None = None
-    fallback_trigger = (
-        symbolic_cause
-        if raw_answer == _SOLVER_UNCERTAIN
-        else (
-            "RANKING_MODE_ADJUDICATION"
-            if spec.solver_mode in {"fewest_premise", "strongest_conclusion", "premise_selection"}
-            else (
-                # Numeric premises may have their values silently dropped by the FOL parser.
-                # If Z3 answered an MCQ confidently but the bundle has numeric loss warnings,
-                # the answer may be a false positive (same predicate for different numbers).
-                "NUMERIC_CONSTRAINT_MCQ_VERIFY"
-                if is_mcq and any(
-                    "NUMERIC_CONSTRAINT_LOST" in issue
-                    for issue in premise_bundle.verification_issues
-                )
-                else None
-            )
-        )
-    )
+    # --- Fallback trigger -------------------------------------------------------
+    # For ranking modes (fewest_premise, strongest_conclusion, premise_selection)
+    # Z3 cannot answer meaningfully — these are minimisation/maximisation problems,
+    # not entailment queries. Always adjudicate with the LLM for these modes,
+    # regardless of whether Z3 happened to return a definite answer or Uncertain.
+    # For entailment modes, only fall back when Z3 was uncertain.
+    fallback_trigger: str | None
+    if spec.solver_mode in {"fewest_premise", "strongest_conclusion", "premise_selection"}:
+        fallback_trigger = "RANKING_MODE_ADJUDICATION"
+    elif raw_answer == _SOLVER_UNCERTAIN:
+        fallback_trigger = symbolic_cause
+    elif is_mcq and any(
+        "NUMERIC_CONSTRAINT_LOST" in issue
+        for issue in premise_bundle.verification_issues
+    ):
+        # Numeric premises may have their values silently dropped by the FOL
+        # parser. If Z3 answered an MCQ confidently but the bundle has numeric
+        # loss warnings, the answer may be a false positive.
+        fallback_trigger = "NUMERIC_CONSTRAINT_MCQ_VERIFY"
+    else:
+        fallback_trigger = None
     if fallback_trigger is not None and fallback_reasoner is not None:
         try:
             is_open_wh = spec.question_format == "open_wh"
@@ -191,6 +193,11 @@ async def run_type1_pipeline(
             *(
                 [f"LLM fallback returned: {answer}"]
                 if fallback_used
+                else []
+            ),
+            *(
+                [f"LLM fallback error: {fallback_error}"]
+                if fallback_error
                 else []
             ),
         ],
