@@ -155,7 +155,9 @@ Reason directly from the original premises and question:
 - Respect explicit negation.
 - For a polar question, answer Yes if the claim follows, No if its negation
   follows, and Uncertain only when neither follows.
-- For MCQ, select the single best option label.
+- For MCQ, select the single option that logically follows from the premises.
+  If none of the options can be derived — none follows, or the premises are
+  insufficient or mutually contradictory — answer Uncertain rather than guessing.
 - For "fewest premises", choose the option with the shortest explicit
   derivation from stated premises; do not use vacuous truth as a shortcut.
 - For "strongest conclusion", prefer the most informative downstream
