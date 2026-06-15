@@ -98,6 +98,10 @@ class PremiseParser:
         blocking = tuple(i for i in issues if _is_blocking_issue(i))
         warnings = tuple(i for i in issues if not _is_blocking_issue(i))
 
+        epistemic_witness_indices = tuple(
+            i for i, premise in enumerate(normalized) if _is_meta_epistemic(premise)
+        )
+
         return PremiseParseBundle(
             premises=normalized,
             draft_trees=draft_trees,
@@ -108,6 +112,7 @@ class PremiseParser:
             verification_issues=tuple(issues),
             blocking_issues=blocking,
             warnings=warnings,
+            epistemic_witness_indices=epistemic_witness_indices,
         )
 
 
@@ -117,6 +122,31 @@ def _is_declarative(premise: str) -> bool:
     if premise.endswith("?") or _OPTION_LINE.match(premise):
         return False
     return _INTERROGATIVE_START.match(premise) is None
+
+
+# Meta-epistemic premises describe the *knowledge base* ("no premise states
+# whether X", "it is unknown whether X"), not the world. They carry zero
+# object-level content and must never compile to ¬X. Anchored to explicit
+# epistemic lexemes so genuine quantified claims ("No one is qualified.",
+# "No AI models use deep learning.") are NOT matched.
+_META_EPISTEMIC_RE = re.compile(
+    r"^\s*(?:"
+    r"no\s+(?:premises?|information|statements?|mentions?|data|details?|records?|indications?)\b"
+    r"|there\s+is\s+no\s+(?:premise|information|statement|mention|indication|record|data)\b"
+    r"|it\s+is\s+not\s+(?:stated|specified|mentioned|indicated|known|clear|determined)\b"
+    r"|it\s+is\s+(?:unknown|unclear|undetermined|unstated|uncertain)\b"
+    r"|nothing\s+(?:is\s+)?(?:said|stated|states?|mentions?|mentioned|indicates?|indicated|specifies|specified|known)\b"
+    r"|(?:the\s+)?premises?\s+(?:do(?:es)?\s+not|don'?t|doesn'?t)\s+(?:state|say|mention|indicate|specify)\b"
+    r"|we\s+(?:do\s+not|don'?t|cannot|can'?t)\s+(?:know|tell|determine)\b"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def _is_meta_epistemic(premise: str) -> bool:
+    """True for premises that disclaim knowledge instead of asserting a fact."""
+
+    return _META_EPISTEMIC_RE.match(premise) is not None
 
 
 def _normalize_premise(premise: str) -> str:

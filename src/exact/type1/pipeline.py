@@ -73,6 +73,22 @@ async def run_type1_pipeline(
         premise_bundle.schema,
     )
 
+    # --- Epistemic witnesses --------------------------------------------------
+    # Meta-premises like "No premise states whether X" disclaim knowledge; their
+    # FOL (often ¬X) must not reach Z3 as a fact. Keep them out of the solver
+    # input (remapping indices), and if one is specifically about the queried
+    # claim, the answer is decisively Uncertain with that premise as witness.
+    witness_idx = set(premise_bundle.epistemic_witness_indices)
+    solver_index_map = [i for i in range(len(premise_fols)) if i not in witness_idx]
+    solver_fols = [premise_fols[i] for i in solver_index_map]
+    claim_repr = repr(q_bundle.main_claim_fol) if q_bundle.main_claim_fol is not None else None
+    matched_witness: int | None = None
+    if claim_repr is not None:
+        for i in sorted(witness_idx):
+            if claim_repr in {repr(a) for a in _collect_atoms(premise_fols[i])}:
+                matched_witness = i
+                break
+
     # --- Z3 routing ----------------------------------------------------------
     solver_used = solver is not None and premise_bundle.verified and spec.supported
     sort_conflict = False
@@ -80,7 +96,8 @@ async def run_type1_pipeline(
     if solver_used:
         assert solver is not None
         try:
-            raw_answer, premises_used = _solve(solver, premise_fols, spec, q_bundle)
+            raw_answer, used_local = _solve(solver, solver_fols, spec, q_bundle)
+            premises_used = [solver_index_map[j] for j in used_local]
         except ValueError as exc:
             if "SORT_CONFLICT" in str(exc):
                 raw_answer = _SOLVER_UNCERTAIN
@@ -90,9 +107,18 @@ async def run_type1_pipeline(
     else:
         raw_answer = _SOLVER_UNCERTAIN
 
+    # A witness about the queried claim is decisive: the premises explicitly say
+    # they do not know, so the answer is Uncertain and that premise is cited.
+    skip_fallback = matched_witness is not None
+    if matched_witness is not None:
+        raw_answer = _SOLVER_UNCERTAIN
+        premises_used = [matched_witness]
+
     symbolic_answer = raw_answer
-    symbolic_cause = _uncertainty_cause(
-        solver, premise_bundle, spec, raw_answer, sort_conflict
+    symbolic_cause = (
+        "EPISTEMIC_WITNESS_UNCERTAIN"
+        if matched_witness is not None
+        else _uncertainty_cause(solver, premise_bundle, spec, raw_answer, sort_conflict)
     )
     uncertainty_interpretation = (
         interpret_z3_uncertainty(proof_connectivity)
@@ -122,6 +148,8 @@ async def run_type1_pipeline(
         # loss warnings, the answer may be a false positive.
         fallback_trigger = "NUMERIC_CONSTRAINT_MCQ_VERIFY"
     else:
+        fallback_trigger = None
+    if skip_fallback:
         fallback_trigger = None
     if fallback_trigger is not None and fallback_reasoner is not None:
         try:
@@ -290,6 +318,23 @@ def _uncertainty_cause(
 # ---------------------------------------------------------------------------
 # Z3 routing
 # ---------------------------------------------------------------------------
+
+def _collect_atoms(node: FOLNode) -> list[AtomicNode]:
+    """All atomic predicate applications under ``node`` (comparisons excluded)."""
+    if isinstance(node, AtomicNode):
+        return [node]
+    if isinstance(node, ComparisonNode):
+        return []
+    if isinstance(node, QuantifiedNode):
+        atoms = _collect_atoms(node.body)
+        if node.restrictor is not None:
+            atoms += _collect_atoms(node.restrictor)
+        return atoms
+    atoms = _collect_atoms(node.left)
+    if node.right is not None:
+        atoms += _collect_atoms(node.right)
+    return atoms
+
 
 def _solve(
     solver: FOLSolver,

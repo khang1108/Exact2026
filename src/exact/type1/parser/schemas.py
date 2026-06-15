@@ -417,6 +417,10 @@ class PremiseParseBundle:
     # warnings are surfaced but the solver still runs (lower confidence).
     blocking_issues: tuple[str, ...] = ()
     warnings: tuple[str, ...] = ()
+    # 0-based indices of meta-epistemic premises ("no premise states whether X")
+    # that disclaim knowledge rather than assert a fact. Their FOL must be kept
+    # out of the Z3 fact set, and they act as uncertainty witnesses.
+    epistemic_witness_indices: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
