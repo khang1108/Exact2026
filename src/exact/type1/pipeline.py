@@ -153,14 +153,20 @@ async def run_type1_pipeline(
         fallback_trigger = None
     if fallback_trigger is not None and fallback_reasoner is not None:
         try:
-            is_open_wh = spec.question_format == "open_wh"
+            # Open-ended: a wh-question, or a type-1 query with no options and no
+            # testable polar claim. These get a free-form LLM answer (no label
+            # set). Everything else carries Uncertain as a legal answer so the
+            # fallback can decline to guess instead of over-committing.
+            is_open_ended = spec.question_format == "open_wh" or (
+                not is_mcq and q_bundle.main_claim_fol is None
+            )
             fallback = await fallback_reasoner.answer(
                 premises=premises,
                 question=payload.question,
                 option_labels=(
-                    [claim.label for claim in spec.option_claims]
+                    [c.label for c in spec.option_claims] + [_SOLVER_UNCERTAIN]
                     if is_mcq
-                    else ([] if is_open_wh else ["Yes", "No"])
+                    else [] if is_open_ended else ["Yes", "No", _SOLVER_UNCERTAIN]
                 ),
                 options=options_dict or None,
             )
