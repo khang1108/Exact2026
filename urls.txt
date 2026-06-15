@@ -1,3 +1,0 @@
-https://api.iamphuckhang.dev/predict
-https://api.iamphuckhang.dev/parser/v1/models
-https://api.iamphuckhang.dev/llm/v1/models
