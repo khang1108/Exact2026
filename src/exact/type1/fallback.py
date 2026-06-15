@@ -68,7 +68,7 @@ class Type1FallbackReasoner:
                 {"role": "user", "content": "\n".join(user_parts)},
             ],
             Type1FallbackResult,
-            max_tokens=768,
+            max_tokens=1536,
         )
 
         # Convert 1-based premise indices (shown to LLM) to 0-based
@@ -135,7 +135,7 @@ class Type1FallbackReasoner:
                 {"role": "user", "content": "\n".join(user_parts)},
             ],
             Type1FallbackResult,
-            max_tokens=512,
+            max_tokens=768,
         )
         canonical = {
             label.casefold(): label for label in allowed
@@ -163,9 +163,10 @@ Reason directly from the original premises and question:
 - Return exactly one answer from the supplied Allowed answers.
 - In premises_used, list the 1-based numbers of every premise you actually
   relied on to reach your answer (e.g. [1, 3] means premises 1 and 3).
+- IMPORTANT: Keep explanation under 100 words. Be concise.
 
 Return JSON only with:
-{"answer": "<allowed answer>", "explanation": "<brief justification>", "premises_used": [<1-based premise numbers>]}
+{"answer": "<allowed answer>", "explanation": "<brief justification, max 100 words>", "premises_used": [<1-based premise numbers>]}
 """.strip()
 
 
