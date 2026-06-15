@@ -9,7 +9,14 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+)
 
 
 class TaskType(str, Enum):
@@ -214,6 +221,12 @@ class PredictionResponse(AppBaseModel):
         if v is None:
             return ""
         return str(v)
+
+    @field_serializer("premises_used")
+    def _serialize_premises_used(self, v: list[int] | None) -> list[int]:
+        """Always emit a list — the official schema requires ``[]`` (Type 2 /
+        solver-not-run), never ``null``. Internal attribute access keeps ``None``."""
+        return v if v is not None else []
 
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
