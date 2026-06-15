@@ -109,12 +109,48 @@ async def parser_models() -> dict:
 
 
 @api_router.get("/v1/models")
-# @api_router.get("/llm/v1/models")
 async def llm_models() -> dict[str, Any]:
-    """Passthrough to the main LLM vLLM ``/v1/models``."""
+    """Aggregate models from all vLLM servers (main LLM + Type 1 parser).
+
+    The committee checks this endpoint to verify all self-hosted models are
+    reachable. We merge both servers' model lists into one OpenAI-compatible
+    response. If one server is down, its entries are omitted gracefully.
+    """
     settings = get_settings()
-    api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
-    return await _proxy_models(settings.llm_base_url, api_key, "Main LLM")
+    main_api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
+    parser_api_key = (
+        settings.type1_parser_api_key.get_secret_value()
+        if settings.type1_parser_api_key
+        else None
+    )
+
+    # Fetch both servers concurrently; treat errors as empty results (soft degradation).
+    async def _safe_proxy(base_url: str | None, api_key: str | None, name: str) -> list:
+        try:
+            payload = await _proxy_models(base_url, api_key, name)
+            return payload.get("data", [])
+        except HTTPException:
+            return []
+
+    main_models, parser_models_list = await asyncio.gather(
+        _safe_proxy(settings.llm_base_url, main_api_key, "Main LLM"),
+        _safe_proxy(settings.type1_parser_base_url, parser_api_key, "Type 1 parser"),
+    )
+
+    # Deduplicate by model id in case both servers serve the same model name.
+    seen: set[str] = set()
+    merged: list[dict] = []
+    for model in [*main_models, *parser_models_list]:
+        if model.get("id") not in seen:
+            seen.add(model["id"])
+            merged.append(model)
+
+    if not merged:
+        raise HTTPException(status_code=503, detail="No model servers are reachable")
+
+    return {"object": "list", "data": merged}
+
+
 
 
 @api_router.post("/predict", response_model=list[OfficialPredictionResponse])
