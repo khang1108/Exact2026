@@ -50,6 +50,13 @@ PARSER_CPU_KVCACHE_SPACE="${PARSER_CPU_KVCACHE_SPACE:-${EXACT_TYPE1_PARSER_SERVE
 PARSER_CPU_RESERVED_CPUS="${PARSER_CPU_RESERVED_CPUS:-${EXACT_TYPE1_PARSER_SERVER_CPU_RESERVED_CPUS:-1}}"
 
 PARSER_VLLM_BIN="${PARSER_VLLM_BIN:-${EXACT_TYPE1_PARSER_SERVER_VLLM_BIN:-}}"
+
+# LoRA adapter settings (optional)
+PARSER_LORA_ADAPTER="${PARSER_LORA_ADAPTER:-${EXACT_TYPE1_PARSER_LORA_ADAPTER:-}}"
+PARSER_LORA_MAX_RANK="${PARSER_LORA_MAX_RANK:-${EXACT_TYPE1_PARSER_LORA_MAX_RANK:-64}}"
+
+# Eager mode: safer on virtualized GPUs (ThunderCompute etc.)
+PARSER_ENFORCE_EAGER="${PARSER_ENFORCE_EAGER:-${EXACT_TYPE1_PARSER_SERVER_ENFORCE_EAGER:-1}}"
 if [[ -z "$PARSER_VLLM_BIN" ]]; then
   if [[ -x "$PROJECT_ROOT/.venv-vllm-cpu/bin/vllm" ]]; then
     PARSER_VLLM_BIN="$PROJECT_ROOT/.venv-vllm-cpu/bin/vllm"
@@ -91,6 +98,24 @@ if [[ -n "$PARSER_QUANTIZATION" ]]; then
   cmd+=(--quantization "$PARSER_QUANTIZATION")
 fi
 
+# LoRA adapter: enable only when EXACT_TYPE1_PARSER_LORA_ADAPTER is set.
+# The adapter is served under the same name as the base model so that the
+# ParserClient continues to work without any code changes.
+if [[ -n "$PARSER_LORA_ADAPTER" ]]; then
+  echo "[parser] LoRA adapter enabled: $PARSER_LORA_ADAPTER (max rank: $PARSER_LORA_MAX_RANK)"
+  cmd+=(
+    --enable-lora
+    --lora-modules "${PARSER_SERVED_MODEL_NAME}=${PARSER_LORA_ADAPTER}"
+    --max-lora-rank "$PARSER_LORA_MAX_RANK"
+  )
+fi
+
+# Enforce eager mode (no CUDA graph capture) — safer on virtualised GPU hosts.
+if [[ "$PARSER_ENFORCE_EAGER" == "1" ]]; then
+  cmd+=(--enforce-eager)
+fi
+
 echo "$ENV_STATUS"
 echo "Serving $PARSER_MODEL as $PARSER_SERVED_MODEL_NAME on $PARSER_HOST:$PARSER_PORT ($PARSER_DEVICE)"
+[[ -n "$PARSER_LORA_ADAPTER" ]] && echo "  + LoRA adapter: $PARSER_LORA_ADAPTER"
 exec "${cmd[@]}"

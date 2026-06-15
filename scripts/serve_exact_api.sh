@@ -212,6 +212,10 @@ PARSER_CPU_IMAGE="${EXACT_TYPE1_PARSER_SERVER_CPU_IMAGE:-vllm/vllm-openai-cpu:la
 # Model (1.4 GiB) + KV cache (1 GiB) + overhead → 4 GiB is the safe minimum.
 PARSER_DOCKER_MEMORY="${EXACT_TYPE1_PARSER_SERVER_DOCKER_MEMORY:-4g}"
 
+# LoRA adapter (optional). GPU-only; ignored in the Docker CPU path.
+PARSER_LORA_ADAPTER="${EXACT_TYPE1_PARSER_LORA_ADAPTER:-}"
+PARSER_LORA_MAX_RANK="${EXACT_TYPE1_PARSER_LORA_MAX_RANK:-64}"
+
 if [[ "$PARSER_DEVICE" == "cpu" ]]; then
   # ---- Docker CPU path ----
   DOCKER_CONTEXT="${EXACT_TYPE1_PARSER_SERVER_DOCKER_CONTEXT:-}"
@@ -288,6 +292,7 @@ else
 
   log_info "Starting Type 1 parser vLLM: $PARSER_MODEL → $PARSER_HOST:$PARSER_PORT ($PARSER_DEVICE)"
   [[ -n "$PARSER_CUDA_VISIBLE_DEVICES" ]] && log_info "Parser GPU(s): $PARSER_CUDA_VISIBLE_DEVICES"
+  [[ -n "$PARSER_LORA_ADAPTER" ]] && log_info "Parser LoRA adapter: $PARSER_LORA_ADAPTER (max rank: $PARSER_LORA_MAX_RANK)"
 
   # VLLM_PORT is reserved by vLLM as the base for internal coordination
   # sockets. The launcher also accepts it as the main HTTP-port override, so
@@ -311,6 +316,17 @@ else
   )
   [[ -n "$PARSER_QUANTIZATION" ]] && parser_cmd+=(--quantization "$PARSER_QUANTIZATION")
   [[ "$PARSER_ENFORCE_EAGER" == "1" ]] && parser_cmd+=(--enforce-eager)
+
+  # LoRA: add --enable-lora when an adapter path/repo is configured.
+  # The adapter is registered under the same served-model-name so the
+  # ParserClient needs no changes.
+  if [[ -n "$PARSER_LORA_ADAPTER" ]]; then
+    parser_cmd+=(
+      --enable-lora
+      --lora-modules "${PARSER_SERVED_NAME}=${PARSER_LORA_ADAPTER}"
+      --max-lora-rank "$PARSER_LORA_MAX_RANK"
+    )
+  fi
 
   "${parser_cmd[@]}" >> "$LOG_DIR/parser.log" 2>&1 &
   PARSER_PID=$!
