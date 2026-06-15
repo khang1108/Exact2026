@@ -6,6 +6,11 @@ independently from HTTP transport, routing, and response validation.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from exact.type1.parser.schemas import PremiseSchema
+
 def get_system_prompt_rephrase() -> str:
     """Return instructions for minimally rewriting a sentence before parsing."""
 
@@ -281,6 +286,61 @@ def get_system_prompt_atomic() -> str:
         Input:  "x is reliable"
         Output: {"predicate":"Reliable","arguments":["x"],"negated":false}
 """
+
+def get_system_prompt_atomic_schema_guided(schema: PremiseSchema) -> str:
+    """Return an atomic prompt that injects the premise predicate vocabulary.
+
+    When parsing claim/option sentences, this prompt tells the LLM which
+    predicate names already exist in the premise schema. The LLM should reuse
+    them instead of inventing new ones, eliminating parser drift.
+    """
+
+    vocab_lines: list[str] = []
+    for pred in schema.predicates:
+        alias_part = f"  (aliases: {', '.join(pred.aliases)})" if pred.aliases else ""
+        vocab_lines.append(f"  - {pred.name}/{pred.arity}{alias_part}")
+
+    const_lines: list[str] = []
+    for const in schema.constants:
+        alias_part = f"  (aliases: {', '.join(const.aliases)})" if const.aliases else ""
+        const_lines.append(f"  - {const.name}{alias_part}")
+
+    vocab_block = "\n".join(vocab_lines) if vocab_lines else "  (none)"
+    const_block = "\n".join(const_lines) if const_lines else "  (none)"
+
+    return f"""\
+    Extract the predicate and arguments from this atomic sentence.
+
+    KNOWN PREDICATES (you MUST use these exact names when they match):
+{vocab_block}
+
+    KNOWN CONSTANTS (you MUST use these exact names when they match):
+{const_block}
+
+    Rules:
+        1. If the sentence's meaning matches a KNOWN PREDICATE above, you MUST
+           use that exact predicate name (or one of its aliases). Do NOT invent
+           a new name for a concept that already has a predicate.
+        2. Only create a new predicate name if no KNOWN PREDICATE fits the meaning.
+        3. Similarly, if an argument matches a KNOWN CONSTANT, use that exact name.
+        4. predicate → CamelCase verb phrase describing the relation.
+        5. arguments → ALL entities in subject-object order.
+            Normalize every argument:
+            - Variables (x, y, z, x1...)  → keep exactly as-is
+            - Proper names (Alice, Rina)   → keep exactly as-is
+            - "the X" / "a X" / "an X"   → strip article, CamelCase
+            - NEVER include articles (the, a, an) in argument name
+        6. Include ALL arguments — subject AND all objects.
+        7. If negative (does not / is not / never), set negated=true,
+            extract the POSITIVE predicate and all arguments.
+        8. PREFER UNARY for properties and traits.
+        9. PREFER BINARY for true subject-object relations that vary per instance.
+        10. Do NOT generate any Code Block.
+
+    Return ONLY valid JSON.
+    Output: {{"predicate":"...","arguments":["..."],"negated":false}}
+"""
+
 
 def get_system_prompt_premise_frame() -> str:
     """Return instructions for decomposing a premise into its logical frame."""

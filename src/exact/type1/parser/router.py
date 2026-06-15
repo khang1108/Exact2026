@@ -8,7 +8,7 @@ The transport-only ``ParserClient`` executes the resulting requests.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from pydantic import BaseModel
 
@@ -23,11 +23,15 @@ from exact.type1.parser.schemas import (
 )
 from exact.type1.prompts import (
     get_system_prompt_atomic,
+    get_system_prompt_atomic_schema_guided,
     get_system_prompt_coreference,
     get_system_prompt_logical,
     get_system_prompt_quantified,
     get_system_prompt_rephrase,
 )
+
+if TYPE_CHECKING:
+    from exact.type1.parser.schemas import PremiseSchema
 
 ParserKind = Literal["atomic", "logical", "quantified", "rephrase", "coreference"]
 SentenceParserKind = Literal["atomic", "logical", "quantified"]
@@ -97,6 +101,29 @@ def build_coreference_request(left_clause: str, right_clause: str) -> ParserRequ
 
     user_message = f'Input left: "{left_clause}"\nInput right: "{right_clause}"'
     return _build_request("coreference", user_message)
+
+
+def build_schema_guided_atomic_request(
+    sentence: str,
+    premise_schema: PremiseSchema,
+) -> ParserRequest:
+    """Build an atomic request whose system prompt includes the premise vocabulary.
+
+    The schema-guided prompt lists all known predicates and constants so the LLM
+    reuses existing names instead of inventing new ones, eliminating parser drift
+    between premises and claims.
+    """
+
+    sentence = sentence.strip()
+    if not sentence:
+        raise ValueError("sentence must not be empty")
+
+    system_prompt = get_system_prompt_atomic_schema_guided(premise_schema).strip()
+    messages: list[ChatMessage] = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f'Input: "{sentence}"'},
+    ]
+    return ParserRequest(kind="atomic", messages=messages, schema=AtomicResult)
 
 
 def _build_request(kind: ParserKind, user_message: str) -> ParserRequest:

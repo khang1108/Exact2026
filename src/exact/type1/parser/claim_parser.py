@@ -244,7 +244,12 @@ class SchemaGuidedFrameCompiler:
     def __init__(self, fol_parser: FOLParser) -> None:
         self.fol_parser = fol_parser
 
-    async def compile_frames(self, frames: list[ClaimFrame]) -> list[FOLNode]:
+    async def compile_frames(
+        self,
+        frames: list[ClaimFrame],
+        *,
+        premise_schema: PremiseSchema | None = None,
+    ) -> list[FOLNode]:
         # Collect every sub-text that needs the free parser into one batch.
         batch: list[str] = []
         plan: list[tuple[str, int, int]] = []  # (kind, idx_a, idx_b)
@@ -262,7 +267,11 @@ class SchemaGuidedFrameCompiler:
             else:
                 plan.append((frame.kind, -1, -1))
 
-        parsed = await self.fol_parser.parse_many(batch) if batch else []
+        parsed = (
+            await self.fol_parser.parse_many(batch, premise_schema=premise_schema)
+            if batch
+            else []
+        )
 
         out: list[FOLNode] = []
         for frame, (kind, a, b) in zip(frames, plan):
@@ -431,7 +440,7 @@ class ClaimParser:
             frame.diagnostics.extend(norm_diags)
             frames.append(frame)
 
-        trees = await self.compiler.compile_frames(frames)
+        trees = await self.compiler.compile_frames(frames, premise_schema=schema)
         trees, renames, canon_diags = self.canonicalizer.canonicalize(trees, schema)
         verify_diags = self.verifier.verify(trees, schema)
 
