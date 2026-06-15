@@ -68,7 +68,7 @@ class Type1FallbackReasoner:
                 {"role": "user", "content": "\n".join(user_parts)},
             ],
             Type1FallbackResult,
-            max_tokens=256,
+            max_tokens=768,
         )
 
         # Convert 1-based premise indices (shown to LLM) to 0-based
@@ -135,7 +135,7 @@ class Type1FallbackReasoner:
                 {"role": "user", "content": "\n".join(user_parts)},
             ],
             Type1FallbackResult,
-            max_tokens=192,
+            max_tokens=512,
         )
         canonical = {
             label.casefold(): label for label in allowed
