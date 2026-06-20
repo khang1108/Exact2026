@@ -721,6 +721,12 @@ option, ALL using the same predicate names.
 4. Numbers/thresholds become comparisons: "weighs under 2 kg" -> Weight(x) < 2.
 5. Negation: "is not / does not / never" -> ~ on the predicate.
 6. "premises" must have exactly one FOL string per input premise, in order.
+7. META-EPISTEMIC premises that only say information is ABSENT or UNKNOWN
+   ("No premise states whether X", "It is unknown/unspecified whether X",
+   "Nothing indicates whether X") carry NO logical content. Output an EMPTY
+   STRING "" for that premise (keep one entry per premise, in order). NEVER
+   translate them to ~X or any fact — the solver should stay Uncertain when
+   nothing entails the claim.
 
 # QUESTION
 - question_format = "polar" for a yes/no/uncertain statement, "mcq" if options are

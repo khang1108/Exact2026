@@ -131,6 +131,8 @@ def _parse_translation(raw: TranslatedTheory) -> TheoryTranslation:
     premise_strings: list[str] = []
     premise_index_map: list[int] = []
     for index, fol in enumerate(raw.premises):
+        if not fol or not fol.strip():
+            continue  # intentionally empty (meta-epistemic premise) — no content
         try:
             tree = parse_fol_string(fol)
         except FOLStringParseError as exc:

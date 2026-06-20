@@ -481,7 +481,11 @@ async def run_type1_single_pass(
         representative.premises_used if winner != _SOLVER_UNCERTAIN else None
     )
 
-    # LLM fallback when symbolic could not decide.
+    # Trust Z3 on a usable translation: a Z3 'Uncertain' is itself a valid
+    # answer (the premises genuinely do not entail). Fall back to the LLM ONLY
+    # when there is nothing to solve — an open-ended (wh) question, or the
+    # translation produced no usable FOL (premises/claim/options failed to
+    # parse). This keeps Z3 the decider and avoids the slow fallback path.
     fallback_used = False
     fallback_trigger: str | None = None
     fallback_explanation: str | None = None
@@ -489,8 +493,11 @@ async def run_type1_single_pass(
     is_open_ended = translation.question_format == "open_wh" or (
         not is_mcq and translation.claim_tree is None
     )
-    if raw_answer == _SOLVER_UNCERTAIN and fallback_reasoner is not None:
-        fallback_trigger = "SINGLE_PASS_UNCERTAIN"
+    translation_usable = bool(premise_fols) and (
+        bool(translation.option_trees) if is_mcq else translation.claim_tree is not None
+    )
+    if (is_open_ended or not translation_usable) and fallback_reasoner is not None:
+        fallback_trigger = "OPEN_ENDED" if is_open_ended else "TRANSLATION_UNUSABLE"
         try:
             fb = await fallback_reasoner.answer(
                 premises=premises,
@@ -510,7 +517,7 @@ async def run_type1_single_pass(
         except Exception as exc:
             fallback_error = f"{type(exc).__name__}: {exc}"
 
-    if not is_mcq and _is_provability_question(payload.question):
+    if not is_mcq and not is_open_ended and _is_provability_question(payload.question):
         raw_answer = "Yes" if symbolic_answer == "Yes" else "No"
 
     answer = _normalize_answer(raw_answer)
