@@ -43,14 +43,21 @@ async def run_type1_pipeline(
     solver: FOLSolver | None = None,
     fallback_reasoner: Type1FallbackReasoner | None = None,
     theory_translator: TheoryTranslator | None = None,
+    translator_mode: str | None = None,
 ) -> PredictionResponse:
-    """Parse premises and the question through their workflows, then solve."""
+    """Parse premises and the question through their workflows, then solve.
+
+    ``translator_mode`` (per-request override, e.g. ``?translator=single_pass``)
+    takes precedence over the EXACT_TYPE1_TRANSLATOR setting so A/B runs need no
+    server restart.
+    """
 
     premises = [p.strip() for p in payload.premises or [] if p.strip()]
     if not premises:
         raise ValueError("Type 1 requests require at least one non-empty premise")
 
-    if get_settings().type1_translator == "single_pass" and theory_translator is not None:
+    mode = translator_mode or get_settings().type1_translator
+    if mode == "single_pass" and theory_translator is not None:
         return await run_type1_single_pass(
             payload, theory_translator, solver, fallback_reasoner
         )

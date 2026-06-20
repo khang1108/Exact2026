@@ -198,6 +198,7 @@ async def predict(
     solver = getattr(request.app.state, "type1_solver", None)
     fallback_reasoner = getattr(request.app.state, "type1_fallback_reasoner", None)
     theory_translator = getattr(request.app.state, "type1_theory_translator", None)
+    translator_mode = request.query_params.get("translator")
     try:
         result = await run_type1_pipeline(
             payload,
@@ -206,6 +207,7 @@ async def predict(
             solver,
             fallback_reasoner,
             theory_translator,
+            translator_mode,
         )
         return [result]
     except Exception as exc:
