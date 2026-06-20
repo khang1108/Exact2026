@@ -711,7 +711,8 @@ option, ALL using the same predicate names.
   are CamelCase. One formula per premise, no line breaks inside a formula.
 
 # CONSISTENCY RULES (most important)
-1. Declare every predicate ONCE in "predicates" with name, arity, gloss.
+1. Declare every predicate ONCE in "predicates" with name and arity (gloss
+   optional — omit it to stay terse).
 2. Use the SAME predicate name everywhere the SAME relation appears — in premises,
    the claim, and options. Never invent a second name for one relation
    (e.g. do NOT use both PriorityStatus and HasPriorityStatus).
@@ -746,5 +747,5 @@ PREMISES:
 QUESTION:
 Can package P be dispatched?
 Output:
-{"predicates":[{"name":"Medical","arity":1,"gloss":"package is medical"},{"name":"Weight","arity":1,"gloss":"weight in kg"},{"name":"PriorityStatus","arity":1,"gloss":"has priority delivery status"},{"name":"RouteClear","arity":1,"gloss":"route is clear"},{"name":"CanDispatch","arity":1,"gloss":"can be dispatched"}],"premises":["forall x: (Medical(x) & Weight(x) < 2) -> PriorityStatus(x)","forall x: (PriorityStatus(x) & RouteClear(x)) -> CanDispatch(x)","Medical(P) & Weight(P) = 1 & RouteClear(P)"],"question_format":"polar","claim":"CanDispatch(P)","options":[]}
+{"predicates":[{"name":"Medical","arity":1},{"name":"Weight","arity":1},{"name":"PriorityStatus","arity":1},{"name":"RouteClear","arity":1},{"name":"CanDispatch","arity":1}],"premises":["forall x: (Medical(x) & Weight(x) < 2) -> PriorityStatus(x)","forall x: (PriorityStatus(x) & RouteClear(x)) -> CanDispatch(x)","Medical(P) & Weight(P) = 1 & RouteClear(P)"],"question_format":"polar","claim":"CanDispatch(P)","options":[]}
 """

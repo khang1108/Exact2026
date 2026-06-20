@@ -29,7 +29,7 @@ class PredicateDecl(ParserResult):
 
     name: str
     arity: int
-    gloss: str
+    gloss: str = ""
 
 
 class OptionFOL(ParserResult):

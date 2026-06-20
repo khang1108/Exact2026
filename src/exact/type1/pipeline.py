@@ -10,7 +10,6 @@ Workflow per request:
 
 from __future__ import annotations
 
-import asyncio
 import re
 from collections import Counter
 from dataclasses import asdict, dataclass
@@ -441,19 +440,25 @@ async def run_type1_single_pass(
     k = max(1, settings.type1_self_consistency_samples)
     temperature = 0.0 if k == 1 else settings.type1_self_consistency_temperature
 
-    # K independent translate→refine→solve attempts (LINC self-consistency).
-    attempts = await asyncio.gather(
-        *(
-            _single_pass_attempt(
-                payload, translator, solver, options_dict, premises,
-                settings.type1_single_pass_max_refines, temperature,
-            )
-            for _ in range(k)
+    # K translate→refine→solve attempts with early-exit voting: on a
+    # compute-bound GPU concurrent samples don't speed up, so run sequentially
+    # and stop as soon as a definite answer locks a majority (e.g. K=3 → 2
+    # agreeing). Full K only when samples disagree (where the vote matters).
+    needed = k // 2 + 1
+    attempts: list[_SinglePassAttempt] = []
+    votes: Counter[str] = Counter()
+    for _ in range(k):
+        attempt = await _single_pass_attempt(
+            payload, translator, solver, options_dict, premises,
+            settings.type1_single_pass_max_refines, temperature,
         )
-    )
+        attempts.append(attempt)
+        votes[attempt.symbolic_answer] += 1
+        top, top_count = votes.most_common(1)[0]
+        if top != _SOLVER_UNCERTAIN and top_count >= needed:
+            break  # definite majority locked
 
     # Majority vote over symbolic answers; a tie for first place abstains.
-    votes = Counter(a.symbolic_answer for a in attempts)
     ranked = votes.most_common()
     if len(ranked) == 1 or ranked[0][1] > ranked[1][1]:
         winner = ranked[0][0]
