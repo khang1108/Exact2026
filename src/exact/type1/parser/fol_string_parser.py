@@ -65,7 +65,7 @@ _TOKEN_RE = re.compile(
     | (?P<comma>,)
     | (?P<colon>[:.])
     | (?P<number>[+-]?(?:\d+\.\d+|\d+|\.\d+))
-    | (?P<name>[A-Za-z_][A-Za-z0-9_']*)
+    | (?P<name>[A-Za-z_][A-Za-z0-9_']*(?:-[A-Za-z0-9_']+)*)
     """,
     re.VERBOSE | re.IGNORECASE,
 )
