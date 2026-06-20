@@ -604,23 +604,25 @@ async def run_type1_single_pass(
 
 
 def _translation_problems(translation: TheoryTranslation) -> list[str]:
-    """Refinement triggers: unparsable FOL + claim/option predicates with no
-    premise definition (orphans that can never chain)."""
-    problems = list(translation.issues)
-    premise_predicates = {
-        atom.predicate.name
-        for tree in translation.premise_trees
-        for atom in _collect_atoms(tree)
-    }
-    targets: list[tuple[str, FOLNode]] = []
+    """Refinement triggers: unparsable PREMISE FOL + a claim whose predicate no
+    premise defines.
+
+    Deliberately ignores OPTION orphans/parse-failures: an MCQ distractor that
+    references a concept absent from the premises is *correct* (it is simply not
+    entailed). Forcing it onto an existing predicate creates a false second
+    entailment and makes Z3 return Uncertain.
+    """
+    problems = [i for i in translation.issues if i.startswith("PREMISE_FOL_PARSE_FAILED")]
     if translation.claim_tree is not None:
-        targets.append(("claim", translation.claim_tree))
-    targets.extend((f"option {label}", tree) for label, tree in translation.option_trees.items())
-    for name, tree in targets:
-        for atom in _collect_atoms(tree):
+        premise_predicates = {
+            atom.predicate.name
+            for tree in translation.premise_trees
+            for atom in _collect_atoms(tree)
+        }
+        for atom in _collect_atoms(translation.claim_tree):
             if atom.predicate.name not in premise_predicates:
                 problems.append(
-                    f"ORPHAN_PREDICATE: {name} uses {atom.predicate.name} which no premise "
+                    f"ORPHAN_PREDICATE: claim uses {atom.predicate.name} which no premise "
                     f"defines — reuse an existing premise predicate or recheck the translation"
                 )
     return list(dict.fromkeys(problems))
