@@ -16,29 +16,26 @@ by translating natural language to first-order logic and deciding with Z3.
 
 ## Pipeline (single-pass, default)
 
-```
-NL (premises + question [+ options])
-  │  router: EXACT_TYPE1_TRANSLATOR = single_pass | hybrid | decompose
-  ▼
-[1] Translate (1 LLM call, whole theory)        theory_translator.py
-      → predicate dictionary (declared once) + one FOL string per
-        premise / claim / option, over a fixed ASCII grammar
-      → parse_fol_string() → FOLNode AST                fol_string_parser.py
-      → bounded self-refinement on parse-failure / claim-orphan   (Logic-LM)
-  ▼
-[2] Solve (Z3-first)                              solvers/z3_solver.py
-      MCQ  → check_mcq_with_used: closed-world option eval + strongest-conclusion
-      YNU  → check_ynu_with_used: entailment + Clark completion
-      Uncertain is a valid answer (not a fallback trigger)
-  ▼
-[3] Verify-refine (conditional: only if [2] was definite)   (SymbCoT-style)
-      one checklist call (coreference / deontic / epistemic / predicate
-      consistency / numeric) → corrected translation → re-solve
-  ▼
-[4] Fallback (LLM) ONLY when nothing to solve     fallback.py
-      open-ended (wh) question, or translation produced no usable FOL
-  ▼
-answer + premises_used + explanation + routing_diagnostics
+```mermaid
+flowchart TD
+    IN["NL: premises + question (+ options)"] --> ROUTE{"EXACT_TYPE1_TRANSLATOR"}
+    ROUTE -->|decompose| DEC["Per-premise decompose pipeline (legacy)"]
+    ROUTE -->|"single_pass / hybrid-MCQ"| T1["1 · Translate whole theory — 1 LLM call<br/>predicate dictionary + one FOL string per premise/claim/option<br/>theory_translator.py"]
+    T1 --> PARSE["parse_fol_string → FOLNode AST<br/>fol_string_parser.py"]
+    PARSE --> REF{"parse-fail or<br/>claim-orphan?"}
+    REF -->|"yes (≤ max_refines)"| T1
+    REF -->|usable| USABLE{"translation usable?<br/>open-ended?"}
+    USABLE -->|"open-ended / no usable FOL"| FB["4 · LLM fallback<br/>fallback.py"]
+    USABLE -->|usable| SOLVE["2 · Solve — Z3-first · solvers/z3_solver.py"]
+    SOLVE --> MCQ["MCQ: closed-world option eval<br/>+ strongest-conclusion"]
+    SOLVE --> YNU["YNU: entailment<br/>+ Clark completion"]
+    MCQ --> DEF{"definite answer?<br/>(verify enabled)"}
+    YNU --> DEF
+    DEF -->|"definite"| VER["3 · Verify-refine — SymbCoT checklist<br/>coreference / deontic / epistemic / consistency<br/>→ corrected FOL → re-solve"]
+    DEF -->|"Uncertain (valid answer)"| OUT["answer + premises_used<br/>+ explanation + routing_diagnostics"]
+    VER --> OUT
+    FB --> OUT
+    DEC --> OUT
 ```
 
 Optional **self-consistency** (LINC): `EXACT_TYPE1_SELF_CONSISTENCY_SAMPLES > 1`
