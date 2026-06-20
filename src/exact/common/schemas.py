@@ -207,7 +207,7 @@ class PredictionResponse(AppBaseModel):
     # --- Internal / debug fields (not submitted) -----------------------------
     task_type: TaskType | None = None
     question_type: QuestionType = QuestionType.UNKNOWN
-    fol: str | None = None
+    fol: list[str] | None = None  # one "premise-N: <FOL>" line per entry
     cot: list[str] | None = None
     premises: list[str] | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)

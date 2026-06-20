@@ -172,6 +172,31 @@ class FOLSolver:
             return none_of_above_label
         return "Uncertain"
 
+    def check_mcq_with_used(
+        self,
+        premises: list[FOLNode],
+        options: dict[str, FOLNode],
+        none_of_above_label: str | None = None,
+    ) -> tuple[str, list[int]]:
+        """Like check_mcq but also returns 0-based indices of premises used.
+
+        Uses unsat-core tracking on the entailed option so the proof's premise
+        set is reported (not an empty list). Returns [] for none-of-above or
+        Uncertain, mirroring check_mcq's label rules.
+        """
+        ctx = _CallCtx()
+        p = [self._to_z3(n, {}, ctx) for n in premises]
+        entailed: list[tuple[str, list[int]]] = []
+        for label, node in options.items():
+            result, used = self._entails_with_core(p, z3.Not(self._to_z3(node, {}, ctx)))
+            if result == z3.unsat:
+                entailed.append((label, used))
+        if len(entailed) == 1:
+            return entailed[0]
+        if not entailed and none_of_above_label is not None:
+            return none_of_above_label, []
+        return "Uncertain", []
+
     def check_mcq_refutation(
         self,
         premises: list[FOLNode],

@@ -171,14 +171,25 @@ async def run_type1_pipeline(
                 options=options_dict or None,
             )
             if fallback.answer != _SOLVER_UNCERTAIN or raw_answer == _SOLVER_UNCERTAIN:
+                symbolic_was_definite = raw_answer != _SOLVER_UNCERTAIN
                 raw_answer = fallback.answer
-                # Use LLM-reported premises when fallback overrides Z3
-                if fallback.premises_used:
+                # Keep the symbolic proof's premises when Z3 already had a
+                # definite answer (e.g. NUMERIC_CONSTRAINT_MCQ_VERIFY only
+                # confirms it). Only adopt the LLM's premises when the fallback
+                # actually decided an otherwise-Uncertain case.
+                if fallback.premises_used and not symbolic_was_definite:
                     premises_used = fallback.premises_used
             fallback_used = True
             fallback_explanation = fallback.explanation
         except Exception as exc:  # Fallback failure must not hide symbolic diagnostics.
             fallback_error = f"{type(exc).__name__}: {exc}"
+
+    # Provability questions ("Do the premises prove/establish X?") are decided
+    # by entailment alone: if Z3 entailed the claim the answer is Yes, otherwise
+    # the premises do NOT establish it → No (never Uncertain, and the LLM
+    # fallback guess does not get to flip it to Yes).
+    if not is_mcq and _is_provability_question(payload.question):
+        raw_answer = "Yes" if symbolic_answer == "Yes" else "No"
 
     cause = symbolic_cause if raw_answer == _SOLVER_UNCERTAIN else None
     answer = _normalize_answer(raw_answer)
@@ -199,21 +210,22 @@ async def run_type1_pipeline(
     question_items = _question_debug_items(q_bundle)
 
     fol_lines = [f"{item['id']}: {item['fol']}" for item in premise_items + question_items]
-    fol_text = "\n".join(fol_lines)
 
     return PredictionResponse(
         id=payload.query_id,
         task_type=TaskType.TYPE1_LOGIC,
         question_type=question_type,
         answer=answer,
-        explanation=(
-            f"LLM fallback after {fallback_trigger}: {answer}. {fallback_explanation}"
-            if fallback_used
-            else f"Z3 {spec.solver_mode} result: {answer}"
-            if cause is None
-            else f"Answer: {answer} (cause: {cause})"
+        explanation=_build_explanation(
+            answer=answer,
+            uncertain_token=get_settings().type1_uncertain_token,
+            premises=premise_bundle.premises,
+            premises_used=premises_used,
+            is_mcq=is_mcq,
+            spec=spec,
+            fallback_explanation=fallback_explanation if fallback_used else None,
         ),
-        fol=fol_text,
+        fol=fol_lines,
         cot=[
             (
                 "Premise verification passed."
@@ -374,7 +386,7 @@ def _solve(
     none_of_above_label = next(
         (c.label for c in spec.option_claims if c.role == "NONE_OF_ABOVE"), None
     )
-    return solver.check_mcq(premise_fols, option_fols, none_of_above_label), []
+    return solver.check_mcq_with_used(premise_fols, option_fols, none_of_above_label)
 
 
 def _flip(answer: str) -> str:
@@ -393,6 +405,73 @@ def _map_ynu_to_label(ynu: str, option_claims: tuple[OptionClaim, ...]) -> str:
         if claim.ynu_value == target:
             return claim.label
     return _SOLVER_UNCERTAIN
+
+
+_PROVABILITY_RE = re.compile(
+    r"\b(?:do|does|did)\s+the\s+premises\s+"
+    r"(?:prove|establish|show|confirm|guarantee|imply|entail|demonstrate)\b"
+    r"|\bguarantee[ds]?\b",
+    re.IGNORECASE,
+)
+
+
+def _is_provability_question(question: str) -> bool:
+    """True for 'do the premises prove/establish X?' / 'does X guarantee Y?'.
+
+    These ask whether the claim is *entailed*; non-entailment answers No, not
+    Uncertain.
+    """
+    return _PROVABILITY_RE.search(question) is not None
+
+
+def _build_explanation(
+    *,
+    answer: str,
+    uncertain_token: str,
+    premises: list[str],
+    premises_used: list[int] | None,
+    is_mcq: bool,
+    spec: Any,
+    fallback_explanation: str | None,
+) -> str:
+    """Human-readable explanation grounded in the premises.
+
+    Internal markers (Z3 mode, uncertainty cause, fallback trigger) stay out of
+    this field — they live in ``cot`` / ``routing_diagnostics`` for debugging.
+    """
+    is_uncertain = answer == uncertain_token
+    lines: list[str] = []
+
+    # 1. Headline — the answer in plain words.
+    if is_mcq:
+        if is_uncertain:
+            lines.append(f"Answer: {answer} — no option is supported by the premises.")
+        else:
+            opt = next((c for c in spec.option_claims if c.label == answer), None)
+            text = (opt.claim_text or opt.normalized_text) if opt is not None else None
+            lines.append(f"Answer: {answer}{f') {text}' if text else ''}")
+    else:
+        claim = spec.main_claim_text
+        if is_uncertain:
+            tail = f" whether {claim}" if claim else ""
+            lines.append(
+                f"Answer: {answer} — the premises do not give enough "
+                f"information to determine{tail}."
+            )
+        else:
+            lines.append(f"Answer: {answer}.")
+
+    # 2. Grounding — quote the premises the conclusion rests on.
+    used = [i for i in (premises_used or []) if 0 <= i < len(premises)]
+    if used and not is_uncertain:
+        lines.append("Supported by:")
+        lines.extend(f"  • Premise {i + 1}: {premises[i]}" for i in used)
+
+    # 3. Natural-language rationale from the LLM reasoner, when present.
+    if fallback_explanation and fallback_explanation.strip():
+        lines.append(f"Reasoning: {fallback_explanation.strip()}")
+
+    return "\n".join(lines)
 
 
 def _normalize_answer(answer: str) -> str:
