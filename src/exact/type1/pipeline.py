@@ -57,7 +57,14 @@ async def run_type1_pipeline(
         raise ValueError("Type 1 requests require at least one non-empty premise")
 
     mode = translator_mode or get_settings().type1_translator
-    if mode == "single_pass" and theory_translator is not None:
+    use_single_pass = mode == "single_pass"
+    if mode == "hybrid":
+        # MCQ benefits from whole-theory consistent predicates; polar/YNU keeps
+        # the decompose path (epistemic-witness Uncertain handling, etc.).
+        use_single_pass = bool(_normalize_options(payload.options)) or bool(
+            extract_mcq(payload.question).options
+        )
+    if use_single_pass and theory_translator is not None:
         return await run_type1_single_pass(
             payload, theory_translator, solver, fallback_reasoner
         )

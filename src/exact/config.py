@@ -117,7 +117,7 @@ class Settings(BaseSettings):
         default="Uncertain",
         validation_alias="EXACT_TYPE1_UNCERTAIN_TOKEN",
     )
-    type1_translator: Literal["decompose", "single_pass"] = Field(
+    type1_translator: Literal["decompose", "single_pass", "hybrid"] = Field(
         default="decompose",
         validation_alias="EXACT_TYPE1_TRANSLATOR",
     )
