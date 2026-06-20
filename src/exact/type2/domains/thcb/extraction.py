@@ -126,7 +126,23 @@ def _classify_family(lower: str) -> str:
         return "ERROR_PROPAGATION"
     if "absolute error of r" in lower or "absolute error of resistance" in lower:
         return "ERROR_PROPAGATION"
-    if any(term in lower for term in ("least count", "uncertainty", "true value", "actual", "measured value", "measured result")):
+    if any(
+        term in lower
+        for term in (
+            "least count",
+            "uncertainty",
+            "true value",
+            "actual",
+            "measured value",
+            "measured result",
+            "measured ",
+            "absolute error",
+            "relative error",
+            "relative uncertainty",
+            "percentage relative error",
+            "percent relative error",
+        )
+    ):
         return "MEASUREMENT_ERROR"
     if "measure" in lower and any(term in lower for term in ("three", "readings", "obtains", "yielding", "taken")):
         return "MEASUREMENT_ERROR"
@@ -223,13 +239,24 @@ def _extract_named_quantities(text: str, lower: str) -> dict[str, ThcbQuantity]:
         _add_quantity(quantities, f"{key}_error" if key else "absolute_error", err, unit)
     for label, pattern in (
         ("least_count", r"least count(?: of)?\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
-        ("actual", r"(?:actual|true) [A-Za-z ]*?(?:is|value is)\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
-        ("measured", r"(?:measured|reads|reading is|measured it as|measured as)\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
+        ("actual", r"(?:actual|true)(?:\s+[A-Za-z ]*?)?\s*(?:is|value is|of the [A-Za-z ]+ is|length of|height is|weight is|temperature is)?\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
+        ("measured", r"(?:measured(?: result| value)?|reads|reading is|measured it as|measured as)\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
         ("absolute_error", r"absolute error is\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
         ("total_current", r"total current (?:of|is)\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)"),
     ):
         for match in re.finditer(pattern, text, flags=re.IGNORECASE):
             _add_quantity(quantities, label, float(match.group(1)), _clean_unit(match.group(2)))
+
+    for match in re.finditer(r"([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)\s*(?:while|whereas)\s+the\s+(?:true|actual)\s+value\s+is\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)", text, flags=re.IGNORECASE):
+        _add_quantity(quantities, "measured", float(match.group(1)), _clean_unit(match.group(2)))
+        _add_quantity(quantities, "actual", float(match.group(3)), _clean_unit(match.group(4)))
+
+    for match in re.finditer(r"(?:actual|true)\s+[A-Za-z ]*?is\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)\s*,?\s+and\s+(?:a\s+student\s+)?measured\s+(?:it\s+as|as)?\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)", text, flags=re.IGNORECASE):
+        _add_quantity(quantities, "actual", float(match.group(1)), _clean_unit(match.group(2)))
+        _add_quantity(quantities, "measured", float(match.group(3)), _clean_unit(match.group(4)))
+
+    for match in re.finditer(r"(?:measured\s+(?:value|length|height|weight|temperature)?\s*is|measurement result:?|result is:?|is measured as)\s*([-+]?\d+(?:\.\d+)?)\s*([A-Za-z%°/ΩΩ^0-9]+)", text, flags=re.IGNORECASE):
+        _add_quantity(quantities, "measured", float(match.group(1)), _clean_unit(match.group(2)))
     _extract_context_values(text, lower, quantities)
     _duplicate_identical_branch_values(lower, quantities)
     return quantities

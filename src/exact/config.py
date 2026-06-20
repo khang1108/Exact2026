@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import AliasChoices, Field, SecretStr, field_validator
+from pydantic import AliasChoices, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -84,6 +84,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("EXACT_LLM_MODEL", "EXACT_MODEL_ID"),
     )
     math_model_id: str = "Qwen/Qwen2.5-Math-7B-Instruct"
+    llm_enabled: bool = Field(default=False, validation_alias="EXACT_LLM_ENABLED")
     llm_base_url: str | None = None
     llm_api_key: SecretStr | None = None
     llm_max_tokens: int = Field(default=2048, ge=1, validation_alias="EXACT_MAX_NEW_TOKENS")
@@ -132,9 +133,9 @@ class Settings(BaseSettings):
         default=True,
         validation_alias="EXACT_TYPE2_USE_LLM_QUESTION_KIND_ROUTING",
     )
-    type2_use_agent_loop: bool = Field(
+    type2_use_recovery_loop: bool = Field(
         default=True,
-        validation_alias="EXACT_TYPE2_USE_AGENT_LOOP",
+        validation_alias="EXACT_TYPE2_USE_RECOVERY_LOOP",
     )
     type2_extraction_mode: Literal["merge", "llm_only", "heuristic_only"] = Field(
         default="merge",
@@ -177,12 +178,12 @@ class Settings(BaseSettings):
         validation_alias="EXACT_TYPE2_USE_EXECUTABLE_FALLBACK",
     )
     type2_pot_max_retries: int = Field(
-        default=1, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
+        default=3, ge=0, validation_alias="EXACT_TYPE2_POT_MAX_RETRIES"
     )
-    type2_agent_loop_max_attempts: int = Field(
+    type2_recovery_loop_max_attempts: int = Field(
         default=2,
         ge=1,
-        validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_ATTEMPTS",
+        validation_alias="EXACT_TYPE2_RECOVERY_LOOP_MAX_ATTEMPTS",
     )
     type2_pot_batch_size: int = Field(
         default=1,
@@ -218,10 +219,10 @@ class Settings(BaseSettings):
         ge=1,
         validation_alias="EXACT_TYPE2_QUESTION_KIND_MAX_TOKENS",
     )
-    type2_agent_loop_max_tokens: int = Field(
+    type2_recovery_loop_max_tokens: int = Field(
         default=1024,
         ge=1,
-        validation_alias="EXACT_TYPE2_AGENT_LOOP_MAX_TOKENS",
+        validation_alias="EXACT_TYPE2_RECOVERY_LOOP_MAX_TOKENS",
     )
     type2_formula_selection_max_tokens: int = Field(
         default=512,
@@ -262,12 +263,46 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     json_logs: bool = False
 
-    @field_validator("llm_base_url", "type1_parser_base_url")
+    @field_validator("llm_base_url", mode="before")
+    @classmethod
+    def empty_llm_url_means_disabled(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
+    @field_validator("type1_parser_base_url")
     @classmethod
     def validate_model_endpoint(cls, value: str | None) -> str | None:
         """Prevent model clients configured from environment variables from using public APIs."""
 
         return validate_self_hosted_model_url(value) if value is not None else None
+
+    @model_validator(mode="after")
+    def configure_optional_llm(self) -> "Settings":
+        """Keep Type 2 deterministic-only startup independent from LLM config.
+
+        A local developer may have stale or placeholder LLM settings in ``.env``.
+        Unless ``EXACT_LLM_ENABLED=true`` is explicit, those settings are ignored
+        and all LLM-dependent Type 2 stages are disabled.
+        """
+
+        if not self.llm_enabled:
+            self.llm_base_url = None
+            self.llm_api_key = None
+            self.type2_use_llm_domain_routing = False
+            self.type2_use_llm_question_kind_routing = False
+            self.type2_use_llm_formula_selection = False
+            self.type2_force_llm_formula_selection = False
+            self.type2_use_recovery_loop = False
+            if self.type2_extraction_mode == "llm_only":
+                self.type2_extraction_mode = "heuristic_only"
+            return self
+
+        if self.llm_base_url is None:
+            raise ValueError("EXACT_LLM_BASE_URL is required when EXACT_LLM_ENABLED=true")
+        self.llm_base_url = validate_self_hosted_model_url(self.llm_base_url)
+        return self
 
     def ensure_artifact_dirs(self) -> None:
         for directory in [

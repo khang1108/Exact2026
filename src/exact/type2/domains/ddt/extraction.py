@@ -142,6 +142,8 @@ def _classify_family(lower: str) -> str:
         return "INDUCED_EMF"
     if "magnetic flux" in lower or "flux linkage" in lower:
         return "MAGNETIC_FLUX"
+    if "turn density" in lower or "turns per meter" in lower or "turns per unit length" in lower or "turns per meter length" in lower:
+        return "SOLENOID_FIELD"
     if "inductance" in lower and "solenoid" in lower and "energy" not in lower:
         return "SOLENOID_INDUCTANCE"
     if "solenoid" in lower and "magnetic field" in lower:
@@ -150,6 +152,10 @@ def _classify_family(lower: str) -> str:
         return "RLC_REACTANCE"
     if "impedance" in lower:
         return "RLC_IMPEDANCE"
+    if "series" in lower and "circuit" in lower and ("frequency" in lower or " f " in lower) and ("inductor" in lower or " l " in lower):
+        return "RLC_IMPEDANCE"
+    if "power" in lower and (" z " in lower or "impedance" in lower or "resonant" in lower):
+        return "RLC_RESONANCE"
     if "resonance" in lower or "power factor" in lower:
         return "RLC_RESONANCE"
     if "energy" in lower and any(term in lower for term in ("inductor", "lc", "capacitor", "solenoid")):
@@ -158,28 +164,38 @@ def _classify_family(lower: str) -> str:
 
 
 def _classify_target(lower: str) -> str:
-    if "turn density" in lower or "turns per meter" in lower or "turns per unit length" in lower:
-        return "turn_density"
     if "magnetic field energy density" in lower or "energy density" in lower:
         return "energy_density"
-    if "magnetic field" in lower:
+    if "magnetic field energy" in lower:
+        return "energy"
+    if "flux linkage" in lower or ("magnetic flux" in lower and "entire solenoid" in lower):
+        return "flux_linkage"
+    if "magnetic flux" in lower:
+        return "magnetic_flux"
+    if "calculate the magnetic field" in lower or "magnetic field b" in lower:
         return "magnetic_field"
+    if "turn density" in lower or "turns per meter" in lower or "turns per unit length" in lower:
+        return "turn_density"
+    if "what is the induced electromotive force" in lower or "calculate the induced electromotive force" in lower:
+        return "voltage"
+    if "determine the rms voltage" in lower or "rms voltage" in lower:
+        return "voltage"
     if "inductance" in lower:
         return "inductance"
     if "electromotive force" in lower or "emf" in lower:
         return "voltage"
-    if "flux linkage" in lower:
-        return "flux_linkage"
-    if "magnetic flux" in lower:
-        return "magnetic_flux"
+    if "magnetic field" in lower:
+        return "magnetic_field"
     if "capacitive reactance" in lower:
         return "capacitive_reactance"
     if "inductive reactance" in lower:
         return "inductive_reactance"
-    if "impedance" in lower:
-        return "impedance"
     if "power factor" in lower:
         return "power_factor"
+    if "power" in lower:
+        return "power"
+    if "impedance" in lower:
+        return "impedance"
     if "current" in lower:
         return "current"
     if "voltage" in lower:
@@ -207,24 +223,45 @@ def _classify_relation(lower: str) -> str | None:
 
 def _extract_quantities(text: str) -> dict[str, DdtQuantity]:
     quantities: dict[str, DdtQuantity] = {}
-    for match in re.finditer(r"\b([A-Za-z][A-Za-z_]*|X_L|X_C)\s*=\s*([-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)\s*([A-Za-z/%ΩΩ^0-9]+)?", text, flags=re.IGNORECASE):
+    normalized_text = (
+        text.replace("μ", "u")
+        .replace("µ", "u")
+        .replace("²", "^2")
+        .replace("⁻", "-")
+        .replace("×", "x")
+    )
+    normalized_text = re.sub(
+        r"(?P<base>[-+]?\d+(?:\.\d+)?)\s*x\s*10\^?(?P<exp>[-+]?\d+)",
+        r"\g<base>e\g<exp>",
+        normalized_text,
+        flags=re.IGNORECASE,
+    )
+    for match in re.finditer(r"\b([A-Za-z][A-Za-z_]*|X_L|X_C)\s*=\s*([-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)\s*([A-Za-z/%ΩΩ^0-9]+)?", normalized_text, flags=re.IGNORECASE):
         _put(quantities, _canon_name(match.group(1)), float(match.group(2)), _unit(match.group(3) or ""))
     for label, pattern in (
         ("length", r"([-+]?\d+(?:\.\d+)?)\s*m\s+long"),
+        ("length", r"length of\s+([-+]?\d+(?:\.\d+)?)\s*m"),
         ("N", r"has\s+([-+]?\d+(?:\.\d+)?)\s+turns"),
         ("N", r"consists of\s+([-+]?\d+(?:\.\d+)?)\s+turns"),
+        ("N", r"([-+]?\d+(?:\.\d+)?)\s+turns"),
         ("turn_density", r"turn density of\s+([-+]?\d+(?:\.\d+)?)\s*turns/m"),
+        ("turn_density", r"number of turns per meter is\s+([-+]?\d+(?:\.\d+)?)"),
+        ("turn_density", r"turn density of\s+n\s*=\s*([-+]?\d+(?:\.\d+)?)\s*turns/m"),
         ("area", r"(?:area|cross-sectional area).*?([-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)\s*(cm\^2|m\^2)"),
         ("I", r"(?:current|carries a current|electric current).*?([-+]?\d+(?:\.\d+)?)\s*A"),
         ("L", r"inductance(?: L)?(?: of| is| =)?\s*([-+]?\d+(?:\.\d+)?)\s*H"),
+        ("L", r"self-inductance.*?([-+]?\d+(?:\.\d+)?)\s*H"),
         ("B", r"(?:magnetic flux density|magnetic field).*?([-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)\s*T"),
         ("flux", r"magnetic flux(?: of)?\s*([-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)\s*Wb"),
-        ("time", r"(?:in|over|time interval is)\s*([-+]?\d+(?:\.\d+)?)\s*s"),
+        ("flux", r"flux per turn is\s*([-+]?\d+(?:\.\d+)?(?:e[-+]?\d+)?)\s*Wb"),
+        ("time", r"(?:in|over|over a period of|period of|time interval is)\s*([-+]?\d+(?:\.\d+)?)\s*s"),
         ("frequency", r"(?:frequency|f)\s*(?:=|of)?\s*([-+]?\d+(?:\.\d+)?)\s*Hz"),
+        ("U", r"(?:emf|electromotive force)(?:\s+is)?\s*([-+]?\d+(?:\.\d+)?)\s*V"),
+        ("U", r"voltage of\s*([-+]?\d+(?:\.\d+)?)\s*V"),
     ):
-        for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+        for m in re.finditer(pattern, normalized_text, flags=re.IGNORECASE):
             _put(quantities, label, float(m.group(1)), _unit(m.group(2) if m.lastindex and m.lastindex >= 2 else ""))
-    current_change = re.search(r"current (?:increases|decreases).*?from\s+([-+]?\d+(?:\.\d+)?)\s*A\s+to\s+([-+]?\d+(?:\.\d+)?)", text, flags=re.IGNORECASE)
+    current_change = re.search(r"current.*?(?:increases|decreases).*?from\s+([-+]?\d+(?:\.\d+)?)\s*A?\s+to\s+([-+]?\d+(?:\.\d+)?)", normalized_text, flags=re.IGNORECASE)
     if current_change:
         _put(quantities, "I_initial", float(current_change.group(1)), "A")
         _put(quantities, "I_final", float(current_change.group(2)), "A")

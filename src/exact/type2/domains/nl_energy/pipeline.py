@@ -4,7 +4,7 @@ from exact.common.schemas import PredictionRequest, PredictionResponse, TaskType
 from exact.config import Settings, get_settings
 from exact.type2.domains.nl_energy.classifier import classify_nl_energy_family
 from exact.type2.domains.nl_energy.extraction import extract_nl_energy_quantities, run_llm_extraction_repair
-from exact.type2.domains.nl_energy.solvers import solve_nl_energy
+from exact.type2.domains.nl_energy.solvers import format_scalar_answer, solve_nl_energy
 from exact.type2.extraction.llm_structured import classify_question_kind_with_llm
 
 def run_nl_energy_pipeline(
@@ -42,8 +42,7 @@ def run_nl_energy_pipeline(
     value, unit = ans_tuple
     
     if isinstance(value, float):
-        # Format scalar nicely
-        answer_str = f"{value:.4f}".rstrip("0").rstrip(".")
+        answer_str = format_scalar_answer(value)
     else:
         answer_str = str(value)
         

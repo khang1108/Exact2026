@@ -32,6 +32,7 @@ class EnergyExtraction:
     
     energy_ratio: float | None = None
     energy_ratio_target: str | None = None
+    relative_permittivity: float | None = None
     
     t: ScalarQuantity | None = None
 

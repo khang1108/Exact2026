@@ -65,13 +65,7 @@ def test_ynu_labels_are_not_treated_as_mcq_conclusions() -> None:
 def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
     calls: list[tuple[str, str | None]] = []
 
-    async def fake_type1(
-        payload,
-        premise_parser,
-        question_parser,
-        solver,
-        fallback_reasoner=None,
-    ):
+    async def fake_type1(payload, parser, solver, refiner):
         calls.append(("type1", payload.query_id))
         return _response(TaskType.TYPE1_LOGIC, payload.query_id)
 
@@ -88,9 +82,9 @@ def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
     request = SimpleNamespace(
         app=SimpleNamespace(
             state=SimpleNamespace(
-                type1_premise_parser=object(),
-                type1_question_parser=object(),
+                type1_fol_parser=object(),
                 type1_solver=object(),
+                type1_refiner=None,
             )
         )
     )
@@ -109,10 +103,8 @@ def test_predict_routes_explicit_type1_and_type2(monkeypatch) -> None:
             query="Calculate the voltage.",
         )
 
-        type1_result = await router.predict(type1, request)
-        type2_result = await router.predict(type2, request)
-        assert type1_result[0].query_id == "T1_0001"
-        assert type2_result[0].query_id == "T2_0001"
+        assert (await router.predict(type1, request)).task_type == TaskType.TYPE1_LOGIC
+        assert (await router.predict(type2, request)).task_type == TaskType.TYPE2_PHYSICS
 
     asyncio.run(scenario())
     assert calls == [("type1", "T1_0001"), ("type2", "T2_0001")]

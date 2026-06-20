@@ -262,6 +262,28 @@ def _solve_validated_capacitor(
         return _solved(value, "C", selected_rule, chain, validated)
 
     if target == "final_voltage":
+        if contract.system_type == "parallel_capacitors" and "charge" in k and validated.capacitors:
+            candidates = [("parallel_capacitor_voltage", (k["charge"] / capacitance).to("V")) for _, capacitance, _, _ in validated.capacitors]
+            limit = _voltage_limit(contract.evidence[0].text)
+            if limit is not None:
+                candidates = [candidate for candidate in candidates if float(candidate[1].magnitude) < limit]
+            if candidates:
+                value = candidates[0][1]
+                chain = ["Parallel capacitors have the same voltage", "U = Q_i / C_i"]
+                return _solved(value, "V", "parallel_capacitor_voltage_from_branch_charge", chain, validated)
+        if "voltage" in k and "relative_permittivity" in k:
+            eps_r = float(k["relative_permittivity"].to_base_units().magnitude)
+            if eps_r == 0:
+                return None
+            lower_text = contract.evidence[0].text.lower()
+            if "disconnected" in lower_text:
+                value = (k["voltage"] / eps_r).to("V")
+                chain = ["Disconnected capacitor: Q remains constant, so U_new = U_old / epsilon_r"]
+                return _solved(value, "V", "disconnected_dielectric_voltage", chain, validated)
+            if "connected" in lower_text:
+                value = k["voltage"].to("V")
+                chain = ["Connected capacitor: voltage source holds U constant while dielectric is inserted"]
+                return _solved(value, "V", "connected_dielectric_voltage", chain, validated)
         numerator = 0 * ureg.coulomb
         denominator = 0 * ureg.farad
         for _, capacitance, voltage, sign in validated.capacitors:
@@ -408,6 +430,11 @@ def _normalized_inputs(validated: ValidatedCapacitorContract) -> dict[str, Any]:
 
 def _target_from_text(text: str, extraction_target: str | None) -> CapacitorTarget | None:
     lower = text.lower()
+    norm = (extraction_target or "").strip().lower().replace("_", " ")
+    if ("voltage" in norm or "potential" in norm) and any(
+        marker in lower for marker in ("dielectric", "relative permittivity", "epsilon", "ε")
+    ):
+        return CapacitorTarget("final_voltage", "V")
     if any(marker in lower for marker in ("dielectric constant", "relative permittivity", "epsilon r", "epsilon_r", "κ", "kappa", "permittivity ratio")):
         return CapacitorTarget("relative_permittivity", "dimensionless")
     if any(marker in lower for marker in ("maximum charge", "largest safe charge", "breakdown", "charge limit", "maximum charge the plates can hold")):
@@ -419,7 +446,6 @@ def _target_from_text(text: str, extraction_target: str | None) -> CapacitorTarg
         return CapacitorTarget("voltage_across_capacitor", "V", cap_id)
     # Normalize the upstream target so LLM phrasings ("stored energy",
     # "energy_stored") match the same buckets the heuristic extractor emits.
-    norm = (extraction_target or "").strip().lower().replace("_", " ")
     if "energy" in norm or "energy stored" in lower or "stored energy" in lower:
         return CapacitorTarget("stored_energy", "J")
     if "capacitance" in norm:
@@ -428,6 +454,8 @@ def _target_from_text(text: str, extraction_target: str | None) -> CapacitorTarg
         return CapacitorTarget("charge", "C")
     if ("voltage" in norm or "potential" in norm) and "series" in lower:
         return CapacitorTarget("voltage_across_capacitor", "V", _requested_capacitor_id(text))
+    if ("voltage" in norm or "potential" in norm) and "parallel" in lower:
+        return CapacitorTarget("final_voltage", "V")
     return None
 
 
@@ -457,6 +485,7 @@ def _extract_knowns(text: str) -> dict[str, CapacitorKnown]:
         "plate_distance": ("distance between the plates", "plate separation", "separated by", "distance"),
         "breakdown_field": ("breakdown field", "dielectric strength", "electric field strength"),
         "total_voltage": ("total voltage", "uab", "voltage uab"),
+        "charge": ("charge", "q"),
     }.items():
         value = _find_known(text, aliases)
         if value is not None:
@@ -469,6 +498,17 @@ def _extract_knowns(text: str) -> dict[str, CapacitorKnown]:
         knowns["area"] = CapacitorKnown(area, "m^2", radius.original)
     if "air" in text.lower() and "relative_permittivity" not in knowns:
         knowns["relative_permittivity"] = CapacitorKnown(1.0, "dimensionless", "air")
+    dielectric = re.search(
+        r"(?:dielectric\s+constant|relative\s+permittivity|epsilon(?:_?r)?|ε(?:_?r)?)"
+        r"(?:\s*\([^)]*\))?"
+        r"(?:\s+of)?\s*(?:=|is|of)?\s*(?P<value>\d+(?:\.\d+)?)",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if dielectric is not None:
+        knowns["relative_permittivity"] = CapacitorKnown(float(dielectric.group("value")), "dimensionless", dielectric.group(0))
+    if "total_voltage" not in knowns and "voltage" in knowns and any(marker in text.lower() for marker in ("series", "parallel")):
+        knowns["total_voltage"] = knowns["voltage"]
     return knowns
 
 
@@ -538,6 +578,13 @@ def _requested_capacitor_id(text: str) -> str | None:
     return None
 
 
+def _voltage_limit(text: str) -> float | None:
+    match = re.search(r"\bU\s*<\s*(?P<value>\d+(?:\.\d+)?)\s*V\b", text, flags=re.IGNORECASE)
+    if match is None:
+        return None
+    return float(match.group("value"))
+
+
 def _required_knowns(contract: CapacitorContract) -> tuple[str, ...]:
     target = contract.target.quantity
     if target == "relative_permittivity":
@@ -572,6 +619,7 @@ def _canonical_unit_for_key(key: str) -> str:
         "plate_distance": "m",
         "breakdown_field": "V/m",
         "relative_permittivity": "dimensionless",
+        "charge": "C",
     }.get(key, "")
 
 

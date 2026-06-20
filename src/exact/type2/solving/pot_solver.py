@@ -20,7 +20,7 @@ from exact.type2.extraction.llm_structured import (
     select_formula_ids,
 )
 from exact.type2.fallback.executor import ExecutionResult, execute_python
-from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
+from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids, retrieve_formula_context
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 from exact.type2.solving.physics_verifier import verify_against_physics_oracle
 from exact.type2.solving.pot_verifier import OutputSanityResult, verify_output_sanity
@@ -219,6 +219,16 @@ def solve_with_pot(
         vector_fast_path.cot.insert(0, "Used deterministic vector template before LLM code generation.")
         return vector_fast_path
 
+    # Expand the formula context with softer JSON/registry knowledge only when
+    # the pipeline is already falling back to PoT generation.
+    formula_context = retrieve_formula_context(
+        extraction.normalized_question,
+        extraction,
+        limit=max(settings.type2_formula_limit, len(formula_context.formula_ids)),
+        settings=settings,
+        include_knowledge_bank=True,
+    )
+
     # Let LLM select formulas from retrieved formulas
     selected_formula_ids = list(formula_context.formula_ids)
     solution_plan = list(formula_context.solution_plan)
@@ -293,9 +303,6 @@ def solve_with_pot(
         )
     except Exception as exc:
         reason = f"LLM code generation returned invalid output: {exc}"
-        fallback = _try_executable_formula_fallback(extraction, formula_context, reason, settings)
-        if fallback is not None:
-            return fallback
         return _failed_result(extraction, reason)
     if candidates is None:
         return _unconfigured_result(extraction)
@@ -311,9 +318,6 @@ def solve_with_pot(
     )
     if selected is None:
         reason = _candidate_failure_reason(failed_attempts)
-        fallback = _try_executable_formula_fallback(extraction, formula_context, reason, settings)
-        if fallback is not None:
-            return fallback
         verification = (
             failed_attempts[-1].verified.verification
             if failed_attempts and failed_attempts[-1].verified

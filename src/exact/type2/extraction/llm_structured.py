@@ -411,7 +411,7 @@ def generate_direct_answer(
         client,
         messages=_build_direct_answer_messages(question, failure_context),
         temperature=settings.llm_temperature if temperature is None else temperature,
-        max_tokens=settings.type2_agent_loop_max_tokens,
+        max_tokens=settings.type2_recovery_loop_max_tokens,
         schema=DirectAnswerSpec,
     )
     normalized = _normalize_direct_answer_raw(raw)

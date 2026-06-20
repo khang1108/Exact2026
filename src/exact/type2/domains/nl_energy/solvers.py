@@ -34,6 +34,7 @@ def _solve_nl_energy_internal(ext: EnergyExtraction, text: str) -> tuple[float |
     i = to_si(ext.I.value, ext.I.unit) if ext.I else None
     e = to_si(ext.E.value, ext.E.unit) if ext.E else None
     t = to_si(ext.t.value, ext.t.unit) if ext.t else None
+    eps_r = ext.relative_permittivity
 
     # 3. TIME_DEPENDENT_CAPACITOR_ENERGY
     if ext.family == "TIME_DEPENDENT_CAPACITOR_ENERGY":
@@ -103,6 +104,12 @@ def _solve_nl_energy_internal(ext: EnergyExtraction, text: str) -> tuple[float |
 
     # 6. CAPACITOR_ENERGY
     if ext.family == "CAPACITOR_ENERGY":
+        if c and v and eps_r and "dielectric" in text:
+            base_energy = 0.5 * c * (v ** 2)
+            if "disconnected" in text:
+                return (base_energy / eps_r, "J")
+            if "remains connected" in text or "still connected" in text or "connected to the voltage source" in text:
+                return (base_energy * eps_r, "J")
         if c and v:
             return (0.5 * c * (v ** 2), "J")
         if c and q:
@@ -155,6 +162,14 @@ def _solve_nl_energy_internal(ext: EnergyExtraction, text: str) -> tuple[float |
             return (9.0 * e, "J")
 
     return None
+
+
+def format_scalar_answer(value: float) -> str:
+    if value == 0:
+        return "0"
+    if abs(value) >= 1e4 or abs(value) < 1e-3:
+        return f"{value:.6g}"
+    return f"{value:.6f}".rstrip("0").rstrip(".")
 
 def solve_nl_energy(ext: EnergyExtraction, question: str) -> tuple[float | str, str] | None:
     text = question.lower()

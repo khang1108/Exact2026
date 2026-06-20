@@ -99,6 +99,18 @@ def extract_nl_energy_quantities(question: str) -> EnergyExtraction:
     t_match = re.search(r"(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*(ms|s)\b", text)
     if t_match:
         ext.t = ScalarQuantity(name="t", value=float(t_match.group(1)), unit=t_match.group(2))
+
+    eps_match = re.search(
+        r"(?:relative\s+permittivity|dielectric\s+constant)"
+        r"(?:\s*\([^)]*\))?"
+        r"(?:\s+of)?"
+        r"(?:\s*(?:ε|epsilon|eps)(?:_?r)?)?"
+        r"\s*(?:=|is|of)?\s*"
+        r"(\d+(?:\.\d+)?(?:e[+-]?\d+)?)",
+        text,
+    )
+    if eps_match:
+        ext.relative_permittivity = float(eps_match.group(1))
         
     # Energy Ratio
     if any(kw in text for kw in ("electric energy equals magnetic energy", "equal to magnetic energy", "equal to the magnetic energy", "energies are equal", "electric and magnetic energy are equal", "magnetic energy equals electric energy")):
@@ -157,5 +169,7 @@ def run_llm_extraction_repair(question: str, ext: EnergyExtraction, settings: Se
                 ext.E = sq
         elif "time" in name and not ext.t:
             ext.t = ScalarQuantity(name="t", value=val, unit=unit)
+        elif ("permittivity" in name or "dielectric" in name) and ext.relative_permittivity is None:
+            ext.relative_permittivity = val
             
     return ext

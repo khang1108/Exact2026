@@ -81,6 +81,59 @@ def _angle_between_forces_from_resultant(known: dict[str, object]):
     cosine = max(-1.0, min(1.0, cosine))
     return math.acos(cosine) * ureg.radian
 
+
+def _resultant_two_fields_angle(known: dict[str, object]):
+    e1 = _q(known, "electric_field")
+    e2 = _q(known, "electric_field_2")
+    return (e1**2 + e2**2 + 2 * e1 * e2 * math.cos(_angle_radians(known))) ** 0.5
+
+
+def _electric_field_midpoint_between_two_charges(known: dict[str, object]):
+    q1 = _q(known, "charge")
+    q2 = _q(known, "charge_2")
+    half_distance = _q(known, "length") / 2
+    e1 = K_COULOMB * abs(q1) / (half_distance**2)
+    e2 = K_COULOMB * abs(q2) / (half_distance**2)
+    if _charge_sign(q1) == _charge_sign(q2):
+        return abs(e1 - e2)
+    return e1 + e2
+
+
+def _electric_field_perpendicular_bisector_two_charges(known: dict[str, object]):
+    q1 = _q(known, "charge").to("C").magnitude
+    q2 = _q(known, "charge_2").to("C").magnitude
+    separation = _q(known, "length").to("m").magnitude
+    height = _q(known, "length_2").to("m").magnitude
+    half = separation / 2
+    radius = math.hypot(half, height)
+    if radius == 0:
+        raise ValueError("Source-target distance must be non-zero.")
+    ex = K_COULOMB * (q1 * half / (radius**3) - q2 * half / (radius**3))
+    ey = K_COULOMB * (q1 * height / (radius**3) + q2 * height / (radius**3))
+    return (ex**2 + ey**2) ** 0.5
+
+
+def _electric_field_two_sources_equilateral_general(known: dict[str, object]):
+    q1 = _q(known, "charge")
+    q2 = _q(known, "charge_2")
+    side = _q(known, "length")
+    e1 = K_COULOMB * abs(q1) / (side**2)
+    e2 = K_COULOMB * abs(q2) / (side**2)
+    direction_factor = _charge_sign(q1) * _charge_sign(q2)
+    return (e1**2 + e2**2 + e1 * e2 * direction_factor) ** 0.5
+
+
+def _electric_field_point_charge_in_dielectric(known: dict[str, object]):
+    return K_COULOMB * abs(_q(known, "charge")) / (_q(known, "relative_permittivity") * (_q(known, "length") ** 2))
+
+
+def _efficiency_percent_from_useful_total_energy(known: dict[str, object]):
+    return 100 * _q(known, "energy") / _q(known, "energy_2")
+
+
+def _magnetic_flux_total_solenoid(known: dict[str, object]):
+    return _q(known, "turns") * _q(known, "magnetic_field") * _q(known, "area")
+
 K_COULOMB = 8.9875517923e9 * ureg.newton * (ureg.meter ** 2) / (ureg.coulomb ** 2)
 EPSILON_0 = 8.8541878128e-12 * ureg.farad / ureg.meter
 MU_0 = 4 * math.pi * 1e-7 * ureg.newton / (ureg.ampere ** 2)
@@ -375,6 +428,21 @@ FORMULAS: tuple[Formula, ...] = (
         solve=lambda k: _q(k, "energy") / _q(k, "energy_2"),
     ),
     Formula(
+        id="efficiency_percent_from_useful_total_energy",
+        domain="circuits",
+        subfield="energy_efficiency",
+        target="efficiency",
+        required=("energy", "energy_2"),
+        output_unit="percent",
+        expression="eta(%) = 100 * E_useful / E_total",
+        explanation_template="Efficiency in percent is useful output energy divided by total input energy, then multiplied by 100.",
+        keywords=("efficiency", "percent", "useful energy", "total energy", "loss"),
+        variables={"eta": "efficiency", "E_useful": "energy", "E_total": "energy_2"},
+        conditions=("The question explicitly asks for efficiency in percent or %.",),
+        common_mistakes=("Do not return the raw ratio when the question asks for percent.",),
+        solve=_efficiency_percent_from_useful_total_energy,
+    ),
+    Formula(
         id="total_energy_from_useful_efficiency",
         domain="circuits",
         subfield="energy_efficiency",
@@ -553,6 +621,21 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("Force is parallel to velocity.",),
         common_mistakes=("Divide power by force.",),
         solve=lambda k: _q(k, "power") / _q(k, "force"),
+    ),
+    Formula(
+        id="magnetic_force_perpendicular_charge",
+        domain="electromagnetism",
+        subfield="lorentz_force",
+        target="force",
+        required=("charge", "speed", "magnetic_field"),
+        output_unit="N",
+        expression="F = |q| * v * B, for v perpendicular to B",
+        explanation_template="For a charge moving perpendicular to a magnetic field, the magnetic force magnitude is F = |q| * v * B.",
+        keywords=("magnetic force", "lorentz force", "charge", "speed", "velocity", "magnetic field", "perpendicular"),
+        variables={"F": "force", "q": "charge", "v": "speed", "B": "magnetic_field"},
+        conditions=("The velocity is perpendicular to the magnetic field, so sin(theta) = 1.",),
+        common_mistakes=("Use the charge magnitude and convert microcoulombs before multiplying.",),
+        solve=lambda k: abs(_q(k, "charge")) * _q(k, "speed") * _q(k, "magnetic_field"),
     ),
     Formula(
         id="heat_from_mass_specific_heat_temperature_change",
@@ -995,6 +1078,21 @@ FORMULAS: tuple[Formula, ...] = (
         solve=lambda k: 2 * _q(k, "energy") / (_q(k, "current") ** 2),
     ),
     Formula(
+        id="current_from_inductor_energy",
+        domain="inductance",
+        subfield="inductor_energy",
+        target="current",
+        required=("energy", "inductance"),
+        output_unit="A",
+        expression="I = sqrt(2W / L)",
+        explanation_template="Rearranging W = 1/2*L*I^2 gives I = sqrt(2W/L).",
+        keywords=("current", "energy", "inductor", "inductance", "magnetic field energy"),
+        variables={"I": "current", "W": "energy", "L": "inductance"},
+        conditions=("Energy and inductance refer to the same inductor.",),
+        common_mistakes=("Take the square root after dividing twice the energy by inductance.",),
+        solve=lambda k: ((2 * _q(k, "energy")) / _q(k, "inductance")) ** 0.5,
+    ),
+    Formula(
         id="lc_natural_frequency",
         domain="circuits",
         subfield="lc_oscillation",
@@ -1098,6 +1196,21 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("Point charge or spherical symmetry; r is the distance from the charge.",),
         common_mistakes=("Use the square of the distance in the denominator.",),
         solve=lambda k: K_COULOMB * abs(_q(k, "charge")) / (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="electric_field_point_charge_in_dielectric",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "length", "relative_permittivity"),
+        output_unit="N/C",
+        expression="E = k * |q| / (epsilon_r * r^2)",
+        explanation_template="In a medium with relative permittivity epsilon_r, the electric field of a point charge is reduced by that factor.",
+        keywords=("electric field", "point charge", "distance", "dielectric constant", "relative permittivity", "in air", "in oil"),
+        variables={"E": "electric_field", "q": "charge", "r": "length", "epsilon_r": "relative_permittivity"},
+        conditions=("Point charge in a homogeneous dielectric medium.",),
+        common_mistakes=("Divide by the dielectric constant for the medium; do not use the vacuum formula directly.",),
+        solve=_electric_field_point_charge_in_dielectric,
     ),
     Formula(
         id="electric_field_uniform_from_voltage_distance",
@@ -1241,6 +1354,24 @@ FORMULAS: tuple[Formula, ...] = (
             + 2 * _q(k, "force") * _q(k, "force_2") * math.cos(_angle_radians(k))
         )
         ** 0.5,
+    ),
+    Formula(
+        id="resultant_two_fields_angle",
+        domain="electrostatics",
+        subfield="vector_fields",
+        target="electric_field",
+        required=("electric_field", "electric_field_2", "angle"),
+        output_unit="N/C",
+        expression="E = sqrt(E1^2 + E2^2 + 2*E1*E2*cos(theta))",
+        explanation_template="The resultant of two electric-field vectors with included angle theta uses the cosine rule.",
+        keywords=("resultant", "two electric fields", "angle", "electric field", "vectors", "net field"),
+        variables={"E": "electric_field", "E1": "electric_field", "E2": "electric_field_2", "theta": "angle"},
+        conditions=("The angle is the included angle between the two electric-field vectors.",),
+        common_mistakes=(
+            "Do not add field magnitudes as scalars unless the angle is zero.",
+            "Use +2E1E2cos(theta) for the included angle.",
+        ),
+        solve=_resultant_two_fields_angle,
     ),
     Formula(
         id="angle_between_two_forces_from_resultant",
@@ -1539,6 +1670,30 @@ FORMULAS: tuple[Formula, ...] = (
         / (_q(k, "length") ** 2),
     ),
     Formula(
+        id="electric_field_two_sources_equilateral_general",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "charge_2", "length"),
+        output_unit="N/C",
+        expression="E_net = sqrt(E1^2 + E2^2 + E1*E2), or sqrt(E1^2 + E2^2 - E1*E2) for opposite signs",
+        explanation_template=(
+            "For two source charges at two vertices of an equilateral triangle, compute the two field magnitudes at the "
+            "remaining vertex and combine them with the included angle set by the charge signs."
+        ),
+        keywords=("equilateral", "triangle", "electric field", "remaining vertex", "two charges", "resultant"),
+        variables={"E_net": "electric_field", "q1": "charge", "q2": "charge_2", "a": "length"},
+        conditions=(
+            "Two source charges occupy two vertices of an equilateral triangle.",
+            "Calculate electric field at the remaining vertex without assuming equal charge magnitudes.",
+        ),
+        common_mistakes=(
+            "Do not use the equal-charge shortcut when the two source magnitudes differ.",
+            "For opposite signs, the field vectors are 60 degrees apart; for like signs they are 120 degrees apart.",
+        ),
+        solve=_electric_field_two_sources_equilateral_general,
+    ),
+    Formula(
         id="electric_field_two_equal_sources_right_angle",
         domain="electrostatics",
         subfield="coulomb_law",
@@ -1561,6 +1716,30 @@ FORMULAS: tuple[Formula, ...] = (
         * K_COULOMB
         * abs(_q(k, "charge"))
         / (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="electric_field_perpendicular_bisector_two_charges",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "charge_2", "length", "length_2"),
+        output_unit="N/C",
+        expression="E_net = |E1 + E2| by vector components, r = sqrt((d/2)^2 + h^2)",
+        explanation_template=(
+            "For a point on the perpendicular bisector of two source charges separated by d, resolve each electric-field "
+            "vector into x/y components and combine them."
+        ),
+        keywords=("perpendicular bisector", "equidistant from both charges", "distance from line segment", "electric field", "resultant"),
+        variables={"E_net": "electric_field", "q1": "charge", "q2": "charge_2", "d": "length", "h": "length_2"},
+        conditions=(
+            "The field point lies on the perpendicular bisector of the line joining the two source charges.",
+            "length is the source separation d and length_2 is the perpendicular offset h from the midpoint.",
+        ),
+        common_mistakes=(
+            "Do not use the full separation as the distance to each source; use sqrt((d/2)^2 + h^2).",
+            "Do not force equal-charge symmetry when the source magnitudes differ.",
+        ),
+        solve=_electric_field_perpendicular_bisector_two_charges,
     ),
     Formula(
         id="electric_field_opposite_equal_charges_perpendicular_bisector",
@@ -1608,6 +1787,30 @@ FORMULAS: tuple[Formula, ...] = (
         * K_COULOMB
         * abs(_q(k, "charge"))
         / (_q(k, "length") ** 2),
+    ),
+    Formula(
+        id="electric_field_midpoint_between_two_charges",
+        domain="electrostatics",
+        subfield="coulomb_law",
+        target="electric_field",
+        required=("charge", "charge_2", "length"),
+        output_unit="N/C",
+        expression="E_net = |E1 - E2| for like charges, E1 + E2 for unlike charges, with r = d/2",
+        explanation_template=(
+            "At the midpoint between two point charges, each field magnitude uses distance d/2. For like charges the "
+            "field directions oppose, and for unlike charges they align."
+        ),
+        keywords=("midpoint", "two charges", "separated by", "electric field", "net field", "resultant"),
+        variables={"E_net": "electric_field", "q1": "charge", "q2": "charge_2", "d": "length"},
+        conditions=(
+            "The field point is the midpoint of the segment joining the two source charges.",
+            "This formula handles unequal magnitudes and either same or opposite signs.",
+        ),
+        common_mistakes=(
+            "Use d/2 as the distance from the midpoint to each charge.",
+            "Do not force zero unless the two charges have the same sign and equal magnitude.",
+        ),
+        solve=_electric_field_midpoint_between_two_charges,
     ),
     Formula(
         id="electric_field_midpoint_between_equal_charges",
@@ -1781,6 +1984,21 @@ FORMULAS: tuple[Formula, ...] = (
         conditions=("The magnetic field is approximately uniform and perpendicular to the cross-sectional area.",),
         common_mistakes=("Convert cm^2 to m^2 before multiplying.",),
         solve=lambda k: _q(k, "magnetic_field") * _q(k, "area"),
+    ),
+    Formula(
+        id="magnetic_flux_total_solenoid",
+        domain="electrostatics",
+        subfield="magnetism",
+        target="magnetic_flux",
+        required=("turns", "magnetic_field", "area"),
+        output_unit="Wb",
+        expression="Phi_total = N * B * S",
+        explanation_template="If the question asks for the magnetic flux through the entire solenoid, multiply the single-turn flux by the number of turns.",
+        keywords=("magnetic flux through the entire solenoid", "entire solenoid", "all turns", "magnetic flux", "turns"),
+        variables={"Phi_total": "magnetic_flux", "N": "turns", "B": "magnetic_field", "S": "area"},
+        conditions=("The magnetic field is uniform through each turn and the question asks for total flux across all turns.",),
+        common_mistakes=("Do not stop at the one-turn flux when the problem asks for the entire solenoid.",),
+        solve=_magnetic_flux_total_solenoid,
     ),
     Formula(
         id="magnetic_flux_solenoid_from_turn_density_current_area",
@@ -2566,6 +2784,21 @@ def _formula_score(
 
 
 def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
+    if formula.id == "electric_field_midpoint_between_two_charges":
+        return (
+            ("midpoint" in lower_question or "middle of" in lower_question)
+            and not any(term in lower_question for term in ("identical charges", "equal and opposite", "opposite signs", "q1 = q2", "q1=q2", "q1 = -q2", "q1 = - q2"))
+        )
+    if formula.id == "electric_field_midpoint_between_opposite_equal_charges":
+        return (
+            ("midpoint" in lower_question or "middle of" in lower_question)
+            and any(term in lower_question for term in ("equal and opposite", "opposite signs", "q1 = -q2", "q1 = - q2"))
+        )
+    if formula.id == "electric_field_midpoint_between_equal_charges":
+        return (
+            ("midpoint" in lower_question or "middle of" in lower_question)
+            and any(term in lower_question for term in ("identical charges", "same sign", "q1 = q2", "q1=q2"))
+        )
     if formula.id == "rectangle_area":
         return any(term in lower_question for term in ("rectangle", "rectangular"))
     if formula.id == "triangle_area_base_height":
@@ -2619,12 +2852,34 @@ def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
         )
     if formula.id == "electric_field_two_equal_sources_right_angle":
         return (
-            ("right triangle" in lower_question or "right-angle" in lower_question or "right angle" in lower_question)
+            (
+                "isosceles right triangle" in lower_question
+                or "right-angle vertex" in lower_question
+                or "right angle vertex" in lower_question
+            )
+            and any(term in lower_question for term in ("identical charges", "equal charges", "same charge"))
             and "perpendicular bisector" not in lower_question
+        )
+    if formula.id == "electric_field_perpendicular_bisector_two_charges":
+        return (
+            "perpendicular bisector" in lower_question
+            and any(
+                term in lower_question
+                for term in ("distance from each charge", "equidistant from both charges", "from each of the two charges")
+            )
         )
     if formula.id == "electric_field_opposite_equal_charges_perpendicular_bisector":
         return "perpendicular bisector" in lower_question and (
             "opposite" in lower_question or "+3" in lower_question or "-3" in lower_question
+        )
+    if formula.id == "electric_field_two_sources_equilateral_general":
+        return "equilateral" in lower_question and "electric field" in lower_question and "charge_2" not in lower_question
+    if formula.id == "electric_field_point_charge_in_dielectric":
+        return (
+            "electric field" in lower_question
+            and ("dielectric constant" in lower_question or "relative permittivity" in lower_question or "in oil" in lower_question or "in alcohol" in lower_question)
+            and "midpoint" not in lower_question
+            and "perpendicular bisector" not in lower_question
         )
     if formula.id == "voltage_disconnected_capacitor_insert_dielectric":
         return "disconnected" in lower_question and "dielectric" in lower_question
@@ -2644,10 +2899,16 @@ def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
         return "distance" in lower_question and ("doubled" in lower_question or "doubles" in lower_question)
     if formula.id == "voltage_disconnected_capacitor_distance_doubled":
         return (
-            "disconnected" in lower_question
+            ("disconnected" in lower_question or "isolated" in lower_question)
             and "distance" in lower_question
             and ("doubled" in lower_question or "doubles" in lower_question)
         )
+    if formula.id == "capacitor_energy_voltage":
+        return "isolated" not in lower_question and "moved apart" not in lower_question and "total energy" not in lower_question
+    if formula.id == "current_from_inductor_energy":
+        return "inductor" in lower_question and "energy" in lower_question
+    if formula.id == "efficiency_percent_from_useful_total_energy":
+        return "efficiency" in lower_question and "%" in lower_question
     if formula.id == "voltage_connected_capacitor_distance_changed":
         return (
             ("still connected" in lower_question or "connected to the source" in lower_question)
@@ -2677,9 +2938,11 @@ def _formula_condition_matches(formula: Formula, lower_question: str) -> bool:
             and "magnetic flux" in lower_question
         )
     if formula.id == "magnetic_flux_from_field_area":
-        return "magnetic flux" in lower_question and (
+        return "magnetic flux" in lower_question and "entire solenoid" not in lower_question and (
             "magnetic field" in lower_question or "flux density" in lower_question
         )
+    if formula.id == "magnetic_flux_total_solenoid":
+        return "magnetic flux" in lower_question and ("entire solenoid" in lower_question or "all turns" in lower_question)
     if formula.id == "magnetic_flux_solenoid_from_turn_density_current_area":
         return "magnetic flux" in lower_question and "turn density" in lower_question
     if formula.id == "magnetic_field_solenoid_from_turns_length_current":

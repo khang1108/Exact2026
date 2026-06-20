@@ -8,6 +8,9 @@ Q_ = ureg.Quantity
 
 
 def parse_quantity(value: float, unit: str) -> pint.Quantity:
+    unit = unit.replace("Ω", "ohm").replace("Ω", "ohm").replace("μ", "u").replace("µ", "u")
+    if unit.lower() in {"turns/m", "turn/m", "turns per meter", "turn per meter"}:
+        unit = "1/m"
     q = Q_(value, unit)
     low = unit.lower()
     

@@ -20,9 +20,9 @@ def load_toml_config(path: str | Path) -> dict[str, Any]:
 
 
 def build_settings_from_config(config: dict[str, Any]) -> Settings:
-    settings = get_settings()
     llm = config.get("llm", {})
     type2_pipeline = config.get("type2_pipeline", {})
+    settings = _base_settings_for_config(llm)
     type2_updates = _type2_settings_updates(type2_pipeline, settings)
 
     backend = str(llm.get("backend", "none")).strip().lower()
@@ -40,6 +40,7 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
     api_key = api_key or "EMPTY"
 
     updates: dict[str, Any] = {
+        "llm_enabled": True,
         "llm_model": str(llm.get("model") or settings.llm_model),
         "llm_base_url": base_url,
         "llm_api_key": SecretStr(api_key) if api_key else None,
@@ -52,6 +53,17 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
     }
 
     return settings.model_copy(update=updates)
+
+
+def _base_settings_for_config(llm: dict[str, Any]) -> Settings:
+    backend = str(llm.get("backend", "none")).strip().lower()
+    enabled = bool(llm.get("enabled", backend != "none"))
+    if enabled and backend != "none":
+        return get_settings()
+
+    # When the runner is configured for deterministic-only execution, avoid
+    # loading a potentially invalid external LLM endpoint from environment.
+    return Settings(llm_base_url=None, llm_api_key=None)
 
 
 def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) -> dict[str, Any]:
@@ -78,8 +90,8 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
                 settings.type2_use_llm_question_kind_routing,
             )
         ),
-        "type2_use_agent_loop": bool(
-            type2_pipeline.get("use_agent_loop", settings.type2_use_agent_loop)
+        "type2_use_recovery_loop": bool(
+            type2_pipeline.get("use_recovery_loop", settings.type2_use_recovery_loop)
         ),
         "type2_extraction_mode": extraction_mode,
         "type2_use_extraction_verifier": bool(
@@ -112,10 +124,10 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
         "type2_pot_max_retries": int(
             type2_pipeline.get("pot_max_retries", settings.type2_pot_max_retries)
         ),
-        "type2_agent_loop_max_attempts": int(
+        "type2_recovery_loop_max_attempts": int(
             type2_pipeline.get(
-                "agent_loop_max_attempts",
-                settings.type2_agent_loop_max_attempts,
+                "recovery_loop_max_attempts",
+                settings.type2_recovery_loop_max_attempts,
             )
         ),
         "type2_pot_batch_size": int(
@@ -154,10 +166,10 @@ def _type2_settings_updates(type2_pipeline: dict[str, Any], settings: Settings) 
                 settings.type2_question_kind_max_tokens,
             )
         ),
-        "type2_agent_loop_max_tokens": int(
+        "type2_recovery_loop_max_tokens": int(
             type2_pipeline.get(
-                "agent_loop_max_tokens",
-                settings.type2_agent_loop_max_tokens,
+                "recovery_loop_max_tokens",
+                settings.type2_recovery_loop_max_tokens,
             )
         ),
         "type2_formula_selection_max_tokens": int(

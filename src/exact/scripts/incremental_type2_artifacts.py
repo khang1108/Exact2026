@@ -68,6 +68,7 @@ def write_incremental_type2_artifacts(
         )
         for pred in predictions
     ]
+    _attach_running_evaluation(predictions, rows)
     summary = summarize(rows, relative_tolerance, absolute_tolerance)
     routing_logs = _build_routing_logs(predictions, rows)
 
@@ -115,8 +116,68 @@ def _build_routing_logs(predictions: list[dict[str, Any]], rows) -> list[dict[st
         log = dict(routing)
         log["correct"] = row.status.startswith("correct")
         log["evaluation_status"] = row.status
+        if isinstance(pred.get("running_summary"), dict):
+            log["running_summary"] = pred["running_summary"]
         logs.append(log)
     return logs
+
+
+def _attach_running_evaluation(predictions: list[dict[str, Any]], rows) -> None:
+    stats = {
+        "total": 0,
+        "correct": 0,
+        "wrong": 0,
+        "pipeline_errors": 0,
+        "missing_gold": 0,
+        "conceptual_only": 0,
+        "numeric_total": 0,
+        "numeric_correct": 0,
+    }
+    for pred, row in zip(predictions, rows, strict=False):
+        _update_stats(stats, row)
+        summary = _running_summary(stats)
+        pred["evaluation"] = {
+            "status": row.status,
+            "correct": row.status.startswith("correct"),
+            "numeric_ok": row.numeric_ok,
+            "unit_ok": row.unit_ok,
+            "relative_error": row.relative_error,
+            "absolute_error": row.absolute_error,
+        }
+        pred["running_summary"] = summary
+        routing = pred.get("routing_log") or pred.get("routing_diagnostics")
+        if isinstance(routing, dict):
+            routing["correct"] = row.status.startswith("correct")
+            routing["evaluation_status"] = row.status
+            routing["running_summary"] = summary
+            pred["routing_log"] = routing
+
+
+def _update_stats(stats: dict[str, Any], row) -> None:
+    stats["total"] += 1
+    if row.status.startswith("correct"):
+        stats["correct"] += 1
+    elif row.status == "missing_gold":
+        stats["missing_gold"] += 1
+    elif row.status == "conceptual_only":
+        stats["conceptual_only"] += 1
+    else:
+        stats["wrong"] += 1
+    if row.status == "pipeline_error":
+        stats["pipeline_errors"] += 1
+    if row.numeric_ok is not None:
+        stats["numeric_total"] += 1
+        if row.numeric_ok and row.unit_ok is not False:
+            stats["numeric_correct"] += 1
+
+
+def _running_summary(stats: dict[str, Any]) -> dict[str, Any]:
+    denominator = stats["total"] - stats["missing_gold"] - stats["conceptual_only"]
+    numeric_total = stats["numeric_total"]
+    return dict(stats) | {
+        "accuracy": stats["correct"] / denominator if denominator > 0 else 0.0,
+        "numeric_accuracy": stats["numeric_correct"] / numeric_total if numeric_total > 0 else 0.0,
+    }
 
 
 def _average_elapsed_seconds(predictions: list[dict[str, Any]]) -> float:

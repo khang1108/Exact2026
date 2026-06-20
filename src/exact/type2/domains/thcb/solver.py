@@ -32,7 +32,7 @@ def _solve_measurement(contract: ThcbContract) -> ThcbAnswer | None:
         unit = contract.readings[0].unit if contract.readings else None
         if contract.target == "random_error":
             return _answer(mad, unit, "Computed random error as mean absolute deviation.")
-        return _multi([mean, mad], unit, "Computed mean value and mean absolute error.")
+        return _multi([mean, mad], f"{unit}; {unit}" if unit else None, "Computed mean value and mean absolute error.")
 
     if actual is not None and measured is not None:
         err = abs(measured.value - actual.value)

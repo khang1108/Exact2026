@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import re
 import pint
 
 from exact.type2.capacitor_contract import solve_capacitor_contract
@@ -264,7 +265,7 @@ def solve_extraction(
         return electromagnetism_result
 
     capacitor_result = solve_capacitor_contract(extraction)
-    if capacitor_result is not None:
+    if capacitor_result is not None and capacitor_result.error is None:
         return capacitor_result
 
     vector_result = solve_vector_template(extraction)
@@ -491,6 +492,72 @@ def solve_vector_template(extraction: Extraction) -> Type2SolveResult | None:
     lower = extraction.normalized_question.lower()
     quantities = extraction.quantities
 
+    if extraction.target == "angle" and "force" in quantities and "force_2" in quantities:
+        f1 = quantities["force"].value.to("N").magnitude
+        f2 = quantities["force_2"].value.to("N").magnitude
+        resultant = _resultant_force_hint(extraction)
+        if resultant is not None and f1 and f2:
+            cos_theta = (resultant**2 - f1**2 - f2**2) / (2 * f1 * f2)
+            cos_theta = max(-1.0, min(1.0, cos_theta))
+            theta = math.degrees(math.acos(cos_theta))
+            value = theta * ureg.degree
+            return Type2SolveResult(
+                answer=_format_number(float(theta)),
+                unit="degree",
+                value=value,
+                formula=None,
+                extraction=extraction,
+                verification=Verification(True, "Solved included angle from resultant-force cosine rule."),
+                cot=[
+                    "Detected two force magnitudes and a resultant-force magnitude.",
+                    "Applied R^2 = F1^2 + F2^2 + 2 F1 F2 cos(theta).",
+                ],
+                premises=[quantity.evidence for quantity in extraction.quantities.values()],
+                confidence=0.9,
+                error=None,
+            )
+
+    if (
+        extraction.target == "force"
+        and "isosceles right triangle" in lower
+        and "right angle vertex" in lower
+        and _has_quantities(quantities, "charge", "length")
+    ):
+        q = quantities["charge"].value.to("C")
+        side = quantities["length"].value.to("m")
+        single = _k_coulomb() * abs(q * q) / (side**2)
+        return _vector_template_result(
+            extraction,
+            (2**0.5) * single,
+            "net_force_identical_charges_right_angle_vertex",
+            "At the right-angle vertex, two equal perpendicular Coulomb forces combine by sqrt(2).",
+            ["Detected three identical charges on an isosceles right triangle."],
+        )
+
+    if (
+        extraction.target == "force"
+        and "straight line" in lower
+        and "acting on q2" in lower
+        and _has_quantities(quantities, "charge", "charge_2", "charge_3", "length")
+    ):
+        q1 = quantities["charge"].value.to("C")
+        q2 = quantities["charge_2"].value.to("C")
+        q3 = quantities["charge_3"].value.to("C")
+        spacing = quantities["length"].value.to("m")
+        f12 = _k_coulomb() * abs(q1 * q2) / (spacing**2)
+        f32 = _k_coulomb() * abs(q3 * q2) / (spacing**2)
+        return _vector_template_result(
+            extraction,
+            abs(f12 - f32),
+            "net_force_three_collinear_middle_charge_equal_spacing",
+            "For q2 between q1 and q3 with equal spacing, opposite attractions subtract.",
+            ["Detected three collinear charges with equal adjacent spacing and target q2."],
+        )
+
+    two_source_result = _solve_two_source_electrostatic_template(extraction)
+    if two_source_result is not None:
+        return two_source_result
+
     if extraction.target == "force" and "force" in quantities and "force_2" in quantities:
         f1 = quantities["force"].value.to("N")
         f2 = quantities["force_2"].value.to("N")
@@ -664,6 +731,383 @@ def solve_vector_template(extraction: Extraction) -> Type2SolveResult | None:
             ["Detected two source charges and a target on the perpendicular bisector."],
         )
 
+    if (
+        extraction.target == "electric_field"
+        and "midpoint" in lower
+        and _equal_charge_wording(lower)
+        and _has_quantities(quantities, "charge", "length")
+    ):
+        return _field_template_result(
+            extraction,
+            0 * (ureg.volt / ureg.meter),
+            "electric_field_midpoint_between_equal_charges",
+            "At the midpoint between two equal charges, the electric-field vectors have equal magnitude and opposite directions.",
+            ["Detected equal source charges and a midpoint target."],
+        )
+
+    if (
+        extraction.target == "electric_field"
+        and ("straight line" in lower or "same line" in lower or "line passing through" in lower)
+        and _has_quantities(quantities, "charge", "charge_2", "length_2", "length_3")
+    ):
+        q1 = quantities["charge"].value.to("C")
+        q2 = quantities["charge_2"].value.to("C")
+        r1 = quantities["length_2"].value.to("m")
+        r2 = quantities["length_3"].value.to("m")
+        same_direction = (q1.magnitude * q2.magnitude) < 0
+        e1 = _k_coulomb() * abs(q1) / (r1**2)
+        e2 = _k_coulomb() * abs(q2) / (r2**2)
+        value = e1 + e2 if same_direction else abs(e1 - e2)
+        return _field_template_result(
+            extraction,
+            value,
+            "electric_field_two_charges_collinear_point",
+            "For a point on the line of two charges, combine the one-dimensional electric-field magnitudes with charge signs.",
+            ["Detected a collinear electric-field target with distances to both charges."],
+        )
+
+    return None
+
+
+def _solve_two_source_electrostatic_template(extraction: Extraction) -> Type2SolveResult | None:
+    if extraction.target not in {"force", "electric_field"}:
+        return None
+
+    lower = extraction.normalized_question.lower()
+    if extraction.target == "electric_field" and (
+        "straight line" in lower or "same line" in lower or "line passing through" in lower
+    ):
+        return None
+
+    symmetry_zero = _symmetric_center_zero_result(extraction)
+    if symmetry_zero is not None:
+        return symmetry_zero
+
+    q1 = _charge_value(extraction, "charge")
+    q2 = _charge_value(extraction, "charge_2")
+    if q1 is None or q2 is None:
+        return None
+
+    if extraction.target == "force":
+        target_charge = _charge_value(extraction, "charge_3")
+        if target_charge is None:
+            direct = _solve_direct_coulomb_pair(extraction, q1, q2)
+            if direct is not None:
+                return direct
+            return None
+    else:
+        target_charge = None
+
+    perpendicular = _perpendicular_bisector_two_source_result(extraction, q1, q2, target_charge)
+    if perpendicular is not None:
+        return perpendicular
+
+    if _skip_two_source_generic_geometry(extraction):
+        return None
+
+    distances = _two_source_geometry_distances(extraction)
+    if distances is None:
+        return None
+    r1, r2, separation, note = distances
+    if r1 <= 0 or r2 <= 0 or separation < 0:
+        return None
+
+    value = _two_source_vector_magnitude(q1, q2, r1, r2, separation, target_charge)
+    if value is None:
+        return None
+    if extraction.target == "force":
+        return _vector_template_result(
+            extraction,
+            value,
+            "two_source_coulomb_force_by_geometry",
+            "Computed Coulomb force contributions from two source charges using the target-source distances.",
+            [note],
+        )
+    return _field_template_result(
+        extraction,
+        value,
+        "two_source_electric_field_by_geometry",
+        "Computed electric-field vector contributions from two source charges using the target-source distances.",
+        [note],
+    )
+
+
+def _symmetric_center_zero_result(extraction: Extraction) -> Type2SolveResult | None:
+    lower = extraction.normalized_question.lower()
+    if not any(marker in lower for marker in ("center", "centre", "intersection point")):
+        return None
+    if not any(marker in lower for marker in ("identical", "same magnitude", "equal", "like-signed", "q1, q2, q3, q4")):
+        return None
+    if not any(marker in lower for marker in ("equilateral triangle", "square")):
+        return None
+    value = 0 * (ureg.newton if extraction.target == "force" else (ureg.volt / ureg.meter))
+    if extraction.target == "force":
+        return _vector_template_result(
+            extraction,
+            value,
+            "symmetric_center_force_zero",
+            "By symmetry, equal contributions at the center cancel.",
+            ["Detected a symmetric center configuration."],
+        )
+    if extraction.target == "electric_field":
+        return _field_template_result(
+            extraction,
+            value,
+            "symmetric_center_field_zero",
+            "By symmetry, equal electric-field contributions at the center cancel.",
+            ["Detected a symmetric center configuration."],
+        )
+    return None
+
+
+def _perpendicular_bisector_two_source_result(
+    extraction: Extraction,
+    q1: pint.Quantity,
+    q2: pint.Quantity,
+    target_charge: pint.Quantity | None,
+) -> Type2SolveResult | None:
+    lower = extraction.normalized_question.lower()
+    if not any(marker in lower for marker in ("perpendicular bisector", "equidistant from both charges", "equidistant from a and b")):
+        return None
+    separation = _source_separation(extraction)
+    if separation is None:
+        return None
+    height = _height_from_quantities(extraction, separation)
+    if height is None:
+        if "midpoint" in lower or "line connecting" in lower:
+            height = 0.0
+        else:
+            return None
+
+    half = separation / 2
+    r = math.hypot(half, height)
+    if r <= 0:
+        return None
+
+    k = 8.9875517923e9
+    q1_value = q1.to("C").magnitude
+    q2_value = q2.to("C").magnitude
+    ex = k * (q1_value * half / (r**3) - q2_value * half / (r**3))
+    ey = k * (q1_value * height / (r**3) + q2_value * height / (r**3))
+    magnitude = math.hypot(ex, ey)
+    if target_charge is not None:
+        value = magnitude * abs(target_charge.to("C").magnitude) * ureg.newton
+        return _vector_template_result(
+            extraction,
+            value,
+            "perpendicular_bisector_two_source_force",
+            "Resolved two Coulomb-force contributions on a perpendicular-bisector geometry.",
+            ["Detected a perpendicular-bisector/equidistant target point."],
+        )
+    value = magnitude * (ureg.volt / ureg.meter)
+    return _field_template_result(
+        extraction,
+        value,
+        "perpendicular_bisector_two_source_field",
+        "Resolved two electric-field contributions on a perpendicular-bisector geometry.",
+        ["Detected a perpendicular-bisector/equidistant target point."],
+    )
+
+
+def _source_separation(extraction: Extraction) -> float | None:
+    lengths = _length_items(extraction)
+    values = {key: value.to("m").magnitude for key, value, _ in lengths}
+    evidence = {key: text.lower() for key, _, text in lengths}
+    explicit = _first_matching(values, evidence, ("ab", "separated", "apart", "distance between"))
+    if explicit is not None:
+        return explicit
+    ordered = [value.to("m").magnitude for _, value, _ in lengths]
+    return ordered[0] if ordered else None
+
+
+def _skip_two_source_generic_geometry(extraction: Extraction) -> bool:
+    lower = extraction.normalized_question.lower()
+    if "center" in lower and any(marker in lower for marker in ("three", "square", "vertices")):
+        return True
+    if "foot of the altitude" in lower or "right-angled triangle" in lower:
+        return True
+    return False
+
+
+def _solve_direct_coulomb_pair(extraction: Extraction, q1: pint.Quantity, q2: pint.Quantity) -> Type2SolveResult | None:
+    length = extraction.quantities.get("length")
+    if length is None:
+        return None
+    lower = extraction.normalized_question.lower()
+    if not any(marker in lower for marker in ("acting on q1 by q2", "exerted on q1 by q2", "force acting on q1", "between")):
+        return None
+    r = length.value.to("m")
+    value = _k_coulomb() * abs(q1.to("C") * q2.to("C")) / (r**2)
+    return _vector_template_result(
+        extraction,
+        value,
+        "direct_coulomb_pair_force",
+        "For two point charges, the pairwise Coulomb-force magnitude is k |q1 q2| / r^2.",
+        ["Detected a direct pairwise force between q1 and q2."],
+    )
+
+
+def _charge_value(extraction: Extraction, key: str) -> pint.Quantity | None:
+    quantity = extraction.quantities.get(key)
+    if quantity is None:
+        return None
+    try:
+        return quantity.value.to("C")
+    except Exception:
+        return None
+
+
+def _two_source_geometry_distances(extraction: Extraction) -> tuple[float, float, float, str] | None:
+    lower = extraction.normalized_question.lower()
+    lengths = _length_items(extraction)
+    if not lengths:
+        return None
+
+    by_evidence = {key: evidence.lower() for key, _, evidence in lengths}
+    values = {key: value.to("m").magnitude for key, value, _ in lengths}
+
+    r1 = _first_matching(values, by_evidence, ("ac", "from a", "from q1", "away from q1", "from the first"))
+    r2 = _first_matching(values, by_evidence, ("bc", "from b", "from q2", "away from q2", "from the second"))
+    separation = _first_matching(values, by_evidence, ("ab", "separated", "apart", "line segment", "distance between"))
+
+    ordered = [value.to("m").magnitude for _, value, _ in lengths]
+
+    if "midpoint" in lower and separation is None and ordered:
+        separation = ordered[0]
+    if "midpoint" in lower and separation is not None:
+        return separation / 2, separation / 2, separation, "Detected midpoint geometry between two source charges."
+
+    if (
+        ("perpendicular bisector" in lower or "away from ab" in lower or "away from the line segment" in lower)
+        and separation is not None
+    ):
+        height = _height_from_quantities(extraction, separation)
+        if height is not None:
+            r = math.hypot(separation / 2, height)
+            return r, r, separation, "Detected perpendicular-bisector geometry and derived equal source-target distances."
+
+    if r1 is not None and r2 is not None:
+        if separation is None:
+            if len(ordered) >= 3:
+                remaining = [item for item in ordered if not math.isclose(item, r1) and not math.isclose(item, r2)]
+                separation = remaining[0] if remaining else ordered[2]
+            elif "equilateral" in lower and math.isclose(r1, r2):
+                separation = r1
+        if separation is not None:
+            return r1, r2, separation, "Detected explicit distances from target point to both source charges."
+
+    if len(ordered) == 2 and any(marker in lower for marker in ("ac = bc", "ac=bc", "ac = bc =", "ac=bc=")):
+        equal_radius = r1 if r1 is not None else r2
+        if equal_radius is not None:
+            other = ordered[0] if not math.isclose(ordered[0], equal_radius) else ordered[1]
+            return equal_radius, equal_radius, other, "Detected AC = BC equal source-target distances."
+
+    if len(ordered) >= 3:
+        if "extension" in lower or "line segment" in lower or "line connecting" in lower or "straight line" in lower:
+            return ordered[1], ordered[2], ordered[0], "Detected collinear source-target distances from ordered length mentions."
+        return ordered[1], ordered[2], ordered[0], "Detected triangle source-target distances from ordered length mentions."
+
+    if len(ordered) == 2 and any(marker in lower for marker in ("ac = bc", "equidistant", "equal distance")):
+        return ordered[1], ordered[1], ordered[0], "Detected equal source-target distances."
+
+    if len(ordered) == 1:
+        only = ordered[0]
+        if "equilateral" in lower:
+            return only, only, only, "Detected equilateral geometry."
+        if "equidistant" in lower and "distance equal" in lower:
+            return only, only, only, "Detected equidistant target with distance equal to source separation."
+
+    return None
+
+
+def _length_items(extraction: Extraction) -> list[tuple[str, pint.Quantity, str]]:
+    items: list[tuple[str, pint.Quantity, str]] = []
+    for key, quantity in extraction.quantities.items():
+        try:
+            value = quantity.value.to("m")
+        except Exception:
+            continue
+        if key.startswith("length") or quantity.name == "length":
+            items.append((key, value, quantity.evidence))
+    return items
+
+
+def _first_matching(values: dict[str, float], evidence: dict[str, str], markers: tuple[str, ...]) -> float | None:
+    for key, text in evidence.items():
+        if any(marker in text for marker in markers):
+            return values[key]
+    return None
+
+
+def _height_from_quantities(extraction: Extraction, separation: float) -> float | None:
+    for key, quantity in extraction.quantities.items():
+        if key.startswith("length"):
+            try:
+                value = quantity.value.to("m").magnitude
+            except Exception:
+                continue
+            if not math.isclose(value, separation):
+                return value
+        if key == "inductance" and quantity.evidence.lower().startswith("l"):
+            try:
+                return quantity.value.to("m").magnitude
+            except Exception:
+                return None
+    return None
+
+
+def _two_source_vector_magnitude(
+    q1: pint.Quantity,
+    q2: pint.Quantity,
+    r1: float,
+    r2: float,
+    separation: float,
+    target_charge: pint.Quantity | None,
+) -> pint.Quantity | None:
+    if r1 <= 0 or r2 <= 0:
+        return None
+    if separation == 0:
+        cos_theta = 1.0
+    else:
+        cos_theta = (r1**2 + r2**2 - separation**2) / (2 * r1 * r2)
+    if cos_theta < -1.000001 or cos_theta > 1.000001:
+        return None
+    cos_theta = max(-1.0, min(1.0, cos_theta))
+    sin_theta = math.sqrt(max(0.0, 1.0 - cos_theta**2))
+
+    k = 8.9875517923e9
+    q1_value = q1.to("C").magnitude
+    q2_value = q2.to("C").magnitude
+
+    e1x = -k * q1_value / (r1**2)
+    e1y = 0.0
+    e2_mag_factor = -k * q2_value / (r2**2)
+    e2x = e2_mag_factor * cos_theta
+    e2y = e2_mag_factor * sin_theta
+    fx_or_ex = e1x + e2x
+    fy_or_ey = e1y + e2y
+
+    magnitude = math.hypot(fx_or_ex, fy_or_ey)
+    if target_charge is not None:
+        magnitude *= abs(target_charge.to("C").magnitude)
+        return magnitude * ureg.newton
+    return magnitude * (ureg.volt / ureg.meter)
+
+
+def _resultant_force_hint(extraction: Extraction) -> float | None:
+    lower = extraction.normalized_question.lower()
+    forces = [
+        quantity.value.to("N").magnitude
+        for key, quantity in extraction.quantities.items()
+        if key.startswith("force")
+    ]
+    if len(forces) >= 3:
+        return forces[-1]
+    match = re.search(r"resultant force is also\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+))\s*n", lower)
+    if match:
+        return float(match.group("value"))
+    if "resultant force is also" in lower and forces:
+        return forces[0]
     return None
 
 
@@ -694,6 +1138,33 @@ def _vector_template_result(
     )
 
 
+def _field_template_result(
+    extraction: Extraction,
+    value: pint.Quantity,
+    formula_id: str,
+    premise: str,
+    cot: list[str],
+) -> Type2SolveResult:
+    converted = value.to("V/m")
+    answer = _format_number(float(converted.magnitude))
+    return Type2SolveResult(
+        answer=answer,
+        unit="V/m",
+        value=converted,
+        formula=None,
+        extraction=extraction,
+        verification=Verification(True, f"Matched deterministic field template `{formula_id}`."),
+        cot=[
+            "Matched a high-confidence deterministic field template before formula-bank execution.",
+            *cot,
+            "Computed electric-field magnitude and converted the result to V/m.",
+        ],
+        premises=[premise, *[quantity.evidence for quantity in extraction.quantities.values()]],
+        confidence=0.9,
+        error=None,
+    )
+
+
 def _has_quantities(quantities: dict[str, Quantity], *names: str) -> bool:
     return all(name in quantities for name in names)
 
@@ -702,7 +1173,7 @@ def _equal_charge_wording(lower_question: str) -> bool:
     return any(
         marker in lower_question
         for marker in ("q1 = q2 = q3", "three identical", "three equal", "charges q1 = q2 = q3")
-    )
+    ) or bool(re.search(r"\bq1\s*=\s*q2\b", lower_question))
 
 
 def _k_coulomb() -> pint.Quantity:
