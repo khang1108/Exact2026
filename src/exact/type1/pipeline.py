@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from exact.type1.fallback import Type1FallbackReasoner
     from exact.type1.parser import QuestionSideParser
     from exact.type1.parser.schemas import OptionClaim, QuestionParseBundle
-    from exact.type1.parser.theory_translator import TheoryTranslator
+    from exact.type1.parser.theory_translator import TheoryTranslation, TheoryTranslator
     from exact.type1.solvers import FOLSolver  # type: ignore[import-untyped]
 
 # Internal uncertain literal emitted by the solver, normalized at the boundary.
@@ -374,7 +374,21 @@ async def run_type1_single_pass(
     if not options_dict:
         options_dict = extract_mcq(payload.question).options
 
+    # Translate with a bounded self-refinement loop (Logic-LM style): re-prompt
+    # the translator with the specific failures (unparsable FOL, or claim/option
+    # predicates absent from the premises) until clean or the budget is spent.
+    max_refines = get_settings().type1_single_pass_max_refines
     translation = await translator.translate(premises, payload.question, options_dict or None)
+    refine_log: list[str] = []
+    for _ in range(max_refines):
+        problems = _translation_problems(translation)
+        if not problems:
+            break
+        refine_log.extend(problems)
+        translation = await translator.translate(
+            premises, payload.question, options_dict or None, feedback="\n".join(problems)
+        )
+
     premise_fols = translation.premise_trees
     is_mcq = translation.question_format == "mcq"
     question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
@@ -501,8 +515,32 @@ async def run_type1_single_pass(
                 label: repr(tree) for label, tree in translation.option_trees.items()
             },
             "translation_issues": translation.issues,
+            "refine_log": refine_log,
         },
     )
+
+
+def _translation_problems(translation: TheoryTranslation) -> list[str]:
+    """Refinement triggers: unparsable FOL + claim/option predicates with no
+    premise definition (orphans that can never chain)."""
+    problems = list(translation.issues)
+    premise_predicates = {
+        atom.predicate.name
+        for tree in translation.premise_trees
+        for atom in _collect_atoms(tree)
+    }
+    targets: list[tuple[str, FOLNode]] = []
+    if translation.claim_tree is not None:
+        targets.append(("claim", translation.claim_tree))
+    targets.extend((f"option {label}", tree) for label, tree in translation.option_trees.items())
+    for name, tree in targets:
+        for atom in _collect_atoms(tree):
+            if atom.predicate.name not in premise_predicates:
+                problems.append(
+                    f"ORPHAN_PREDICATE: {name} uses {atom.predicate.name} which no premise "
+                    f"defines — reuse an existing premise predicate or recheck the translation"
+                )
+    return list(dict.fromkeys(problems))
 
 
 def _build_single_pass_explanation(

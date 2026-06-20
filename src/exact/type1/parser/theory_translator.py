@@ -78,14 +78,23 @@ class TheoryTranslator:
         premises: list[str],
         question: str,
         options: dict[str, str] | None = None,
+        feedback: str | None = None,
+        temperature: float = 0.0,
     ) -> TheoryTranslation:
+        user = _render_problem(premises, question, options)
+        if feedback:
+            user += (
+                "\n\nYOUR PREVIOUS TRANSLATION HAD PROBLEMS — fix them and re-emit the "
+                "FULL JSON:\n" + feedback
+            )
         raw = await self.client.parse_as(
             [
                 {"role": "system", "content": get_system_prompt_theory_translate()},
-                {"role": "user", "content": _render_problem(premises, question, options)},
+                {"role": "user", "content": user},
             ],
             TranslatedTheory,
             max_tokens=self.max_tokens,
+            temperature=temperature,
         )
         return _parse_translation(raw)
 
