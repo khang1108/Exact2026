@@ -22,7 +22,7 @@ progress_every = 1
 
 [llm]
 # Optional. Leave disabled for deterministic-only runs.
-require_llm = false
+require_llm = true
 # Supported backend today: vllm
 # backend = "vllm"
 # enabled = true
