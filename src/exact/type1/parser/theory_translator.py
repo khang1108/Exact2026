@@ -78,7 +78,7 @@ def empty_translation(error: str) -> TheoryTranslation:
 class TheoryTranslator:
     """Translate a full Type 1 problem to FOL in one LLM call."""
 
-    def __init__(self, client: ParserClient, max_tokens: int = 4096) -> None:
+    def __init__(self, client: ParserClient, max_tokens: int = 2048) -> None:
         self.client = client
         self.max_tokens = max_tokens
 
