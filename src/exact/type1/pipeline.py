@@ -10,8 +10,10 @@ Workflow per request:
 
 from __future__ import annotations
 
+import asyncio
 import re
-from dataclasses import asdict
+from collections import Counter
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any
 
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
@@ -358,27 +360,29 @@ def _uncertainty_cause(
 # Z3 routing
 # ---------------------------------------------------------------------------
 
-async def run_type1_single_pass(
+@dataclass
+class _SinglePassAttempt:
+    """One translate→refine→solve sample for self-consistency voting."""
+
+    symbolic_answer: str
+    premises_used: list[int] | None
+    translation: "TheoryTranslation"
+    refine_log: list[str]
+
+
+async def _single_pass_attempt(
     payload: PredictionRequest,
     translator: TheoryTranslator,
-    solver: FOLSolver | None = None,
-    fallback_reasoner: Type1FallbackReasoner | None = None,
-) -> PredictionResponse:
-    """Whole-theory single-pass translation path (EXACT_TYPE1_TRANSLATOR=single_pass).
-
-    Translate premises + question + options in one LLM call to a shared FOL
-    vocabulary, then reuse the existing Z3 checks and LLM fallback.
-    """
-    premises = [p.strip() for p in payload.premises or [] if p.strip()]
-    options_dict = _normalize_options(payload.options)
-    if not options_dict:
-        options_dict = extract_mcq(payload.question).options
-
-    # Translate with a bounded self-refinement loop (Logic-LM style): re-prompt
-    # the translator with the specific failures (unparsable FOL, or claim/option
-    # predicates absent from the premises) until clean or the budget is spent.
-    max_refines = get_settings().type1_single_pass_max_refines
-    translation = await translator.translate(premises, payload.question, options_dict or None)
+    solver: FOLSolver | None,
+    options_dict: dict[str, str],
+    premises: list[str],
+    max_refines: int,
+    temperature: float,
+) -> _SinglePassAttempt:
+    """Translate (with bounded refinement) then solve once."""
+    translation = await translator.translate(
+        premises, payload.question, options_dict or None, temperature=temperature
+    )
     refine_log: list[str] = []
     for _ in range(max_refines):
         problems = _translation_problems(translation)
@@ -386,18 +390,15 @@ async def run_type1_single_pass(
             break
         refine_log.extend(problems)
         translation = await translator.translate(
-            premises, payload.question, options_dict or None, feedback="\n".join(problems)
+            premises, payload.question, options_dict or None,
+            feedback="\n".join(problems), temperature=temperature,
         )
 
     premise_fols = translation.premise_trees
     is_mcq = translation.question_format == "mcq"
-    question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
-
-    solver_used = solver is not None and bool(premise_fols)
-    premises_used: list[int] | None = None
     raw_answer = _SOLVER_UNCERTAIN
-    if solver_used:
-        assert solver is not None
+    premises_used: list[int] | None = None
+    if solver is not None and premise_fols:
         try:
             if is_mcq and translation.option_trees:
                 raw_answer, used_local = solver.check_mcq_with_used(
@@ -417,8 +418,63 @@ async def run_type1_single_pass(
             if "SORT_CONFLICT" not in str(exc):
                 raise
             raw_answer = _SOLVER_UNCERTAIN
+    return _SinglePassAttempt(raw_answer, premises_used, translation, refine_log)
 
-    symbolic_answer = raw_answer
+
+async def run_type1_single_pass(
+    payload: PredictionRequest,
+    translator: TheoryTranslator,
+    solver: FOLSolver | None = None,
+    fallback_reasoner: Type1FallbackReasoner | None = None,
+) -> PredictionResponse:
+    """Whole-theory single-pass translation path (EXACT_TYPE1_TRANSLATOR=single_pass).
+
+    Translate premises + question + options in one LLM call to a shared FOL
+    vocabulary, then reuse the existing Z3 checks and LLM fallback.
+    """
+    premises = [p.strip() for p in payload.premises or [] if p.strip()]
+    options_dict = _normalize_options(payload.options)
+    if not options_dict:
+        options_dict = extract_mcq(payload.question).options
+
+    settings = get_settings()
+    k = max(1, settings.type1_self_consistency_samples)
+    temperature = 0.0 if k == 1 else settings.type1_self_consistency_temperature
+
+    # K independent translate→refine→solve attempts (LINC self-consistency).
+    attempts = await asyncio.gather(
+        *(
+            _single_pass_attempt(
+                payload, translator, solver, options_dict, premises,
+                settings.type1_single_pass_max_refines, temperature,
+            )
+            for _ in range(k)
+        )
+    )
+
+    # Majority vote over symbolic answers; a tie for first place abstains.
+    votes = Counter(a.symbolic_answer for a in attempts)
+    ranked = votes.most_common()
+    if len(ranked) == 1 or ranked[0][1] > ranked[1][1]:
+        winner = ranked[0][0]
+    else:
+        winner = _SOLVER_UNCERTAIN
+    representative = next(
+        (a for a in attempts if a.symbolic_answer == winner), attempts[0]
+    )
+
+    translation = representative.translation
+    refine_log = representative.refine_log
+    vote_distribution = dict(votes)
+    premise_fols = translation.premise_trees
+    is_mcq = translation.question_format == "mcq"
+    question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
+    solver_used = solver is not None and bool(premise_fols)
+    symbolic_answer = winner
+    raw_answer = winner
+    premises_used: list[int] | None = (
+        representative.premises_used if winner != _SOLVER_UNCERTAIN else None
+    )
 
     # LLM fallback when symbolic could not decide.
     fallback_used = False
@@ -516,6 +572,7 @@ async def run_type1_single_pass(
             },
             "translation_issues": translation.issues,
             "refine_log": refine_log,
+            "vote_distribution": vote_distribution,
         },
     )
 

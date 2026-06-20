@@ -126,6 +126,16 @@ class Settings(BaseSettings):
         ge=0,
         validation_alias="EXACT_TYPE1_SINGLE_PASS_MAX_REFINES",
     )
+    type1_self_consistency_samples: int = Field(
+        default=1,
+        ge=1,
+        validation_alias="EXACT_TYPE1_SELF_CONSISTENCY_SAMPLES",
+    )
+    type1_self_consistency_temperature: float = Field(
+        default=0.7,
+        ge=0.0,
+        validation_alias="EXACT_TYPE1_SELF_CONSISTENCY_TEMPERATURE",
+    )
     # Hard end-to-end deadline for one Type 1 request. If the parse → solve →
     # refine pipeline exceeds this, the request returns "Uncertain" instead of
     # running unbounded. Keep it below any upstream proxy/tunnel timeout.
