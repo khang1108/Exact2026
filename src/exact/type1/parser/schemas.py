@@ -603,52 +603,6 @@ def _map_atoms(node: FOLNode, fn: Callable[[AtomicNode], AtomicNode]) -> FOLNode
     )
 
 
-def collect_predicate_signatures(
-    trees: list[FOLNode], premises: list[str]
-) -> list[dict[str, object]]:
-    """One record per (predicate name, arity) with an example premise.
-
-    Feeds the LLM predicate reconciler so it can judge which independently-named
-    predicates denote the same relation (e.g. PriorityDeliveryStatus vs
-    HasPriorityDeliveryStatus) using the example sentence as context.
-    """
-    seen: dict[tuple[str, int], dict[str, object]] = {}
-    for index, tree in enumerate(trees):
-        example = premises[index] if index < len(premises) else ""
-        for atom in _collect_atoms_in_order(tree):
-            key = (atom.predicate.name, len(atom.arguments))
-            if key not in seen:
-                seen[key] = {"name": key[0], "arity": key[1], "example": example}
-    return list(seen.values())
-
-
-def apply_predicate_renames(
-    trees: list[FOLNode], rename_map: dict[str, str]
-) -> list[FOLNode]:
-    """Rename predicates to their reconciled canonical name across all trees.
-
-    Only the predicate name changes; arguments and arg_sorts are preserved and
-    the previous name is kept as an alias. Callers are responsible for guarding
-    the map (same arity, same predicate family).
-    """
-    if not rename_map:
-        return trees
-
-    def _rename(atom: AtomicNode) -> AtomicNode:
-        target = rename_map.get(atom.predicate.name)
-        if target is None or target == atom.predicate.name:
-            return atom
-        predicate = Predicate(
-            name=target,
-            arg_sorts=atom.predicate.arg_sorts,
-            description=atom.predicate.description,
-            aliases=list(dict.fromkeys([*atom.predicate.aliases, atom.predicate.name])),
-        )
-        return AtomicNode(predicate=predicate, arguments=atom.arguments)
-
-    return [_map_atoms(tree, _rename) for tree in trees]
-
-
 def repair_arity_drift(trees: list[FOLNode]) -> tuple[list[FOLNode], list[str]]:
     """Unify a predicate that drifts across arities down to its lowest arity.
 

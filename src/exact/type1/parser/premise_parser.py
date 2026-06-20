@@ -9,15 +9,12 @@ from exact.type1.ast.nodes import AtomicNode, ComparisonNode, FOLNode, LogicalNo
 from exact.type1.models.schemas import Predicate
 from exact.type1.parser.frame_parser import ConstraintParser, PremiseFrameCompiler, PremiseFrameParser
 from exact.type1.parser.parser import FOLParser
-from exact.type1.parser.predicate_reconciler import PredicateReconciler
 from exact.type1.parser.schemas import (
     PremiseFrameResult,
     PremiseParseBundle,
     PremiseSchema,
     _INTERROGATIVE_START,
     _OPTION_LINE,
-    apply_predicate_renames,
-    collect_predicate_signatures,
     is_generic_class_constant,
     repair_arity_drift,
     singularize_class_constant,
@@ -47,10 +44,6 @@ class PremiseParser:
         self.fol_parser = fol_parser
         self.frame_parser = frame_parser
         self.frame_compiler = frame_compiler
-        client = getattr(fol_parser, "client", None)
-        self.predicate_reconciler = (
-            PredicateReconciler(client) if client is not None else None
-        )
 
     @classmethod
     def from_parser_client(cls, client: ParserClient) -> PremiseParser:
@@ -94,33 +87,12 @@ class PremiseParser:
         else:
             restrictor_repairs = []
         draft_trees, arity_repairs = repair_arity_drift(draft_trees)
-
-        # Reconcile synonymous predicates the independent per-premise parses
-        # produced (e.g. PriorityDeliveryStatus vs HasPriorityDeliveryStatus) via
-        # one LLM call, so the solver sees a single symbol. Failures are
-        # non-fatal — parsing falls back to the deterministic schema merge.
-        predicate_repairs: list[str] = []
-        if self.predicate_reconciler is not None:
-            try:
-                rename_map = await self.predicate_reconciler.reconcile(
-                    collect_predicate_signatures(draft_trees, normalized)
-                )
-            except Exception:
-                rename_map = {}
-            if rename_map:
-                draft_trees = apply_predicate_renames(draft_trees, rename_map)
-                predicate_repairs = [
-                    f"PREDICATE_RECONCILED: {alias} → {canonical}"
-                    for alias, canonical in sorted(rename_map.items())
-                ]
-
         schema = PremiseSchema.from_trees(draft_trees)
         trees, renames = schema.canonicalize(draft_trees)
         issues = (
             _verify_bundle(normalized, trees, schema, frames)
             + restrictor_repairs
             + arity_repairs
-            + predicate_repairs
         )
 
         blocking = tuple(i for i in issues if _is_blocking_issue(i))
