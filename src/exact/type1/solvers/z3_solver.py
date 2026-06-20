@@ -35,6 +35,7 @@ from exact.type1.ast.nodes import (
     NumericTerm,
     QuantifiedNode,
 )
+from exact.type1.models.schemas import Predicate
 
 # Shared sort for every entity in the domain — module-level singleton.
 _ENTITY = z3.DeclareSort("Entity")
@@ -131,14 +132,18 @@ class FOLSolver:
         ctx = _CallCtx()
         p_z3 = [self._to_z3(n, {}, ctx) for n in premises]
         c_z3 = self._to_z3(conclusion, {}, ctx)
+        # Clark completion (only-if direction) for purely rule-defined predicates,
+        # added untracked. Lets a KNOWN-false requirement disprove the claim
+        # ("No") while an UNKNOWN requirement stays "Uncertain".
+        completion = [self._to_z3(n, {}, ctx) for n in _completion_axioms(premises)]
 
         # Yes: premises ∧ ¬conclusion is UNSAT
-        answer, used = self._entails_with_core(p_z3, z3.Not(c_z3))
+        answer, used = self._entails_with_core(p_z3, z3.Not(c_z3), completion)
         if answer == z3.unsat:
             return "Yes", used
 
         # No: premises ∧ conclusion is UNSAT
-        answer, used = self._entails_with_core(p_z3, c_z3)
+        answer, used = self._entails_with_core(p_z3, c_z3, completion)
         if answer == z3.unsat:
             return "No", used
 
@@ -401,13 +406,15 @@ class FOLSolver:
         self,
         premises_z3: list[z3.ExprRef],
         extra: z3.ExprRef,
+        extra_context: list[z3.ExprRef] | None = None,
     ) -> tuple[z3.CheckSatResult, list[int]]:
         """Add premises + extra assertion, return (result, used_premise_indices).
 
         Uses assert_and_track so Z3 can return an unsat core.  Each premise
         is tracked with a fresh Boolean constant ``pN`` (N = 0-based index).
-        The extra assertion (negated conclusion or conclusion itself) is added
-        directly — it is always part of the check and not tracked.
+        The extra assertion (negated conclusion or conclusion itself) and any
+        ``extra_context`` (e.g. Clark-completion axioms) are added untracked, so
+        they never appear in the premise core / premises_used.
         """
         s = self._solver()
         s.set("unsat_core", True)
@@ -417,6 +424,8 @@ class FOLSolver:
             trackers.append(tracker)
             s.assert_and_track(p, tracker)
         s.add(extra)
+        for ctx_expr in extra_context or ():
+            s.add(ctx_expr)
         result = s.check()
         if result != z3.unsat:
             return result, []
@@ -425,3 +434,98 @@ class FOLSolver:
             i for i, t in enumerate(trackers) if str(t) in core_names
         ]
         return result, sorted(used)
+
+
+# ---------------------------------------------------------------------------
+# Clark completion (closed-world only-if direction for rule-defined predicates)
+# ---------------------------------------------------------------------------
+
+def _rename_var(node: FOLNode, old: str, new: str) -> FOLNode:
+    """Return a copy of ``node`` with the free variable ``old`` renamed to ``new``."""
+    if isinstance(node, AtomicNode):
+        return AtomicNode(node.predicate, [new if a == old else a for a in node.arguments])
+    if isinstance(node, ComparisonNode):
+        def _rt(t: object) -> object:
+            if isinstance(t, FunctionTerm):
+                return FunctionTerm(t.name, [new if a == old else a for a in t.arguments])
+            return t
+        return ComparisonNode(node.operator, _rt(node.left), _rt(node.right))  # type: ignore[arg-type]
+    if isinstance(node, QuantifiedNode):
+        if node.variable == old:
+            return node  # shadowed
+        return QuantifiedNode(
+            node.quantifier, node.variable,
+            _rename_var(node.body, old, new),
+            _rename_var(node.restrictor, old, new) if node.restrictor is not None else None,
+        )
+    return LogicalNode(
+        node.operator, _rename_var(node.left, old, new),
+        _rename_var(node.right, old, new) if node.right is not None else None,
+    )
+
+
+def _as_unary_rule(node: FOLNode) -> tuple[str, str, FOLNode] | None:
+    """If node is ∀x[.R].(Body → P(x)), return (P, x, R∧Body); else None."""
+    if not isinstance(node, QuantifiedNode) or node.quantifier != "FORALL":
+        return None
+    body = node.body
+    if not (isinstance(body, LogicalNode) and body.operator == "IMPLIES" and body.right is not None):
+        return None
+    head = body.right
+    if not (isinstance(head, AtomicNode) and head.arguments == [node.variable]):
+        return None
+    antecedent = body.left
+    if node.restrictor is not None:
+        antecedent = LogicalNode("AND", node.restrictor, antecedent)
+    return head.predicate.name, node.variable, antecedent
+
+
+def _pred_names(node: FOLNode) -> set[str]:
+    if isinstance(node, AtomicNode):
+        return {node.predicate.name}
+    if isinstance(node, ComparisonNode):
+        return set()
+    if isinstance(node, QuantifiedNode):
+        names = _pred_names(node.body)
+        if node.restrictor is not None:
+            names |= _pred_names(node.restrictor)
+        return names
+    names = _pred_names(node.left)
+    if node.right is not None:
+        names |= _pred_names(node.right)
+    return names
+
+
+def _completion_axioms(premises: list[FOLNode]) -> list[FOLNode]:
+    """∀x (P(x) → ⋁ bodies) for predicates P defined only by unary rules.
+
+    Predicates that also appear as ground facts are left open (not completed).
+    Best-effort: returns [] on any unexpected structure so solving never breaks.
+    """
+    try:
+        bodies_by_head: dict[str, list[FOLNode]] = {}
+        head_preds: set[str] = set()
+        fact_preds: set[str] = set()
+        for prem in premises:
+            rule = _as_unary_rule(prem)
+            if rule is not None:
+                pred, var, antecedent = rule
+                head_preds.add(pred)
+                bodies_by_head.setdefault(pred, []).append(_rename_var(antecedent, var, "x"))
+            else:
+                fact_preds |= _pred_names(prem)
+        axioms: list[FOLNode] = []
+        for pred in head_preds - fact_preds:
+            bodies = bodies_by_head.get(pred, [])
+            if not bodies:
+                continue
+            disjunction = bodies[0]
+            for extra in bodies[1:]:
+                disjunction = LogicalNode("OR", disjunction, extra)
+            head = AtomicNode(Predicate(name=pred, arg_sorts=["Entity"], aliases=[]), ["x"])
+            axioms.append(
+                QuantifiedNode("FORALL", "x", LogicalNode("IMPLIES", head, disjunction), None)
+            )
+        return axioms
+    except Exception:
+        return []
