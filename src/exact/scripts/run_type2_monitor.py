@@ -51,6 +51,7 @@ def main() -> None:
     config = load_toml_config(args.config)
     dataset_cfg = config.get("dataset", {})
     output_cfg = config.get("output", {})
+    llm_cfg = config.get("llm", {})
     type2_cfg = config.get("type2_pipeline", {})
     eval_cfg = config.get("evaluation", {})
 
@@ -62,7 +63,8 @@ def main() -> None:
     examples = _slice_examples(examples, offset=offset, limit=limit)
 
     settings = build_settings_from_config(config)
-    _require_real_llm_settings(settings)
+    if bool(llm_cfg.get("require_llm", False)):
+        _require_real_llm_settings(settings)
     set_generate_final_explanation(bool(type2_cfg.get("generate_final_explanation", False)))
     relative_tolerance = float(eval_cfg.get("relative_tolerance", 0.02))
     absolute_tolerance = float(eval_cfg.get("absolute_tolerance", 1e-9))
@@ -87,8 +89,8 @@ def main() -> None:
                 absolute_tolerance=absolute_tolerance,
                 case_sensitive_text=case_sensitive_text,
             )
-            _update_prediction_routing_log(prediction, row.status)
             _update_stats(stats, row.status, row.numeric_ok)
+            _attach_evaluation_metadata(prediction, row, stats)
             _print_progress(index, len(examples), example, prediction, row.status, stats)
     except KeyboardInterrupt:
         interrupted = True
@@ -212,13 +214,32 @@ def _optional_path(value: Any) -> Path | None:
     return Path(text) if text else None
 
 
-def _update_prediction_routing_log(prediction: dict[str, Any], status: str) -> None:
+def _attach_evaluation_metadata(prediction: dict[str, Any], row, stats: MonitorStats) -> None:
+    running_summary = _running_summary(stats)
+    prediction["evaluation"] = {
+        "status": row.status,
+        "correct": row.status.startswith("correct"),
+        "numeric_ok": row.numeric_ok,
+        "unit_ok": row.unit_ok,
+        "relative_error": row.relative_error,
+        "absolute_error": row.absolute_error,
+    }
+    prediction["running_summary"] = running_summary
+
     routing = prediction.get("routing_log") or prediction.get("routing_diagnostics")
     if not isinstance(routing, dict):
         return
-    routing["correct"] = status.startswith("correct")
-    routing["evaluation_status"] = status
+    routing["correct"] = row.status.startswith("correct")
+    routing["evaluation_status"] = row.status
+    routing["running_summary"] = running_summary
     prediction["routing_log"] = routing
+
+
+def _running_summary(stats: MonitorStats) -> dict[str, Any]:
+    return asdict(stats) | {
+        "accuracy": stats.accuracy,
+        "numeric_accuracy": stats.numeric_accuracy,
+    }
 
 
 def _write_routing_log(path: Path, predictions: list[dict[str, Any]]) -> None:
@@ -274,9 +295,7 @@ def _write_output(
         "interrupted": interrupted,
         "run_elapsed_seconds": run_elapsed_seconds,
         "format": "exact_type2_monitor_predictions",
-        "summary": asdict(stats) | {
-            "accuracy": stats.accuracy,
-            "numeric_accuracy": stats.numeric_accuracy,
+        "summary": _running_summary(stats) | {
             "average_elapsed_seconds": _average_elapsed_seconds(predictions),
         },
         "predictions": predictions,

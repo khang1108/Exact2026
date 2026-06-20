@@ -14,14 +14,27 @@ from exact.type2.routing import build_routing_diagnostics, mark_current_solver_u
 from exact.type2.solving.pot_solver import solve_with_pot
 
 
+def try_thcb_pipeline(
+    request: PredictionRequest,
+    settings: Settings | None = None,
+) -> tuple[PredictionResponse | None, bool]:
+    settings = settings or get_settings()
+    contract, answer, source = _solve_with_contract_order(request.question, settings)
+    if answer is not None:
+        return _to_response(request, contract, answer, source), False
+    return None, True
+
+
 def run_thcb_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
 ) -> PredictionResponse:
     settings = settings or get_settings()
-    contract, answer, source = _solve_with_contract_order(request.question, settings)
-    if answer is not None:
-        return _to_response(request, contract, answer, source)
+    fast_response, fallback = try_thcb_pipeline(request, settings)
+    if not fallback and fast_response is not None:
+        return fast_response
+
+    contract, _answer_unused, source = _solve_with_contract_order(request.question, settings)
 
     extraction = extract_type2(request.question)
     formula_context = retrieve_formula_context(

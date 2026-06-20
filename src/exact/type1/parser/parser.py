@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import re
 from collections.abc import Iterable
-from typing import Literal, TypeVar
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 from pydantic import BaseModel
 
@@ -30,6 +30,7 @@ from exact.type1.parser.router import (
     ParserRequest,
     build_coreference_request,
     build_rephrase_request,
+    build_schema_guided_atomic_request,
     build_sentence_request,
 )
 from exact.type1.parser.schemas import (
@@ -39,6 +40,9 @@ from exact.type1.parser.schemas import (
     QuantifiedResult,
     RephraseResult,
 )
+
+if TYPE_CHECKING:
+    from exact.type1.parser.schemas import PremiseSchema
 
 LiteralQuantifier = Literal["ForAll", "ThereExists"]
 ResultT = TypeVar("ResultT", bound=BaseModel)
@@ -60,13 +64,21 @@ class FOLParser:
         self.client = client
         self.max_depth = max_depth
 
-    async def parse_many(self, sentences: Iterable[str]) -> list[FOLNode]:
+    async def parse_many(
+        self,
+        sentences: Iterable[str],
+        *,
+        premise_schema: PremiseSchema | None = None,
+    ) -> list[FOLNode]:
         """Parse independent sentences concurrently while preserving order.
 
         Quantified sentences are first rephrased to IF-THEN form in a single
         batch; those that convert to logical avoid quantifier-nesting loops.
         Remaining quantified sentences fall back to the progress-check guard
         inside ``_parse_quantified``.
+
+        When ``premise_schema`` is provided, atomic sub-parses use the
+        schema-guided prompt so predicate names match the premise vocabulary.
         """
         sentence_list = list(sentences)
 
@@ -75,7 +87,9 @@ class FOLParser:
             self._rephrase_if_quantified(s) for s in sentence_list
         ))
 
-        return list(await asyncio.gather(*(self.parse(s) for s in rephrased)))
+        return list(await asyncio.gather(
+            *(self.parse(s, premise_schema=premise_schema) for s in rephrased)
+        ))
 
     async def _rephrase_if_quantified(self, sentence: str) -> str:
         """Rephrase a quantified sentence to IF-THEN; return others unchanged."""
@@ -92,6 +106,7 @@ class FOLParser:
         parent: str = "",
         used_variables: frozenset[str] | None = None,
         force_quantifier: LiteralQuantifier | None = None,
+        premise_schema: PremiseSchema | None = None,
     ) -> FOLNode:
         """Recursively parse one sentence into an FOL AST."""
 
@@ -101,7 +116,7 @@ class FOLParser:
 
         used_variables = used_variables or frozenset()
         if depth > self.max_depth or self._is_recursive_loop(parent, sentence):
-            return simplify(await self._parse_atomic(sentence))
+            return simplify(await self._parse_atomic(sentence, premise_schema=premise_schema))
 
         sentence_type = fast_classify(sentence)
         if sentence_type == "quantified":
@@ -110,14 +125,16 @@ class FOLParser:
                 depth=depth,
                 used_variables=used_variables,
                 force_quantifier=force_quantifier,
+                premise_schema=premise_schema,
             ))
         if sentence_type == "logical":
             return simplify(await self._parse_logical(
                 sentence,
                 depth=depth,
                 used_variables=used_variables,
+                premise_schema=premise_schema,
             ))
-        return simplify(await self._parse_atomic(sentence))
+        return simplify(await self._parse_atomic(sentence, premise_schema=premise_schema))
 
     async def rephrase(self, sentence: str) -> str:
         """Minimally rewrite one sentence using the dedicated rephrase prompt."""
@@ -125,8 +142,17 @@ class FOLParser:
         result = await self._execute(build_rephrase_request(sentence), RephraseResult)
         return result.rephrased
 
-    async def _parse_atomic(self, sentence: str) -> FOLNode:
-        result = await self._execute(build_sentence_request(sentence, kind="atomic"), AtomicResult)
+    async def _parse_atomic(
+        self,
+        sentence: str,
+        *,
+        premise_schema: PremiseSchema | None = None,
+    ) -> FOLNode:
+        if premise_schema is not None:
+            request = build_schema_guided_atomic_request(sentence, premise_schema)
+        else:
+            request = build_sentence_request(sentence, kind="atomic")
+        result = await self._execute(request, AtomicResult)
         arguments = [self._normalize_constant(argument) for argument in result.arguments]
         predicate = Predicate(
             name=result.predicate,
@@ -145,6 +171,7 @@ class FOLParser:
         depth: int,
         used_variables: frozenset[str],
         force_quantifier: LiteralQuantifier | None,
+        premise_schema: PremiseSchema | None = None,
     ) -> QuantifiedNode:
         taken = ", ".join(sorted(used_variables)) if used_variables else "none"
         routed = build_sentence_request(
@@ -163,18 +190,31 @@ class FOLParser:
         # the LLM isn't making progress — parse scope as atomic instead.
         no_progress = len(scope_sentence.split()) >= len(sentence.split()) * 0.85
         if self._is_recursive_loop(sentence, scope_sentence) or no_progress:
-            body = await self._parse_atomic(scope_sentence)
+            body = await self._parse_atomic(scope_sentence, premise_schema=premise_schema)
         else:
             body = await self.parse(
                 scope_sentence,
                 depth=depth + 1,
                 parent=sentence,
                 used_variables=used_variables | {result.variable},
+                premise_schema=premise_schema,
             )
+
+        restrictor = None
+        if result.restrictor_sentence:
+            restrictor = await self.parse(
+                result.restrictor_sentence,
+                depth=depth + 1,
+                parent=sentence,
+                used_variables=used_variables | {result.variable},
+                premise_schema=premise_schema,
+            )
+
         return QuantifiedNode(
             quantifier="FORALL" if quantifier == "ForAll" else "EXISTS",
             variable=result.variable,
             body=body,
+            restrictor=restrictor,
         )
 
     async def _parse_logical(
@@ -183,6 +223,7 @@ class FOLParser:
         *,
         depth: int,
         used_variables: frozenset[str],
+        premise_schema: PremiseSchema | None = None,
     ) -> LogicalNode | QuantifiedNode:
         result = await self._execute(
             build_sentence_request(sentence, kind="logical"), LogicalResult
@@ -194,6 +235,7 @@ class FOLParser:
                 depth=depth + 1,
                 parent=sentence,
                 used_variables=used_variables,
+                premise_schema=premise_schema,
             )
             return LogicalNode(operator="NOT", left=left)
 
@@ -213,6 +255,7 @@ class FOLParser:
             parent=sentence,
             used_variables=used_variables,
             force_quantifier="ForAll" if force_universal else None,
+            premise_schema=premise_schema,
         )
         bound_variable = _extract_bound_var(left)
 
@@ -240,6 +283,7 @@ class FOLParser:
             depth=depth + 1,
             parent=sentence,
             used_variables=used_variables | ({bound_variable} if bound_variable else frozenset()),
+            premise_schema=premise_schema,
         )
         # Lift quantifier so it scopes over the whole expression, not just left.
         # ∀x.P(x) IMPLIES Q(x)  →  ∀x.(P(x) IMPLIES Q(x))
@@ -248,6 +292,7 @@ class FOLParser:
                 quantifier=left.quantifier,
                 variable=left.variable,
                 body=LogicalNode(operator=result.operator, left=left.body, right=right),
+                restrictor=left.restrictor,
             )
         return LogicalNode(operator=result.operator, left=left, right=right)
 

@@ -22,6 +22,14 @@ venv/
 .pytest_cache/
 docs/
 tests/
+!tests/
+tests/*
+!tests/test_api_contract.py
+!tests/test_type2_ch_resonance.py
+!tests/test_type2_domain_routing.py
+!tests/test_type2_extraction.py
+!tests/test_type2_pipeline_smoke.py
+!tests/test_type2_td_capacitor_late_range.py
 outputs/
 tmp/
 

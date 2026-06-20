@@ -32,72 +32,269 @@ from exact.type2.solving.units import parse_quantity
 _GENERATE_FINAL_EXPLANATION_OVERRIDE: bool | None = None
 
 
+def _accept_specialized_response(
+    response: PredictionResponse | None,
+    *,
+    expected_domain: str,
+) -> tuple[bool, str]:
+    if response is None:
+        return False, "response_missing"
+    if response.error:
+        return False, "response_has_error"
+    if not str(response.answer or "").strip():
+        return False, "answer_missing"
+
+    diagnostics = response.routing_diagnostics or {}
+    if diagnostics.get("domain") != expected_domain:
+        return False, "domain_mismatch"
+    if diagnostics.get("fallback_used") is True:
+        return False, "specialized_fallback_used"
+
+    solver = str(diagnostics.get("solver") or "").strip()
+    if not solver:
+        return False, "solver_missing"
+
+    if expected_domain in {"THCB", "DDT", "NL_ENERGY"}:
+        if not str(diagnostics.get("family") or "").strip():
+            return False, "family_missing"
+
+    if expected_domain == "NL_ENERGY" and solver != "nl_energy_solver":
+        return False, "unexpected_solver"
+    if expected_domain == "THCB" and solver != "thcb_deterministic_solver":
+        return False, "unexpected_solver"
+    if expected_domain == "DDT" and solver != "ddt_deterministic_solver":
+        return False, "unexpected_solver"
+
+    return True, "accepted"
+
+
+def _accept_routed_response(response: PredictionResponse | None) -> tuple[bool, str]:
+    if response is None:
+        return False, "response_missing"
+    if response.error:
+        return False, "response_has_error"
+    if not str(response.answer or "").strip():
+        return False, "answer_missing"
+    return True, "accepted"
+
+
 def run_type2_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
 ) -> PredictionResponse:
-    """Route to Type 2 domain pipelines before generic deterministic/PoT fallback."""
-    from exact.type2.domains.router import route_domain, route_domain_with_metadata
+    """Route a Type 2 question to one heuristic domain pipeline before fallback."""
+    from exact.type2.domains.ch.pipeline import run_ch_pipeline
+    from exact.type2.domains.ddt.pipeline import run_ddt_pipeline
+    from exact.type2.domains.dt.pipeline import run_dt_pipeline
+    from exact.type2.domains.ld.pipeline import run_ld_pipeline
+    from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
+    from exact.type2.domains.router import route_domain
+    from exact.type2.domains.td.pipeline import run_td_pipeline
+    from exact.type2.domains.thcb.pipeline import try_thcb_pipeline
 
     settings = settings or get_settings()
     try:
-        pipeline_domain = route_domain(None, request.question)
-        response: PredictionResponse | None = None
+        response: PredictionResponse | None
+        routed_domain = route_domain(request.id, request.question)
+        attempts: list[str] = []
 
-        if pipeline_domain == "LD":
-            from exact.type2.domains.ld.pipeline import run_ld_pipeline
+        if routed_domain == "THCB":
+            response, fallback = try_thcb_pipeline(request, settings)
+            accepted, reason = _accept_specialized_response(response, expected_domain="THCB")
+            attempts.append(_domain_attempt("THCB", fallback=fallback, accepted=accepted, reason=reason))
+            if not fallback and accepted and response is not None:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="THCB",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
 
+        elif routed_domain == "DDT":
+            response, fallback = run_ddt_pipeline(request, settings)
+            accepted, reason = _accept_specialized_response(response, expected_domain="DDT")
+            attempts.append(_domain_attempt("DDT", fallback=fallback, accepted=accepted, reason=reason))
+            if not fallback and accepted and response is not None:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="DDT",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
+
+        elif routed_domain == "NL_ENERGY":
+            response, fallback = run_nl_energy_pipeline(request, settings)
+            accepted, reason = _accept_specialized_response(response, expected_domain="NL_ENERGY")
+            attempts.append(_domain_attempt("NL_ENERGY", fallback=fallback, accepted=accepted, reason=reason))
+            if not fallback and accepted and response is not None:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="NL_ENERGY",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
+
+        elif routed_domain == "LD":
             response = run_ld_pipeline(request, settings)
-        elif pipeline_domain == "TD":
-            from exact.type2.domains.td.pipeline import run_td_pipeline
+            accepted, reason = _accept_routed_response(response)
+            attempts.append(f"LD:{'accepted' if accepted else reason}")
+            if accepted:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="LD",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
 
+        elif routed_domain == "CH":
+            response = run_ch_pipeline(request, settings)
+            accepted, reason = _accept_routed_response(response)
+            attempts.append(f"CH:{'accepted' if accepted else reason}")
+            if accepted:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="CH",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
+
+        elif routed_domain == "DT":
+            response = run_dt_pipeline(request, settings)
+            accepted, reason = _accept_routed_response(response)
+            attempts.append(f"DT:{'accepted' if accepted else reason}")
+            if accepted:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="DT",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
+
+        elif routed_domain == "TD":
             response = run_td_pipeline(request, settings)
-        elif pipeline_domain == "NL_ENERGY":
-            from exact.type2.domains.nl_energy.pipeline import run_nl_energy_pipeline
+            accepted, reason = _accept_routed_response(response)
+            attempts.append(f"TD:{'accepted' if accepted else reason}")
+            if accepted or response is not None:
+                return _finish_domain_response(
+                    request,
+                    response,
+                    settings,
+                    domain="TD",
+                    routed_domain=routed_domain,
+                    attempts=attempts,
+                    question_kind_route=_question_kind_route_metadata(request, settings, allow_llm=False),
+                )
 
-            nl_response, fallback = run_nl_energy_pipeline(request, settings)
-            if not fallback and nl_response is not None:
-                response = nl_response
-
-        if response is not None:
-            response = _with_domain_route_diagnostics(
-                response,
-                {
-                    "domain": pipeline_domain,
-                    "source": "type2_legacy_domain_router",
-                },
-            )
-            return _with_agent_loop_if_needed(
-                request,
-                response,
-                settings,
-                trigger=_agent_loop_trigger(response),
-            )
-
-        question_kind_route = route_domain_with_metadata(None, request.question, settings=settings)
-        response = run_generic_pipeline(request, settings, domain_hint=question_kind_route.domain)
-
-        response = _with_domain_route_diagnostics(
-            response,
-            {
-                "domain": pipeline_domain,
-                "source": "type2_legacy_domain_router",
-                "question_kind_route": question_kind_route.to_dict(),
-            },
-        )
-        return _with_agent_loop_if_needed(
+        question_kind_route = _question_kind_route_metadata(request, settings, allow_llm=True)
+        domain_hint = str(question_kind_route.get("domain") or "")
+        response = run_generic_pipeline(request, settings, domain_hint=domain_hint)
+        return _finish_domain_response(
             request,
             response,
             settings,
-            trigger=_agent_loop_trigger(response),
+            domain="GENERIC",
+            routed_domain=routed_domain,
+            attempts=attempts,
+            question_kind_route=question_kind_route,
         )
     except Exception as exc:
-        return _agent_loop_response(
+        return _recovery_loop_response(
             request,
             settings,
             trigger=f"pipeline_exception: {exc}",
             diagnostics={"exception_type": type(exc).__name__},
         )
+
+
+def run_type2_internal_pipeline(
+    request: PredictionRequest,
+    settings: Settings | None = None,
+) -> PredictionResponse:
+    """Backward-compatible alias for older smoke tests and scripts.
+
+    The rebuilt Type 2 reference pipeline now returns the shared
+    ``PredictionResponse`` directly instead of the older internal result model.
+    """
+
+    return run_type2_pipeline(request, settings=settings)
+
+
+def _domain_attempt(
+    domain: str,
+    *,
+    fallback: bool,
+    accepted: bool,
+    reason: str,
+) -> str:
+    if fallback:
+        return f"{domain}:fallback_requested"
+    return f"{domain}:{'accepted' if accepted else reason}"
+
+
+def _finish_domain_response(
+    request: PredictionRequest,
+    response: PredictionResponse,
+    settings: Settings,
+    *,
+    domain: str,
+    routed_domain: str,
+    attempts: list[str],
+    question_kind_route: dict[str, Any],
+) -> PredictionResponse:
+    response = _with_domain_route_diagnostics(
+        response,
+        {
+            "domain": domain,
+            "routed_domain": routed_domain,
+            "source": "type2_domain_heuristic",
+            "attempts": attempts,
+            "question_kind_route": question_kind_route,
+        },
+    )
+    return _with_recovery_loop_if_needed(
+        request,
+        response,
+        settings,
+        trigger=_recovery_loop_trigger(response),
+    )
+
+
+def _question_kind_route_metadata(
+    request: PredictionRequest,
+    settings: Settings,
+    *,
+    allow_llm: bool,
+) -> dict[str, Any]:
+    from exact.type2.domains.router import route_domain_with_metadata, route_question_kind_heuristic
+
+    if allow_llm:
+        return route_domain_with_metadata(request.id, request.question, settings=settings).to_dict()
+
+    return {
+        "domain": route_question_kind_heuristic(request.id, request.question),
+        "source": "heuristic",
+        "confidence": None,
+        "reason": None,
+        "fallback_reason": "LLM question-kind route skipped for accepted specialized pipeline route",
+    }
 
 
 def run_generic_pipeline(
@@ -161,6 +358,30 @@ def run_generic_pipeline(
         if result.cot is not None:
             result.cot.insert(0, review.verification.message)
         return _to_prediction_response(request, result)
+
+    from exact.type2.solving.pot_solver import _try_executable_formula_fallback
+
+    fallback = _try_executable_formula_fallback(
+        extraction,
+        formula_context,
+        "Generic Type 2 route uses formula execution before LLM PoT.",
+        settings,
+    )
+    if fallback is not None:
+        fallback_diagnostics = mark_current_solver_used(
+            routing_diagnostics,
+            error=fallback.error,
+        )
+        fallback = replace(
+            fallback,
+            routing_diagnostics=merge_routing_diagnostics(
+                deterministic.diagnostics,
+                fallback_diagnostics,
+            ),
+        )
+        if fallback.cot is not None:
+            fallback.cot.insert(0, review.verification.message)
+        return _to_prediction_response(request, fallback)
 
     generate_explanation = (
         settings.type2_generate_explanation
@@ -265,7 +486,7 @@ def _with_domain_route_diagnostics(
     return response.model_copy(update={"routing_diagnostics": diagnostics})
 
 
-def _agent_loop_trigger(response: PredictionResponse) -> str | None:
+def _recovery_loop_trigger(response: PredictionResponse) -> str | None:
     if response.error:
         return response.error
     if not str(response.answer or "").strip():
@@ -273,7 +494,7 @@ def _agent_loop_trigger(response: PredictionResponse) -> str | None:
     return None
 
 
-def _with_agent_loop_if_needed(
+def _with_recovery_loop_if_needed(
     request: PredictionRequest,
     response: PredictionResponse,
     settings: Settings,
@@ -283,19 +504,19 @@ def _with_agent_loop_if_needed(
     diagnostics["type2_llm_configured"] = bool(settings.llm_base_url)
     diagnostics["type2_llm_domain_routing_enabled"] = settings.type2_use_llm_domain_routing
     diagnostics["type2_llm_question_kind_routing_enabled"] = settings.type2_use_llm_question_kind_routing
-    diagnostics["type2_agent_loop_enabled"] = settings.type2_use_agent_loop
-    diagnostics["type2_agent_loop_max_attempts"] = settings.type2_agent_loop_max_attempts
+    diagnostics["type2_recovery_loop_enabled"] = settings.type2_use_recovery_loop
+    diagnostics["type2_recovery_loop_max_attempts"] = settings.type2_recovery_loop_max_attempts
     diagnostics["type2_pot_solver_enabled"] = settings.type2_use_pot_solver
     response = response.model_copy(update={"routing_diagnostics": diagnostics})
     if not trigger:
-        diagnostics["type2_agent_loop"] = {
+        diagnostics["type2_recovery_loop"] = {
             "used": False,
             "trigger": None,
             "reason": "no pipeline error",
         }
         response = response.model_copy(update={"routing_diagnostics": diagnostics})
         return response
-    return _agent_loop_response(
+    return _recovery_loop_response(
         request,
         settings,
         trigger=trigger,
@@ -304,7 +525,7 @@ def _with_agent_loop_if_needed(
     )
 
 
-def _agent_loop_response(
+def _recovery_loop_response(
     request: PredictionRequest,
     settings: Settings,
     *,
@@ -316,21 +537,21 @@ def _agent_loop_response(
     diagnostics["type2_llm_configured"] = bool(settings.llm_base_url)
     diagnostics["type2_llm_domain_routing_enabled"] = settings.type2_use_llm_domain_routing
     diagnostics["type2_llm_question_kind_routing_enabled"] = settings.type2_use_llm_question_kind_routing
-    diagnostics["type2_agent_loop_enabled"] = settings.type2_use_agent_loop
-    diagnostics["type2_agent_loop_max_attempts"] = settings.type2_agent_loop_max_attempts
+    diagnostics["type2_recovery_loop_enabled"] = settings.type2_use_recovery_loop
+    diagnostics["type2_recovery_loop_max_attempts"] = settings.type2_recovery_loop_max_attempts
     diagnostics["type2_pot_solver_enabled"] = settings.type2_use_pot_solver
-    if not settings.type2_use_agent_loop:
-        diagnostics["type2_agent_loop"] = {
+    if not settings.type2_use_recovery_loop:
+        diagnostics["type2_recovery_loop"] = {
             "used": False,
             "trigger": trigger,
-            "reason": "agent loop disabled",
+            "reason": "recovery loop disabled",
         }
         if previous_response is not None:
             return previous_response.model_copy(update={"routing_diagnostics": diagnostics})
         return _guardrail_response(request, trigger, diagnostics)
 
     attempts: list[dict[str, Any]] = []
-    for attempt in range(1, settings.type2_agent_loop_max_attempts + 1):
+    for attempt in range(1, settings.type2_recovery_loop_max_attempts + 1):
         extraction = _build_solver_extraction(request.question, settings=settings)
         formula_context = retrieve_formula_context(
             request.question,
@@ -355,7 +576,7 @@ def _agent_loop_response(
                     "unit": result.unit,
                 }
             )
-            diagnostics["type2_agent_loop"] = {
+            diagnostics["type2_recovery_loop"] = {
                 "used": True,
                 "enabled": True,
                 "trigger": trigger,
@@ -368,7 +589,7 @@ def _agent_loop_response(
         try:
             spec = generate_direct_answer(
                 request.question,
-                _agent_loop_failure_context(
+                _recovery_loop_failure_context(
                     trigger,
                     previous_response,
                     attempt,
@@ -377,7 +598,7 @@ def _agent_loop_response(
                     geometry_prompt_context=geometry_prompt_context,
                 ),
                 settings=settings,
-                temperature=_agent_loop_temperature(settings, attempt),
+                temperature=_recovery_loop_temperature(settings, attempt),
             )
         except Exception as exc:
             attempts.append({"attempt": attempt, "status": "error", "reason": str(exc)})
@@ -396,7 +617,7 @@ def _agent_loop_response(
                 "unit": spec.unit,
             }
         )
-        diagnostics["type2_agent_loop"] = {
+        diagnostics["type2_recovery_loop"] = {
             "used": True,
             "enabled": True,
             "trigger": trigger,
@@ -410,7 +631,7 @@ def _agent_loop_response(
             answer=spec.answer.strip(),
             explanation=spec.explanation,
             fol=None,
-            cot=["Type 2 agent loop generated a direct answer after structured solving did not finish cleanly."],
+            cot=["Type 2 recovery loop generated a direct answer after structured solving did not finish cleanly."],
             premises=spec.premises,
             confidence=spec.confidence or 0.35,
             unit=spec.unit,
@@ -418,7 +639,7 @@ def _agent_loop_response(
             routing_diagnostics=diagnostics,
         )
 
-    diagnostics["type2_agent_loop"] = {
+    diagnostics["type2_recovery_loop"] = {
         "used": True,
         "enabled": True,
         "trigger": trigger,
@@ -431,7 +652,7 @@ def _agent_loop_response(
     return _guardrail_response(request, trigger, diagnostics)
 
 
-def _agent_loop_temperature(settings: Settings, attempt: int) -> float:
+def _recovery_loop_temperature(settings: Settings, attempt: int) -> float:
     if attempt <= 1:
         return settings.llm_temperature
     return max(settings.llm_temperature, min(settings.type2_pot_batch_temperature, 0.7))
@@ -458,7 +679,7 @@ def _guardrail_response(
     )
 
 
-def _agent_loop_failure_context(
+def _recovery_loop_failure_context(
     trigger: str,
     previous_response: PredictionResponse | None,
     attempt: int,
@@ -518,9 +739,32 @@ def _question_type(result: Type2SolveResult) -> QuestionType:
 
 
 def _build_explanation(result: Type2SolveResult) -> str:
+    """Build a clean human-readable explanation for Type 2 responses.
+
+    Prefers CoT steps from the solver. Falls back to the verification message
+    or a generic explanation to ensure the field is never empty.
+    """
     if result.error is not None:
-        return result.verification.message
-    return result.premises[0] if result.premises else result.verification.message
+        return result.verification.message or "An error occurred during solving."
+    # Use CoT steps joined as sentences if available
+    if result.cot:
+        # Filter out internal plumbing notes; keep domain-logic steps
+        steps = [
+            s for s in result.cot
+            if not any(
+                skip in s.lower()
+                for skip in ("extraction checklist", "extracted a formal contract",
+                             "validated the contract", "validated the deterministic")
+            )
+        ]
+        if steps:
+            return " ".join(steps)
+    if result.premises:
+        # If premises[0] looks like a diagnostic dict string, don't expose it
+        first = result.premises[0]
+        if not first.startswith("diagnostics="):
+            return first
+    return result.verification.message or "Solved via physics pipeline."
 
 
 def _try_llm_extraction(
@@ -618,19 +862,16 @@ def _merge_extractions(heuristic: Extraction, llm_extraction: Extraction) -> Ext
         )
         if _has_equivalent_quantity(quantities, canonical_key, canonical_quantity):
             continue
-        target_key = canonical_key
-        if target_key in quantities:
-            suffix = 2
-            while f"{target_key}_{suffix}" in quantities:
-                suffix += 1
-            target_key = f"{target_key}_{suffix}"
-        quantities[target_key] = canonical_quantity
+        if canonical_key in quantities:
+            notes.append(f"merge_conflict_skipped={canonical_key}")
+            continue
+        quantities[canonical_key] = canonical_quantity
 
-    target = llm_extraction.target or heuristic.target
+    target = heuristic.target or llm_extraction.target
     normalized_question = heuristic.normalized_question or llm_extraction.normalized_question
 
     return Extraction(
-        kind=llm_extraction.kind,
+        kind=heuristic.kind,
         normalized_question=normalized_question,
         target=target,
         quantities=quantities,

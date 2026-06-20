@@ -55,9 +55,14 @@ def retrieve_formula_context(
     extraction: Extraction | None = None,
     limit: int = 24,
     settings: Settings | None = None,
+    include_knowledge_bank: bool = False,
 ) -> RetrievedFormulaContext:
     executable = [_executable_summary(formula) for formula in FORMULAS]
-    knowledge = _load_json_formula_summaries() if settings is None or settings.type2_use_formula_bank else []
+    knowledge = (
+        _load_json_formula_summaries()
+        if include_knowledge_bank and (settings is None or settings.type2_use_formula_bank)
+        else []
+    )
     all_summaries = executable + knowledge
 
     query = " ".join(

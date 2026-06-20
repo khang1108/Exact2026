@@ -17,6 +17,13 @@ vllm==0.8.5
 # `Qwen2Tokenizer has no attribute all_special_tokens_extended` at startup.
 transformers==4.51.3
 
+# FastAPI >= 0.137 changed internal routing to use _IncludedRouter objects
+# that lack a .path attribute, breaking prometheus-fastapi-instrumentator
+# middleware in vLLM 0.8.5 with:
+#   AttributeError: '_IncludedRouter' object has no attribute 'path'
+# Pin FastAPI below 0.137 — vLLM 0.8.5's actual constraint.
+fastapi<0.137
+
 # flashinfer is intentionally NOT listed. A flashinfer built against a different
 # torch ABI crashes vLLM on import
 # (`libtorch_c_dlpack...torch26-cuda.so: undefined symbol`). If one is already
@@ -25,3 +32,4 @@ transformers==4.51.3
 #
 # Preferred setup/repair command:
 #   bash scripts/setup_vllm_env.sh
+

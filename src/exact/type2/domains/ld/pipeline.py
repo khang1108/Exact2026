@@ -6,46 +6,25 @@ from dataclasses import replace
 from exact.common.schemas import PredictionRequest, PredictionResponse, TaskType
 from exact.config import Settings, get_settings
 from exact.logger import get_request_logger
-from exact.type2.extraction.extractor import extract_type2
 from exact.type2.extraction.verifier import verify_type2_extraction
 from exact.type2.formulas.knowledge import retrieve_formula_context
-from exact.type2.schemas import Extraction, Verification
+from exact.type2.schemas import Verification
 from exact.type2.solving.pot_solver import solve_with_pot
 
 from exact.type2.pipeline import (
-    _append_extraction_note,
-    _try_llm_extraction,
+    _build_solver_extraction,
     _to_prediction_response,
-    _with_llm_question_kind,
     _GENERATE_FINAL_EXPLANATION_OVERRIDE,
 )
 from exact.type2.deterministic import run_deterministic_stage, merge_routing_diagnostics
 from exact.type2.routing import build_routing_diagnostics, mark_current_solver_used
 
 
-def _legacy_build_solver_extraction(
-    question: str,
-    settings: Settings | None = None,
-) -> Extraction:
-    llm_extraction = _try_llm_extraction(question, settings=settings)
-    if llm_extraction is not None:
-        return _with_llm_question_kind(
-            _append_extraction_note(llm_extraction, "structured_extraction_source=llm"),
-            question,
-            settings=settings,
-        )
-    return _with_llm_question_kind(
-        _append_extraction_note(extract_type2(question), "structured_extraction_source=heuristic; llm_extraction=unavailable"),
-        question,
-        settings=settings,
-    )
-
-
 def run_ld_pipeline(
     request: PredictionRequest,
     settings: Settings | None = None,
 ) -> PredictionResponse:
-    """Run the LD (electrostatics/vector) specific pipeline using legacy extraction."""
+    """Run the LD (electrostatics/vector) specific pipeline."""
     settings = settings or get_settings()
     logger = get_request_logger(
         __name__,
@@ -54,7 +33,7 @@ def run_ld_pipeline(
     )
     logger.info("Start Type 2 LD/DT deterministic-first pipeline")
 
-    extraction = _legacy_build_solver_extraction(request.question, settings=settings)
+    extraction = _build_solver_extraction(request.question, settings=settings)
     if settings.type2_use_extraction_verifier:
         review = verify_type2_extraction(extraction)
     else:

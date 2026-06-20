@@ -9,6 +9,8 @@ vLLM then continuously batches the concurrent requests on the GPU.
 from __future__ import annotations
 
 import asyncio
+import json
+import re
 from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Any, TypeVar
 
@@ -104,6 +106,11 @@ class ParserClient:
         try:
             return schema.model_validate_json(content)
         except ValidationError as exc:
+            # Attempt partial JSON recovery for truncated output.
+            # The answer field is typically at the start of the JSON object.
+            recovered = _try_recover_truncated_json(content, schema)
+            if recovered is not None:
+                return recovered
             raise ValueError(f"Parser output does not match {schema.__name__}: {exc}") from exc
 
     async def parse_many_as(
@@ -246,3 +253,52 @@ def build_parser_client_from_settings(settings: Settings | None = None) -> Parse
         max_retries=settings.type1_parser_max_retries,
         max_tokens=settings.type1_parser_max_tokens,
     )
+
+
+def _try_recover_truncated_json(
+    content: str,
+    schema: type[ParserResult],
+) -> ParserResult | None:
+    """Best-effort recovery of answer from truncated JSON.
+
+    When the LLM generates an explanation that exceeds max_tokens, the JSON
+    is cut mid-string but the answer field (which comes first) is intact.
+    Extract it with regex and construct a minimal valid result.
+    """
+
+    # Extract "answer": "X" from potentially truncated JSON
+    answer_match = re.search(r'"answer"\s*:\s*"([^"]*)"', content)
+    if answer_match is None:
+        return None
+
+    answer = answer_match.group(1)
+
+    # Try to extract explanation (may be truncated)
+    explanation = "(explanation truncated)"
+    expl_match = re.search(r'"explanation"\s*:\s*"((?:[^"\\]|\\.)*)', content)
+    if expl_match:
+        explanation = expl_match.group(1)
+        # Truncate at a reasonable length if still very long
+        if len(explanation) > 500:
+            explanation = explanation[:500] + "..."
+
+    # Try to extract premises_used array
+    premises_used: list[int] = []
+    prem_match = re.search(r'"premises_used"\s*:\s*\[([^\]]*)\]', content)
+    if prem_match:
+        try:
+            premises_used = json.loads(f"[{prem_match.group(1)}]")
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Build minimal valid JSON and try to parse
+    recovered_obj = {
+        "answer": answer,
+        "explanation": explanation,
+        "premises_used": premises_used,
+    }
+    try:
+        return schema.model_validate(recovered_obj)
+    except Exception:
+        return None
+

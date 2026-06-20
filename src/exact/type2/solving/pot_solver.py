@@ -5,7 +5,7 @@ import json
 import math
 import re
 from dataclasses import dataclass, replace
-from typing import Any
+from typing import Any, Sequence
 
 from exact.config import Settings, get_settings
 from exact.datasets.type2_taxonomy import classify_type2_taxonomy
@@ -20,7 +20,7 @@ from exact.type2.extraction.llm_structured import (
     select_formula_ids,
 )
 from exact.type2.fallback.executor import ExecutionResult, execute_python
-from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids
+from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids, retrieve_formula_context
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
 from exact.type2.solving.physics_verifier import verify_against_physics_oracle
 from exact.type2.solving.pot_verifier import OutputSanityResult, verify_output_sanity
@@ -219,6 +219,16 @@ def solve_with_pot(
         vector_fast_path.cot.insert(0, "Used deterministic vector template before LLM code generation.")
         return vector_fast_path
 
+    # Expand the formula context with softer JSON/registry knowledge only when
+    # the pipeline is already falling back to PoT generation.
+    formula_context = retrieve_formula_context(
+        extraction.normalized_question,
+        extraction,
+        limit=max(settings.type2_formula_limit, len(formula_context.formula_ids)),
+        settings=settings,
+        include_knowledge_bank=True,
+    )
+
     # Let LLM select formulas from retrieved formulas
     selected_formula_ids = list(formula_context.formula_ids)
     solution_plan = list(formula_context.solution_plan)
@@ -293,9 +303,6 @@ def solve_with_pot(
         )
     except Exception as exc:
         reason = f"LLM code generation returned invalid output: {exc}"
-        fallback = _try_executable_formula_fallback(extraction, formula_context, reason, settings)
-        if fallback is not None:
-            return fallback
         return _failed_result(extraction, reason)
     if candidates is None:
         return _unconfigured_result(extraction)
@@ -311,9 +318,6 @@ def solve_with_pot(
     )
     if selected is None:
         reason = _candidate_failure_reason(failed_attempts)
-        fallback = _try_executable_formula_fallback(extraction, formula_context, reason, settings)
-        if fallback is not None:
-            return fallback
         verification = (
             failed_attempts[-1].verified.verification
             if failed_attempts and failed_attempts[-1].verified
@@ -508,7 +512,7 @@ def _pot_generation_cot(candidate_count: int, selected: PotCandidateAttempt) -> 
 
 
 def _execute_code_spec(spec: PotCodeSpec, timeout_seconds: float) -> ExecutionResult:
-    code = _prepare_generated_code(spec.code)
+    code = _prepare_generated_code(spec.code, spec.formula_ids_used)
     return execute_python(code, timeout_seconds=timeout_seconds)
 
 
@@ -532,7 +536,7 @@ def _execute_with_repair_loop(
     code_spec = _canonicalize_formula_ids(code_spec, formula_context)
     execution = _execute_code_spec(code_spec, settings.type2_pot_timeout)
     repair_attempts = 0
-    max_retries = max(10, settings.type2_pot_max_retries)
+    max_retries = settings.type2_pot_max_retries
 
     while not _is_execution_successful(execution) and repair_attempts < max_retries:
         repair_attempts += 1
@@ -710,13 +714,150 @@ def _strip_code_fence(code: str) -> str:
     return text
 
 
-def _prepare_generated_code(code: str) -> str:
+def _prepare_generated_code(
+    code: str,
+    formula_ids_used: Sequence[str] = (),
+) -> str:
     stripped = _strip_code_fence(code)
     normalized = _normalize_pint_prefixes(stripped)
     normalized = _normalize_bare_pint_unit_aliases(normalized)
     normalized = _normalize_pint_constants(normalized)
     normalized = _rewrite_sqrt_calls_for_pint_quantities(normalized)
+    normalized = _repair_omitted_formula_roots(normalized, formula_ids_used)
     return _remove_unused_optional_imports(normalized)
+
+
+_ROOT_FORMULA_TARGETS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
+    "current_from_power_resistance": (
+        frozenset({"A", "ampere", "amperes"}),
+        frozenset({"I", "i", "current", "ans"}),
+    ),
+    "voltage_from_power_resistance": (
+        frozenset({"V", "volt", "volts"}),
+        frozenset({"U", "u", "V", "v", "voltage", "ans"}),
+    ),
+    "voltage_from_capacitor_energy_capacitance": (
+        frozenset({"V", "volt", "volts"}),
+        frozenset({"U", "u", "V", "v", "voltage", "ans"}),
+    ),
+    "charge_from_capacitor_energy_capacitance": (
+        frozenset({"C", "coulomb", "coulombs"}),
+        frozenset({"Q", "q", "charge", "ans"}),
+    ),
+    "coulomb_equal_charges_from_force": (
+        frozenset({"C", "coulomb", "coulombs"}),
+        frozenset({"Q", "q", "charge", "ans"}),
+    ),
+}
+
+
+def _repair_omitted_formula_roots(
+    code: str,
+    formula_ids_used: Sequence[str],
+) -> str:
+    """Restore a square root omitted from a cited inverse-square formula."""
+    targets = [
+        _ROOT_FORMULA_TARGETS[formula_id]
+        for formula_id in formula_ids_used
+        if formula_id in _ROOT_FORMULA_TARGETS
+    ]
+    if not targets:
+        return code
+
+    allowed_units = frozenset(unit for units, _ in targets for unit in units)
+    allowed_names = frozenset(name for _, names in targets for name in names)
+
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return code
+
+    transformer = _OmittedFormulaRootTransformer(allowed_units, allowed_names)
+    transformed = transformer.visit(tree)
+    if not transformer.changed:
+        return code
+
+    ast.fix_missing_locations(transformed)
+    return ast.unparse(transformed)
+
+
+class _OmittedFormulaRootTransformer(ast.NodeTransformer):
+    def __init__(
+        self,
+        allowed_units: frozenset[str],
+        allowed_names: frozenset[str],
+    ) -> None:
+        self.allowed_units = allowed_units
+        self.allowed_names = allowed_names
+        self.changed = False
+        self._repair_assignment = False
+
+    def visit_Assign(self, node: ast.Assign) -> ast.AST:
+        previous = self._repair_assignment
+        self._repair_assignment = any(
+            isinstance(target, ast.Name) and target.id in self.allowed_names
+            for target in node.targets
+        )
+        node.value = self.visit(node.value)
+        self._repair_assignment = previous
+        return node
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> ast.AST:
+        previous = self._repair_assignment
+        self._repair_assignment = (
+            isinstance(node.target, ast.Name) and node.target.id in self.allowed_names
+        )
+        if node.value is not None:
+            node.value = self.visit(node.value)
+        self._repair_assignment = previous
+        return node
+
+    def visit_Call(self, node: ast.Call) -> ast.AST:
+        node = self.generic_visit(node)
+        if not self._repair_assignment or not _is_target_unit_conversion(
+            node, self.allowed_units
+        ):
+            return node
+
+        receiver = node.func.value
+        if not isinstance(receiver, ast.BinOp) or _is_half_power(receiver):
+            return node
+
+        node.func.value = ast.BinOp(
+            left=receiver,
+            op=ast.Pow(),
+            right=ast.Constant(value=0.5),
+        )
+        self.changed = True
+        return node
+
+
+def _is_target_unit_conversion(node: ast.Call, allowed_units: frozenset[str]) -> bool:
+    if (
+        not isinstance(node.func, ast.Attribute)
+        or node.func.attr != "to"
+        or len(node.args) != 1
+        or node.keywords
+    ):
+        return False
+    unit = node.args[0]
+    return isinstance(unit, ast.Constant) and unit.value in allowed_units
+
+
+def _is_half_power(node: ast.AST) -> bool:
+    if not isinstance(node, ast.BinOp) or not isinstance(node.op, ast.Pow):
+        return False
+    exponent = node.right
+    if isinstance(exponent, ast.Constant):
+        return exponent.value == 0.5
+    return (
+        isinstance(exponent, ast.BinOp)
+        and isinstance(exponent.op, ast.Div)
+        and isinstance(exponent.left, ast.Constant)
+        and exponent.left.value == 1
+        and isinstance(exponent.right, ast.Constant)
+        and exponent.right.value == 2
+    )
 
 
 def _normalize_bare_pint_unit_aliases(code: str) -> str:

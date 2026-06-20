@@ -9,7 +9,14 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_serializer,
+    field_validator,
+)
 
 
 class TaskType(str, Enum):
@@ -126,33 +133,187 @@ class ParsePremisesResponse(AppBaseModel):
     premises: list[ParsedPremise]
 
 
-class PredictionResponse(AppBaseModel):
-    """Competition-facing prediction plus local metadata for debugging."""
+class ParserResponse(AppBaseModel):
+    """Full parse result from the /parser endpoint."""
 
+    premises: list[ParsedPremise]
+    verified: bool
+    issues: list[str]
+    renames: list[dict[str, Any]]
+
+
+class QParserRequest(InboundBaseModel):
+    """Input for the ``/qparser`` endpoint: a question, its options, and premises."""
+
+    question: str = Field(validation_alias=AliasChoices("question", "query"))
+    premises: list[str] = Field(
+        validation_alias=AliasChoices("premises", "premises-NL", "premises_nl"),
+    )
+    options: Any | None = None
+
+    @field_validator("premises")
+    @classmethod
+    def premises_must_not_be_empty(cls, value: list[str]) -> list[str]:
+        cleaned = [item.strip() for item in value if item and item.strip()]
+        if not cleaned:
+            raise ValueError("premises must contain at least one non-empty string")
+        return cleaned
+
+    @field_validator("question")
+    @classmethod
+    def question_must_not_be_empty(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("question must not be empty")
+        return value
+
+
+class QParserResponse(AppBaseModel):
+    """QuerySpec inspection result from the /qparser endpoint (no solving)."""
+
+    question_format: str
+    solver_mode: str
+    can_interpretation: str
+    main_claim_text: str | None
+    main_claim_fol: str | None
+    negate_claim: bool
+    supported: bool
+    issues: list[str]
+    marker_style: str | None = None
+    role_distribution: dict[str, int] | None = None
+    extraction_diagnostics: list[str] = []
+    option_claims: list[dict[str, Any]]
+    proof_connectivity: dict[str, Any] = Field(default_factory=dict)
+
+
+class PredictionResponse(AppBaseModel):
+    """Competition-facing prediction plus local metadata for debugging.
+
+    Field names follow the official EXACT submission spec (section 4.2).
+    Legacy callers that construct with ``id=...`` are supported via the
+    ``AliasChoices`` on ``query_id``.
+    """
+
+    # --- Official submission fields (section 4.2) ----------------------------
+    query_id: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("query_id", "id"),
+    )
     answer: str
     explanation: str
+    unit: str | None = None               # None / "" for Type 1; ASCII unit for Type 2
+    premises_used: list[int] | None = None  # 0-based indices; [] for Type 2
+    reasoning: dict[str, Any] | None = None # structured evidence; null if unused
+
+    # --- Internal / debug fields (not submitted) -----------------------------
+    task_type: TaskType | None = None
+    question_type: QuestionType = QuestionType.UNKNOWN
     fol: str | None = None
     cot: list[str] | None = None
     premises: list[str] | None = None
-    premises_used: list[str] | None = None
     confidence: float | None = Field(default=None, ge=0.0, le=1.0)
-    id: str | None = None
-    task_type: TaskType | None = None
-    question_type: QuestionType = QuestionType.UNKNOWN
-    unit: str | None = None
     error: str | None = None
     routing_diagnostics: dict[str, Any] | None = None
 
+    @field_validator("unit", mode="before")
+    @classmethod
+    def _coerce_unit(cls, v: Any) -> str:
+        """Normalise unit to a string; Type 2 pipelines may pass None."""
+        if v is None:
+            return ""
+        return str(v)
+
+    @field_serializer("premises_used")
+    def _serialize_premises_used(self, v: list[int] | None) -> list[int]:
+        """Always emit a list — the official schema requires ``[]`` (Type 2 /
+        solver-not-run), never ``null``. Internal attribute access keeps ``None``."""
+        return v if v is not None else []
+
+    @field_serializer("answer")
+    def _serialize_answer(self, v: str) -> str:
+        """Format Type 2 numeric answers in scientific notation on output (spec
+        section 4.2). Raw attribute access keeps the unformatted value."""
+        return _format_type2_answer(v, self.task_type)
+
+    @field_serializer("reasoning")
+    def _serialize_reasoning(self, v: dict[str, Any] | None) -> dict[str, Any] | None:
+        """Fall back to the chain-of-thought steps when reasoning is unset."""
+        if v is None and self.cot:
+            return {"type": "cot", "steps": list(self.cot)}
+        return v
+
 
 def to_official_response(response: PredictionResponse) -> dict[str, Any]:
-    """Convert an internal response into the stable EXACT submission shape."""
+    """Convert an internal response into the stable EXACT submission shape.
+
+    Returns only the fields defined in the competition spec (section 4.2).
+    """
 
     return {
+        "query_id": response.query_id,
         "answer": response.answer,
+        "unit": response.unit,
         "explanation": response.explanation,
-        "fol": response.fol,
-        "cot": response.cot,
-        "premises": response.premises,
-        "premises_used": response.premises_used,
-        "confidence": response.confidence,
+        "premises_used": response.premises_used if response.premises_used is not None else [],
+        "reasoning": response.reasoning,
     }
+
+
+class OfficialPredictionResponse(AppBaseModel):
+    """Competition submission shape — exactly the 6 fields from spec section 4.2.
+
+    Used as the FastAPI ``response_model`` so the API surface only exposes
+    fields the judges expect.  Internal debug fields (fol, cot, routing_diagnostics,
+    etc.) are stripped automatically by FastAPI's response filtering.
+    """
+
+    query_id: str | None
+    answer: str
+    unit: str = ""
+    explanation: str
+    premises_used: list[int] = Field(default_factory=list)
+    reasoning: dict[str, Any] | None = None
+
+    @classmethod
+    def from_prediction(cls, r: PredictionResponse) -> "OfficialPredictionResponse":
+        answer = _format_type2_answer(r.answer, r.task_type)
+        # Build reasoning from cot steps when not already set
+        reasoning = r.reasoning
+        if reasoning is None and r.cot:
+            reasoning = {"type": "cot", "steps": list(r.cot)}
+        return cls(
+            query_id=r.query_id,
+            answer=answer,
+            unit=r.unit or "",              # coerce None → ""
+            explanation=r.explanation,
+            premises_used=r.premises_used if r.premises_used is not None else [],
+            reasoning=reasoning,
+        )
+
+
+def _format_type2_answer(answer: str, task_type: "TaskType | None") -> str:
+    """Format a Type 2 numeric answer in scientific notation when appropriate.
+
+    Spec section 4.2: the answer field carries the numerical value only
+    (unit goes in the unit field).  Very small or very large numbers are
+    expressed as '<mantissa> × 10^<exp>' to match the expected answer style.
+    Type 1 answers are returned as-is.
+    """
+    if task_type != TaskType.TYPE2_PHYSICS:
+        return answer
+    try:
+        value = float(answer)
+    except (ValueError, TypeError):
+        return answer  # non-numeric answer — return as-is
+    abs_val = abs(value)
+    # Only apply scientific notation for very small or very large numbers
+    if abs_val == 0 or (0.1 <= abs_val <= 9999):
+        # Format to at most 4 significant figures, strip trailing zeros
+        formatted = f"{value:.4g}"
+        return formatted
+    # Scientific notation: e.g. 0.003384 → "3.384 × 10^-3"
+    exp = int(f"{value:.2e}".split("e")[1])
+    mantissa = value / (10 ** exp)
+    # Round mantissa to 3 decimal places, strip trailing zeros
+    mantissa_str = f"{mantissa:.3f}".rstrip("0").rstrip(".")
+    return f"{mantissa_str} × 10^{exp}"
+

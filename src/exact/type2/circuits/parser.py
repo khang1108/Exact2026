@@ -9,6 +9,8 @@ from exact.type2.schemas import Extraction
 def extract_circuit_contract(extraction: Extraction) -> CircuitContract | None:
     text = extraction.normalized_question
     lower = text.lower()
+    if ("capacitor" in lower or "capacitance" in lower) and _resistor_count(extraction) == 0 and "resistor" not in lower:
+        return None
     if "transformer" in lower or ("primary" in lower and "secondary" in lower):
         return _transformer(extraction)
     if (

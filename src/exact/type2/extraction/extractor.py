@@ -12,6 +12,7 @@ UNIT_REPLACEMENTS = {
     "µ": "u",
     "×": "x",
     "−": "-",
+    "–": "-",
     "π": "pi",
     "℃": "degC",
     "°C": "degC",
@@ -403,7 +404,7 @@ TARGET_PATTERNS = (
 )
 
 NUMBER = r"[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?"
-UNIT = r"(?:J/\(kg\*degC\)|J/\(kg\*degree\)|kg/m\^3|kg/m³|J/m\^3|J/m³|m/s\^2|m/s²|rad/s|turns/m|V/m|N/C|m\^3|km/h|cm\^2|mm\^2|m\^2|uF|nF|pF|mF|uC|nC|pC|mC|mA|kV|mV|kohm|mW|kW|mJ|uJ|nJ|mH|uWb|mN|mT|degC|degree|degrees|kg|cm|mm|mm|m|s|h|min|%|F|C|A|V|W|J|H|Hz|N|T|Wb|g|L|ohm|turns|°)"
+UNIT = r"(?:J/\(kg\*degC\)|J/\(kg\*degree\)|kg/m\^3|kg/m³|J/m\^3|J/m³|m/s\^2|m/s²|m/s|rad/s|turns/m|V/m|N/C|m\^3|km/h|cm\^2|mm\^2|m\^2|uF|nF|pF|mF|uC|nC|pC|mC|mA|kV|mV|kohm|mW|kW|mJ|uJ|nJ|mH|uWb|mN|mT|degC|degree|degrees|kg|cm|mm|mm|m|s|h|min|%|F|C|A|V|W|J|H|Hz|N|T|Wb|g|L|ohm|turns|°)"
 
 SYMBOL_VALUE_RE = re.compile(
     rf"\b(?P<symbol>[A-Za-z][A-Za-z0-9_]*)\s*=\s*(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b",
@@ -422,6 +423,8 @@ def extract_type2(question: str) -> Extraction:
     for match in SYMBOL_VALUE_RE.finditer(normalized):
         name = _name_from_symbol(match.group("symbol"), match.group("unit"), lower)
         _add_quantity(quantities, name, match, consumed_spans)
+
+    _add_symbolic_charge_equalities(quantities, normalized)
 
     for match in VALUE_UNIT_RE.finditer(normalized):
         if any(start <= match.start() and match.end() <= end for start, end in consumed_spans):
@@ -574,6 +577,38 @@ def _add_dimensionless_quantities(quantities: dict[str, Quantity], question: str
             confidence=0.85,
         )
         return
+
+
+def _add_symbolic_charge_equalities(quantities: dict[str, Quantity], question: str) -> None:
+    patterns = (
+        (r"\bq1\s*=\s*q2\s*=\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?)\s*(?P<unit>uC|nC|pC|mC|C)\b", (1, 1)),
+        (r"\bq1\s*=\s*-\s*q2\s*=\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?)\s*(?P<unit>uC|nC|pC|mC|C)\b", (1, -1)),
+        (r"\bq1\s*=\s*q3\s*=\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?)\s*(?P<unit>uC|nC|pC|mC|C)\b", (1, None, 1)),
+        (r"\bq2\s*=\s*q3\s*=\s*(?P<value>[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[-+]?\d+)?)\s*(?P<unit>uC|nC|pC|mC|C)\b", (None, 1, 1)),
+    )
+    for pattern, signs in patterns:
+        match = re.search(pattern, question, flags=re.IGNORECASE)
+        if match is None:
+            continue
+        value = float(match.group("value"))
+        unit = normalize_unit(match.group("unit"))
+        for index, sign in enumerate(signs, start=1):
+            if sign is None:
+                continue
+            key = "charge" if index == 1 else f"charge_{index}"
+            try:
+                parsed = parse_quantity(sign * value, unit)
+            except Exception:
+                continue
+            existing = quantities.get(key)
+            if existing is not None and re.match(r"\s*q3\s*=", existing.evidence, flags=re.IGNORECASE) and "charge_3" not in quantities:
+                quantities["charge_3"] = existing
+            quantities[key] = Quantity(
+                name="charge",
+                value=parsed,
+                evidence=match.group(0),
+                confidence=0.82,
+            )
 
 
 def _add_implicit_duplicate_quantities(quantities: dict[str, Quantity], question: str) -> None:

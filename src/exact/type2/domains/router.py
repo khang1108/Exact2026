@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import re
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from exact.config import Settings, get_settings
+from exact.type2.domains.ddt.extraction import extract_ddt_heuristic
+from exact.type2.domains.nl_energy.classifier import classify_nl_energy_family
+from exact.type2.domains.thcb.extraction import extract_thcb_heuristic
 from exact.type2.extraction.llm_structured import JsonClient, build_llm_json_client
 
 
-PipelineDomain = Literal["LD", "TD", "NL_ENERGY", "CIRCUIT", "ELECTROMAGNETISM", "GENERIC"]
+PipelineDomain = Literal["LD", "TD", "THCB", "DDT", "CH", "DT", "NL_ENERGY", "CIRCUIT", "ELECTROMAGNETISM", "GENERIC"]
 Type2Domain = Literal["numerical", "conceptual", "mixed"]
 VALID_DOMAINS = {"numerical", "conceptual", "mixed"}
 
@@ -69,7 +72,29 @@ def route_domain_with_metadata(
 
 
 def route_domain_heuristic(question_id: str | None, question_text: str) -> PipelineDomain:
-    """Route Type 2 pipeline domain from question text only."""
+    """Route Type 2 pipeline domain from dataset ID when present, then text."""
+
+    id_route = _route_from_question_id(question_id)
+    if id_route is not None:
+        return id_route
+
+    if _looks_like_ch_question(question_text):
+        return "CH"
+
+    if _looks_like_thcb_question(question_text):
+        return "THCB"
+
+    if _looks_like_td_question(question_text):
+        return "TD"
+
+    if _looks_like_ddt_question(question_text):
+        return "DDT"
+
+    if _looks_like_nl_energy_question(question_text):
+        return "NL_ENERGY"
+
+    if _looks_like_ld_question(question_text):
+        return "LD"
 
     text = question_text.lower()
     nl_keywords = [
@@ -134,8 +159,119 @@ def route_domain_heuristic(question_id: str | None, question_text: str) -> Pipel
     return "GENERIC"
 
 
+def _route_from_question_id(question_id: str | None) -> PipelineDomain | None:
+    if question_id is None:
+        return None
+    normalized = question_id.strip().upper().replace("-", "_")
+    if not normalized:
+        return None
+
+    for prefix, domain in (
+        ("THCB", "THCB"),
+        ("DDT", "DDT"),
+        ("CH", "CH"),
+        ("DT", "DT"),
+        ("NL_ENERGY", "NL_ENERGY"),
+        ("NL", "NL_ENERGY"),
+        ("LD", "LD"),
+        ("TD", "TD"),
+    ):
+        if (
+            normalized == prefix
+            or normalized.startswith(f"{prefix}_")
+            or re.match(rf"^{prefix}\d", normalized)
+            or re.search(rf"(?:^|_){prefix}\d", normalized)
+        ):
+            return cast(PipelineDomain, domain)
+    return None
+
+
 def _has_any(text: str, keywords: list[str]) -> bool:
     return any(keyword in text for keyword in keywords)
+
+
+def _looks_like_thcb_question(question_text: str) -> bool:
+    contract = extract_thcb_heuristic(question_text)
+    if contract.family == "UNKNOWN" or contract.target == "unknown":
+        return False
+
+    if contract.family in {"MEASUREMENT_ERROR", "ERROR_PROPAGATION"}:
+        return bool(contract.quantities or contract.readings or contract.requested_outputs)
+
+    if contract.family in {"PARALLEL_CIRCUIT", "SIMPLE_CIRCUIT", "CONCEPTUAL_CIRCUIT"}:
+        return bool(contract.quantities or contract.relation or contract.requested_outputs)
+
+    return False
+
+
+def _looks_like_ddt_question(question_text: str) -> bool:
+    contract = extract_ddt_heuristic(question_text)
+    if contract.family == "UNKNOWN":
+        return False
+    return bool(contract.quantities or contract.relation or contract.target != "unknown")
+
+
+def _looks_like_nl_energy_question(question_text: str) -> bool:
+    return classify_nl_energy_family(question_text) != "UNKNOWN"
+
+
+def _looks_like_ch_question(question_text: str) -> bool:
+    from exact.type2.domains.ch.solver import solve_ch_resonance
+
+    return solve_ch_resonance(None, question_text) is not None
+
+
+def _looks_like_ld_question(question_text: str) -> bool:
+    text = question_text.lower()
+    has_charge = any(term in text for term in ("point charge", "charges", "electric charge", "coulomb"))
+    has_field_or_potential = any(
+        term in text
+        for term in (
+            "electric field",
+            "field intensity",
+            "electric potential",
+            "electric force",
+            "resultant field",
+        )
+    )
+    has_geometry = any(
+        term in text
+        for term in (
+            "midpoint",
+            "equilateral",
+            "triangle",
+            "perpendicular bisector",
+            "distance from each charge",
+            "equidistant",
+            "at point",
+        )
+    )
+    return has_charge and (has_field_or_potential or has_geometry)
+
+
+def _looks_like_td_question(question_text: str) -> bool:
+    text = question_text.lower()
+    capacitor_terms = (
+        "capacitor",
+        "capacitance",
+        "dielectric",
+        "parallel plate",
+        "stored energy",
+        "electric field between plates",
+        "breakdown voltage",
+    )
+    if any(term in text for term in capacitor_terms):
+        return True
+
+    static_circuit_terms = (
+        "dc circuit",
+        "series circuit",
+        "parallel circuit",
+        "ohm's law",
+        "kirchhoff",
+        "equivalent resistance",
+    )
+    return any(term in text for term in static_circuit_terms)
 
 
 def route_question_kind_heuristic(question_id: str | None, question_text: str) -> Type2Domain:

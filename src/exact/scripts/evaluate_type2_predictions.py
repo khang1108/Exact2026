@@ -35,6 +35,7 @@ class EvalRow:
     relative_error: float | None
     absolute_error: float | None
     error: str | None
+    answer_type: str
 
 
 def main() -> None:
@@ -47,6 +48,7 @@ def main() -> None:
     relative_tolerance = float(args.relative_tolerance or eval_cfg.get("relative_tolerance", 0.02))
     absolute_tolerance = float(args.absolute_tolerance or eval_cfg.get("absolute_tolerance", 1e-9))
     case_sensitive_text = bool(eval_cfg.get("case_sensitive_text", False))
+    answer_types = _resolve_answer_types(args.answer_types, eval_cfg.get("answer_types"))
     report_path = Path(args.report or eval_cfg.get("report_path", "artifacts/reports/type2_eval_report.json"))
     errors_path = Path(args.errors or eval_cfg.get("errors_path", "artifacts/reports/type2_eval_errors.csv"))
 
@@ -61,6 +63,7 @@ def main() -> None:
             relative_tolerance=relative_tolerance,
             absolute_tolerance=absolute_tolerance,
             case_sensitive_text=case_sensitive_text,
+            answer_types=answer_types,
         )
         for pred in predictions
     ]
@@ -71,6 +74,7 @@ def main() -> None:
         "count": len(rows),
         "relative_tolerance": relative_tolerance,
         "absolute_tolerance": absolute_tolerance,
+        "answer_types": sorted(answer_types),
         "summary": summary,
         "rows": [asdict(row) for row in rows],
         "routing_logs": _build_routing_logs(predictions, rows),
@@ -112,18 +116,22 @@ def evaluate_prediction(
     relative_tolerance: float,
     absolute_tolerance: float,
     case_sensitive_text: bool,
+    answer_types: set[str] | None = None,
 ) -> EvalRow:
     answer = str(pred.get("answer") or "").strip()
     unit = _clean_unit(pred.get("unit"))
     gold_answer = _clean_text(pred.get("gold_answer"))
     gold_unit = _clean_unit(pred.get("gold_unit"))
     runtime_error = _clean_text(pred.get("error"))
+    answer_type = classify_answer_type(gold_answer, gold_unit)
+    if answer_types is not None and answer_type not in answer_types:
+        return _row(pred, answer, unit, gold_answer, gold_unit, "filtered_out", None, None, None, None, answer_type)
     if _is_conceptual_prediction(pred):
         status = "pipeline_error" if runtime_error else "conceptual_only"
-        return _row(pred, answer, unit, gold_answer, gold_unit, status, None, None, None, None)
+        return _row(pred, answer, unit, gold_answer, gold_unit, status, None, None, None, None, answer_type)
 
     if gold_answer is None or gold_answer == "":
-        return _row(pred, answer, unit, gold_answer, gold_unit, "missing_gold", None, None, None, None)
+        return _row(pred, answer, unit, gold_answer, gold_unit, "missing_gold", None, None, None, None, answer_type)
 
     pred_number = parse_number(answer)
     gold_number = parse_number(gold_answer)
@@ -139,6 +147,7 @@ def evaluate_prediction(
             relative_tolerance,
             absolute_tolerance,
             runtime_error,
+            answer_type,
         )
 
     normalized_answer = _normalize_conceptual_text(answer if case_sensitive_text else answer.lower())
@@ -146,16 +155,16 @@ def evaluate_prediction(
     ok = normalized_answer == normalized_gold
     
     if not ok and try_evaluate_symbolic(answer, gold_answer):
-        return _row(pred, answer, unit, gold_answer, gold_unit, "correct_symbolic", None, None, None, None)
+        return _row(pred, answer, unit, gold_answer, gold_unit, "correct_symbolic", None, None, None, None, answer_type)
 
     status = "correct_text" if ok else "wrong_text"
     if runtime_error and not ok:
         status = "pipeline_error"
         
     if not ok and (pred_number is None or gold_number is None):
-        print(f"[Symbolic/Numeric Mismatch] Model: '{answer}', Gold: '{gold_answer}'")
+        _safe_print(f"[Symbolic/Numeric Mismatch] Model: '{answer}', Gold: '{gold_answer}'")
         
-    return _row(pred, answer, unit, gold_answer, gold_unit, status, None, None, None, None)
+    return _row(pred, answer, unit, gold_answer, gold_unit, status, None, None, None, None, answer_type)
 
 
 def evaluate_numeric(
@@ -169,6 +178,7 @@ def evaluate_numeric(
     relative_tolerance: float,
     absolute_tolerance: float,
     runtime_error: str | None,
+    answer_type: str,
 ) -> EvalRow:
     pred_value = pred_number
     gold_value = gold_number
@@ -212,6 +222,7 @@ def evaluate_numeric(
         unit_ok,
         relative_error,
         absolute_error,
+        answer_type,
     )
 
 
@@ -221,18 +232,22 @@ def summarize(
     absolute_tolerance: float,
 ) -> dict[str, Any]:
     total = len(rows)
-    correct = sum(row.status.startswith("correct") for row in rows)
-    numeric_rows = [row for row in rows if row.numeric_ok is not None]
+    filtered_rows = [row for row in rows if row.status != "filtered_out"]
+    correct = sum(row.status.startswith("correct") for row in filtered_rows)
+    numeric_rows = [row for row in filtered_rows if row.numeric_ok is not None]
     numeric_correct = sum(row.numeric_ok and row.unit_ok is not False for row in numeric_rows)
-    pipeline_errors = sum(row.status == "pipeline_error" for row in rows)
-    conceptual_only = sum(row.status == "conceptual_only" for row in rows)
-    unit_mismatches = sum(row.status == "unit_mismatch" for row in rows)
-    missing_gold = sum(row.status == "missing_gold" for row in rows)
-    scored_total = total - missing_gold - conceptual_only
-    wrong = total - correct - missing_gold - conceptual_only
+    pipeline_errors = sum(row.status == "pipeline_error" for row in filtered_rows)
+    conceptual_only = sum(row.status == "conceptual_only" for row in filtered_rows)
+    unit_mismatches = sum(row.status == "unit_mismatch" for row in filtered_rows)
+    missing_gold = sum(row.status == "missing_gold" for row in filtered_rows)
+    filtered_out = total - len(filtered_rows)
+    scored_total = len(filtered_rows) - missing_gold - conceptual_only
+    wrong = len(filtered_rows) - correct - missing_gold - conceptual_only
 
     return {
         "total": total,
+        "scored_total": len(filtered_rows),
+        "filtered_out": filtered_out,
         "correct": correct,
         "wrong": wrong,
         "missing_gold": missing_gold,
@@ -246,6 +261,7 @@ def summarize(
         "relative_tolerance": relative_tolerance,
         "absolute_tolerance": absolute_tolerance,
         "by_status": _count_by_status(rows),
+        "by_answer_type": _count_by_answer_type(rows),
     }
 
 
@@ -280,7 +296,7 @@ def parse_number(text: str) -> float | None:
     expression = _numeric_expression(normalized)
     if expression is not None:
         try:
-            value = float(eval(expression, {"__builtins__": {}}, {"sqrt": math.sqrt}))
+            value = float(eval(expression, {"__builtins__": {}}, {"sqrt": math.sqrt, "pi": math.pi}))
         except (ArithmeticError, NameError, SyntaxError, TypeError, ValueError):
             value = None
         if value is not None and math.isfinite(value):
@@ -306,7 +322,21 @@ def _normalize_numeric_text(text: str) -> str:
         .replace("Ã—", "x")
         .replace("−", "-")
         .replace("âˆ’", "-")
+        .replace("⁻", "-")
+        .replace("⁺", "+")
+        .replace("⁰", "0")
+        .replace("¹", "1")
+        .replace("²", "2")
+        .replace("³", "3")
+        .replace("⁴", "4")
+        .replace("⁵", "5")
+        .replace("⁶", "6")
+        .replace("⁷", "7")
+        .replace("⁸", "8")
+        .replace("⁹", "9")
         .replace("\\sqrt", "sqrt")
+        .replace("\\pi", "pi")
+        .replace("π", "pi")
         .replace("^", "**")
         .replace(" ", "")
     )
@@ -316,6 +346,7 @@ def _normalize_numeric_text(text: str) -> str:
     normalized = re.sub(r"sqrt\{([^{}]+)\}", r"sqrt(\1)", normalized)
     normalized = re.sub(r"sqrt([0-9.]+)", r"sqrt(\1)", normalized)
     normalized = re.sub(r"(?<=\d)(?=sqrt\()", "*", normalized)
+    normalized = re.sub(r"(?<=\d)(?=pi)", "*", normalized)
     return normalized
 
 
@@ -332,7 +363,7 @@ def _numeric_expression(normalized: str) -> str | None:
         expression,
         flags=re.IGNORECASE,
     )
-    if not re.fullmatch(r"[-+*/().0-9sqrt]+", expression):
+    if not re.fullmatch(r"[-+*/().0-9sqrtpi]+", expression):
         return None
     if not re.search(r"\d", expression):
         return None
@@ -371,6 +402,12 @@ def print_summary(summary: dict[str, Any]) -> None:
     print(f"by_status: {summary['by_status']}")
 
 
+def _safe_print(message: str) -> None:
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    safe_message = message.encode(encoding, errors="backslashreplace").decode(encoding, errors="replace")
+    print(safe_message)
+
+
 def _row(
     pred: dict[str, Any],
     answer: str,
@@ -382,9 +419,10 @@ def _row(
     unit_ok: bool | None,
     relative_error: float | None,
     absolute_error: float | None,
+    answer_type: str,
 ) -> EvalRow:
     return EvalRow(
-        id=pred.get("id"),
+        id=pred.get("id") or pred.get("query_id"),
         answer=answer,
         unit=unit,
         gold_answer=gold_answer,
@@ -395,7 +433,37 @@ def _row(
         relative_error=relative_error,
         absolute_error=absolute_error,
         error=pred.get("error"),
+        answer_type=answer_type,
     )
+
+
+def classify_answer_type(answer: str | None, unit: str | None) -> str:
+    normalized = _normalize_numeric_text(answer or "")
+    numeric_like = parse_number(answer or "") is not None
+    if numeric_like and unit:
+        return "numeric_with_unit"
+    if numeric_like:
+        return "numeric_unitless"
+    if any(token in normalized for token in ("sqrt", "frac", "=", "k", "q", "e", "a")) or any(ch.isdigit() for ch in normalized):
+        return "symbolic"
+    return "textual_conceptual"
+
+
+def _resolve_answer_types(cli_value: str | None, config_value: Any) -> set[str] | None:
+    raw = cli_value if cli_value is not None else config_value
+    if raw is None:
+        return None
+    if isinstance(raw, str):
+        values = [item.strip() for item in raw.split(",") if item.strip()]
+    else:
+        values = [str(item).strip() for item in raw if str(item).strip()]
+    if not values or "all" in values:
+        return None
+    allowed = {"numeric_with_unit", "numeric_unitless", "symbolic", "textual_conceptual"}
+    invalid = sorted(set(values) - allowed)
+    if invalid:
+        raise ValueError(f"Unsupported evaluation.answer_types values: {invalid}")
+    return set(values)
 
 
 def _clean_text(value: Any) -> str | None:
@@ -408,7 +476,10 @@ def _clean_unit(value: Any) -> str | None:
     text = _clean_text(value)
     if not text or text in {"-", "—"}:
         return None
-    return text.replace("μ", "u")
+    text = text.replace("μ", "u").replace("µ", "u")
+    if text.lower() in {"turns/m", "turn/m", "turns per meter", "turn per meter"}:
+        return "1/m"
+    return text
 
 
 def _is_conceptual_prediction(pred: dict[str, Any]) -> bool:
@@ -432,6 +503,13 @@ def _count_by_status(rows: list[EvalRow]) -> dict[str, int]:
     counts: dict[str, int] = {}
     for row in rows:
         counts[row.status] = counts.get(row.status, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def _count_by_answer_type(rows: list[EvalRow]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        counts[row.answer_type] = counts.get(row.answer_type, 0) + 1
     return dict(sorted(counts.items()))
 
 
@@ -470,6 +548,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--errors", type=Path, default=None)
     parser.add_argument("--relative-tolerance", type=float, default=None)
     parser.add_argument("--absolute-tolerance", type=float, default=None)
+    parser.add_argument("--answer-types", type=str, default=None)
     return parser.parse_args()
 
 

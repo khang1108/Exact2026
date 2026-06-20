@@ -39,9 +39,18 @@ def _solve_solenoid_field(contract: DdtContract, q: dict[str, DdtQuantity]) -> D
         if N is not None and length:
             return _answer(N / length, "turns/m", "Computed turn density n=N/l.")
     if contract.target == "energy_density":
+        B = _val(q, "B")
+        if B is not None:
+            return _answer((B * B) / (2 * MU0), "J/m^3", "Computed magnetic energy density B^2/(2 mu0).")
         if n is not None and I is not None:
             B = MU0 * n * I
             return _answer((B * B) / (2 * MU0), "J/m^3", "Computed magnetic energy density B^2/(2 mu0).")
+    if contract.target == "energy":
+        area = _area(q.get("area"))
+        length = _val(q, "length")
+        if n is not None and I is not None and area is not None and length is not None:
+            B = MU0 * n * I
+            return _answer((B * B) / (2 * MU0) * area * length, "J", "Computed solenoid magnetic-field energy density times volume.")
     if n is not None and I is not None:
         return _answer(MU0 * n * I, "T", "Computed solenoid field B=mu0*n*I.")
     return None
@@ -61,7 +70,9 @@ def _solve_induced_emf(contract: DdtContract, q: dict[str, DdtQuantity]) -> DdtA
         return _answer(abs(L * (i1 - i0) / t), "V", "Computed induced EMF magnitude epsilon=L*|dI/dt|.")
     flux, t = _val(q, "flux"), _val(q, "time")
     if flux is not None and t:
-        return _answer(abs(flux / t), "V", "Computed average EMF from flux change.")
+        N = _val(q, "N")
+        turns = N if N is not None else 1.0
+        return _answer(abs(turns * flux / t), "V", "Computed average EMF from flux linkage change.")
     U, t, i0, i1 = _val(q, "U"), _val(q, "time"), _val(q, "I_initial"), _val(q, "I_final")
     if U is not None and t and i0 is not None and i1 is not None:
         return _answer(abs(U * t / (i1 - i0)), "H", "Rearranged epsilon=L*|dI/dt|.")
@@ -85,7 +96,7 @@ def _solve_flux(contract: DdtContract, q: dict[str, DdtQuantity]) -> DdtAnswer |
                 B = None
     if B is not None and area is not None:
         value = B * area
-        if N is not None and "entire solenoid" in " ".join(contract.notes).lower():
+        if N is not None and contract.target == "flux_linkage":
             value *= N
         return _answer(value, "Wb", "Computed magnetic flux Phi=B*A.")
     return None
@@ -94,6 +105,8 @@ def _solve_flux(contract: DdtContract, q: dict[str, DdtQuantity]) -> DdtAnswer |
 def _solve_rlc(contract: DdtContract, q: dict[str, DdtQuantity]) -> DdtAnswer | None:
     f, C, L, R, Z, U = _val(q, "frequency"), _cap(q.get("C")), _val(q, "L"), _val(q, "R"), _val(q, "Z"), _val(q, "U")
     if contract.target == "capacitive_reactance" and f and C:
+        if R is not None and Z:
+            return _answer(math.sqrt(max(Z * Z - R * R, 0.0)), "Ω", "Computed capacitive reactance magnitude from Z and R.")
         return _answer(1 / (2 * math.pi * f * C), "Ω", "Computed capacitive reactance.")
     if contract.target == "inductive_reactance" and f and L:
         return _answer(2 * math.pi * f * L, "Ω", "Computed inductive reactance.")
@@ -107,7 +120,15 @@ def _solve_rlc(contract: DdtContract, q: dict[str, DdtQuantity]) -> DdtAnswer | 
     if contract.target == "current" and U is not None and Z:
         return _answer(U / Z, "A", "Computed RMS current I=U/Z.")
     if contract.target == "voltage" and R is not None and _val(q, "I") is not None:
-        return _answer(R * _val(q, "I"), "V", "At resonance, RMS voltage is I*R.")
+        I = _val(q, "I")
+        xl = 2 * math.pi * f * L if f and L else 0.0
+        impedance = math.sqrt(R * R + xl * xl)
+        return _answer(impedance * I, "V", "Computed RMS voltage U=I*sqrt(R^2+X_L^2).")
+    if contract.target == "power" and U is not None and R is not None:
+        if Z:
+            current = U / Z
+            return _answer(current * current * R, "W", "Computed active power P=(U/Z)^2*R.")
+        return _answer(U * U / R, "W", "At resonance, active power is P=U^2/R.")
     return None
 
 
@@ -164,6 +185,6 @@ def _answer(value: float, unit: str | None, explanation: str) -> DdtAnswer:
 
 
 def _format(value: float) -> str:
-    if abs(value) >= 1e4 or (0 < abs(value) < 1e-3):
+    if abs(value) >= 1e4 or (0 < abs(value) < 1e-2):
         return f"{value:.6g}"
     return f"{value:.4f}".rstrip("0").rstrip(".")
