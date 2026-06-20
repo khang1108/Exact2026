@@ -126,6 +126,10 @@ class Settings(BaseSettings):
         ge=0,
         validation_alias="EXACT_TYPE1_SINGLE_PASS_MAX_REFINES",
     )
+    type1_verify_refine: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE1_VERIFY_REFINE",
+    )
     type1_self_consistency_samples: int = Field(
         default=1,
         ge=1,

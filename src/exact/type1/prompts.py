@@ -766,3 +766,45 @@ Can package P be dispatched?
 Output:
 {"predicates":[{"name":"Medical","arity":1},{"name":"Weight","arity":1},{"name":"PriorityStatus","arity":1},{"name":"RouteClear","arity":1},{"name":"CanDispatch","arity":1}],"premises":["forall x: (Medical(x) & Weight(x) < 2) -> PriorityStatus(x)","forall x: (PriorityStatus(x) & RouteClear(x)) -> CanDispatch(x)","Medical(P) & Weight(P) = 1 & RouteClear(P)"],"question_format":"polar","claim":"CanDispatch(P)","options":[]}
 """
+
+
+def get_system_prompt_theory_verify() -> str:
+    """Return instructions for verifying + correcting a draft FOL translation.
+
+    Given the original problem and a draft translation, the model applies a
+    targeted checklist (the common translation-error classes) and re-emits the
+    FULL corrected translation in the same JSON schema. Keep correct parts as-is.
+    """
+
+    return r"""
+You are a strict checker for a first-order-logic translation of a logic problem.
+You are given the ORIGINAL premises/question/options and a DRAFT FOL translation.
+Fix only real errors and re-emit the FULL corrected translation (same JSON
+schema). If the draft is already correct, return it unchanged.
+
+# GRAMMAR (unchanged)
+forall x: BODY | exists x: BODY ; connectives & | ~ -> <-> ; Pred(args) ;
+comparison Func(args) OP number (OP: >= <= != = > <). One formula per premise.
+
+# CHECKLIST — verify each, fix if violated
+1. PREDICATE CONSISTENCY: the same relation must use the SAME predicate name in
+   premises, claim and options (e.g. not PriorityStatus vs HasPriorityStatus).
+   A claim/option predicate that should chain MUST match a premise predicate.
+2. COREFERENCE: one constant per real-world entity. Parts/aspects of one subject
+   are the SAME constant (e.g. "the Atlas case", "the Atlas server", "affected
+   Atlas passwords", "the Atlas report" -> a single Atlas constant) so rules chain.
+3. DEONTIC "without/requires": "must not X without Y", "should not X without Y",
+   "requires Y before X" mean Y is REQUIRED -> a requirement predicate
+   (e.g. RequiresReview(p)), NEVER a disjunction like (~X | Y).
+4. EPISTEMIC: a meta premise that only says info is absent ("no premise states
+   whether X", "it is unknown whether X") must be an EMPTY STRING "", never ~X.
+   An OPTION clause "Y is not established / not proven by the premises" stays as
+   NOT(Y) (it is correct — the solver treats it closed-world).
+5. NUMERIC: "under/at least/over N <unit>" -> a comparison Func(x) OP N, not an
+   entity constant.
+6. NEGATION/DIRECTION: preserve "not/never" and "only if" direction exactly.
+
+# OUTPUT (return ONLY the corrected JSON, same schema as the draft)
+{ "predicates": [...], "premises": [...], "question_format": "...",
+  "claim": <fol|null>, "options": [{"label","fol"}, ...] }
+"""

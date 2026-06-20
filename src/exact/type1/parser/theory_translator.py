@@ -18,7 +18,10 @@ from typing import TYPE_CHECKING, Literal
 from exact.type1.ast.nodes import FOLNode
 from exact.type1.parser.fol_string_parser import FOLStringParseError, parse_fol_string
 from exact.type1.parser.schemas import ParserResult
-from exact.type1.prompts import get_system_prompt_theory_translate
+from exact.type1.prompts import (
+    get_system_prompt_theory_translate,
+    get_system_prompt_theory_verify,
+)
 
 if TYPE_CHECKING:
     from exact.type1.parser.client import ParserClient
@@ -107,6 +110,31 @@ class TheoryTranslator:
         )
         return _parse_translation(raw)
 
+    async def verify(
+        self,
+        premises: list[str],
+        question: str,
+        options: dict[str, str] | None,
+        draft: TheoryTranslation,
+    ) -> TheoryTranslation:
+        """Re-check a draft translation against the checklist and re-emit a
+        corrected one (predicate consistency, coreference, deontic, epistemic)."""
+        user = (
+            _render_problem(premises, question, options)
+            + "\n\nDRAFT FOL TRANSLATION:\n"
+            + _render_translation(draft)
+        )
+        raw = await self.client.parse_as(
+            [
+                {"role": "system", "content": get_system_prompt_theory_verify()},
+                {"role": "user", "content": user},
+            ],
+            TranslatedTheory,
+            max_tokens=self.max_tokens,
+            temperature=0.0,
+        )
+        return _parse_translation(raw)
+
 
 _LABEL_RE = re.compile(r"^\s*([A-Ea-e])\b")
 
@@ -130,6 +158,18 @@ def _render_problem(
     if options:
         lines += ["", "OPTIONS:"]
         lines += [f"{label}. {text}" for label, text in options.items()]
+    return "\n".join(lines)
+
+
+def _render_translation(t: TheoryTranslation) -> str:
+    lines = ["predicates: " + ", ".join(f"{p.name}/{p.arity}" for p in t.predicates)]
+    lines.append("premises:")
+    lines += [f"  {i + 1}. {s}" for i, s in enumerate(t.premise_strings)]
+    if t.claim_string:
+        lines.append(f"claim: {t.claim_string}")
+    if t.option_trees:
+        lines.append("options:")
+        lines += [f"  {label}: {tree!r}" for label, tree in t.option_trees.items()]
     return "\n".join(lines)
 
 

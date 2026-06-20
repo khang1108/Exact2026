@@ -377,8 +377,9 @@ async def _single_pass_attempt(
     premises: list[str],
     max_refines: int,
     temperature: float,
+    verify_refine: bool = False,
 ) -> _SinglePassAttempt:
-    """Translate (with bounded refinement) then solve once.
+    """Translate (with bounded refinement), optionally verify-refine, then solve.
 
     A translation failure (e.g. truncated/invalid JSON from the LLM) is caught
     and returned as an empty, unusable translation so the caller routes to the
@@ -398,6 +399,21 @@ async def _single_pass_attempt(
                 premises, payload.question, options_dict or None,
                 feedback="\n".join(problems), temperature=temperature,
             )
+        # Verify-and-refine: one checklist pass (coreference / deontic / epistemic
+        # / predicate consistency) → corrected translation. Kept only if it still
+        # parses to usable FOL; otherwise the original draft stands.
+        if verify_refine:
+            try:
+                verified = await translator.verify(
+                    premises, payload.question, options_dict or None, translation
+                )
+                if verified.premise_trees and not any(
+                    "TRANSLATE_FAILED" in i for i in verified.issues
+                ):
+                    translation = verified
+                    refine_log.append("VERIFY_REFINE_APPLIED")
+            except Exception:
+                pass  # verification is best-effort; keep the draft
     except Exception as exc:  # truncated JSON / model error -> route to fallback
         from exact.type1.parser.theory_translator import empty_translation
         return _SinglePassAttempt(
@@ -461,6 +477,7 @@ async def run_type1_single_pass(
         return await _single_pass_attempt(
             payload, translator, solver, options_dict, premises,
             settings.type1_single_pass_max_refines, temperature,
+            settings.type1_verify_refine,
         )
 
     attempts: list[_SinglePassAttempt] = [await _attempt()]
