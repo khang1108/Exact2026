@@ -193,7 +193,15 @@ class FOLSolver:
                 entailed.append((label, used))
         if len(entailed) == 1:
             return entailed[0]
-        if not entailed and none_of_above_label is not None:
+        if len(entailed) > 1:
+            # "Which conclusion follows" with a chain entails several options
+            # (intermediate steps + the final one). Pick the strongest = deepest
+            # derivation (largest premise-support). Ambiguous tie → Uncertain.
+            entailed.sort(key=lambda e: len(e[1]), reverse=True)
+            if len(entailed[0][1]) > len(entailed[1][1]):
+                return entailed[0]
+            return "Uncertain", []
+        if none_of_above_label is not None:
             return none_of_above_label, []
         return "Uncertain", []
 
