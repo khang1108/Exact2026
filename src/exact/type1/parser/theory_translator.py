@@ -11,6 +11,7 @@ the same ``FOLNode`` AST the solver already consumes.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal
 
@@ -89,6 +90,19 @@ class TheoryTranslator:
         return _parse_translation(raw)
 
 
+_LABEL_RE = re.compile(r"^\s*([A-Ea-e])\b")
+
+
+def _normalize_label(label: str) -> str:
+    """Reduce an option label to its bare letter (A-E) when present.
+
+    The translator LLM sometimes echoes the whole option line as the label; the
+    solver and scorer expect just the letter.
+    """
+    match = _LABEL_RE.match(label)
+    return match.group(1).upper() if match else label.strip()
+
+
 def _render_problem(
     premises: list[str], question: str, options: dict[str, str] | None
 ) -> str:
@@ -129,10 +143,11 @@ def _parse_translation(raw: TranslatedTheory) -> TheoryTranslation:
     for option in raw.options:
         if not option.fol:
             continue
+        label = _normalize_label(option.label)
         try:
-            option_trees[option.label] = parse_fol_string(option.fol)
+            option_trees[label] = parse_fol_string(option.fol)
         except FOLStringParseError as exc:
-            issues.append(f"OPTION_FOL_PARSE_FAILED: {option.label}: {exc}")
+            issues.append(f"OPTION_FOL_PARSE_FAILED: {label}: {exc}")
 
     return TheoryTranslation(
         premise_trees=premise_trees,
