@@ -186,20 +186,59 @@ class FOLSolver:
         """
         ctx = _CallCtx()
         p = [self._to_z3(n, {}, ctx) for n in premises]
-        entailed: list[tuple[str, list[int]]] = []
+
+        # Closed-world evaluation: EXACT options use "established by the premises"
+        # framing, so an atom that is not provable is treated as false (and its
+        # negation as true). Evaluate each option formula under that assumption.
+        cache: dict[str, tuple[bool, list[int]]] = {}
+
+        def provable(node: FOLNode) -> tuple[bool, list[int]]:
+            z = self._to_z3(node, {}, ctx)
+            key = str(z)
+            if key not in cache:
+                result, used = self._entails_with_core(p, z3.Not(z))
+                cache[key] = (result == z3.unsat, used)
+            return cache[key]
+
+        def evaluate(node: FOLNode) -> tuple[bool, list[int]]:
+            if isinstance(node, LogicalNode):
+                if node.operator == "NOT":
+                    val, _ = evaluate(node.left)
+                    return (not val, [])  # CWA: ¬X holds iff X is not provable
+                left_val, left_used = evaluate(node.left)
+                right = node.right
+                if right is None:
+                    return (left_val, left_used)
+                right_val, right_used = evaluate(right)
+                if node.operator == "AND":
+                    return (left_val and right_val, left_used + right_used)
+                if node.operator == "OR":
+                    if left_val:
+                        return (True, left_used)
+                    return (right_val, right_used if right_val else [])
+                if node.operator == "IMPLIES":
+                    if not left_val:
+                        return (True, [])
+                    return (right_val, right_used)
+                if node.operator == "IFF":
+                    return (left_val == right_val, left_used + right_used)
+            # AtomicNode / ComparisonNode / QuantifiedNode → provability check
+            return provable(node)
+
+        candidates: list[tuple[str, list[int]]] = []
         for label, node in options.items():
-            result, used = self._entails_with_core(p, z3.Not(self._to_z3(node, {}, ctx)))
-            if result == z3.unsat:
-                entailed.append((label, used))
-        if len(entailed) == 1:
-            return entailed[0]
-        if len(entailed) > 1:
-            # "Which conclusion follows" with a chain entails several options
-            # (intermediate steps + the final one). Pick the strongest = deepest
-            # derivation (largest premise-support). Ambiguous tie → Uncertain.
-            entailed.sort(key=lambda e: len(e[1]), reverse=True)
-            if len(entailed[0][1]) > len(entailed[1][1]):
-                return entailed[0]
+            value, used = evaluate(node)
+            if value:
+                candidates.append((label, sorted(set(used))))
+
+        if len(candidates) == 1:
+            return candidates[0]
+        if len(candidates) > 1:
+            # Several options hold (e.g. chain intermediates + final). Pick the
+            # strongest = deepest derivation (largest support); tie → Uncertain.
+            candidates.sort(key=lambda c: len(c[1]), reverse=True)
+            if len(candidates[0][1]) > len(candidates[1][1]):
+                return candidates[0]
             return "Uncertain", []
         if none_of_above_label is not None:
             return none_of_above_label, []

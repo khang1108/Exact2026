@@ -729,6 +729,15 @@ option, ALL using the same predicate names.
    STRING "" for that premise (keep one entry per premise, in order). NEVER
    translate them to ~X or any fact — the solver should stay Uncertain when
    nothing entails the claim.
+8. COREFERENCE: use ONE constant for the same real-world entity across the whole
+   theory. Parts/aspects of one subject are the SAME constant — e.g. "the Atlas
+   case", "the Atlas server", "affected Atlas passwords", "the Atlas forensic
+   report" all refer to the Atlas case → use a single constant (Atlas) so the
+   rule chain connects. Never split one entity into separate constants.
+9. DEONTIC "without": "must not X without Y", "should not X without Y",
+   "requires Y before X" mean Y is REQUIRED — translate as the requirement
+   predicate (e.g. RequiresReview(p)), NOT as a disjunction like
+   (~X | Y). Preserve the requirement so it can be derived.
 
 # QUESTION
 - question_format = "polar" for a yes/no/uncertain statement, "mcq" if options are
