@@ -399,27 +399,39 @@ async def _single_pass_attempt(
                 premises, payload.question, options_dict or None,
                 feedback="\n".join(problems), temperature=temperature,
             )
-        # Verify-and-refine: one checklist pass (coreference / deontic / epistemic
-        # / predicate consistency) → corrected translation. Kept only if it still
-        # parses to usable FOL; otherwise the original draft stands.
-        if verify_refine:
-            try:
-                verified = await translator.verify(
-                    premises, payload.question, options_dict or None, translation
-                )
-                if verified.premise_trees and not any(
-                    "TRANSLATE_FAILED" in i for i in verified.issues
-                ):
-                    translation = verified
-                    refine_log.append("VERIFY_REFINE_APPLIED")
-            except Exception:
-                pass  # verification is best-effort; keep the draft
     except Exception as exc:  # truncated JSON / model error -> route to fallback
         from exact.type1.parser.theory_translator import empty_translation
         return _SinglePassAttempt(
             _SOLVER_UNCERTAIN, None, empty_translation(f"{type(exc).__name__}: {exc}"), refine_log
         )
 
+    raw_answer, premises_used = _solve_translation(solver, translation)
+
+    # Verify-and-refine ONLY when the draft gave a definite answer: that is where
+    # a mistranslation produces a confident-but-wrong result (e.g. a polar yes/no
+    # mis-cast as MCQ). A draft that is already Uncertain is left alone — saves a
+    # call and avoids extra GPU load. Kept only if it re-solves to a definite.
+    if verify_refine and raw_answer != _SOLVER_UNCERTAIN:
+        try:
+            verified = await translator.verify(
+                premises, payload.question, options_dict or None, translation
+            )
+            if verified.premise_trees and not any(
+                "TRANSLATE_FAILED" in i for i in verified.issues
+            ):
+                v_answer, v_used = _solve_translation(solver, verified)
+                translation, raw_answer, premises_used = verified, v_answer, v_used
+                refine_log.append("VERIFY_REFINE_APPLIED")
+        except Exception:
+            pass  # verification is best-effort; keep the draft
+
+    return _SinglePassAttempt(raw_answer, premises_used, translation, refine_log)
+
+
+def _solve_translation(
+    solver: FOLSolver | None, translation: "TheoryTranslation"
+) -> tuple[str, list[int] | None]:
+    """Run Z3 over one translation (MCQ or polar) → (answer, premises_used)."""
     premise_fols = translation.premise_trees
     is_mcq = translation.question_format == "mcq"
     raw_answer = _SOLVER_UNCERTAIN
@@ -444,7 +456,7 @@ async def _single_pass_attempt(
             if "SORT_CONFLICT" not in str(exc):
                 raise
             raw_answer = _SOLVER_UNCERTAIN
-    return _SinglePassAttempt(raw_answer, premises_used, translation, refine_log)
+    return raw_answer, premises_used
 
 
 async def run_type1_single_pass(

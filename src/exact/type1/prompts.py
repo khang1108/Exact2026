@@ -740,11 +740,15 @@ option, ALL using the same predicate names.
    (~X | Y). Preserve the requirement so it can be derived.
 
 # QUESTION
-- question_format = "polar" for a yes/no/uncertain statement, "mcq" if options are
-  given, "open_wh" for an open question with no statement to test.
-- polar: set "claim" to the FOL of the POSITIVE statement being asked about; leave
-  "options" empty.
-- mcq: set "options" to one {label, fol} per option; leave "claim" null.
+- question_format = "polar" for a yes/no/uncertain question, "mcq" ONLY when the
+  input lists labelled options (A./B./...), "open_wh" for an open question with
+  no statement to test.
+- polar: a "Does/Is/Can/Do … ?" yes/no question with NO listed options is POLAR.
+  Set "claim" to the FOL of the POSITIVE statement and leave "options" EMPTY.
+  NEVER invent "X" / "not X" options for a yes/no question — that loses the
+  Uncertain answer.
+- mcq: only if the input lists options; set "options" to one {label, fol} per
+  listed option (label = the letter), leave "claim" null.
 - open_wh: leave both null.
 
 # OUTPUT (return ONLY valid JSON)
