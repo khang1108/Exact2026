@@ -197,6 +197,7 @@ async def predict(
         raise HTTPException(status_code=503, detail="Type 1 parser model service is not configured")
     solver = getattr(request.app.state, "type1_solver", None)
     fallback_reasoner = getattr(request.app.state, "type1_fallback_reasoner", None)
+    theory_translator = getattr(request.app.state, "type1_theory_translator", None)
     try:
         result = await run_type1_pipeline(
             payload,
@@ -204,6 +205,7 @@ async def predict(
             question_parser,
             solver,
             fallback_reasoner,
+            theory_translator,
         )
         return [result]
     except Exception as exc:

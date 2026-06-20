@@ -117,6 +117,10 @@ class Settings(BaseSettings):
         default="Uncertain",
         validation_alias="EXACT_TYPE1_UNCERTAIN_TOKEN",
     )
+    type1_translator: Literal["decompose", "single_pass"] = Field(
+        default="decompose",
+        validation_alias="EXACT_TYPE1_TRANSLATOR",
+    )
     # Hard end-to-end deadline for one Type 1 request. If the parse → solve →
     # refine pipeline exceeds this, the request returns "Uncertain" instead of
     # running unbounded. Keep it below any upstream proxy/tunnel timeout.

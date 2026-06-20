@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from exact.type1.fallback import Type1FallbackReasoner
     from exact.type1.parser import QuestionSideParser
     from exact.type1.parser.schemas import OptionClaim, QuestionParseBundle
+    from exact.type1.parser.theory_translator import TheoryTranslator
     from exact.type1.solvers import FOLSolver  # type: ignore[import-untyped]
 
 # Internal uncertain literal emitted by the solver, normalized at the boundary.
@@ -41,12 +42,18 @@ async def run_type1_pipeline(
     question_parser: QuestionSideParser,
     solver: FOLSolver | None = None,
     fallback_reasoner: Type1FallbackReasoner | None = None,
+    theory_translator: TheoryTranslator | None = None,
 ) -> PredictionResponse:
     """Parse premises and the question through their workflows, then solve."""
 
     premises = [p.strip() for p in payload.premises or [] if p.strip()]
     if not premises:
         raise ValueError("Type 1 requests require at least one non-empty premise")
+
+    if get_settings().type1_translator == "single_pass" and theory_translator is not None:
+        return await run_type1_single_pass(
+            payload, theory_translator, solver, fallback_reasoner
+        )
 
     premise_bundle = await premise_parser.parse_premises(premises)
     premise_fols = premise_bundle.trees
@@ -336,6 +343,177 @@ def _uncertainty_cause(
 # ---------------------------------------------------------------------------
 # Z3 routing
 # ---------------------------------------------------------------------------
+
+async def run_type1_single_pass(
+    payload: PredictionRequest,
+    translator: TheoryTranslator,
+    solver: FOLSolver | None = None,
+    fallback_reasoner: Type1FallbackReasoner | None = None,
+) -> PredictionResponse:
+    """Whole-theory single-pass translation path (EXACT_TYPE1_TRANSLATOR=single_pass).
+
+    Translate premises + question + options in one LLM call to a shared FOL
+    vocabulary, then reuse the existing Z3 checks and LLM fallback.
+    """
+    premises = [p.strip() for p in payload.premises or [] if p.strip()]
+    options_dict = _normalize_options(payload.options)
+    if not options_dict:
+        options_dict = extract_mcq(payload.question).options
+
+    translation = await translator.translate(premises, payload.question, options_dict or None)
+    premise_fols = translation.premise_trees
+    is_mcq = translation.question_format == "mcq"
+    question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
+
+    solver_used = solver is not None and bool(premise_fols)
+    premises_used: list[int] | None = None
+    raw_answer = _SOLVER_UNCERTAIN
+    if solver_used:
+        assert solver is not None
+        try:
+            if is_mcq and translation.option_trees:
+                raw_answer, used_local = solver.check_mcq_with_used(
+                    premise_fols, translation.option_trees, None
+                )
+            elif not is_mcq and translation.claim_tree is not None:
+                raw_answer, used_local = solver.check_ynu_with_used(
+                    premise_fols, translation.claim_tree
+                )
+            else:
+                used_local = []
+            if used_local:
+                premises_used = [translation.premise_index_map[j] for j in used_local]
+            elif raw_answer != _SOLVER_UNCERTAIN:
+                premises_used = []
+        except ValueError as exc:
+            if "SORT_CONFLICT" not in str(exc):
+                raise
+            raw_answer = _SOLVER_UNCERTAIN
+
+    symbolic_answer = raw_answer
+
+    # LLM fallback when symbolic could not decide.
+    fallback_used = False
+    fallback_trigger: str | None = None
+    fallback_explanation: str | None = None
+    fallback_error: str | None = None
+    is_open_ended = translation.question_format == "open_wh" or (
+        not is_mcq and translation.claim_tree is None
+    )
+    if raw_answer == _SOLVER_UNCERTAIN and fallback_reasoner is not None:
+        fallback_trigger = "SINGLE_PASS_UNCERTAIN"
+        try:
+            fb = await fallback_reasoner.answer(
+                premises=premises,
+                question=payload.question,
+                option_labels=(
+                    [*translation.option_trees.keys(), _SOLVER_UNCERTAIN]
+                    if is_mcq
+                    else [] if is_open_ended else ["Yes", "No", _SOLVER_UNCERTAIN]
+                ),
+                options=options_dict or None,
+            )
+            raw_answer = fb.answer
+            fallback_used = True
+            fallback_explanation = fb.explanation
+            if fb.premises_used:
+                premises_used = fb.premises_used
+        except Exception as exc:
+            fallback_error = f"{type(exc).__name__}: {exc}"
+
+    if not is_mcq and _is_provability_question(payload.question):
+        raw_answer = "Yes" if symbolic_answer == "Yes" else "No"
+
+    answer = _normalize_answer(raw_answer)
+
+    premise_items = [
+        {
+            "id": f"premise-{translation.premise_index_map[i] + 1}",
+            "original_text": (
+                premises[translation.premise_index_map[i]]
+                if translation.premise_index_map[i] < len(premises)
+                else ""
+            ),
+            "fol": translation.premise_strings[i],
+            "ast": fol_node_to_dict(tree),
+        }
+        for i, tree in enumerate(premise_fols)
+    ]
+    fol_lines = [f"{item['id']}: {item['fol']}" for item in premise_items]
+    if translation.claim_string:
+        fol_lines.append(f"claim: {translation.claim_string}")
+    for label, tree in translation.option_trees.items():
+        fol_lines.append(f"option-{label}: {tree!r}")
+
+    explanation = _build_single_pass_explanation(
+        answer=answer,
+        uncertain_token=get_settings().type1_uncertain_token,
+        premises=premises,
+        premises_used=premises_used,
+        fallback_explanation=fallback_explanation if fallback_used else None,
+    )
+
+    return PredictionResponse(
+        id=payload.query_id,
+        task_type=TaskType.TYPE1_LOGIC,
+        question_type=question_type,
+        answer=answer,
+        explanation=explanation,
+        fol=fol_lines,
+        cot=[
+            f"Translated whole theory in one pass "
+            f"({len(premise_fols)} premises, {len(translation.predicates)} predicates).",
+            f"Question format: {translation.question_format}.",
+            f"Symbolic answer: {symbolic_answer}.",
+            *(["LLM fallback adjudicated."] if fallback_used else []),
+            *([f"LLM fallback error: {fallback_error}"] if fallback_error else []),
+        ],
+        premises=premises,
+        premises_used=premises_used,
+        confidence=None,
+        routing_diagnostics={
+            "stage": "single_pass_translation",
+            "solver_available": solver is not None,
+            "solver_used": solver_used,
+            "symbolic_answer": symbolic_answer,
+            "fallback_used": fallback_used,
+            "fallback_trigger": fallback_trigger,
+            "fallback_error": fallback_error,
+            "question_format": translation.question_format,
+            "predicates": [p.model_dump() for p in translation.predicates],
+            "premise_fol": translation.premise_strings,
+            "claim_fol": translation.claim_string,
+            "option_fol": {
+                label: repr(tree) for label, tree in translation.option_trees.items()
+            },
+            "translation_issues": translation.issues,
+        },
+    )
+
+
+def _build_single_pass_explanation(
+    *,
+    answer: str,
+    uncertain_token: str,
+    premises: list[str],
+    premises_used: list[int] | None,
+    fallback_explanation: str | None,
+) -> str:
+    """Human-readable explanation for the single-pass path (no QuerySpec)."""
+    is_uncertain = answer == uncertain_token
+    lines: list[str] = []
+    if is_uncertain:
+        lines.append(f"Answer: {answer} — the premises do not determine it.")
+    else:
+        lines.append(f"Answer: {answer}.")
+    used = [i for i in (premises_used or []) if 0 <= i < len(premises)]
+    if used and not is_uncertain:
+        lines.append("Supported by:")
+        lines.extend(f"  • Premise {i + 1}: {premises[i]}" for i in used)
+    if fallback_explanation and fallback_explanation.strip():
+        lines.append(f"Reasoning: {fallback_explanation.strip()}")
+    return "\n".join(lines)
+
 
 def _collect_atoms(node: FOLNode) -> list[AtomicNode]:
     """All atomic predicate applications under ``node`` (comparisons excluded)."""

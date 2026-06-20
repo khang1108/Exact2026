@@ -13,6 +13,7 @@ from exact.type1.parser import (
     QuestionSideParser,
     build_parser_client_from_settings,
 )
+from exact.type1.parser.theory_translator import TheoryTranslator
 from exact.type1.solvers import FOLSolver
 
 
@@ -31,6 +32,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.type1_solver = FOLSolver()
     app.state.type1_fallback_reasoner = (
         Type1FallbackReasoner(parser_client) if parser_client is not None else None
+    )
+    app.state.type1_theory_translator = (
+        TheoryTranslator(parser_client) if parser_client is not None else None
     )
     try:
         yield

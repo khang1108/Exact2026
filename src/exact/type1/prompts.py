@@ -687,3 +687,64 @@ Stem: "Which conclusion follows from the premises?"
 Fragment: "Needs advisor approval"
 Output: {"claim_text":null,"subject_found":false}
 """
+
+
+def get_system_prompt_theory_translate() -> str:
+    """Return instructions for translating a whole Type 1 problem to FOL at once.
+
+    The model declares a predicate dictionary once and reuses it across every
+    premise, the question, and any options — so the same relation keeps the same
+    predicate name (the property the per-premise pipeline could not guarantee).
+    """
+
+    return r"""
+Translate a logic problem (premises + question + options) into first-order logic.
+Output ONE shared predicate dictionary, then one FOL string per premise / claim /
+option, ALL using the same predicate names.
+
+# FOL GRAMMAR (emit exactly this syntax)
+- Quantifiers:  forall x: BODY      exists x: BODY
+- Connectives:  &  (and)   |  (or)   ~  (not)   ->  (implies)   <->  (iff)
+- Predicate:    Name(arg1, arg2)         e.g. Medical(x), Needs(Bear, Mouse)
+- Comparison:   Func(args) OP number     OP in  >= <= != = > <
+- Group with parentheses. Variables are lowercase (x, y). Constants/predicates
+  are CamelCase. One formula per premise, no line breaks inside a formula.
+
+# CONSISTENCY RULES (most important)
+1. Declare every predicate ONCE in "predicates" with name, arity, gloss.
+2. Use the SAME predicate name everywhere the SAME relation appears — in premises,
+   the claim, and options. Never invent a second name for one relation
+   (e.g. do NOT use both PriorityStatus and HasPriorityStatus).
+3. Keep distinct relations distinct. Never merge different concepts
+   (Medical vs Priority vs Dispatched are different predicates).
+4. Numbers/thresholds become comparisons: "weighs under 2 kg" -> Weight(x) < 2.
+5. Negation: "is not / does not / never" -> ~ on the predicate.
+6. "premises" must have exactly one FOL string per input premise, in order.
+
+# QUESTION
+- question_format = "polar" for a yes/no/uncertain statement, "mcq" if options are
+  given, "open_wh" for an open question with no statement to test.
+- polar: set "claim" to the FOL of the POSITIVE statement being asked about; leave
+  "options" empty.
+- mcq: set "options" to one {label, fol} per option; leave "claim" null.
+- open_wh: leave both null.
+
+# OUTPUT (return ONLY valid JSON)
+{
+  "predicates": [{"name": "...", "arity": 1, "gloss": "..."}, ...],
+  "premises": ["<fol>", ...],
+  "question_format": "polar"|"mcq"|"open_wh",
+  "claim": "<fol or null>",
+  "options": [{"label": "A", "fol": "<fol>"}, ...]
+}
+
+# EXAMPLE
+PREMISES:
+1. If a package is medical and weighs under 2 kilograms, then it receives priority delivery status.
+2. If a package has priority delivery status and its route is clear, then it can be dispatched.
+3. Package P is medical and weighs 1 kilogram and its route is clear.
+QUESTION:
+Can package P be dispatched?
+Output:
+{"predicates":[{"name":"Medical","arity":1,"gloss":"package is medical"},{"name":"Weight","arity":1,"gloss":"weight in kg"},{"name":"PriorityStatus","arity":1,"gloss":"has priority delivery status"},{"name":"RouteClear","arity":1,"gloss":"route is clear"},{"name":"CanDispatch","arity":1,"gloss":"can be dispatched"}],"premises":["forall x: (Medical(x) & Weight(x) < 2) -> PriorityStatus(x)","forall x: (PriorityStatus(x) & RouteClear(x)) -> CanDispatch(x)","Medical(P) & Weight(P) = 1 & RouteClear(P)"],"question_format":"polar","claim":"CanDispatch(P)","options":[]}
+"""
