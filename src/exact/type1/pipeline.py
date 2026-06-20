@@ -378,19 +378,30 @@ async def _single_pass_attempt(
     max_refines: int,
     temperature: float,
 ) -> _SinglePassAttempt:
-    """Translate (with bounded refinement) then solve once."""
-    translation = await translator.translate(
-        premises, payload.question, options_dict or None, temperature=temperature
-    )
+    """Translate (with bounded refinement) then solve once.
+
+    A translation failure (e.g. truncated/invalid JSON from the LLM) is caught
+    and returned as an empty, unusable translation so the caller routes to the
+    LLM fallback — never a hard request error.
+    """
     refine_log: list[str] = []
-    for _ in range(max_refines):
-        problems = _translation_problems(translation)
-        if not problems:
-            break
-        refine_log.extend(problems)
+    try:
         translation = await translator.translate(
-            premises, payload.question, options_dict or None,
-            feedback="\n".join(problems), temperature=temperature,
+            premises, payload.question, options_dict or None, temperature=temperature
+        )
+        for _ in range(max_refines):
+            problems = _translation_problems(translation)
+            if not problems:
+                break
+            refine_log.extend(problems)
+            translation = await translator.translate(
+                premises, payload.question, options_dict or None,
+                feedback="\n".join(problems), temperature=temperature,
+            )
+    except Exception as exc:  # truncated JSON / model error -> route to fallback
+        from exact.type1.parser.theory_translator import empty_translation
+        return _SinglePassAttempt(
+            _SOLVER_UNCERTAIN, None, empty_translation(f"{type(exc).__name__}: {exc}"), refine_log
         )
 
     premise_fols = translation.premise_trees
@@ -472,7 +483,9 @@ async def run_type1_single_pass(
     refine_log = representative.refine_log
     vote_distribution = dict(votes)
     premise_fols = translation.premise_trees
-    is_mcq = translation.question_format == "mcq"
+    translate_failed = any("TRANSLATE_FAILED" in i for i in translation.issues)
+    # MCQ-ness from the request (survives a failed/empty translation).
+    is_mcq = bool(options_dict) or translation.question_format == "mcq"
     question_type = QuestionType.MCQ if is_mcq else QuestionType.YNU
     solver_used = solver is not None and bool(premise_fols)
     symbolic_answer = winner
@@ -483,30 +496,31 @@ async def run_type1_single_pass(
 
     # Trust Z3 on a usable translation: a Z3 'Uncertain' is itself a valid
     # answer (the premises genuinely do not entail). Fall back to the LLM ONLY
-    # when there is nothing to solve — an open-ended (wh) question, or the
-    # translation produced no usable FOL (premises/claim/options failed to
-    # parse). This keeps Z3 the decider and avoids the slow fallback path.
+    # when there is nothing to solve — a genuine open-ended (wh) question, or the
+    # translation produced no usable FOL (failed/unparsable). This keeps Z3 the
+    # decider and avoids the slow fallback path.
     fallback_used = False
     fallback_trigger: str | None = None
     fallback_explanation: str | None = None
     fallback_error: str | None = None
-    is_open_ended = translation.question_format == "open_wh" or (
-        not is_mcq and translation.claim_tree is None
+    is_open_ended = not is_mcq and not translate_failed and (
+        translation.question_format == "open_wh" or translation.claim_tree is None
     )
-    translation_usable = bool(premise_fols) and (
+    translation_usable = (not translate_failed) and bool(premise_fols) and (
         bool(translation.option_trees) if is_mcq else translation.claim_tree is not None
     )
     if (is_open_ended or not translation_usable) and fallback_reasoner is not None:
         fallback_trigger = "OPEN_ENDED" if is_open_ended else "TRANSLATION_UNUSABLE"
+        fallback_labels = (
+            [*(translation.option_trees or options_dict).keys(), _SOLVER_UNCERTAIN]
+            if is_mcq
+            else [] if is_open_ended else ["Yes", "No", _SOLVER_UNCERTAIN]
+        )
         try:
             fb = await fallback_reasoner.answer(
                 premises=premises,
                 question=payload.question,
-                option_labels=(
-                    [*translation.option_trees.keys(), _SOLVER_UNCERTAIN]
-                    if is_mcq
-                    else [] if is_open_ended else ["Yes", "No", _SOLVER_UNCERTAIN]
-                ),
+                option_labels=fallback_labels,
                 options=options_dict or None,
             )
             raw_answer = fb.answer

@@ -66,10 +66,19 @@ class TheoryTranslation:
     issues: list[str] = field(default_factory=list)
 
 
+def empty_translation(error: str) -> TheoryTranslation:
+    """An unusable translation carrying an error — routes the caller to fallback."""
+    return TheoryTranslation(
+        premise_trees=[], premise_strings=[], premise_index_map=[],
+        question_format="polar", claim_tree=None, claim_string=None,
+        option_trees={}, predicates=[], issues=[f"TRANSLATE_FAILED: {error}"],
+    )
+
+
 class TheoryTranslator:
     """Translate a full Type 1 problem to FOL in one LLM call."""
 
-    def __init__(self, client: ParserClient, max_tokens: int = 2048) -> None:
+    def __init__(self, client: ParserClient, max_tokens: int = 4096) -> None:
         self.client = client
         self.max_tokens = max_tokens
 

@@ -712,7 +712,9 @@ option, ALL using the same predicate names.
 
 # CONSISTENCY RULES (most important)
 1. Declare every predicate ONCE in "predicates" with name and arity (gloss
-   optional — omit it to stay terse).
+   optional — omit it to stay terse). Keep the dictionary minimal: list each
+   predicate a single time, never repeat a name, and stop after the predicates
+   the premises/question actually use.
 2. Use the SAME predicate name everywhere the SAME relation appears — in premises,
    the claim, and options. Never invent a second name for one relation
    (e.g. do NOT use both PriorityStatus and HasPriorityStatus).
