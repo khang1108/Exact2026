@@ -67,6 +67,9 @@ class TheoryTranslation:
     option_trees: dict[str, FOLNode]
     predicates: list[PredicateDecl]
     issues: list[str] = field(default_factory=list)
+    # original 0-based indices of meta-epistemic premises emitted as empty
+    # ("no premise states whether X") — the witnesses to cite when Uncertain.
+    meta_indices: list[int] = field(default_factory=list)
 
 
 def empty_translation(error: str) -> TheoryTranslation:
@@ -179,9 +182,11 @@ def _parse_translation(raw: TranslatedTheory) -> TheoryTranslation:
     premise_trees: list[FOLNode] = []
     premise_strings: list[str] = []
     premise_index_map: list[int] = []
+    meta_indices: list[int] = []
     for index, fol in enumerate(raw.premises):
         if not fol or not fol.strip():
-            continue  # intentionally empty (meta-epistemic premise) — no content
+            meta_indices.append(index)  # meta-epistemic premise (no content)
+            continue
         try:
             tree = parse_fol_string(fol)
         except FOLStringParseError as exc:
@@ -219,4 +224,5 @@ def _parse_translation(raw: TranslatedTheory) -> TheoryTranslation:
         option_trees=option_trees,
         predicates=raw.predicates,
         issues=issues,
+        meta_indices=meta_indices,
     )

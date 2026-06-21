@@ -566,6 +566,12 @@ async def run_type1_single_pass(
     if not is_mcq and not is_open_ended and _is_provability_question(payload.question):
         raw_answer = "Yes" if symbolic_answer == "Yes" else "No"
 
+    # Uncertain witness: a meta-epistemic premise ("no premise states whether X")
+    # is the evidence for an Uncertain answer — cite it in premises_used (gold
+    # expects it) when nothing else was used.
+    if raw_answer == _SOLVER_UNCERTAIN and translation.meta_indices and not premises_used:
+        premises_used = sorted(translation.meta_indices)
+
     answer = _normalize_answer(raw_answer)
 
     premise_items = [
