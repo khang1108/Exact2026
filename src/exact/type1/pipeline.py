@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any
 from exact.common.schemas import PredictionRequest, PredictionResponse, QuestionType, TaskType
 from exact.config import get_settings
 from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
-from exact.type1.ast.nodes import ComparisonNode
+from exact.type1.ast.nodes import ComparisonNode, LogicalNode
 from exact.type1.parser import PremiseParser
 from exact.type1.parser.options import extract_mcq
 from exact.type1.proof_connectivity import (
@@ -471,7 +471,12 @@ def _solve_translation(
     solver: FOLSolver | None, translation: "TheoryTranslation"
 ) -> tuple[str, list[int] | None]:
     """Run Z3 over one translation (MCQ or polar) → (answer, premises_used)."""
-    premise_fols = translation.premise_trees
+    # Repair before solving: remap verb-prefixed option predicates onto their
+    # premise predicate, and close free-variable rules under `forall` (a free
+    # lowercase var is read as a constant otherwise, killing the rule chain).
+    if translation.option_trees:
+        _reconcile_option_predicates(translation)
+    premise_fols = [_close_free_vars(t) for t in translation.premise_trees]
     is_mcq = translation.question_format == "mcq"
     raw_answer = _SOLVER_UNCERTAIN
     premises_used: list[int] | None = None
@@ -713,17 +718,50 @@ def _translation_problems(translation: TheoryTranslation) -> list[str]:
                 f"'Entity has/is Property' must be Property(Entity), e.g. "
                 f"CalibratedThermalSensors(Vega)"
             )
+    # A tautological rule (head predicate also in its body, e.g. (A & B) -> A) is
+    # vacuous and signals a predicate-shift mistranslation (a consequent stolen
+    # from a neighbouring premise). Flag it so the model re-checks the head.
+    for tree, orig in zip(translation.premise_trees, translation.premise_index_map):
+        rule = _implication_core(tree)
+        if rule is None:
+            continue
+        antecedent, consequent = rule
+        head = {a.predicate.name for a in _collect_atoms(consequent)}
+        body = {a.predicate.name for a in _collect_atoms(antecedent)}
+        if head and head <= body:
+            problems.append(
+                f"TAUTOLOGICAL_RULE: premise {orig + 1} has a head predicate that also "
+                f"appears in its body (e.g. (A & B) -> A) — a vacuous rule; the consequent "
+                f"is likely the wrong predicate, re-check it against the source sentence"
+            )
     if translation.claim_tree is not None:
-        premise_predicates = {
+        all_predicates = {
             atom.predicate.name
             for tree in translation.premise_trees
             for atom in _collect_atoms(tree)
         }
+        # Producible = appears as a rule head, or as an atom in a non-rule (fact)
+        # premise. A claim predicate that exists ONLY inside rule bodies can never
+        # be derived -> a rule's head was mistranslated.
+        producible: set[str] = set()
+        for tree in translation.premise_trees:
+            rule = _implication_core(tree)
+            if rule is not None:
+                producible |= {a.predicate.name for a in _collect_atoms(rule[1])}
+            else:
+                producible |= {a.predicate.name for a in _collect_atoms(tree)}
         for atom in _collect_atoms(translation.claim_tree):
-            if atom.predicate.name not in premise_predicates:
+            name = atom.predicate.name
+            if name not in all_predicates:
                 problems.append(
-                    f"ORPHAN_PREDICATE: claim uses {atom.predicate.name} which no premise "
+                    f"ORPHAN_PREDICATE: claim uses {name} which no premise "
                     f"defines — reuse an existing premise predicate or recheck the translation"
+                )
+            elif name not in producible:
+                problems.append(
+                    f"UNPRODUCIBLE_CLAIM: claim predicate {name} appears only inside rule "
+                    f"conditions, never as a rule head or a fact, so it can never be derived — "
+                    f"a rule's consequent is likely mistranslated"
                 )
     return list(dict.fromkeys(problems))
 
@@ -767,6 +805,89 @@ def _collect_atoms(node: FOLNode) -> list[AtomicNode]:
     if node.right is not None:
         atoms += _collect_atoms(node.right)
     return atoms
+
+
+# Verb prefixes an option may glue onto a premise predicate (EntersAntiviralProtocol
+# vs AntiviralProtocol). Longest first so "Requires" is tried before "Require".
+_RULE_PREFIXES = (
+    "Requires", "Require", "Becomes", "Become", "Should", "Enters", "Needs",
+    "Need", "Does", "Have", "Gets", "Get", "Has", "Can", "Are", "Will", "Do", "Is",
+)
+
+
+def _is_variable(name: str) -> bool:
+    """Grammar convention: variables are lowercase, constants/predicates CamelCase."""
+    return bool(name) and name[0].islower()
+
+
+def _free_variables(node: FOLNode, bound: frozenset[str] = frozenset()) -> set[str]:
+    """Lowercase variables in ``node`` not bound by an enclosing quantifier."""
+    if isinstance(node, AtomicNode):
+        return {a for a in node.arguments if _is_variable(a)} - bound
+    if isinstance(node, ComparisonNode):
+        free: set[str] = set()
+        for term in (node.left, node.right):
+            free |= {a for a in getattr(term, "arguments", []) if _is_variable(a)}
+        return free - bound
+    if isinstance(node, QuantifiedNode):
+        inner = _free_variables(node.body, bound | {node.variable})
+        if node.restrictor is not None:
+            inner |= _free_variables(node.restrictor, bound | {node.variable})
+        return inner
+    free = _free_variables(node.left, bound)
+    if node.right is not None:
+        free |= _free_variables(node.right, bound)
+    return free
+
+
+def _close_free_vars(tree: FOLNode) -> FOLNode:
+    """Wrap a rule with unbound lowercase variables in ``forall``.
+
+    A rule like ``Patched(x) -> Contained(x)`` with no quantifier leaves x free;
+    the solver then reads x as a *constant* named "x", so the rule never fires for
+    the real entity and the whole chain dies. A free variable in a logic rule is
+    unambiguously universal — close it.
+    """
+    for var in sorted(_free_variables(tree)):
+        tree = QuantifiedNode("FORALL", var, tree)
+    return tree
+
+
+def _implication_core(tree: FOLNode) -> tuple[FOLNode, FOLNode] | None:
+    """Unwrap leading quantifiers; return (antecedent, consequent) if a rule."""
+    while isinstance(tree, QuantifiedNode):
+        tree = tree.body
+    if isinstance(tree, LogicalNode) and tree.operator == "IMPLIES" and tree.right is not None:
+        return tree.left, tree.right
+    return None
+
+
+def _reconcile_option_predicates(translation: "TheoryTranslation") -> None:
+    """Remap an option predicate that is a verb-prefixed variant of a premise
+    predicate (EntersAntiviralProtocol -> AntiviralProtocol) onto that premise
+    predicate, so a real option chains instead of staying an unprovable orphan.
+
+    Conservative: only when stripping a known prefix yields a stem that EXACTLY
+    matches a premise predicate of the same arity — never invents a merge.
+    """
+    premise_preds = {
+        a.predicate.name: a.predicate
+        for tree in translation.premise_trees
+        for a in _collect_atoms(tree)
+    }
+    if not premise_preds:
+        return
+    for tree in translation.option_trees.values():
+        for atom in _collect_atoms(tree):
+            if atom.predicate.name in premise_preds:
+                continue
+            for pre in _RULE_PREFIXES:
+                if atom.predicate.name.startswith(pre) and len(atom.predicate.name) > len(pre):
+                    stem = atom.predicate.name[len(pre):]
+                    target = premise_preds.get(stem)
+                    if target is not None and target.arity == len(atom.arguments):
+                        atom.predicate = target
+                        break
 
 
 def _solve(
