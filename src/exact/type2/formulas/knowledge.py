@@ -10,7 +10,9 @@ from exact.config import Settings
 from exact.config import PACKAGE_DIR
 from exact.llm_client import has_json_llm_client_config
 from exact.type2.extraction.llm_structured import select_formula_ids
+from exact.type2.formulas.classifier import classify_formula_topic
 from exact.type2.formulas.bank import FORMULAS, formula_summary
+from exact.type2.formulas.ranker import narrow_with_ontology, ontology_score
 from exact.type2.schemas import Extraction
 
 
@@ -64,6 +66,8 @@ def retrieve_formula_context(
         else []
     )
     all_summaries = executable + knowledge
+    use_ontology = settings.type2_use_formula_ontology if settings is not None else True
+    classification = classify_formula_topic(question, extraction) if use_ontology else None
 
     query = " ".join(
         part
@@ -74,13 +78,23 @@ def retrieve_formula_context(
         ]
         if part
     )
+    candidate_pool = (
+        narrow_with_ontology(
+            all_summaries,
+            classification,
+            rescue_limit=max(limit, 6),
+        )
+        if classification is not None
+        else all_summaries
+    )
     ranked = sorted(
-        all_summaries,
+        candidate_pool,
         key=lambda item: _score_summary(
             item,
             query,
             target=extraction.target if extraction else None,
             known=set(extraction.quantities) if extraction else set(),
+            ontology_bonus=ontology_score(item, classification) if classification is not None else 0,
         ),
         reverse=True,
     )
@@ -287,6 +301,7 @@ def _score_summary(
     *,
     target: str | None = None,
     known: set[str] | None = None,
+    ontology_bonus: int = 0,
 ) -> tuple[int, int, int, int]:
     query_tokens = set(_tokens(query))
     text = " ".join(
@@ -311,7 +326,7 @@ def _score_summary(
         item_geom = item_tokens & geom_keywords
         geom_bonus = 15 * len(query_geom & item_geom)
 
-    return (target_bonus + exact_bonus + geom_bonus, required_bonus, overlap, executable_bonus)
+    return (ontology_bonus + target_bonus + exact_bonus + geom_bonus, required_bonus, overlap, executable_bonus)
 
 
 def _tokens(text: str) -> list[str]:

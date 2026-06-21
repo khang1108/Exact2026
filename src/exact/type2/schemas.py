@@ -66,3 +66,9 @@ class Type2SolveResult:
     confidence: float = 0.0
     error: str | None = None
     routing_diagnostics: dict[str, Any] | None = None
+    formula_ids_used: tuple[str, ...] = ()
+    retrieved_formula_ids: tuple[str, ...] = ()
+    generated_code: str | None = None
+    code_semantic_summary: str | None = None
+    computed_values: dict[str, Any] = field(default_factory=dict)
+    verification_warnings: tuple[str, ...] = ()

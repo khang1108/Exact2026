@@ -33,14 +33,15 @@ def build_settings_from_config(config: dict[str, Any]) -> Settings:
     raw_base_url = str(llm.get("base_url") or "").strip()
     base_url = validate_self_hosted_model_url(raw_base_url) if raw_base_url else None
     api_key = _resolve_api_key(llm)
-    if backend != "vllm":
-        raise ValueError("Only backend='vllm' is supported")
-    if not base_url:
+    if backend not in ("vllm", "transformers"):
+        raise ValueError("Only backend='vllm' or 'transformers' is supported")
+    if backend == "vllm" and not base_url:
         raise ValueError("llm.base_url is required for the self-hosted vLLM server")
     api_key = api_key or "EMPTY"
 
     updates: dict[str, Any] = {
         "llm_enabled": True,
+        "llm_backend": backend,
         "llm_model": str(llm.get("model") or settings.llm_model),
         "llm_base_url": base_url,
         "llm_api_key": SecretStr(api_key) if api_key else None,
@@ -215,6 +216,8 @@ def settings_for_disabled_llm(settings: Settings | None = None) -> Settings:
 def _settings_without_llm(settings: Settings) -> Settings:
     return settings.model_copy(
         update={
+            "llm_enabled": False,
+            "llm_backend": "none",
             "llm_base_url": None,
             "llm_api_key": None,
         }

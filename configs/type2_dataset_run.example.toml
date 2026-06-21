@@ -24,11 +24,11 @@ progress_every = 1
 # Optional. Leave disabled for deterministic-only runs.
 require_llm = true
 # Supported backend today: vllm
-# backend = "vllm"
-# enabled = true
-# base_url = "http://127.0.0.1:8000/v1"
-# model = "Qwen/Qwen2.5-7B-Instruct"
-# api_key = "EMPTY"
+backend = "vllm"
+enabled = true
+base_url = "http://127.0.0.1:8000/v1"
+model = "Qwen/Qwen2.5-7B-Instruct"
+api_key = "EMPTY"
 
 [type2_pipeline]
 # Retrieval / planning knobs still consumed by the current pipeline.
