@@ -413,8 +413,14 @@ async def _single_pass_attempt(
     #  - it is an MCQ that came out Uncertain (an MCQ should resolve to an option;
     #    Uncertain signals a bad translation — re-check it).
     # A YNU draft that is Uncertain is left alone (often genuinely Uncertain).
+    #
+    # LATENCY NOTE: when the MCQ Z3 result is Uncertain AND a fallback_reasoner is
+    # available, the LLM fallback will make the final decision. Running verify_refine
+    # first would cost an extra ~10–15s LLM call that is redundant — skip it so the
+    # total budget (translate + fallback) stays comfortably under 60s.
     is_mcq_q = translation.question_format == "mcq" or bool(options_dict)
-    needs_verify = raw_answer != _SOLVER_UNCERTAIN or is_mcq_q
+    mcq_will_fallback = is_mcq_q and raw_answer == _SOLVER_UNCERTAIN and fallback_reasoner is not None
+    needs_verify = (raw_answer != _SOLVER_UNCERTAIN or is_mcq_q) and not mcq_will_fallback
     if verify_refine and needs_verify:
         try:
             verified = await translator.verify(
