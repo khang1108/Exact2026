@@ -410,7 +410,12 @@ SYMBOL_VALUE_RE = re.compile(
     rf"\b(?P<symbol>[A-Za-z][A-Za-z0-9_]*)\s*=\s*(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b",
     re.IGNORECASE,
 )
-VALUE_UNIT_RE = re.compile(rf"\b(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b", re.IGNORECASE)
+# Use a negative lookbehind instead of a leading \b: a word boundary sits between
+# the space and a leading "-"/"+" (both non-word), so \b would force the match to
+# start at the digit and DROP the sign — making "+4.0 nC" and "-4.0 nC" both parse
+# as 4.0 (e.g. opposite charges then cancel at a midpoint -> wrong 0). The
+# lookbehind keeps the sign while still preventing mid-token matches.
+VALUE_UNIT_RE = re.compile(rf"(?<![\w.])(?P<value>{NUMBER})\s*(?P<unit>{UNIT})\b", re.IGNORECASE)
 
 
 def extract_type2(question: str) -> Extraction:
