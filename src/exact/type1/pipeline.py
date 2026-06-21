@@ -1043,9 +1043,12 @@ def _build_explanation(
 
 
 def _normalize_answer(answer: str) -> str:
-    """Replace the internal uncertain literal with the configured output token."""
+    """Map the internal uncertain literal and its synonyms to the output token.
 
-    if answer == _SOLVER_UNCERTAIN:
+    The LLM fallback sometimes answers "Unknown" instead of "Uncertain"; EXACT
+    expects the configured token, so fold both onto it (case-insensitive).
+    """
+    if str(answer).strip().lower() in ("uncertain", "unknown"):
         return get_settings().type1_uncertain_token
     return answer
 
