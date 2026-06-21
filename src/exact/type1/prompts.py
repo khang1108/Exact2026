@@ -738,6 +738,19 @@ option, ALL using the same predicate names.
    "requires Y before X" mean Y is REQUIRED — translate as the requirement
    predicate (e.g. RequiresReview(p)), NOT as a disjunction like
    (~X | Y). Preserve the requirement so it can be derived.
+10. WELL-FORMED: every premise / claim / option MUST be a formula with a
+   predicate APPLIED to its argument(s). A fact "Entity has/is Property" ->
+   Property(Entity), e.g. "Vega has calibrated thermal sensors" ->
+   CalibratedThermalSensors(Vega). NEVER emit a bare constant like "Vega" — a
+   lone constant is NOT a formula and silently drops the fact.
+11. GROUND vs RULE: a claim or option that asserts something about a SPECIFIC
+   named entity is GROUND — apply existing predicates to that constant. "Mira
+   enters the antiviral protocol and requires dose review" ->
+   AntiviralProtocol(Mira) & RequiresReview(Mira). Do NOT wrap it in
+   "forall x: ..." and do NOT invent new predicates (EntersAntiviralProtocol,
+   CanReceiveStandardDose) — reuse the predicates already declared for the
+   premises so the option chains to them. Use "forall x:" ONLY when the input
+   sentence itself is a general rule about all entities.
 
 # QUESTION
 - question_format = "polar" for a yes/no/uncertain question, "mcq" ONLY when the
@@ -769,6 +782,19 @@ QUESTION:
 Can package P be dispatched?
 Output:
 {"predicates":[{"name":"Medical","arity":1},{"name":"Weight","arity":1},{"name":"PriorityStatus","arity":1},{"name":"RouteClear","arity":1},{"name":"CanDispatch","arity":1}],"premises":["forall x: (Medical(x) & Weight(x) < 2) -> PriorityStatus(x)","forall x: (PriorityStatus(x) & RouteClear(x)) -> CanDispatch(x)","Medical(P) & Weight(P) = 1 & RouteClear(P)"],"question_format":"polar","claim":"CanDispatch(P)","options":[]}
+
+# EXAMPLE (MCQ — note: facts are Predicate(Entity), options are GROUND)
+PREMISES:
+1. If a satellite has calibrated thermal sensors, then it can monitor surface temperature.
+2. Satellite Vega has calibrated thermal sensors.
+3. Satellite Vega has a high-resolution optical camera.
+4. All satellites with high-resolution optical cameras can capture daytime images.
+QUESTION:
+Which statement is best supported?
+A. Vega can monitor surface temperature and capture daytime images
+B. Vega has cloud-penetrating radar
+Output:
+{"predicates":[{"name":"CalibratedThermalSensors","arity":1},{"name":"CanMonitorSurfaceTemperature","arity":1},{"name":"HighResCamera","arity":1},{"name":"CanCaptureDaytimeImages","arity":1},{"name":"CloudPenetratingRadar","arity":1}],"premises":["forall x: CalibratedThermalSensors(x) -> CanMonitorSurfaceTemperature(x)","CalibratedThermalSensors(Vega)","HighResCamera(Vega)","forall x: HighResCamera(x) -> CanCaptureDaytimeImages(x)"],"question_format":"mcq","claim":null,"options":[{"label":"A","fol":"CanMonitorSurfaceTemperature(Vega) & CanCaptureDaytimeImages(Vega)"},{"label":"B","fol":"CloudPenetratingRadar(Vega)"}]}
 """
 
 
@@ -807,6 +833,12 @@ comparison Func(args) OP number (OP: >= <= != = > <). One formula per premise.
 5. NUMERIC: "under/at least/over N <unit>" -> a comparison Func(x) OP N, not an
    entity constant.
 6. NEGATION/DIRECTION: preserve "not/never" and "only if" direction exactly.
+7. WELL-FORMED: every premise/claim/option is a formula with a predicate applied
+   to its argument(s). A fact "Entity has/is Property" -> Property(Entity); a bare
+   constant like "Vega" is NOT a formula — replace it with the missing predicate.
+8. GROUND vs RULE: a claim/option about a SPECIFIC named entity must be GROUND
+   over existing predicates (e.g. AntiviralProtocol(Mira) & RequiresReview(Mira)),
+   NOT a "forall x: ..." rule and NOT new predicates that duplicate existing ones.
 
 # OUTPUT (return ONLY the corrected JSON, same schema as the draft)
 { "predicates": [...], "premises": [...], "question_format": "...",

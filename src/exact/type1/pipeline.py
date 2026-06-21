@@ -407,11 +407,14 @@ async def _single_pass_attempt(
 
     raw_answer, premises_used = _solve_translation(solver, translation)
 
-    # Verify-and-refine ONLY when the draft gave a definite answer: that is where
-    # a mistranslation produces a confident-but-wrong result (e.g. a polar yes/no
-    # mis-cast as MCQ). A draft that is already Uncertain is left alone — saves a
-    # call and avoids extra GPU load. Kept only if it re-solves to a definite.
-    if verify_refine and raw_answer != _SOLVER_UNCERTAIN:
+    # Verify-and-refine when a mistranslation is likely:
+    #  - the draft gave a DEFINITE answer (could be confidently wrong), or
+    #  - it is an MCQ that came out Uncertain (an MCQ should resolve to an option;
+    #    Uncertain signals a bad translation — re-check it).
+    # A YNU draft that is Uncertain is left alone (often genuinely Uncertain).
+    is_mcq_q = translation.question_format == "mcq" or bool(options_dict)
+    needs_verify = raw_answer != _SOLVER_UNCERTAIN or is_mcq_q
+    if verify_refine and needs_verify:
         try:
             verified = await translator.verify(
                 premises, payload.question, options_dict or None, translation
@@ -699,6 +702,17 @@ def _translation_problems(translation: TheoryTranslation) -> list[str]:
     entailment and makes Z3 return Uncertain.
     """
     problems = [i for i in translation.issues if i.startswith("PREMISE_FOL_PARSE_FAILED")]
+    # A premise that parsed to a bare 0-arity atom (e.g. "Vega" -> Vega()) dropped
+    # its predicate: a fact "Entity has/is Property" was emitted as the entity
+    # alone, silently losing the fact. Force a re-translation with that feedback.
+    for tree, orig in zip(translation.premise_trees, translation.premise_index_map):
+        if isinstance(tree, AtomicNode) and not tree.arguments:
+            problems.append(
+                f"BARE_CONSTANT_PREMISE: premise {orig + 1} is the bare constant "
+                f"'{tree.predicate.name}' with no predicate applied — a fact "
+                f"'Entity has/is Property' must be Property(Entity), e.g. "
+                f"CalibratedThermalSensors(Vega)"
+            )
     if translation.claim_tree is not None:
         premise_predicates = {
             atom.predicate.name
