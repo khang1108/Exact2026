@@ -243,15 +243,31 @@ class VLLMJsonClient:
 
 def has_json_llm_client_config(settings: Settings | None = None) -> bool:
     settings = settings or get_settings()
+    if not settings.llm_enabled:
+        return False
+    if getattr(settings, "llm_backend", None) == "transformers":
+        return True
     return bool(settings.llm_base_url)
 
 
-def build_json_client_from_settings(settings: Settings | None = None) -> VLLMJsonClient | None:
-    """Build a client for the configured self-hosted vLLM server."""
+_TRANSFORMERS_CLIENT: tuple[str, Any] | None = None
+
+def build_json_client_from_settings(settings: Settings | None = None) -> Any:
+    """Build a client for the configured LLM backend."""
 
     settings = settings or get_settings()
     if not has_json_llm_client_config(settings):
         return None
+
+    if getattr(settings, "llm_backend", None) == "transformers":
+        global _TRANSFORMERS_CLIENT
+        if _TRANSFORMERS_CLIENT is None or _TRANSFORMERS_CLIENT[0] != settings.llm_model:
+            from exact.transformers_client import TransformersJsonClient
+            _TRANSFORMERS_CLIENT = (
+                settings.llm_model,
+                TransformersJsonClient(model=settings.llm_model),
+            )
+        return _TRANSFORMERS_CLIENT[1]
 
     api_key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else "EMPTY"
     return VLLMJsonClient(

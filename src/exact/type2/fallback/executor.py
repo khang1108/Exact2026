@@ -6,6 +6,7 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 import sys
+from typing import Any
 
 
 ALLOWED_IMPORTS = {"math", "sympy", "pint"}
@@ -19,6 +20,7 @@ class ExecutionResult:
     stderr: str
     error: str | None = None
     ans_unit: str | None = None
+    computed_values: dict[str, Any] | None = None
 
 
 class UnsafeCodeError(ValueError):
@@ -81,6 +83,7 @@ def execute_python(code: str, timeout_seconds: float = 5.0) -> ExecutionResult:
         ok=True,
         ans=marker.get("ans"),
         ans_unit=marker.get("ans_unit"),
+        computed_values=marker.get("computed_values"),
         stdout=proc.stdout,
         stderr=proc.stderr,
     )
@@ -169,7 +172,29 @@ elif hasattr(value, "item"):
         pass
 
 ans_unit = glb.get("ans_unit")
-print("__ANS__=" + json.dumps({"ans": value, "ans_unit": ans_unit}, default=str))
+
+computed_values = {}
+for k, v in glb.items():
+    if k in {"__builtins__", "ans", "ans_unit", "path", "source", "glb", "value"}:
+        continue
+    if k.startswith("_"):
+        continue
+    if type(v).__name__ in {"module", "function", "builtin_function_or_method", "type"}:
+        continue
+    if hasattr(v, "magnitude"):
+        try:
+            computed_values[k] = float(v.magnitude)
+        except Exception:
+            pass
+    elif type(v) in (int, float, str, bool):
+        computed_values[k] = v
+    elif hasattr(v, "item"):
+        try:
+            computed_values[k] = v.item()
+        except Exception:
+            pass
+
+print("__ANS__=" + json.dumps({"ans": value, "ans_unit": ans_unit, "computed_values": computed_values}, default=str))
 """
 
 

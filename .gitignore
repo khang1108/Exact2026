@@ -30,6 +30,7 @@ tests/*
 !tests/test_type2_extraction.py
 !tests/test_type2_pipeline_smoke.py
 !tests/test_type2_td_capacitor_late_range.py
+!tests/test_type2_new_pipeline_components.py
 outputs/
 tmp/
 

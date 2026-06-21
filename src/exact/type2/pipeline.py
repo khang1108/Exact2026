@@ -25,7 +25,7 @@ from exact.type2.schemas import (
     Type2SolveResult,
     Verification,
 )
-from exact.type2.solving.pot_solver import solve_with_pot
+from exact.type2.solving.pot_solver import _verify_or_accept_execution, solve_with_pot
 from exact.type2.solving.units import parse_quantity
 
 
@@ -216,12 +216,13 @@ def run_type2_pipeline(
             question_kind_route=question_kind_route,
         )
     except Exception as exc:
-        return _recovery_loop_response(
+        response = _recovery_loop_response(
             request,
             settings,
             trigger=f"pipeline_exception: {exc}",
             diagnostics={"exception_type": type(exc).__name__},
         )
+        return _finalize_response_explanation(request, response, settings)
 
 
 def run_type2_internal_pipeline(
@@ -269,12 +270,13 @@ def _finish_domain_response(
             "question_kind_route": question_kind_route,
         },
     )
-    return _with_recovery_loop_if_needed(
+    response = _with_recovery_loop_if_needed(
         request,
         response,
         settings,
         trigger=_recovery_loop_trigger(response),
     )
+    return _finalize_response_explanation(request, response, settings)
 
 
 def _question_kind_route_metadata(
@@ -383,16 +385,11 @@ def run_generic_pipeline(
             fallback.cot.insert(0, review.verification.message)
         return _to_prediction_response(request, fallback)
 
-    generate_explanation = (
-        settings.type2_generate_explanation
-        if _GENERATE_FINAL_EXPLANATION_OVERRIDE is None
-        else _GENERATE_FINAL_EXPLANATION_OVERRIDE
-    )
     result = solve_with_pot(
         extraction,
         formula_context,
         settings=settings,
-        generate_explanation=generate_explanation,
+        generate_explanation=False,
     )
     fallback_diagnostics = mark_current_solver_used(
         routing_diagnostics,
@@ -461,7 +458,24 @@ def _to_prediction_response(
     request: PredictionRequest,
     result: Type2SolveResult,
 ) -> PredictionResponse:
-    return PredictionResponse(
+    from exact.type2.trace import build_solution_trace
+
+    diagnostics = dict(result.routing_diagnostics or {})
+    formula_ids = result.formula_ids_used or ((result.formula.id,) if result.formula else ())
+    if formula_ids:
+        diagnostics["formula_ids_used"] = list(formula_ids)
+    if result.retrieved_formula_ids:
+        diagnostics["retrieved_formula_ids"] = list(result.retrieved_formula_ids)
+    if result.generated_code:
+        diagnostics["generated_code"] = result.generated_code
+    if result.code_semantic_summary:
+        diagnostics["code_semantic_summary"] = result.code_semantic_summary
+    if result.computed_values:
+        diagnostics["computed_values"] = dict(result.computed_values)
+    if result.verification_warnings:
+        diagnostics["verification_warnings"] = list(result.verification_warnings)
+
+    response = PredictionResponse(
         id=request.id,
         task_type=TaskType.TYPE2_PHYSICS,
         question_type=_question_type(result),
@@ -473,7 +487,17 @@ def _to_prediction_response(
         confidence=result.confidence,
         unit=result.unit,
         error=result.error,
-        routing_diagnostics=result.routing_diagnostics,
+        routing_diagnostics=diagnostics,
+    )
+    trace = build_solution_trace(
+        request,
+        response,
+        verification_accepted=result.verification.ok and result.error is None,
+        verification_messages=(result.verification.message,),
+        computed_values=result.computed_values,
+    )
+    return response.model_copy(
+        update={"reasoning": {"type": "solution_trace", "trace": trace.to_dict()}}
     )
 
 
@@ -501,7 +525,9 @@ def _with_recovery_loop_if_needed(
     trigger: str | None,
 ) -> PredictionResponse:
     diagnostics = dict(response.routing_diagnostics or {})
-    diagnostics["type2_llm_configured"] = bool(settings.llm_base_url)
+    diagnostics["type2_llm_configured"] = bool(settings.llm_base_url) or (
+        settings.llm_enabled and settings.llm_backend == "transformers"
+    )
     diagnostics["type2_llm_domain_routing_enabled"] = settings.type2_use_llm_domain_routing
     diagnostics["type2_llm_question_kind_routing_enabled"] = settings.type2_use_llm_question_kind_routing
     diagnostics["type2_recovery_loop_enabled"] = settings.type2_use_recovery_loop
@@ -534,7 +560,9 @@ def _recovery_loop_response(
     previous_response: PredictionResponse | None = None,
 ) -> PredictionResponse:
     diagnostics = dict(diagnostics or {})
-    diagnostics["type2_llm_configured"] = bool(settings.llm_base_url)
+    diagnostics["type2_llm_configured"] = bool(settings.llm_base_url) or (
+        settings.llm_enabled and settings.llm_backend == "transformers"
+    )
     diagnostics["type2_llm_domain_routing_enabled"] = settings.type2_use_llm_domain_routing
     diagnostics["type2_llm_question_kind_routing_enabled"] = settings.type2_use_llm_question_kind_routing
     diagnostics["type2_recovery_loop_enabled"] = settings.type2_use_recovery_loop
@@ -565,7 +593,7 @@ def _recovery_loop_response(
             extraction,
             formula_context,
             settings=settings,
-            generate_explanation=settings.type2_generate_explanation,
+            generate_explanation=False,
         )
         if _is_usable_agent_result(result):
             attempts.append(
@@ -609,12 +637,40 @@ def _recovery_loop_response(
         if not spec.answer.strip():
             attempts.append({"attempt": attempt, "status": "empty"})
             continue
+
+        if extraction.kind != Type2QuestionKind.CONCEPTUAL:
+            verified = _verify_or_accept_execution(
+                spec.answer,
+                spec.unit,
+                [],
+                formula_context,
+                extraction,
+                settings,
+            )
+            if verified.error is not None:
+                attempts.append(
+                    {
+                        "attempt": attempt,
+                        "status": "direct_answer_rejected",
+                        "reason": verified.verification.message,
+                    }
+                )
+                continue
+            verification = verified.verification
+            answer = verified.answer
+            unit = verified.unit
+            value = verified.value
+        else:
+            verification = Verification(True, "Conceptual recovery answer is non-empty.")
+            answer = spec.answer.strip()
+            unit = None
+            value = None
         attempts.append(
             {
                 "attempt": attempt,
                 "status": "answered_directly",
-                "answer": spec.answer.strip(),
-                "unit": spec.unit,
+                "answer": answer,
+                "unit": unit,
             }
         )
         diagnostics["type2_recovery_loop"] = {
@@ -624,20 +680,23 @@ def _recovery_loop_response(
             "attempts": attempts,
             "strategy": "re_extract_then_pot_then_direct_answer",
         }
-        return PredictionResponse(
-            id=request.id,
-            task_type=TaskType.TYPE2_PHYSICS,
-            question_type=QuestionType.OPEN_ENDED if spec.unit is None else QuestionType.NUMERICAL,
-            answer=spec.answer.strip(),
-            explanation=spec.explanation,
-            fol=None,
-            cot=["Type 2 recovery loop generated a direct answer after structured solving did not finish cleanly."],
-            premises=spec.premises,
-            confidence=spec.confidence or 0.35,
-            unit=spec.unit,
+        recovery_result = Type2SolveResult(
+            answer=answer,
+            unit=unit,
+            value=value,
+            formula=None,
+            extraction=extraction,
+            verification=verification,
+            cot=[
+                "The recovery solver derived a direct candidate after structured solving failed.",
+                spec.explanation,
+            ],
+            premises=list(spec.premises),
+            confidence=min(spec.confidence or 0.35, 0.55),
             error=None,
             routing_diagnostics=diagnostics,
         )
+        return _to_prediction_response(request, recovery_result)
 
     diagnostics["type2_recovery_loop"] = {
         "used": True,
@@ -656,6 +715,22 @@ def _recovery_loop_temperature(settings: Settings, attempt: int) -> float:
     if attempt <= 1:
         return settings.llm_temperature
     return max(settings.llm_temperature, min(settings.type2_pot_batch_temperature, 0.7))
+
+
+def _finalize_response_explanation(
+    request: PredictionRequest,
+    response: PredictionResponse,
+    settings: Settings,
+) -> PredictionResponse:
+    from exact.type2.explanation import finalize_type2_explanation
+
+    enabled = (
+        settings.type2_generate_explanation
+        if _GENERATE_FINAL_EXPLANATION_OVERRIDE is None
+        else _GENERATE_FINAL_EXPLANATION_OVERRIDE
+    )
+    effective_settings = settings.model_copy(update={"type2_generate_explanation": enabled})
+    return finalize_type2_explanation(request, response, effective_settings)
 
 
 def _guardrail_response(

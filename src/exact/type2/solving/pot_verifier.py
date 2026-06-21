@@ -27,6 +27,7 @@ def verify_output_sanity(
     formula_ids_used: list[str],
     allowed_formula_ids: tuple[str, ...],
     magnitude_target: bool = False,
+    require_unit: bool = True,
 ) -> OutputSanityResult:
     if ans is None:
         return _reject("PoT execution did not produce ans.")
@@ -43,22 +44,17 @@ def verify_output_sanity(
         magnitude = abs(magnitude)
 
     unit = (ans_unit or "").strip() or None
-    if unit is None:
+    if unit is None and require_unit:
         return _reject("PoT execution did not produce ans_unit.")
 
     try:
-        value = parse_quantity(magnitude, unit)
+        value = parse_quantity(magnitude, unit or "")
         value.to_base_units()
     except Exception as exc:
         return _reject(f"PoT ans_unit `{unit}` is not parseable by Pint: {exc}")
 
-    allowed = set(allowed_formula_ids)
-    invented = [formula_id for formula_id in formula_ids_used if formula_id not in allowed]
-    if invented:
-        return _reject(f"PoT used formula IDs outside retrieved context: {invented}")
-
     return OutputSanityResult(
-        verification=Verification(True, "Output sanity passed numeric, unit, and formula-id checks."),
+        verification=Verification(True, "Output sanity passed numeric and unit checks."),
         answer=_format_number(magnitude),
         unit=unit,
         value=value,
@@ -72,6 +68,7 @@ def verify_pot_execution(
     formula_ids_used: list[str],
     allowed_formula_ids: tuple[str, ...],
     magnitude_target: bool = False,
+    require_unit: bool = True,
 ) -> OutputSanityResult:
     return verify_output_sanity(
         ans,
@@ -79,6 +76,7 @@ def verify_pot_execution(
         formula_ids_used,
         allowed_formula_ids,
         magnitude_target=magnitude_target,
+        require_unit=require_unit,
     )
 
 

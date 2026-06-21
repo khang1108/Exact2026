@@ -84,6 +84,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("EXACT_LLM_MODEL", "EXACT_MODEL_ID"),
     )
     math_model_id: str = "Qwen/Qwen2.5-Math-7B-Instruct"
+    llm_backend: Literal["vllm", "transformers", "none"] = "vllm"
     llm_enabled: bool = Field(default=False, validation_alias="EXACT_LLM_ENABLED")
     llm_base_url: str | None = None
     llm_api_key: SecretStr | None = None
@@ -152,6 +153,10 @@ class Settings(BaseSettings):
     type2_use_formula_bank: bool = Field(
         default=True,
         validation_alias="EXACT_TYPE2_USE_FORMULA_BANK",
+    )
+    type2_use_formula_ontology: bool = Field(
+        default=True,
+        validation_alias="EXACT_TYPE2_USE_FORMULA_ONTOLOGY",
     )
     type2_use_unit_verifier: bool = Field(
         default=True,
@@ -299,9 +304,12 @@ class Settings(BaseSettings):
                 self.type2_extraction_mode = "heuristic_only"
             return self
 
-        if self.llm_base_url is None:
-            raise ValueError("EXACT_LLM_BASE_URL is required when EXACT_LLM_ENABLED=true")
-        self.llm_base_url = validate_self_hosted_model_url(self.llm_base_url)
+        if self.llm_backend == "vllm":
+            if self.llm_base_url is None:
+                raise ValueError(
+                    "EXACT_LLM_BASE_URL is required when EXACT_LLM_ENABLED=true and backend is vllm"
+                )
+            self.llm_base_url = validate_self_hosted_model_url(self.llm_base_url)
         return self
 
     def ensure_artifact_dirs(self) -> None:

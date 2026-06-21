@@ -10,6 +10,9 @@ from typing import Any, Sequence
 from exact.config import Settings, get_settings
 from exact.datasets.type2_taxonomy import classify_type2_taxonomy
 from exact.llm_client import has_json_llm_client_config
+from exact.type2.physics_contract.builder import build_physics_contract, contract_to_prompt_dict
+from exact.type2.physics_contract.models import PhysicsContract
+from exact.type2.physics_verification.verifier import verify_physics_sanity
 from exact.type2.geometry_context import build_geometry_prompt_context
 from exact.type2.extraction.llm_structured import (
     PotCodeSpec,
@@ -22,7 +25,7 @@ from exact.type2.extraction.llm_structured import (
 from exact.type2.fallback.executor import ExecutionResult, execute_python
 from exact.type2.formulas.knowledge import RetrievedFormulaContext, canonicalize_formula_ids, retrieve_formula_context
 from exact.type2.schemas import Extraction, Type2SolveResult, Verification
-from exact.type2.solving.physics_verifier import verify_against_physics_oracle
+from exact.type2.solving.physics_verifier import verify_against_physics_oracle, verify_structured_state
 from exact.type2.solving.pot_verifier import OutputSanityResult, verify_output_sanity
 from exact.type2.solving.solver import answer_conceptual, solve_extraction, solve_vector_template
 
@@ -92,6 +95,7 @@ def _solve_conceptual(
     extraction: Extraction,
     formula_context: RetrievedFormulaContext,
     settings: Settings,
+    generate_explanation: bool,
 ) -> Type2SolveResult:
     curated = answer_conceptual(extraction) if settings.type2_use_concept_bank else None
     if curated is not None and curated.error is None:
@@ -141,6 +145,22 @@ def _solve_conceptual(
         cot = _as_string_list(raw.get("cot"))
         premises = _as_string_list(raw.get("premises"))
 
+        if generate_explanation:
+            final_spec = _final_explanation(
+                extraction,
+                answer,
+                None,
+                formula_context,
+                PotCodeSpec(code="", formula_ids_used=[], explanation=explanation),
+                settings,
+                generate_explanation=True,
+                taxonomy_level="conceptual_reasoning",
+                evidence_trace=theory_context,
+            )
+            explanation = final_spec.explanation
+            cot = final_spec.cot
+            premises = final_spec.premises
+
         return Type2SolveResult(
             answer=answer,
             unit=None,
@@ -183,7 +203,7 @@ def solve_with_pot(
 ) -> Type2SolveResult:
     settings = settings or get_settings()
     if extraction.kind.value == "conceptual":
-        return _solve_conceptual(extraction, formula_context, settings)
+        return _solve_conceptual(extraction, formula_context, settings, generate_explanation)
     if not settings.type2_use_pot_solver:
         fallback = _try_executable_formula_fallback(
             extraction,
@@ -277,6 +297,7 @@ def solve_with_pot(
             selector_notes=tuple(getattr(choice, "notes", ())),
         )
 
+    contract = build_physics_contract(extraction, formula_context)
     prompt_context = _build_solver_context(extraction, formula_context)
     geometry_prompt_context = build_geometry_prompt_context(
         extraction,
@@ -349,6 +370,11 @@ def solve_with_pot(
     if deterministic_conflict is not None:
         return deterministic_conflict
 
+    taxonomy_label = classify_type2_taxonomy(
+        extraction.normalized_question,
+        unit=_formula_context_unit_hint(formula_context),
+    )
+
     explanation = _final_explanation(
         extraction,
         selected.verified.answer,
@@ -357,6 +383,13 @@ def solve_with_pot(
         selected.code_spec,
         settings,
         generate_explanation=generate_explanation,
+        computed_values=selected.execution.computed_values,
+        taxonomy_level=taxonomy_label.solve_method,
+        contract=contract,
+    )
+    prepared_code = _prepare_generated_code(
+        selected.code_spec.code,
+        selected.code_spec.formula_ids_used,
     )
     return Type2SolveResult(
         answer=selected.verified.answer,
@@ -380,6 +413,18 @@ def solve_with_pot(
         premises=explanation.premises,
         confidence=0.72,
         error=None,
+        formula_ids_used=tuple(selected.code_spec.formula_ids_used),
+        retrieved_formula_ids=tuple(formula_context.formula_ids),
+        generated_code=prepared_code,
+        code_semantic_summary=_build_code_semantic_summary(
+            extraction,
+            selected.code_spec,
+            formula_context,
+            selected.execution.computed_values,
+            selected.verified.answer,
+            selected.verified.unit,
+        ),
+        computed_values=dict(selected.execution.computed_values or {}),
     )
 
 
@@ -585,37 +630,76 @@ def _verify_or_accept_execution(
     extraction: Extraction,
     settings: Settings,
 ) -> OutputSanityResult:
-    if ans is None or not str(ans).strip():
+    structured = verify_structured_state(extraction)
+    if structured.error is not None:
         return OutputSanityResult(
-            verification=Verification(False, "PoT ans is empty."),
+            verification=structured.verification,
             answer="",
             unit=None,
             value=None,
-            error="type2_output_sanity_failed",
+            error=structured.error,
         )
-    ans_str = str(ans).strip()
-    try:
-        magnitude = float(ans_str)
-        if not math.isfinite(magnitude):
-            return OutputSanityResult(
-                verification=Verification(False, "PoT ans is not finite."),
-                answer="",
-                unit=None,
-                value=None,
-                error="type2_output_sanity_failed",
-            )
-        if extraction.target in {"force", "electric_field"}:
-            magnitude = abs(magnitude)
-        formatted_ans = _format_number(magnitude)
-    except (TypeError, ValueError):
-        formatted_ans = ans_str
 
-    return OutputSanityResult(
-        verification=Verification(True, "PoT execution accepted; verification bypassed/disabled."),
-        answer=formatted_ans,
-        unit=(unit or "").strip() or None,
-        value=None,
-        error=None,
+    allowed_ids = tuple(
+        dict.fromkeys(
+            [
+                *formula_context.formula_ids,
+                *(
+                    str(summary.get("id"))
+                    for summary in formula_context.summaries
+                    if summary.get("id")
+                ),
+            ]
+        )
+    )
+    contract = build_physics_contract(extraction, formula_context)
+    sanity = verify_output_sanity(
+        ans,
+        unit,
+        formula_ids_used,
+        allowed_ids,
+        magnitude_target=extraction.target in {"force", "electric_field"},
+        require_unit=settings.type2_use_unit_verifier and contract.expected_unit is not None,
+    )
+    if sanity.error is not None:
+        return sanity
+
+    physics = verify_physics_sanity(
+        answer=sanity.answer,
+        unit=sanity.unit,
+        value=sanity.value,
+        formula_ids_used=formula_ids_used,
+        contract=contract,
+        check_dimensions=settings.type2_use_unit_verifier,
+    )
+    if not physics.accepted:
+        return OutputSanityResult(
+            verification=Verification(False, physics.message),
+            answer="",
+            unit=None,
+            value=None,
+            error="type2_physics_sanity_failed",
+        )
+
+    oracle = verify_against_physics_oracle(extraction, sanity)
+    if oracle.error is not None:
+        return OutputSanityResult(
+            verification=oracle.verification,
+            answer="",
+            unit=None,
+            value=None,
+            error=oracle.error,
+        )
+
+    messages = [
+        structured.verification.message,
+        sanity.verification.message,
+        physics.message,
+        oracle.verification.message,
+    ]
+    return replace(
+        sanity,
+        verification=Verification(True, " ".join(message for message in messages if message)),
     )
 
 
@@ -1085,8 +1169,12 @@ def _final_explanation(
     code_spec: PotCodeSpec,
     settings: Settings,
     generate_explanation: bool,
+    computed_values: dict[str, Any] | None = None,
+    taxonomy_level: str = "direct_formula",
+    contract: PhysicsContract | None = None,
+    evidence_trace: str | None = None,
 ):
-    from exact.type2.extraction.llm_structured import FinalExplanationSpec
+    from exact.type2.extraction.llm_structured import FinalExplanationSpec, verify_explanation_grounding
 
     unit_suffix = f" {unit}" if unit else ""
     explanation_context = _build_explanation_context(
@@ -1095,6 +1183,9 @@ def _final_explanation(
         unit,
         formula_context,
         code_spec,
+        computed_values=computed_values,
+        taxonomy_level=taxonomy_level,
+        contract=contract,
     )
     if generate_explanation:
         try:
@@ -1106,11 +1197,22 @@ def _final_explanation(
                 explanation_context,
                 code_spec.formula_ids_used,
                 settings=settings,
+                difficulty_level=taxonomy_level,
+                evidence_trace=evidence_trace,
             )
+            if spec is not None:
+                is_grounded = True
+                if computed_values is not None and taxonomy_level != "conceptual_reasoning":
+                    is_grounded = verify_explanation_grounding(
+                        spec.explanation,
+                        computed_values,
+                        answer,
+                        settings=settings,
+                    )
+                if is_grounded:
+                    return spec
         except Exception:
-            spec = None
-        if spec is not None:
-            return spec
+            pass
 
     fallback_explanation = _clean_code_explanation(
         code_spec.explanation,
@@ -1130,6 +1232,9 @@ def _build_explanation_context(
     unit: str | None,
     formula_context: RetrievedFormulaContext,
     code_spec: PotCodeSpec,
+    computed_values: dict[str, Any] | None = None,
+    taxonomy_level: str = "direct_formula",
+    contract: PhysicsContract | None = None,
 ) -> str:
     selected_formulas = [
         {
@@ -1163,17 +1268,27 @@ def _build_explanation_context(
             for quantity in extraction.quantities.values()
         ],
         "selected_formulas": selected_formulas,
-        "solution_plan": list(formula_context.solution_plan),
+        "formula_ids_used": list(code_spec.formula_ids_used),
+        "retrieved_formula_ids": list(formula_context.formula_ids),
+        "code_semantic_summary": _build_code_semantic_summary(
+            extraction,
+            code_spec,
+            formula_context,
+            computed_values,
+            answer,
+            unit,
+        ),
+        "verified_values": computed_values or {},
+        "taxonomy_level": taxonomy_level,
         "numeric_work": _clean_code_explanation(
             code_spec.explanation,
             answer=answer,
             unit=unit,
         ),
-        "style": (
-            "Explain like a physics teacher in 2-4 natural sentences: intuition, formula, "
-            "substitution, final answer. Do not mention code."
-        ),
     }
+    if contract is not None:
+        payload["physics_contract"] = contract_to_prompt_dict(contract)
+
     return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
 
@@ -1214,6 +1329,49 @@ def _fallback_formula_premises(
         elif expression:
             premises.append(str(expression))
     return premises
+
+
+def _build_code_semantic_summary(
+    extraction: Extraction,
+    code_spec: PotCodeSpec,
+    formula_context: RetrievedFormulaContext,
+    computed_values: dict[str, Any] | None,
+    answer: str,
+    unit: str | None,
+) -> str:
+    used_ids = [formula_id for formula_id in code_spec.formula_ids_used if str(formula_id).strip()]
+    retrieved_ids = [str(formula_id) for formula_id in formula_context.formula_ids if str(formula_id).strip()]
+    selected_descriptions = []
+    for summary in formula_context.summaries:
+        formula_id = str(summary.get("id") or "").strip()
+        if not formula_id or formula_id not in set(used_ids):
+            continue
+        expression = str(summary.get("expression") or summary.get("latex") or "").strip()
+        if expression:
+            selected_descriptions.append(f"{formula_id}: {expression}")
+        else:
+            selected_descriptions.append(formula_id)
+
+    lines: list[str] = []
+    if extraction.target:
+        lines.append(f"Target quantity: {extraction.target}.")
+    if used_ids:
+        lines.append(f"Formulas or rules used by the generated solver: {', '.join(used_ids)}.")
+    if retrieved_ids:
+        lines.append(f"Retrieved formulas available to the solver: {', '.join(retrieved_ids)}.")
+    if selected_descriptions:
+        lines.append("Formula details: " + " | ".join(selected_descriptions[:4]) + ".")
+    if computed_values:
+        formatted_values = ", ".join(f"{key}={value}" for key, value in computed_values.items())
+        if formatted_values:
+            lines.append(f"Key computed values from execution: {formatted_values}.")
+    cleaned = _clean_code_explanation(code_spec.explanation, answer=answer, unit=unit)
+    if cleaned:
+        lines.append(f"Computation summary: {cleaned}")
+    if answer:
+        unit_suffix = f" {unit}" if unit else ""
+        lines.append(f"Final computed answer: {answer}{unit_suffix}.")
+    return " ".join(line.strip() for line in lines if line.strip())
 
 
 def _as_string_list(value: object) -> list[str]:
