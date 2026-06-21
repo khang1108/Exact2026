@@ -723,6 +723,10 @@ option, ALL using the same predicate names.
 4. Numbers/thresholds become comparisons: "weighs under 2 kg" -> Weight(x) < 2.
 5. Negation: "is not / does not / never" -> ~ on the predicate.
 6. "premises" must have exactly one FOL string per input premise, in order.
+   NEVER drop a premise — the array length MUST equal the number of input
+   premises. Short ground facts ("Mira has a fever" -> Fever(Mira), "the diesel
+   backup has been tested" -> DieselTested(Harbor)) are the easiest to forget;
+   include EVERY one or the chain loses its inputs.
 7. META-EPISTEMIC premises that only say information is ABSENT or UNKNOWN
    ("No premise states whether X", "It is unknown/unspecified whether X",
    "Nothing indicates whether X") carry NO logical content. Output an EMPTY
@@ -751,6 +755,17 @@ option, ALL using the same predicate names.
    CanReceiveStandardDose) — reuse the predicates already declared for the
    premises so the option chains to them. Use "forall x:" ONLY when the input
    sentence itself is a general rule about all entities.
+12. PER-PREMISE FIDELITY: translate each premise from ITS OWN sentence only.
+   Never borrow a predicate or condition from a neighbouring premise, and never
+   shift a rule's consequent onto an adjacent rule. A rule's head must be the
+   property ITS sentence concludes — "If night service is maintained and the
+   diesel backup is tested, then the microgrid has a high resilience score" ->
+   (Maintained(x) & DieselTested(x)) -> HighResilienceScore(x), NOT a head copied
+   from the next premise. Distinct concepts get distinct predicates: "diesel
+   backup tested" (DieselTested) is not "notification sent" (NotificationSent).
+13. NO TAUTOLOGY: a rule's head predicate must NOT also appear in its body
+   ((A & B) -> A is vacuous). If you write one, you mis-copied the consequent —
+   re-read the source sentence for the real conclusion.
 
 # QUESTION
 - question_format = "polar" for a yes/no/uncertain question, "mcq" ONLY when the
@@ -760,6 +775,11 @@ option, ALL using the same predicate names.
   Set "claim" to the FOL of the POSITIVE statement and leave "options" EMPTY.
   NEVER invent "X" / "not X" options for a yes/no question — that loses the
   Uncertain answer.
+- PROVABILITY questions — "Do the premises establish / prove / show / imply /
+  guarantee that X?" — are POLAR. Set "claim" to the FOL of X, the positive
+  statement (e.g. "…establish that Mira should receive the standard antiviral
+  dose?" -> claim = StandardAntiviralDose(Mira)). Leave "options" EMPTY; never
+  build option-Yes/option-No formulas for these.
 - mcq: only if the input lists options; set "options" to one {label, fol} per
   listed option (label = the letter), leave "claim" null.
 - open_wh: leave both null.
