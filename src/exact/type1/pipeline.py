@@ -432,35 +432,42 @@ async def _single_pass_attempt(
     return _SinglePassAttempt(raw_answer, premises_used, translation, refine_log)
 
 
-def _relevant_premises(
+def _backward_support(
     translation: "TheoryTranslation", targets: list[FOLNode]
 ) -> list[int]:
-    """Premises connected to the claim/option through shared predicates.
+    """Premises that could derive a target predicate (directed backward closure).
 
-    Z3's unsat core is *minimal* (a known-false blocker can short-circuit a long
-    chain), but the gold premises_used credits the whole relevant sub-theory.
-    Take the transitive closure: a premise is relevant if it shares any predicate
-    with the growing relevant set; its predicates then join the set. Returns
-    original premise indices via the index map.
+    Z3's unsat core is *minimal* (a known-false blocker short-circuits a long
+    chain) and an undirected predicate closure over-includes downstream rules.
+    The gold premises_used credits the *attempted derivation* of the claim /
+    winning option: a premise is included if it is a fact whose predicate is
+    needed, or a RULE whose head produces a needed predicate (its body predicates
+    then become needed too). Rules whose head is not needed (downstream) are
+    excluded; blocked branches are still credited. Returns original indices.
     """
-    relevant: set[str] = set()
+    needed: set[str] = set()
     for t in targets:
-        relevant |= {a.predicate.name for a in _collect_atoms(t)}
-    prem_preds = [
-        {a.predicate.name for a in _collect_atoms(tree)}
-        for tree in translation.premise_trees
-    ]
+        needed |= {a.predicate.name for a in _collect_atoms(t)}
     chosen: set[int] = set()
     changed = True
     while changed:
         changed = False
-        for i, preds in enumerate(prem_preds):
-            if i in chosen or not (preds & relevant):
+        for i, tree in enumerate(translation.premise_trees):
+            if i in chosen:
                 continue
-            chosen.add(i)
-            if not preds <= relevant:
-                relevant |= preds
-            changed = True
+            rule = _implication_core(tree)
+            if rule is not None:
+                antecedent, consequent = rule
+                head = {a.predicate.name for a in _collect_atoms(consequent)}
+                if head & needed:
+                    chosen.add(i)
+                    changed = True
+                    body = {a.predicate.name for a in _collect_atoms(antecedent)}
+                    if not body <= needed:
+                        needed |= body
+            elif {a.predicate.name for a in _collect_atoms(tree)} & needed:
+                chosen.add(i)  # a fact supplying a needed predicate (a leaf)
+                changed = True
     return sorted(
         translation.premise_index_map[i]
         for i in chosen
@@ -614,17 +621,20 @@ async def run_type1_single_pass(
     if not is_mcq and not is_open_ended and _is_provability_question(payload.question):
         raw_answer = "Yes" if symbolic_answer == "Yes" else "No"
 
-    # premises_used for a definite YNU answer = the relevant chain (Z3's minimal
-    # core under-reports; gold credits the connected sub-theory). Covers the
-    # provability-No path too (which otherwise reported nothing).
-    if (
-        not is_mcq
-        and raw_answer != _SOLVER_UNCERTAIN
-        and translation.claim_tree is not None
-    ):
-        closure = _relevant_premises(translation, [translation.claim_tree])
-        if closure:
-            premises_used = closure
+    # premises_used for a definite answer = the backward derivation support of the
+    # claim (YNU) or the winning option (MCQ). Z3's minimal core under-reports and
+    # an undirected closure over-reports; directed backward chaining matches the
+    # gold annotation. Covers the provability-No path too.
+    if raw_answer != _SOLVER_UNCERTAIN and not fallback_used:
+        targets: list[FOLNode] = []
+        if is_mcq and raw_answer in translation.option_trees:
+            targets = [translation.option_trees[raw_answer]]
+        elif not is_mcq and translation.claim_tree is not None:
+            targets = [translation.claim_tree]
+        if targets:
+            support = _backward_support(translation, targets)
+            if support:
+                premises_used = support
 
     # Uncertain witness: a meta-epistemic premise ("no premise states whether X")
     # is the evidence for an Uncertain answer — cite it in premises_used (gold
