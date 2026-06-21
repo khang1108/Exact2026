@@ -578,11 +578,11 @@ async def run_type1_single_pass(
         representative.premises_used if winner != _SOLVER_UNCERTAIN else None
     )
 
-    # Trust Z3 on a usable translation: a Z3 'Uncertain' is itself a valid
-    # answer (the premises genuinely do not entail). Fall back to the LLM ONLY
-    # when there is nothing to solve — a genuine open-ended (wh) question, or the
-    # translation produced no usable FOL (failed/unparsable). This keeps Z3 the
-    # decider and avoids the slow fallback path.
+    # For MCQ, Z3 returning Uncertain on a usable translation almost always means
+    # predicate drift between options and premises — the options did not chain, not
+    # genuine logical uncertainty. Mirror the decompose path: always invoke the LLM
+    # fallback when Z3 is Uncertain on MCQ so the model can adjudicate from NL.
+    # For polar/YNU on a usable translation, trust Z3: Uncertain is a valid answer.
     fallback_used = False
     fallback_trigger: str | None = None
     fallback_explanation: str | None = None
@@ -596,8 +596,18 @@ async def run_type1_single_pass(
     translation_usable = (not translate_failed) and bool(premise_fols) and (
         bool(translation.option_trees) if is_mcq else translation.claim_tree is not None
     )
-    if (is_open_ended or not translation_usable) and fallback_reasoner is not None:
-        fallback_trigger = "OPEN_ENDED" if is_open_ended else "TRANSLATION_UNUSABLE"
+    # MCQ-specific fallback: when Z3 is Uncertain on a usable MCQ translation,
+    # treat it as a translation drift and let the LLM adjudicate from NL.
+    mcq_uncertain_fallback = (
+        is_mcq and translation_usable and raw_answer == _SOLVER_UNCERTAIN
+    )
+    if (is_open_ended or not translation_usable or mcq_uncertain_fallback) and fallback_reasoner is not None:
+        if is_open_ended:
+            fallback_trigger = "OPEN_ENDED"
+        elif mcq_uncertain_fallback:
+            fallback_trigger = "Z3_MCQ_UNCERTAIN"
+        else:
+            fallback_trigger = "TRANSLATION_UNUSABLE"
         fallback_labels = (
             [*(translation.option_trees or options_dict).keys(), _SOLVER_UNCERTAIN]
             if is_mcq
