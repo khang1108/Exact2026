@@ -19,6 +19,7 @@ from exact.common.schemas import PredictionRequest, PredictionResponse, Question
 from exact.config import get_settings
 from exact.type1.ast import AtomicNode, FOLNode, QuantifiedNode
 from exact.type1.ast.nodes import ComparisonNode, LogicalNode
+from exact.type1.models.schemas import Predicate
 from exact.type1.parser import PremiseParser
 from exact.type1.parser.options import extract_mcq
 from exact.type1.proof_connectivity import (
@@ -471,9 +472,12 @@ def _solve_translation(
     solver: FOLSolver | None, translation: "TheoryTranslation"
 ) -> tuple[str, list[int] | None]:
     """Run Z3 over one translation (MCQ or polar) → (answer, premises_used)."""
-    # Repair before solving: remap verb-prefixed option predicates onto their
-    # premise predicate, and close free-variable rules under `forall` (a free
-    # lowercase var is read as a constant otherwise, killing the rule chain).
+    # Repair before solving (all deterministic, no LLM call): unify a rule
+    # condition with its CamelCase-variant fact predicate, remap verb-prefixed
+    # option predicates onto their premise predicate, and close free-variable
+    # rules under `forall` (a free lowercase var is read as a constant otherwise,
+    # killing the rule chain).
+    _reconcile_rule_fact_predicates(translation)
     if translation.option_trees:
         _reconcile_option_predicates(translation)
     premise_fols = [_close_free_vars(t) for t in translation.premise_trees]
@@ -718,50 +722,17 @@ def _translation_problems(translation: TheoryTranslation) -> list[str]:
                 f"'Entity has/is Property' must be Property(Entity), e.g. "
                 f"CalibratedThermalSensors(Vega)"
             )
-    # A tautological rule (head predicate also in its body, e.g. (A & B) -> A) is
-    # vacuous and signals a predicate-shift mistranslation (a consequent stolen
-    # from a neighbouring premise). Flag it so the model re-checks the head.
-    for tree, orig in zip(translation.premise_trees, translation.premise_index_map):
-        rule = _implication_core(tree)
-        if rule is None:
-            continue
-        antecedent, consequent = rule
-        head = {a.predicate.name for a in _collect_atoms(consequent)}
-        body = {a.predicate.name for a in _collect_atoms(antecedent)}
-        if head and head <= body:
-            problems.append(
-                f"TAUTOLOGICAL_RULE: premise {orig + 1} has a head predicate that also "
-                f"appears in its body (e.g. (A & B) -> A) — a vacuous rule; the consequent "
-                f"is likely the wrong predicate, re-check it against the source sentence"
-            )
     if translation.claim_tree is not None:
-        all_predicates = {
+        premise_predicates = {
             atom.predicate.name
             for tree in translation.premise_trees
             for atom in _collect_atoms(tree)
         }
-        # Producible = appears as a rule head, or as an atom in a non-rule (fact)
-        # premise. A claim predicate that exists ONLY inside rule bodies can never
-        # be derived -> a rule's head was mistranslated.
-        producible: set[str] = set()
-        for tree in translation.premise_trees:
-            rule = _implication_core(tree)
-            if rule is not None:
-                producible |= {a.predicate.name for a in _collect_atoms(rule[1])}
-            else:
-                producible |= {a.predicate.name for a in _collect_atoms(tree)}
         for atom in _collect_atoms(translation.claim_tree):
-            name = atom.predicate.name
-            if name not in all_predicates:
+            if atom.predicate.name not in premise_predicates:
                 problems.append(
-                    f"ORPHAN_PREDICATE: claim uses {name} which no premise "
+                    f"ORPHAN_PREDICATE: claim uses {atom.predicate.name} which no premise "
                     f"defines — reuse an existing premise predicate or recheck the translation"
-                )
-            elif name not in producible:
-                problems.append(
-                    f"UNPRODUCIBLE_CLAIM: claim predicate {name} appears only inside rule "
-                    f"conditions, never as a rule head or a fact, so it can never be derived — "
-                    f"a rule's consequent is likely mistranslated"
                 )
     return list(dict.fromkeys(problems))
 
@@ -888,6 +859,57 @@ def _reconcile_option_predicates(translation: "TheoryTranslation") -> None:
                     if target is not None and target.arity == len(atom.arguments):
                         atom.predicate = target
                         break
+
+
+def _camel_suffix(longer: str, shorter: str) -> bool:
+    """True if ``shorter`` is a CamelCase-word suffix of ``longer`` (X + Shorter)."""
+    return (
+        len(longer) > len(shorter)
+        and longer.endswith(shorter)
+        and longer[len(longer) - len(shorter)].isupper()
+    )
+
+
+def _reconcile_rule_fact_predicates(translation: "TheoryTranslation") -> None:
+    """Unify a rule-condition predicate with a CamelCase-variant fact predicate.
+
+    Mistranslation often names the same relation differently in a rule and a fact
+    (rule ``Online(x)`` vs fact ``SolarArrayOnline(Harbor)``). The rule condition
+    is then unsatisfiable (never a fact, never a rule head) so the whole chain
+    dies. When such a dead condition has exactly one fact predicate that is a
+    CamelCase variant of it (same arity), rename that fact onto the rule predicate
+    so the chain fires. Deterministic — no LLM call.
+    """
+    rule_conditions: dict[str, Predicate] = {}
+    head_names: set[str] = set()
+    fact_atoms: list[AtomicNode] = []
+    for tree in translation.premise_trees:
+        rule = _implication_core(tree)
+        if rule is not None:
+            antecedent, consequent = rule
+            for a in _collect_atoms(antecedent):
+                rule_conditions.setdefault(a.predicate.name, a.predicate)
+            head_names |= {a.predicate.name for a in _collect_atoms(consequent)}
+        else:
+            fact_atoms += _collect_atoms(tree)
+    fact_names = {a.predicate.name for a in fact_atoms}
+    producible = fact_names | head_names
+    for cond_name, cond_pred in rule_conditions.items():
+        if cond_name in producible:
+            continue  # condition can already be satisfied — leave it
+        variants = {
+            a.predicate.name
+            for a in fact_atoms
+            if a.predicate.name != cond_name
+            and a.predicate.arity == cond_pred.arity
+            and (_camel_suffix(a.predicate.name, cond_name) or _camel_suffix(cond_name, a.predicate.name))
+        }
+        if len(variants) != 1:
+            continue  # ambiguous or none — do not guess
+        target = next(iter(variants))
+        for a in fact_atoms:
+            if a.predicate.name == target:
+                a.predicate = cond_pred
 
 
 def _solve(
