@@ -428,6 +428,42 @@ async def _single_pass_attempt(
     return _SinglePassAttempt(raw_answer, premises_used, translation, refine_log)
 
 
+def _relevant_premises(
+    translation: "TheoryTranslation", targets: list[FOLNode]
+) -> list[int]:
+    """Premises connected to the claim/option through shared predicates.
+
+    Z3's unsat core is *minimal* (a known-false blocker can short-circuit a long
+    chain), but the gold premises_used credits the whole relevant sub-theory.
+    Take the transitive closure: a premise is relevant if it shares any predicate
+    with the growing relevant set; its predicates then join the set. Returns
+    original premise indices via the index map.
+    """
+    relevant: set[str] = set()
+    for t in targets:
+        relevant |= {a.predicate.name for a in _collect_atoms(t)}
+    prem_preds = [
+        {a.predicate.name for a in _collect_atoms(tree)}
+        for tree in translation.premise_trees
+    ]
+    chosen: set[int] = set()
+    changed = True
+    while changed:
+        changed = False
+        for i, preds in enumerate(prem_preds):
+            if i in chosen or not (preds & relevant):
+                continue
+            chosen.add(i)
+            if not preds <= relevant:
+                relevant |= preds
+            changed = True
+    return sorted(
+        translation.premise_index_map[i]
+        for i in chosen
+        if i < len(translation.premise_index_map)
+    )
+
+
 def _solve_translation(
     solver: FOLSolver | None, translation: "TheoryTranslation"
 ) -> tuple[str, list[int] | None]:
@@ -565,6 +601,18 @@ async def run_type1_single_pass(
 
     if not is_mcq and not is_open_ended and _is_provability_question(payload.question):
         raw_answer = "Yes" if symbolic_answer == "Yes" else "No"
+
+    # premises_used for a definite YNU answer = the relevant chain (Z3's minimal
+    # core under-reports; gold credits the connected sub-theory). Covers the
+    # provability-No path too (which otherwise reported nothing).
+    if (
+        not is_mcq
+        and raw_answer != _SOLVER_UNCERTAIN
+        and translation.claim_tree is not None
+    ):
+        closure = _relevant_premises(translation, [translation.claim_tree])
+        if closure:
+            premises_used = closure
 
     # Uncertain witness: a meta-epistemic premise ("no premise states whether X")
     # is the evidence for an Uncertain answer — cite it in premises_used (gold
