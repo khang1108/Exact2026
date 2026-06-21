@@ -1043,13 +1043,20 @@ def _build_explanation(
 
 
 def _normalize_answer(answer: str) -> str:
-    """Map the internal uncertain literal and its synonyms to the output token.
+    """Map internal/free-text answer tokens to the canonical YNU output tokens.
 
-    The LLM fallback sometimes answers "Unknown" instead of "Uncertain"; EXACT
-    expects the configured token, so fold both onto it (case-insensitive).
+    The LLM fallback (and the raw solver) sometimes answer "Unknown", or leak
+    "True"/"False" instead of "Yes"/"No"/"Uncertain" — EXACT expects the canonical
+    tokens, so fold them on (case-insensitive). MCQ answers are letters and are
+    left untouched.
     """
-    if str(answer).strip().lower() in ("uncertain", "unknown"):
+    s = str(answer).strip().lower()
+    if s in ("uncertain", "unknown"):
         return get_settings().type1_uncertain_token
+    if s in ("yes", "true"):
+        return "Yes"
+    if s in ("no", "false"):
+        return "No"
     return answer
 
 
