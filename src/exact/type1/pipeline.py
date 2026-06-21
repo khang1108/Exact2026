@@ -532,8 +532,11 @@ async def run_type1_single_pass(
     fallback_trigger: str | None = None
     fallback_explanation: str | None = None
     fallback_error: str | None = None
-    is_open_ended = not is_mcq and not translate_failed and (
-        translation.question_format == "open_wh" or translation.claim_tree is None
+    # Only an EXPLICIT open_wh question is free-form. A polar question whose claim
+    # failed to translate is NOT open-ended — it must still answer Yes/No/Uncertain
+    # (otherwise the fallback leaks raw "True"/"False"/free text for a yes/no Q).
+    is_open_ended = (
+        not is_mcq and not translate_failed and translation.question_format == "open_wh"
     )
     translation_usable = (not translate_failed) and bool(premise_fols) and (
         bool(translation.option_trees) if is_mcq else translation.claim_tree is not None
